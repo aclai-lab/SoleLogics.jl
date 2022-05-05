@@ -3,6 +3,9 @@ uuid = "b002da8f-3cb3-4d91-bbe3-2953433912b5"
 authors = ["Eduard I. STAN", "Giovanni PAGLIARINI"]
 version = "0.1.0"
 
+[deps]
+IterTools = "c8e1da08-722c-5040-9ed9-7db0dc04731e"
+
 [compat]
 julia = "1"
 
