@@ -13,5 +13,6 @@ GENERAL TODOs:
 import Base: show
 
 include("operators.jl")
+include("formulas.jl")
 
 end

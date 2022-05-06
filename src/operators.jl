@@ -92,8 +92,9 @@ univop = UNIVMODOP("LABDE,DBE")
 @show univop
 
 # working on the generator
-d = 3
+d = 2
 # returns a vector of d-tuples where each value is an element of the set of relations
-rels = vec(collect(Iterators.product([HSRELATIONS for _ in 1:d]...)))
+rels = vec(collect(Iterators.product([HS₃RELATIONS for _ in 1:d]...)))
 @show rels
-@show size(vec(rels))
+@show size(rels)
+@show typeof(rels)
