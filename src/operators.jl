@@ -9,7 +9,7 @@ abstract type AbstractModalOperator{T}      <: AbstractUnaryOperator{T} end
 
 struct UnaryOperator{T} <: AbstractUnaryOperator{T} end
 UnaryOperator(s::AbstractString)   = UnaryOperator{Symbol(s)}()
-#UnaryOperator(s::Symbol)           = UnaryOperator{s}()
+# UnaryOperator(s::Symbol)           = UnaryOperator{s}()
 
 const NEGATION = UnaryOperator("¬")
 
@@ -19,14 +19,20 @@ abstract type AbstractUniversalModalOperator{T}     <: AbstractModalOperator{T} 
 struct ExistentialModalOperator{T}  <: AbstractExistentialModalOperator{T} end
 struct UniversalModalOperator{T}    <: AbstractUniversalModalOperator{T} end
 ExistentialModalOperator(s::AbstractString) = ExistentialModalOperator{Symbol(s)}()
-#ExistentialModalOperator(s::Symbol)         = ExistentialModalOperator{s}()
+function ExistentialModalOperator(t::NTuple{N,AbstractString}) where N
+    s = *(["$(x)," for x in t[1:end-1]]...) * "$(t[end])"
+    return ExistentialModalOperator(s)
+end
+# ExistentialModalOperator(s::Symbol)         = ExistentialModalOperator{s}()
 UniversalModalOperator(s::AbstractString)   = UniversalModalOperator{Symbol(s)}()
-#UniversalModalOperator(s::Symbol)           = UniversalModalOperator{s}()
+function UniversalModalOperator(t::NTuple{N,AbstractString}) where N
+    s = *(["$(x)," for x in t[1:end-1]]...) * "$(t[end])"
+    return UniversalModalOperator(s)
+end
+# UniversalModalOperator(s::Symbol)           = UniversalModalOperator{s}()
 
-const EXMODOP(s::AbstractString)    = ExistentialModalOperator(s)
-const EXMODOP(s::Symbol)            = ExistentialModalOperator(s)
-const UNIVMODOP(s::AbstractString)  = UniversalModalOperator(s)
-const UNIVMODOP(s::Symbol)          = UniversalModalOperator(s)
+const EXMODOP(op)    = ExistentialModalOperator(op)
+const UNIVMODOP(op)  = UniversalModalOperator(op)
 
 reltype(::AbstractOperator{T}) where T    = T
 
@@ -40,7 +46,7 @@ end
 
 struct BinaryOperator{T} <: AbstractBinaryOperator{T} end
 BinaryOperator(s::AbstractString)   = BinaryOperator{Symbol(s)}()
-#BinaryOperator(s::Symbol)           = BinaryOperator{s}()
+# BinaryOperator(s::Symbol)           = BinaryOperator{s}()
 
 const CONJUNCTION = BinaryOperator("∧")
 const DISJUNCTION = BinaryOperator("∧")
@@ -80,9 +86,23 @@ const HS₇RELATIONS = [
     "="     # equals/identity
 ]
 
+struct Operators <: AbstractArray{AbstractOperator, 1}
+    ops::AbstractArray{AbstractOperator, 1}
+end
+
+Base.size(ops::Operators) = (length(ops.ops),)
+Base.IndexStyle(::Type{<:Operators}) = IndexLinear()
+Base.getindex(ops::Operators, i::Int) = ops.ops[i]
+Base.setindex!(ops::Operators, op::AbstractOperator, i::Int) = ops.ops[i] = op
+
+
+
 # TESTING
+println("\toperators.jl testing")
 exop = EXMODOP("L,L")
 univop = UNIVMODOP("LABDE,DBE")
+
+println("\tsingle operators")
 
 @show NEGATION
 @show CONJUNCTION
@@ -91,10 +111,13 @@ univop = UNIVMODOP("LABDE,DBE")
 @show exop
 @show univop
 
-# working on the generator
-d = 2
-# returns a vector of d-tuples where each value is an element of the set of relations
-rels = vec(collect(Iterators.product([HS₃RELATIONS for _ in 1:d]...)))
+println("\tvector of d-tuples of relations")
+
+d = 3
+@show d
+rels = vec(collect(Iterators.product([HS₇RELATIONS for _ in 1:d]...)))
 @show rels
 @show size(rels)
 @show typeof(rels)
+@show EXMODOP(rels[50])
+@show UNIVMODOP(rels[300])

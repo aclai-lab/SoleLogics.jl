@@ -32,10 +32,7 @@ function _isleaf(ν::Node)
 end
 
 function _height(ν::Node)
-    if _isleaf(ν)
-        return 1
-    end
-    return 1 + max(
+    return _isleaf(ν) ? 1 : 1 + max(
         (isdefined(ν, :leftchild) ? _height(_leftchild(ν)) : 0),
         (isdefined(ν, :rightchild) ? _height(_rightchild(ν)) : 0))
 end
@@ -60,10 +57,10 @@ struct Formula
 end
 
 # testing
+println("\tformulas.jl testing")
 n = Node(IMPLICATION)
 n_l = Node("p")
 n_r = Node("q")
-
 _leftchild!(n, n_l)
 _rightchild!(n, n_r)
 _parent!(n_l, n)
@@ -71,7 +68,6 @@ _parent!(n_r,n)
 
 @show n
 @show _size(n)
-println()
 @show _parent(n_l)
 @show _rightchild(n)
 @show _isleaf(n)
