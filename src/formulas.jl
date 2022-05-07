@@ -3,12 +3,12 @@ mutable struct Node{T}
     parent::Node        # parent node
     leftchild::Node     # left child node
     rightchild::Node    # right child node
-    formula::String     # human readable string of the formula
+    formula::String     # human-readable string of the formula
 
     Node{T}(token::T) where T = new{T}(token)
 end
 
-Node(category::T) where T = Node{T}(category)
+Node(token::T) where T = Node{T}(token)
 
 _token(ν::Node)      = ν.token
 _parent(ν::Node)     = ν.parent
@@ -56,26 +56,26 @@ struct Formula
     tree::Node # syntax tree
 end
 
-# testing
-println("\tformulas.jl testing")
-n = Node(IMPLICATION)
-n_l = Node("p")
-n_r = Node("q")
-_leftchild!(n, n_l)
-_rightchild!(n, n_r)
-_parent!(n_l, n)
-_parent!(n_r,n)
+# # testing
+# println("\tformulas.jl testing")
+# n = Node(IMPLICATION)
+# n_l = Node("p")
+# n_r = Node("q")
+# _leftchild!(n, n_l)
+# _rightchild!(n, n_r)
+# _parent!(n_l, n)
+# _parent!(n_r,n)
 
-@show n
-@show _size(n)
-@show _parent(n_l)
-@show _rightchild(n)
-@show _isleaf(n)
-@show _isleaf(n_l)
-@show _isleaf(n_r)
-@show _height(n)
-@show _height(n_l)
-@show _height(n_r)
-@show _token(n)
-@show _token(n_l)
-@show _token(n_r)
+# @show n
+# @show _size(n)
+# @show _parent(n_l)
+# @show _rightchild(n)
+# @show _isleaf(n)
+# @show _isleaf(n_l)
+# @show _isleaf(n_r)
+# @show _height(n)
+# @show _height(n_l)
+# @show _height(n_r)
+# @show _token(n)
+# @show _token(n_l)
+# @show _token(n_r)

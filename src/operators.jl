@@ -20,13 +20,21 @@ struct ExistentialModalOperator{T}  <: AbstractExistentialModalOperator{T} end
 struct UniversalModalOperator{T}    <: AbstractUniversalModalOperator{T} end
 ExistentialModalOperator(s::AbstractString) = ExistentialModalOperator{Symbol(s)}()
 function ExistentialModalOperator(t::NTuple{N,AbstractString}) where N
-    s = *(["$(x)," for x in t[1:end-1]]...) * "$(t[end])"
+    if length(t) > 1
+        s = *(["$(x)," for x in t[1:end-1]]...) * "$(t[end])"
+    else
+        s = "$(t[1])"
+    end
     return ExistentialModalOperator(s)
 end
 # ExistentialModalOperator(s::Symbol)         = ExistentialModalOperator{s}()
 UniversalModalOperator(s::AbstractString)   = UniversalModalOperator{Symbol(s)}()
 function UniversalModalOperator(t::NTuple{N,AbstractString}) where N
-    s = *(["$(x)," for x in t[1:end-1]]...) * "$(t[end])"
+    if length(t) > 1
+        s = *(["$(x)," for x in t[1:end-1]]...) * "$(t[end])"
+    else
+        s = "$(t[1])"
+    end
     return UniversalModalOperator(s)
 end
 # UniversalModalOperator(s::Symbol)           = UniversalModalOperator{s}()
@@ -49,7 +57,7 @@ BinaryOperator(s::AbstractString)   = BinaryOperator{Symbol(s)}()
 # BinaryOperator(s::Symbol)           = BinaryOperator{s}()
 
 const CONJUNCTION = BinaryOperator("∧")
-const DISJUNCTION = BinaryOperator("∧")
+const DISJUNCTION = BinaryOperator("∨")
 const IMPLICATION = BinaryOperator("→")
 
 show(io::IO, op::AbstractOperator{T}) where T = print(io, "$(reltype(op))")
@@ -95,7 +103,17 @@ Base.IndexStyle(::Type{<:Operators}) = IndexLinear()
 Base.getindex(ops::Operators, i::Int) = ops.ops[i]
 Base.setindex!(ops::Operators, op::AbstractOperator, i::Int) = ops.ops[i] = op
 
-
+macro modaloperators(R, d::Int)
+    quote
+        rels = vec(collect(Iterators.product([$(R) for _ in 1:$(d)]...)))
+        if "=" in $(R)
+            rels = rels[1:end-1]
+        end
+        exrels = [EXMODOP(r) for r in rels]
+        univrels = [UNIVMODOP(r) for r in rels]
+        Operators(vcat(exrels, univrels))
+    end
+end
 
 # TESTING
 println("\toperators.jl testing")
@@ -113,11 +131,23 @@ println("\tsingle operators")
 
 println("\tvector of d-tuples of relations")
 
-d = 3
-@show d
-rels = vec(collect(Iterators.product([HS₇RELATIONS for _ in 1:d]...)))
-@show rels
-@show size(rels)
-@show typeof(rels)
-@show EXMODOP(rels[50])
-@show UNIVMODOP(rels[300])
+# d = 2
+# @show d
+# rels = vec(collect(Iterators.product([HS₇RELATIONS for _ in 1:d]...)))
+# @show rels
+# @show size(rels)
+# @show typeof(rels)
+# # @show EXMODOP(rels[50])
+# # @show UNIVMODOP(rels[300])
+# #@show @operators HSRELATIONS 2
+# R = HSRELATIONS
+# rels = vec(collect(Iterators.product([R for _ in 1:d]...)))
+# exrels = [EXMODOP(r) for r in rels]
+# univrels = [UNIVMODOP(r) for r in rels]
+# # @show exrels
+# # @show univrels
+# ops = Operators(vcat(exrels, univrels))
+# @show ops
+ops = @modaloperators HS₃RELATIONS 2
+@show ops
+@show reltype(ops[1])
