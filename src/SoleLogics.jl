@@ -15,6 +15,12 @@ GENERAL TODOs:
 
 import Base: show
 
+export Node, Formula
+export _token, _formula, _leftchild, _rightchild, _parent
+export _formula!, _leftchild!, _rightchild!, _parent!
+export _size, _isleaf, _height
+export reltype
+
 include("operators.jl")
 include("formulas.jl")
 

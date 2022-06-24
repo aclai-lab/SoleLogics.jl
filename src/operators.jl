@@ -2,24 +2,24 @@ using IterTools
 
 abstract type AbstractOperator{T} end
 
-abstract type AbstractUnaryOperator{T}      <: AbstractOperator{T} end
-abstract type AbstractBinaryOperator{T}     <: AbstractOperator{T} end
+abstract type AbstractUnaryOperator{T} <: AbstractOperator{T} end
+abstract type AbstractBinaryOperator{T} <: AbstractOperator{T} end
 
-abstract type AbstractModalOperator{T}      <: AbstractUnaryOperator{T} end
+abstract type AbstractModalOperator{T} <: AbstractUnaryOperator{T} end
 
 struct UnaryOperator{T} <: AbstractUnaryOperator{T} end
-UnaryOperator(s::AbstractString)   = UnaryOperator{Symbol(s)}()
+UnaryOperator(s::AbstractString) = UnaryOperator{Symbol(s)}()
 # UnaryOperator(s::Symbol)           = UnaryOperator{s}()
 
 const NEGATION = UnaryOperator("¬")
 
-abstract type AbstractExistentialModalOperator{T}   <: AbstractModalOperator{T} end
-abstract type AbstractUniversalModalOperator{T}     <: AbstractModalOperator{T} end
+abstract type AbstractExistentialModalOperator{T} <: AbstractModalOperator{T} end
+abstract type AbstractUniversalModalOperator{T} <: AbstractModalOperator{T} end
 
-struct ExistentialModalOperator{T}  <: AbstractExistentialModalOperator{T} end
-struct UniversalModalOperator{T}    <: AbstractUniversalModalOperator{T} end
+struct ExistentialModalOperator{T} <: AbstractExistentialModalOperator{T} end
+struct UniversalModalOperator{T} <: AbstractUniversalModalOperator{T} end
 ExistentialModalOperator(s::AbstractString) = ExistentialModalOperator{Symbol(s)}()
-function ExistentialModalOperator(t::NTuple{N,AbstractString}) where N
+function ExistentialModalOperator(t::NTuple{N,AbstractString}) where {N}
     if length(t) > 1
         s = *(["$(x)," for x in t[1:end-1]]...) * "$(t[end])"
     else
@@ -28,8 +28,8 @@ function ExistentialModalOperator(t::NTuple{N,AbstractString}) where N
     return ExistentialModalOperator(s)
 end
 # ExistentialModalOperator(s::Symbol)         = ExistentialModalOperator{s}()
-UniversalModalOperator(s::AbstractString)   = UniversalModalOperator{Symbol(s)}()
-function UniversalModalOperator(t::NTuple{N,AbstractString}) where N
+UniversalModalOperator(s::AbstractString) = UniversalModalOperator{Symbol(s)}()
+function UniversalModalOperator(t::NTuple{N,AbstractString}) where {N}
     if length(t) > 1
         s = *(["$(x)," for x in t[1:end-1]]...) * "$(t[end])"
     else
@@ -39,28 +39,28 @@ function UniversalModalOperator(t::NTuple{N,AbstractString}) where N
 end
 # UniversalModalOperator(s::Symbol)           = UniversalModalOperator{s}()
 
-const EXMODOP(op)    = ExistentialModalOperator(op)
-const UNIVMODOP(op)  = UniversalModalOperator(op)
+const EXMODOP(op) = ExistentialModalOperator(op)
+const UNIVMODOP(op) = UniversalModalOperator(op)
 
-reltype(::AbstractOperator{T}) where T    = T
+reltype(::AbstractOperator{T}) where {T} = T
 
-function show(io::IO, op::AbstractExistentialModalOperator{T}) where T
+function show(io::IO, op::AbstractExistentialModalOperator{T}) where {T}
     print(io, "⟨$(reltype(op))⟩")
 end
 
-function show(io::IO, op::AbstractUniversalModalOperator{T})   where T
+function show(io::IO, op::AbstractUniversalModalOperator{T}) where {T}
     print(io, "[$(reltype(op))]")
 end
 
 struct BinaryOperator{T} <: AbstractBinaryOperator{T} end
-BinaryOperator(s::AbstractString)   = BinaryOperator{Symbol(s)}()
+BinaryOperator(s::AbstractString) = BinaryOperator{Symbol(s)}()
 # BinaryOperator(s::Symbol)           = BinaryOperator{s}()
 
 const CONJUNCTION = BinaryOperator("∧")
 const DISJUNCTION = BinaryOperator("∨")
 const IMPLICATION = BinaryOperator("→")
 
-show(io::IO, op::AbstractOperator{T}) where T = print(io, "$(reltype(op))")
+show(io::IO, op::AbstractOperator{T}) where {T} = print(io, "$(reltype(op))")
 
 const HSRELATIONS = [
     "L",    # later
@@ -94,8 +94,8 @@ const HS₇RELATIONS = [
     "="     # equals/identity
 ]
 
-struct Operators <: AbstractArray{AbstractOperator, 1}
-    ops::AbstractArray{AbstractOperator, 1}
+struct Operators <: AbstractArray{AbstractOperator,1}
+    ops::AbstractArray{AbstractOperator,1}
 end
 
 Base.size(ops::Operators) = (length(ops.ops),)
@@ -115,21 +115,21 @@ macro modaloperators(R, d::Int)
     end
 end
 
-# TESTING
-println("\toperators.jl testing")
-exop = EXMODOP("L,L")
-univop = UNIVMODOP("LABDE,DBE")
+# # TESTING
+# println("\toperators.jl testing")
+# exop = EXMODOP("L,L")
+# univop = UNIVMODOP("LABDE,DBE")
 
-println("\tsingle operators")
+# println("\tsingle operators")
 
-@show NEGATION
-@show CONJUNCTION
-@show DISJUNCTION
-@show IMPLICATION
-@show exop
-@show univop
+# @show NEGATION
+# @show CONJUNCTION
+# @show DISJUNCTION
+# @show IMPLICATION
+# @show exop
+# @show univop
 
-println("\tvector of d-tuples of relations")
+# println("\tvector of d-tuples of relations")
 
 # d = 2
 # @show d
@@ -148,6 +148,7 @@ println("\tvector of d-tuples of relations")
 # # @show univrels
 # ops = Operators(vcat(exrels, univrels))
 # @show ops
-ops = @modaloperators HS₃RELATIONS 2
-@show ops
-@show reltype(ops[1])
+
+# ops = @modaloperators HS₃RELATIONS 3
+# @show ops
+# @show reltype(ops[1])
