@@ -11,31 +11,31 @@ end
 
 Node(token::T) where {T} = Node{T}(token)
 
-_token(ν::Node) = ν.token
-_parent(ν::Node) = ν.parent
-_leftchild(ν::Node) = ν.leftchild
-_rightchild(ν::Node) = ν.rightchild
-_formula(ν::Node) = ν.formula
+token(ν::Node) = ν.token
+parent(ν::Node) = ν.parent
+leftchild(ν::Node) = ν.leftchild
+rightchild(ν::Node) = ν.rightchild
+formula(ν::Node) = ν.formula
 
-_parent!(ν::Node, ν′::Node) = ν.parent = ν′
-_leftchild!(ν::Node, ν′::Node) = ν.leftchild = ν′
-_rightchild!(ν::Node, ν′::Node) = ν.rightchild = ν′
-_formula!(ν::Node, ν′::Node) = ν.formula = ν′
+parent!(ν::Node, ν′::Node) = ν.parent = ν′
+leftchild!(ν::Node, ν′::Node) = ν.leftchild = ν′
+rightchild!(ν::Node, ν′::Node) = ν.rightchild = ν′
+formula!(ν::Node, ν′::Node) = ν.formula = ν′
 
-function _size(ν::Node)
-    leftchild_size = isdefined(ν, :leftchild) ? _size(_leftchild(ν)) : 0
-    rightchild_size = isdefined(ν, :rightchild) ? _size(_rightchild(ν)) : 0
+function size(ν::Node)
+    leftchild_size = isdefined(ν, :leftchild) ? size(leftchild(ν)) : 0
+    rightchild_size = isdefined(ν, :rightchild) ? size(rightchild(ν)) : 0
     return 1 + leftchild_size + rightchild_size
 end
 
-function _isleaf(ν::Node)
+function isleaf(ν::Node)
     return !(isdefined(ν, :leftchild) || isdefined(ν, :rightchild)) ? true : false
 end
 
-function _height(ν::Node)
-    return _isleaf(ν) ? 1 : 1 + max(
-        (isdefined(ν, :leftchild) ? _height(_leftchild(ν)) : 0),
-        (isdefined(ν, :rightchild) ? _height(_rightchild(ν)) : 0))
+function height(ν::Node)
+    return isleaf(ν) ? 1 : 1 + max(
+        (isdefined(ν, :leftchild) ? height(leftchild(ν)) : 0),
+        (isdefined(ν, :rightchild) ? height(rightchild(ν)) : 0))
 end
 
 # TODO: add modaldepth() function (hint: use traits such as ismodal() function)
@@ -46,7 +46,7 @@ function _printnode(io::IO, ν::Node)
     if isdefined(ν, :leftchild)
         (_printnode(io, _leftchild(ν)))
     end
-    print(io, _token(ν))
+    print(io, token(ν))
     if isdefined(ν, :rightchild)
         _printnode(io, _rightchild(ν))
     end
@@ -70,15 +70,15 @@ end
 # _parent!(n_r, n)
 
 # @show n
-# @show _size(n)
-# @show _parent(n_l)
-# @show _rightchild(n)
-# @show _isleaf(n)
-# @show _isleaf(n_l)
-# @show _isleaf(n_r)
-# @show _height(n)
-# @show _height(n_l)
-# @show _height(n_r)
-# @show _token(n)
-# @show _token(n_l)
-# @show _token(n_r)
+# @show size(n)
+# @show parent(n_l)
+# @show rightchild(n)
+# @show isleaf(n)
+# @show isleaf(n_l)
+# @show isleaf(n_r)
+# @show height(n)
+# @show height(n_l)
+# @show height(n_r)
+# @show token(n)
+# @show token(n_l)
+# @show token(n_r)

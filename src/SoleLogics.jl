@@ -15,11 +15,20 @@ GENERAL TODOs:
 
 import Base: show
 
+using Reexport
+
 export Node, Formula
-export _token, _formula, _leftchild, _rightchild, _parent
-export _formula!, _leftchild!, _rightchild!, _parent!
-export _size, _isleaf, _height
+export token, formula, leftchild, rightchild, parent
+export formula!, leftchild!, rightchild!, parent!
+export size, isleaf, height
+
+export HSRELATIONS, HS₃RELATIONS, HS₇RELATIONS
+export EXMODOP, UNIVMODOP
+export Operators, @modaloperators
 export reltype
+
+@reexport using SoleAlphabets
+@reexport using SoleWorlds
 
 include("operators.jl")
 include("formulas.jl")
