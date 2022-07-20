@@ -53,11 +53,11 @@ end
 function _printnode(io::IO, ν::Node)
     print(io, "(")
     if isdefined(ν, :leftchild)
-        (_printnode(io, _leftchild(ν)))
+        (_printnode(io, leftchild(ν)))
     end
     print(io, token(ν))
     if isdefined(ν, :rightchild)
-        _printnode(io, _rightchild(ν))
+        _printnode(io, rightchild(ν))
     end
     print(io, ")")
 end
