@@ -19,9 +19,9 @@ rightchild(ν::Node) = ν.rightchild
 formula(ν::Node) = ν.formula
 height(v::Node) = v.height
 
-parent!(ν::Node, ν′::Node) = ν.parent = ν′.parent
-leftchild!(ν::Node, ν′::Node) = ν.leftchild = ν′.leftchild
-rightchild!(ν::Node, ν′::Node) = ν.rightchild = ν′.rightchild
+parent!(ν::Node, ν′::Node) = ν.parent = ν′
+leftchild!(ν::Node, ν′::Node) = ν.leftchild = ν′
+rightchild!(ν::Node, ν′::Node) = ν.rightchild = ν′
 formula!(ν::Node, ν′::Node) = ν.formula = ν′.formula
 height!(ν::Node, ν′::Node) = ν.height = ν′.height
 
