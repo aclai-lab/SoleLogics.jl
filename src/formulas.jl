@@ -4,6 +4,7 @@ mutable struct Node{T}
     leftchild::Node     # left child node
     rightchild::Node    # right child node
     formula::String     # human-readable string of the formula
+    height::Int         # height of the tree rooted here
 
     # root constructor
     Node{T}(token::T) where {T} = new{T}(token)
@@ -16,11 +17,13 @@ parent(ν::Node) = ν.parent
 leftchild(ν::Node) = ν.leftchild
 rightchild(ν::Node) = ν.rightchild
 formula(ν::Node) = ν.formula
+height(v::Node) = v.height
 
 parent!(ν::Node, ν′::Node) = ν.parent = ν′
 leftchild!(ν::Node, ν′::Node) = ν.leftchild = ν′
 rightchild!(ν::Node, ν′::Node) = ν.rightchild = ν′
 formula!(ν::Node, ν′::Node) = ν.formula = ν′
+height!(ν::Node, ν′::Node) = ν.height = ν′
 
 function size(ν::Node)
     leftchild_size = isdefined(ν, :leftchild) ? size(leftchild(ν)) : 0
@@ -32,11 +35,17 @@ function isleaf(ν::Node)
     return !(isdefined(ν, :leftchild) || isdefined(ν, :rightchild)) ? true : false
 end
 
+#= Mauro:
+I added height in Node definition so I comment this to avoid name conflict.
+Anyway this will be useful to recompute height if a tree is modified but
+we should modify the recursion to take advantage of memoization.
+
 function height(ν::Node)
     return isleaf(ν) ? 1 : 1 + max(
         (isdefined(ν, :leftchild) ? height(leftchild(ν)) : 0),
         (isdefined(ν, :rightchild) ? height(rightchild(ν)) : 0))
 end
+=#
 
 # TODO: add modaldepth() function (hint: use traits such as ismodal() function)
 

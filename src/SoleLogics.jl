@@ -19,8 +19,8 @@ using Reexport
 
 export Node, Formula
 export token, formula, leftchild, rightchild, parent
-export formula!, leftchild!, rightchild!, parent!
-export size, isleaf, height
+export formula!, leftchild!, rightchild!, parent!, height, height!
+export size, isleaf
 
 export HSRELATIONS, HS₃RELATIONS, HS₇RELATIONS
 export EXMODOP, UNIVMODOP
