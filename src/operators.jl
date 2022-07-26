@@ -12,6 +12,8 @@ UnaryOperator(s::AbstractString) = UnaryOperator{Symbol(s)}()
 # UnaryOperator(s::Symbol)           = UnaryOperator{s}()
 
 const NEGATION = UnaryOperator("¬")
+const DIAMOND = UnaryOperator("◊")
+const BOX = UnaryOperator("□")
 
 abstract type AbstractExistentialModalOperator{T} <: AbstractModalOperator{T} end
 abstract type AbstractUniversalModalOperator{T} <: AbstractModalOperator{T} end
@@ -98,10 +100,15 @@ struct Operators <: AbstractArray{AbstractOperator,1}
     ops::AbstractArray{AbstractOperator,1}
 end
 
-Base.size(ops::Operators) = (length(ops.ops),)
+Base.size(ops::Operators) = (length(ops.ops))
 Base.IndexStyle(::Type{<:Operators}) = IndexLinear()
 Base.getindex(ops::Operators, i::Int) = ops.ops[i]
 Base.setindex!(ops::Operators, op::AbstractOperator, i::Int) = ops.ops[i] = op
+
+const unary_operators = Operators(AbstractUnaryOperator[NEGATION, DIAMOND, BOX])
+const binary_operators = Operators(AbstractBinaryOperator[CONJUNCTION, DISJUNCTION, IMPLICATION])
+isunaryoperator(s::Symbol) = s in unary_operator
+isbinaryoperator(s::Symbol) = s in binary_operators
 
 macro modaloperators(R, d::Int)
     quote
@@ -113,6 +120,23 @@ macro modaloperators(R, d::Int)
         univrels = [UNIVMODOP(r) for r in rels]
         Operators(vcat(exrels, univrels))
     end
+end
+
+# Could be an ImmutableDict instead
+# Symbol("(") is needed for parsing
+const operators_precedence = Dict{Union{AbstractOperator,Symbol}, Int}(
+    NEGATION => 30,
+    DIAMOND => 20,
+    BOX => 20,
+    CONJUNCTION => 10,
+    DISJUNCTION => 10,
+    Symbol("(") => 0
+)
+
+const operator = Dict{Symbol,AbstractOperator}()
+for op in [unary_operators.ops..., binary_operators.ops...]
+    pair = (reltype(op), op)
+    setindex!(operator, pair[2], pair[1])
 end
 
 # # TESTING

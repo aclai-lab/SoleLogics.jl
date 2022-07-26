@@ -18,13 +18,22 @@ import Base: show
 using Reexport
 
 export Node, Formula
-export token, formula, leftchild, rightchild, parent
-export formula!, leftchild!, rightchild!, parent!, height, height!
+export token, formula, leftchild, rightchild, parent, height
+export formula!, leftchild!, rightchild!, parent!, height!
 export size, isleaf
+
+export AbstractOperator, AbstractUnaryOperator, AbstractBinaryOperator
+export AbstractModalOperator
+export AbstractExistentialModalOperator, AbstractUniversalModalOperator
+
+export NEGATION, DIAMOND, BOX
+export CONJUNCTION, DISJUNCTION, IMPLICATION
 
 export HSRELATIONS, HS₃RELATIONS, HS₇RELATIONS
 export EXMODOP, UNIVMODOP
-export Operators, @modaloperators
+export Operators, unary_operators, binary_operators, @modaloperators
+export isunaryoperator, isbinaryoperator
+export operators_precedence, operator
 export reltype
 
 @reexport using SoleAlphabets
