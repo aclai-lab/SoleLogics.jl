@@ -107,8 +107,8 @@ Base.setindex!(ops::Operators, op::AbstractOperator, i::Int) = ops.ops[i] = op
 
 const unary_operators = Operators(AbstractUnaryOperator[NEGATION, DIAMOND, BOX])
 const binary_operators = Operators(AbstractBinaryOperator[CONJUNCTION, DISJUNCTION, IMPLICATION])
-isunaryoperator(s::Symbol) = s in unary_operator
-isbinaryoperator(s::Symbol) = s in binary_operators
+isunaryoperator(s::Symbol) = s in unary_operators.ops
+isbinaryoperator(s::Symbol) = s in binary_operators.ops
 
 macro modaloperators(R, d::Int)
     quote

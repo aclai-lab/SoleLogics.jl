@@ -26,6 +26,7 @@ export AbstractOperator, AbstractUnaryOperator, AbstractBinaryOperator
 export AbstractModalOperator
 export AbstractExistentialModalOperator, AbstractUniversalModalOperator
 
+export UnaryOperator, BinaryOperator
 export NEGATION, DIAMOND, BOX
 export CONJUNCTION, DISJUNCTION, IMPLICATION
 
