@@ -1,10 +1,14 @@
+#################################
+#       Node structure          #
+#      getters & setters        #
+#################################
 mutable struct Node{T}
     token::T            # token (e.g., Proposition)
     parent::Node        # parent node
     leftchild::Node     # left child node
     rightchild::Node    # right child node
     formula::String     # human-readable string of the formula
-    height::Int         # height of the tree rooted here
+    size::Int           # size of the tree rooted here
 
     # root constructor
     Node{T}(token::T) where {T} = new{T}(token)
@@ -17,77 +21,58 @@ parent(ν::Node) = ν.parent
 leftchild(ν::Node) = ν.leftchild
 rightchild(ν::Node) = ν.rightchild
 formula(ν::Node) = ν.formula
-height(v::Node) = v.height
 
 parent!(ν::Node, ν′::Node) = ν.parent = ν′
 leftchild!(ν::Node, ν′::Node) = ν.leftchild = ν′
 rightchild!(ν::Node, ν′::Node) = ν.rightchild = ν′
 formula!(ν::Node, ν′::Node) = ν.formula = ν′.formula
-height!(ν::Node, ν′::Node) = ν.height = ν′.height
 
-function size(ν::Node)
-    leftchild_size = isdefined(ν, :leftchild) ? size(leftchild(ν)) : 0
-    rightchild_size = isdefined(ν, :rightchild) ? size(rightchild(ν)) : 0
-    return 1 + leftchild_size + rightchild_size
+#################################
+#       Node wrappers           #
+#       and utilities           #
+#################################
+struct Formula
+    tree::Node  # syntax tree
 end
+
+show(io::IO, v::Node) = print(io, inorder(v))
+show(io::IO, f::Formula) = print(io, inorder(f.tree))
 
 function isleaf(ν::Node)
     return !(isdefined(ν, :leftchild) || isdefined(ν, :rightchild)) ? true : false
 end
 
-#= Mauro:
-I added height in Node definition so I comment this to avoid name conflict.
-Anyway this will be useful to recompute height if a tree is modified but
-we should modify the recursion to take advantage of memoization.
+function size(v::Node)
+    if isdefined(v, :leftchild)
+        leftchild(v).size = size(leftchild(v))
+    end
+    if isdefined(v, :rightchild)
+        rightchild(v).size = size(rightchild(v))
+    end
+    return v.size = 1 +
+        (isdefined(v, :leftchild) ? leftchild(v).size : 0) +
+        (isdefined(v, :rightchild) ? rightchild(v).size : 0)
+end
 
+# TODO: implement memoization as in size
 function height(ν::Node)
     return isleaf(ν) ? 1 : 1 + max(
         (isdefined(ν, :leftchild) ? height(leftchild(ν)) : 0),
         (isdefined(ν, :rightchild) ? height(rightchild(ν)) : 0))
 end
-=#
 
 # TODO: add modaldepth() function (hint: use traits such as ismodal() function)
 
-# fixed
-function _printnode(io::IO, ν::Node)
-    print(io, "(")
-    if isdefined(ν, :leftchild)
-        (_printnode(io, leftchild(ν)))
+# Return tree visit as a string, collecting tokens found on the path
+function inorder(v::Node)
+    str = "("
+    if isdefined(v, :leftchild)
+        str = string(str, inorder(v.leftchild))
     end
-    print(io, token(ν))
-    if isdefined(ν, :rightchild)
-        _printnode(io, rightchild(ν))
+    str = string(str, v.token)
+    if isdefined(v, :rightchild)
+        str = string(str, inorder(v.rightchild))
     end
-    print(io, ")")
+    str = string(str, ")")
+    return str
 end
-
-show(io::IO, ν::Node) = _printnode(io, ν)
-
-struct Formula
-    tree::Node # syntax tree
-end
-
-# # # testing
-# println("\tformulas.jl testing")
-# n = Node(IMPLICATION)
-# n_l = Node("p")
-# n_r = Node("q")
-# _leftchild!(n, n_l)
-# _rightchild!(n, n_r)
-# _parent!(n_l, n)
-# _parent!(n_r, n)
-
-# @show n
-# @show size(n)
-# @show parent(n_l)
-# @show rightchild(n)
-# @show isleaf(n)
-# @show isleaf(n_l)
-# @show isleaf(n_r)
-# @show height(n)
-# @show height(n_l)
-# @show height(n_r)
-# @show token(n)
-# @show token(n_l)
-# @show token(n_r)

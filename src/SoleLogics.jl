@@ -14,28 +14,32 @@ GENERAL TODOs:
 """
 
 import Base: show
-
 using Reexport
 
+# Formula tree related exports
 export Node, Formula
-export token, formula, leftchild, rightchild, parent, height
-export formula!, leftchild!, rightchild!, parent!, height!
-export size, isleaf
+export token, formula, leftchild, rightchild, parent
+export formula!, leftchild!, rightchild!, parent!
+export isleaf, size, height
+export inorder
 
+# Abstract types
 export AbstractOperator, AbstractUnaryOperator, AbstractBinaryOperator
 export AbstractModalOperator
 export AbstractExistentialModalOperator, AbstractUniversalModalOperator
 
-export UnaryOperator, BinaryOperator
+# Concrete types, collections, wrappers, utilities
+export UNOP, BINOP
 export NEGATION, DIAMOND, BOX
 export CONJUNCTION, DISJUNCTION, IMPLICATION
-
-export HSRELATIONS, HS₃RELATIONS, HS₇RELATIONS
-export EXMODOP, UNIVMODOP
-export Operators, unary_operators, binary_operators, @modaloperators
+export Operators, reltype
+export unary_operators, binary_operators
 export isunaryoperator, isbinaryoperator
-export operators_precedence, operator
-export reltype
+
+# Additional modal operators
+export EXMODOP, UNIVMODOP
+export HSRELATIONS, HS₃RELATIONS, HS₇RELATIONS
+export @modaloperators
 
 @reexport using SoleAlphabets
 @reexport using SoleWorlds
