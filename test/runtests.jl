@@ -61,11 +61,13 @@ end
 @testset "Operators" begin
     @test DIAMOND isa AbstractUnaryOperator
     @test DIAMOND isa AbstractModalOperator
-    @test DIAMOND isa AbstractExistentialModalOperator
 
     @test BOX isa AbstractUnaryOperator
     @test BOX isa AbstractModalOperator
-    @test BOX isa AbstractUniversalModalOperator
+
+    # Currently DIAMOND and BOX are only labeled as ModalOperator for simplicity
+    # @test DIAMOND isa AbstractExistentialModalOperator
+    # @test BOX isa AbstractUniversalModalOperator
 
     @test EXMODOP(("OP1", "OP2", "OP3", "OP4")) isa AbstractExistentialModalOperator
 

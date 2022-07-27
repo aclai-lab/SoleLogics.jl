@@ -26,6 +26,11 @@ BinaryOperator(s::AbstractString) = BinaryOperator{Symbol(s)}()
 BinaryOperator(s::Symbol) = BinaryOperator{s}()
 const BINOP(op) = BinaryOperator(op)
 
+struct ModalOperator{T} <: AbstractModalOperator{T} end
+ModalOperator(s::AbstractString) = ModalOperator{Symbol(s)}()
+ModalOperator(s::Symbol) = ModalOperator{s}()
+const MODOP(op) = ModalOperator(op)
+
 struct ExistentialModalOperator{T} <: AbstractExistentialModalOperator{T} end
 function ExistentialModalOperator(t::NTuple{N,AbstractString}) where {N}
     if length(t) > 1
@@ -77,8 +82,8 @@ Base.getindex(ops::Operators, i::Int) = ops.ops[i]
 Base.setindex!(ops::Operators, op::AbstractOperator, i::Int) = ops.ops[i] = op
 
 const NEGATION = UNOP("¬")
-const DIAMOND = EXMODOP("◊")
-const BOX = UNIVMODOP("□")
+const DIAMOND = MODOP("◊")
+const BOX = MODOP("□")
 
 const CONJUNCTION = BINOP("∧")
 const DISJUNCTION = BINOP("∨")

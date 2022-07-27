@@ -30,14 +30,14 @@ export AbstractExistentialModalOperator, AbstractUniversalModalOperator
 
 # Concrete types, collections, wrappers, utilities
 export UNOP, BINOP
-export NEGATION, DIAMOND, BOX
-export CONJUNCTION, DISJUNCTION, IMPLICATION
+export NEGATION, CONJUNCTION, DISJUNCTION, IMPLICATION
 export Operators, reltype
 export unary_operators, binary_operators
 export isunaryoperator, isbinaryoperator
 
-# Additional modal operators
-export EXMODOP, UNIVMODOP
+# Modal operators
+export MODOP, EXMODOP, UNIVMODOP
+export DIAMOND, BOX
 export HSRELATIONS, HS₃RELATIONS, HS₇RELATIONS
 export @modaloperators
 
