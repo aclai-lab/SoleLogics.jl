@@ -18,9 +18,9 @@ using Reexport
 
 # Formula tree related exports
 export Node, Formula
-export token, formula, leftchild, rightchild, parent
-export formula!, leftchild!, rightchild!, parent!
-export isleaf, size, height
+export token, formula, leftchild, rightchild, parent, size
+export formula!, leftchild!, rightchild!, parent!, size!
+export isleaf, height
 export inorder
 
 # Abstract types

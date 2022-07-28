@@ -21,6 +21,7 @@ parent(ν::Node) = ν.parent
 leftchild(ν::Node) = ν.leftchild
 rightchild(ν::Node) = ν.rightchild
 formula(ν::Node) = ν.formula
+size(v::Node) = v.size
 
 parent!(ν::Node, ν′::Node) = ν.parent = ν′
 leftchild!(ν::Node, ν′::Node) = ν.leftchild = ν′
@@ -42,7 +43,7 @@ function isleaf(ν::Node)
     return !(isdefined(ν, :leftchild) || isdefined(ν, :rightchild)) ? true : false
 end
 
-function size(v::Node)
+function size!(v::Node)
     if isdefined(v, :leftchild)
         leftchild(v).size = size(leftchild(v))
     end
