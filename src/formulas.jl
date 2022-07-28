@@ -45,10 +45,10 @@ end
 
 function size!(v::Node)
     if isdefined(v, :leftchild)
-        leftchild(v).size = size(leftchild(v))
+        leftchild(v).size = size!(leftchild(v))
     end
     if isdefined(v, :rightchild)
-        rightchild(v).size = size(rightchild(v))
+        rightchild(v).size = size!(rightchild(v))
     end
     return v.size = 1 +
         (isdefined(v, :leftchild) ? leftchild(v).size : 0) +

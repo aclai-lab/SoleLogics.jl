@@ -20,6 +20,7 @@ using Test
     parent!(n1r, n1)
     leftchild!(n1, n1l)
     rightchild!(n1, n1r)
+    size!(n1)
 
     @test leftchild(n1) == n1l
     @test rightchild(n1) == n1r
@@ -35,7 +36,7 @@ using Test
     @test isleaf(n1r) == true
 
     #    n3
-    #    │└──────┐
+    #    ┌┴──────┐
     #    n1      n2
     #    │       │
     # n1l┴n1r    ┴n2r
@@ -49,6 +50,7 @@ using Test
     parent!(n1, n3)
     leftchild!(n3, n1)
     rightchild!(n3, n2)
+    size!(n3)
 
     @test SoleLogics.size(n3) == 6
     @test SoleLogics.size(n1) == 3
