@@ -26,11 +26,6 @@ BinaryOperator(s::AbstractString) = BinaryOperator{Symbol(s)}()
 BinaryOperator(s::Symbol) = BinaryOperator{s}()
 const BINOP(op) = BinaryOperator(op)
 
-struct ModalOperator{T} <: AbstractModalOperator{T} end
-ModalOperator(s::AbstractString) = ModalOperator{Symbol(s)}()
-ModalOperator(s::Symbol) = ModalOperator{s}()
-const MODOP(op) = ModalOperator(op)
-
 struct ExistentialModalOperator{T} <: AbstractExistentialModalOperator{T} end
 function ExistentialModalOperator(t::NTuple{N,AbstractString}) where {N}
     if length(t) > 1
@@ -69,8 +64,8 @@ function show(io::IO, op::AbstractUniversalModalOperator{T}) where {T}
 end
 
 #################################
-#    `Operators` wrapper        #
-#        and utilities          #
+#      `Operators` wrapper      #
+#         and utilities         #
 #################################
 struct Operators <: AbstractArray{AbstractOperator,1}
     ops::AbstractArray{AbstractOperator,1}
@@ -82,20 +77,16 @@ Base.getindex(ops::Operators, i::Int) = ops.ops[i]
 Base.setindex!(ops::Operators, op::AbstractOperator, i::Int) = ops.ops[i] = op
 
 const NEGATION = UNOP("¬")
-const DIAMOND = MODOP("◊")
-const BOX = MODOP("□")
+const DIAMOND = EXMODOP("◊")
+const BOX = UNIVMODOP("□")
 
 const CONJUNCTION = BINOP("∧")
 const DISJUNCTION = BINOP("∨")
 const IMPLICATION = BINOP("→")
 
-const unary_operators = Operators(AbstractUnaryOperator[NEGATION, DIAMOND, BOX])
-const binary_operators = Operators(AbstractBinaryOperator[CONJUNCTION, DISJUNCTION, IMPLICATION])
-isunaryoperator(s::AbstractOperator) = s in unary_operators.ops
-isbinaryoperator(s::AbstractOperator) = s in binary_operators.ops
-
 #################################
-#     More on modal operators   #
+#    More on modal operators    #
+#   and modal logic extensions  #
 #################################
 const HSRELATIONS = [
     "L",    # later

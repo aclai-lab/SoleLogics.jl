@@ -61,24 +61,20 @@ using Test
 end
 
 @testset "Operators" begin
-    @test DIAMOND isa AbstractUnaryOperator
-    @test DIAMOND isa AbstractModalOperator
+    @test typeof(NEGATION) <: AbstractUnaryOperator
+    @test typeof(IMPLICATION) <: AbstractBinaryOperator
+    @test typeof(CONJUNCTION) <: AbstractBinaryOperator
+    @test typeof(DISJUNCTION) <: AbstractBinaryOperator
 
-    @test BOX isa AbstractUnaryOperator
-    @test BOX isa AbstractModalOperator
+    @test typeof(DIAMOND) <: AbstractUnaryOperator
+    @test typeof(DIAMOND) <: AbstractModalOperator
+    @test typeof(DIAMOND) <: AbstractExistentialModalOperator
 
-    # Currently DIAMOND and BOX are only labeled as ModalOperator for simplicity
-    # @test DIAMOND isa AbstractExistentialModalOperator
-    # @test BOX isa AbstractUniversalModalOperator
+    @test typeof(BOX) <: AbstractUnaryOperator
+    @test typeof(BOX) <: AbstractModalOperator
+    @test typeof(BOX) <: AbstractUniversalModalOperator
 
     @test EXMODOP(("OP1", "OP2", "OP3", "OP4")) isa AbstractExistentialModalOperator
-
-    @test SoleLogics.isunaryoperator(DIAMOND)
-    @test SoleLogics.isunaryoperator(BOX)
-    @test SoleLogics.isunaryoperator(NEGATION)
-    @test SoleLogics.isbinaryoperator(IMPLICATION)
-    @test SoleLogics.isbinaryoperator(CONJUNCTION)
-    @test SoleLogics.isbinaryoperator(DISJUNCTION)
 end
 
 @testset "HS modal logic" begin

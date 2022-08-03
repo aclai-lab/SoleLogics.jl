@@ -32,11 +32,9 @@ export AbstractExistentialModalOperator, AbstractUniversalModalOperator
 export UNOP, BINOP
 export NEGATION, CONJUNCTION, DISJUNCTION, IMPLICATION
 export Operators, reltype
-export unary_operators, binary_operators
-export isunaryoperator, isbinaryoperator
 
 # Modal operators
-export MODOP, EXMODOP, UNIVMODOP
+export EXMODOP, UNIVMODOP
 export DIAMOND, BOX
 export HSRELATIONS, HS₃RELATIONS, HS₇RELATIONS
 export @modaloperators
