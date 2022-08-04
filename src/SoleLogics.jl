@@ -41,6 +41,7 @@ export @modaloperators
 
 @reexport using SoleAlphabets
 @reexport using SoleWorlds
+@reexport using SoleTraits
 
 include("operators.jl")
 include("formulas.jl")

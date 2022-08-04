@@ -7,6 +7,7 @@ version = "0.1.0"
 IterTools = "c8e1da08-722c-5040-9ed9-7db0dc04731e"
 Reexport = "189a3867-3050-52da-a836-e630ba90ab69"
 SoleAlphabets = "bc461207-1577-452f-bfcc-57c11e9f51b7"
+SoleTraits = "f0cd7361-857b-4e5b-8aae-3a26fab9cfa9"
 SoleWorlds = "d5f91e23-4e14-4856-a67b-b38735209aab"
 
 [compat]

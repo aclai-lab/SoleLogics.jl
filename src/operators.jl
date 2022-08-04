@@ -64,6 +64,12 @@ function show(io::IO, op::AbstractUniversalModalOperator{T}) where {T}
 end
 
 #################################
+#            Traits             #
+#################################
+SoleTraits.is_unary_operator(::AbstractUnaryOperator) = true
+SoleTraits.is_binary_operator(::AbstractBinaryOperator) = true
+
+#################################
 #      `Operators` wrapper      #
 #         and utilities         #
 #################################
