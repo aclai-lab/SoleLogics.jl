@@ -69,6 +69,10 @@ end
 SoleTraits.is_unary_operator(::AbstractUnaryOperator) = true
 SoleTraits.is_binary_operator(::AbstractBinaryOperator) = true
 
+SoleTraits.is_modal_operator(::AbstractModalOperator) = true
+SoleTraits.is_existential_modal_operator(::AbstractExistentialModalOperator) = true
+SoleTraits.is_universal_modal_operator(::AbstractUniversalModalOperator) = true
+
 #################################
 #      `Operators` wrapper      #
 #         and utilities         #
