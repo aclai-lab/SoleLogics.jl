@@ -87,8 +87,8 @@ Base.getindex(ops::Operators, i::Int) = ops.ops[i]
 Base.setindex!(ops::Operators, op::AbstractOperator, i::Int) = ops.ops[i] = op
 
 const NEGATION = UNOP("¬")
-const DIAMOND = EXMODOP("◊")
-const BOX = UNIVMODOP("□")
+const DIAMOND = EXMODOP("") # ⟨⟩
+const BOX = UNIVMODOP("")   # []
 
 const CONJUNCTION = BINOP("∧")
 const DISJUNCTION = BINOP("∨")
