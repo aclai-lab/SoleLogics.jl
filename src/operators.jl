@@ -80,8 +80,8 @@ SoleTraits.is_universal_modal_operator(::AbstractUniversalModalOperator) = true
 struct Operators <: AbstractArray{AbstractOperator,1}
     ops::AbstractArray{AbstractOperator,1}
 end
-
 Base.size(ops::Operators) = (length(ops.ops))
+Base.axes(ops::Operators) = (1:length(ops.ops),)
 Base.IndexStyle(::Type{<:Operators}) = IndexLinear()
 Base.getindex(ops::Operators, i::Int) = ops.ops[i]
 Base.setindex!(ops::Operators, op::AbstractOperator, i::Int) = ops.ops[i] = op
@@ -130,10 +130,7 @@ const HS₇RELATIONS = [
     "="     # equals/identity
 ]
 
-# Macro to collect all modaloperators
-# TODO: also if this works perfectly, an error is thrown in REPL
-# See "a = @modaloperators HSRELATIONS 2"
-# Anyway, a.ops is correct and typeof(a) is Operators as expected
+# Macro to collect all modaloperators (e.g @modaloperators HSRELATIONS 1)
 macro modaloperators(R, d::Int)
     quote
         rels = vec(collect(Iterators.product([$(R) for _ in 1:$(d)]...)))
@@ -145,43 +142,3 @@ macro modaloperators(R, d::Int)
         Operators(vcat(exrels, univrels))
     end
 end
-
-#################################
-# TESTING
-# println("\toperators.jl testing")
-# exop = EXMODOP("L,L")
-# univop = UNIVMODOP("LABDE,DBE")
-
-# println("\tsingle operators")
-
-# @show NEGATION
-# @show CONJUNCTION
-# @show DISJUNCTION
-# @show IMPLICATION
-# @show exop
-# @show univop
-
-# println("\tvector of d-tuples of relations")
-
-# d = 2
-# @show d
-# rels = vec(collect(Iterators.product([HS₇RELATIONS for _ in 1:d]...)))
-# @show rels
-# @show size(rels)
-# @show typeof(rels)
-# @show EXMODOP(rels[50])
-# @show UNIVMODOP(rels[300])
-# @show @operators HSRELATIONS 2
-# R = HSRELATIONS
-# rels = vec(collect(Iterators.product([R for _ in 1:d]...)))
-# exrels = [EXMODOP(r) for r in rels]
-# univrels = [UNIVMODOP(r) for r in rels]
-# @show exrels
-# @show univrels
-# ops = Operators(vcat(exrels, univrels))
-# @show ops
-
-# ops = @modaloperators HS₃RELATIONS 3
-# @show ops
-# @show reltype(ops[1])
-#################################
