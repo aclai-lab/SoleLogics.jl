@@ -56,10 +56,12 @@ reltype(::AbstractOperator{T}) where {T} = T
 show(io::IO, op::AbstractOperator{T}) where {T} = print(io, "$(reltype(op))")
 
 function show(io::IO, op::AbstractExistentialModalOperator{T}) where {T}
+    # ⟨ ⟩ should not be printed in the simplest case ◊
     print(io, "⟨$(reltype(op))⟩")
 end
 
 function show(io::IO, op::AbstractUniversalModalOperator{T}) where {T}
+    # [ ] should not be printed in the simplest case □
     print(io, "[$(reltype(op))]")
 end
 

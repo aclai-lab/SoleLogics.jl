@@ -42,7 +42,8 @@ export @modaloperators
 export HSRELATIONS, HS₃RELATIONS, HS₇RELATIONS
 
 # Defined logics
-export Logic, MODAL_LOGIC
+export Logic
+export MODAL_LOGIC, alphabet, operators
 
 @reexport using SoleAlphabets
 @reexport using SoleWorlds
