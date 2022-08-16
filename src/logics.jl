@@ -8,7 +8,7 @@ struct Logic{T,A}
 end
 
 modal_operators = Operators([CONJUNCTION, DISJUNCTION, IMPLICATION, NEGATION, DIAMOND, BOX])
-modal_alphabet = string.collect('p':'z')
+modal_alphabet = string.(collect('p':'z'))
 const MODAL_LOGIC = Logic{Operators, Vector{String}}(
     "Modal Logic",
     modal_operators,
