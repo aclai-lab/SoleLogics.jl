@@ -28,7 +28,7 @@ export AbstractOperator, AbstractUnaryOperator, AbstractBinaryOperator
 export AbstractModalOperator
 export AbstractExistentialModalOperator, AbstractUniversalModalOperator
 
-# Concrete types, collections, wrappers, utilities
+# Concrete types, collections, wrappers, utilities related to operators
 export UNOP, BINOP
 export NEGATION, CONJUNCTION, DISJUNCTION, IMPLICATION
 export Operators, reltype
@@ -36,8 +36,13 @@ export Operators, reltype
 # Modal operators
 export EXMODOP, UNIVMODOP
 export DIAMOND, BOX
-export HSRELATIONS, HS₃RELATIONS, HS₇RELATIONS
 export @modaloperators
+
+# Modal logic extensions
+export HSRELATIONS, HS₃RELATIONS, HS₇RELATIONS
+
+# Defined logics
+export Logic, MODAL_LOGIC
 
 @reexport using SoleAlphabets
 @reexport using SoleWorlds
@@ -45,5 +50,6 @@ export @modaloperators
 
 include("operators.jl")
 include("formulas.jl")
+include("logics.jl")
 
 end
