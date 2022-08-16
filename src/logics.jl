@@ -6,6 +6,8 @@ struct Logic{T,A}
     ops::T
     alphabet::A
 end
+operators(l::Logic) = l.ops
+alphabet(l::Logic) = l.alphabet
 
 modal_operators = Operators([CONJUNCTION, DISJUNCTION, IMPLICATION, NEGATION, DIAMOND, BOX])
 modal_alphabet = string.(collect('p':'z'))
