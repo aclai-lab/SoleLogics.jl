@@ -1,17 +1,17 @@
 # Currently, only modal logic is defined for testing purpose
 # `alphabet` has to be taken from SoleAlphabets
 
-struct Logic{T,A}
+struct Logic
     name::String
-    ops::T
-    alphabet::A
+    ops::Operators
+    alphabet::Vector{String}
 end
-operators(l::Logic) = l.ops
+operators(l::Logic) = values(l.ops)
 alphabet(l::Logic) = l.alphabet
 
 modal_operators = Operators([CONJUNCTION, DISJUNCTION, IMPLICATION, NEGATION, DIAMOND, BOX])
 modal_alphabet = string.(collect('p':'z'))
-const MODAL_LOGIC = Logic{Operators, Vector{String}}(
+const MODAL_LOGIC = Logic(
     "Modal Logic",
     modal_operators,
     modal_alphabet
