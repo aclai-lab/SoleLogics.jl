@@ -12,5 +12,5 @@ modal_alphabet = string.(collect('p':'z'))
 const MODAL_LOGIC = Logic{Operators, Vector{String}}(
     "Modal Logic",
     modal_operators,
-    alphabet
+    modal_alphabet
 )
