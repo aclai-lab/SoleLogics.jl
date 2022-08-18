@@ -96,6 +96,11 @@ const CONJUNCTION = BINOP("∧")
 const DISJUNCTION = BINOP("∨")
 const IMPLICATION = BINOP("→")
 
+# This could be considered a trait, consider modify SoleTraits
+ariety(::AbstractUnaryOperator) = return 1
+ariety(::AbstractBinaryOperator) = return 2
+ariety(::AbstractOperator) = error("Expand code")
+
 #################################
 #    More on modal operators    #
 #   and modal logic extensions  #
