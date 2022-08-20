@@ -56,13 +56,23 @@ reltype(::AbstractOperator{T}) where {T} = T
 show(io::IO, op::AbstractOperator{T}) where {T} = print(io, "$(reltype(op))")
 
 function show(io::IO, op::AbstractExistentialModalOperator{T}) where {T}
-    # ⟨ ⟩ should not be printed in the simplest case ◊
-    print(io, "⟨$(reltype(op))⟩")
+    # "⟨" and "⟩" delimeters should not be printed in the simplest case where T is :◊
+    delim = ["⟨", "⟩"]
+    if reltype(op) == Symbol("◊")
+        delim = ["", ""]
+    end
+
+    print(io, delim[1] * "$(reltype(op))" * delim[2])
 end
 
 function show(io::IO, op::AbstractUniversalModalOperator{T}) where {T}
-    # [ ] should not be printed in the simplest case □
-    print(io, "[$(reltype(op))]")
+    # "[" and "]" delimeters should not be printed in the simplest case where T is :□
+    delim = ["[", "]"]
+    if reltype(op) == :□
+        delim = ["", ""]
+    end
+
+    print(io, delim[1] * "$(reltype(op))" * delim[2])
 end
 
 #################################
@@ -89,8 +99,8 @@ Base.getindex(ops::Operators, i::Int) = ops.ops[i]
 Base.setindex!(ops::Operators, op::AbstractOperator, i::Int) = ops.ops[i] = op
 
 const NEGATION = UNOP("¬")
-const DIAMOND = EXMODOP("") # ⟨⟩
-const BOX = UNIVMODOP("")   # []
+const DIAMOND = EXMODOP("◊")
+const BOX = UNIVMODOP("□")
 
 const CONJUNCTION = BINOP("∧")
 const DISJUNCTION = BINOP("∨")
