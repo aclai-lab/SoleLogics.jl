@@ -98,14 +98,6 @@ Base.IndexStyle(::Type{<:Operators}) = IndexLinear()
 Base.getindex(ops::Operators, i::Int) = ops.ops[i]
 Base.setindex!(ops::Operators, op::AbstractOperator, i::Int) = ops.ops[i] = op
 
-const NEGATION = UNOP("¬")
-const DIAMOND = EXMODOP("◊")
-const BOX = UNIVMODOP("□")
-
-const CONJUNCTION = BINOP("∧")
-const DISJUNCTION = BINOP("∨")
-const IMPLICATION = BINOP("→")
-
 # This could be considered a trait, consider modify SoleTraits
 ariety(::AbstractUnaryOperator) = return 1
 ariety(::AbstractBinaryOperator) = return 2
@@ -159,3 +151,24 @@ macro modaloperators(R, d::Int)
         Operators(vcat(exrels, univrels))
     end
 end
+
+###########################
+#     Definitions and     #
+#       behaviours        #
+###########################
+const NEGATION = UNOP("¬")
+const DIAMOND = EXMODOP("◊")
+const BOX = UNIVMODOP("□")
+
+const CONJUNCTION = BINOP("∧")
+const DISJUNCTION = BINOP("∨")
+const IMPLICATION = BINOP("→")
+
+#= At the moment, the following is already defined in SoleModelChecking, op_behaviour.jl
+except for ◊ and □ which needs to know what a KripkeModel is
+
+SoleLogics.NEGATION(a::Bool) = (!a)
+SoleLogics.CONJUNCTION(a::Bool, b::Bool) = (a&&b)
+SoleLogics.DISJUNCTION(a::Bool, b::Bool) = (a||b)
+SoleLogics.IMPLICATION(a::Bool, b::Bool) = ifelse(a == true && b == false, false, true)
+=#
