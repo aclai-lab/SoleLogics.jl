@@ -85,6 +85,9 @@ SoleTraits.is_modal_operator(::AbstractModalOperator) = true
 SoleTraits.is_existential_modal_operator(::AbstractExistentialModalOperator) = true
 SoleTraits.is_universal_modal_operator(::AbstractUniversalModalOperator) = true
 
+SoleTraits.is_commutative(CONJUNCTION) = true
+SoleTraits.is_commutative(DISJUNCTION) = true
+
 #################################
 #      `Operators` wrapper      #
 #         and utilities         #
