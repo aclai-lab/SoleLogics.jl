@@ -24,6 +24,8 @@ export isleaf, height
 export inorder
 
 # Abstract types
+export AbstractLogic, CrispLogic, FuzzyLogic
+
 export AbstractOperator, AbstractUnaryOperator, AbstractBinaryOperator
 export AbstractModalOperator
 export AbstractExistentialModalOperator, AbstractUniversalModalOperator
