@@ -58,6 +58,29 @@ using Test
     @test SoleLogics.size(n2r) == 1
     @test SoleLogics.size(n1l) == 1
     @test SoleLogics.size(n1r) == 1
+
+    #          ∨
+    #    ┌─────┴─────┐
+    #    ◊           ◊
+    #    ┴─┐         ┴─┐
+    #      p           ◊
+    #                  ┴┐
+    #                   s
+
+    a = Node(DISJUNCTION)
+    b = Node(DIAMOND)
+    c = Node(DIAMOND)
+    d = Node(DIAMOND)
+    e = Node(Letter("p"))
+    f = Node(Letter("s"))
+
+    leftchild!(a,b)
+    rightchild!(b,e)
+    rightchild!(a,c)
+    rightchild!(c,d)
+    rightchild!(d,f)
+
+    @test SoleLogics.modal_depth(a) == 2
 end
 
 @testset "Operators" begin

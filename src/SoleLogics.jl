@@ -20,7 +20,7 @@ using Reexport
 export Node, Formula
 export token, formula, leftchild, rightchild, parent, size
 export formula!, leftchild!, rightchild!, parent!, size!
-export isleaf, height
+export isleaf, height, modal_depth
 export inorder
 
 # Abstract types

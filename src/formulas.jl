@@ -62,7 +62,11 @@ function height(ν::Node)
         (isdefined(ν, :rightchild) ? height(rightchild(ν)) : 0))
 end
 
-# TODO: add modaldepth() function (hint: use traits such as ismodal() function)
+function modal_depth(v::Node)
+    return is_modal_operator(token(v)) + max(
+        (isdefined(v, :leftchild) ? modal_depth(leftchild(v)) : 0),
+        (isdefined(v, :rightchild) ? modal_depth(rightchild(v)) : 0))
+end
 
 # Return tree visit as a string, collecting tokens found on the path
 function inorder(v::Node)
