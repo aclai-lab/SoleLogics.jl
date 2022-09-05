@@ -21,6 +21,7 @@ parent(ν::Node) = ν.parent
 leftchild(ν::Node) = ν.leftchild
 rightchild(ν::Node) = ν.rightchild
 formula(ν::Node) = ν.formula
+fhash(ν::Node) = hash(formula(ν))
 size(v::Node) = v.size
 
 parent!(ν::Node, ν′::Node) = ν.parent = ν′
