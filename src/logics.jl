@@ -11,5 +11,5 @@ operators(l::Logic) = values(l.ops)
 alphabet(l::Logic) = l.alphabet
 
 modal_operators = Operators([CONJUNCTION, DISJUNCTION, IMPLICATION, NEGATION, DIAMOND, BOX])
-modal_alphabet = string.(collect('p':'z'))
+modal_alphabet = LetterAlphabet(string.(collect('p':'z')))
 const MODAL_LOGIC = Logic("Modal Logic", modal_operators, modal_alphabet)
