@@ -33,7 +33,7 @@ export AbstractExistentialModalOperator, AbstractUniversalModalOperator
 # Concrete types, collections, wrappers, utilities related to operators
 export UNOP, BINOP
 export NEGATION, CONJUNCTION, DISJUNCTION, IMPLICATION
-export Operators, reltype, ariety
+export Operators, reltype, ariety, precedence
 
 # Modal operators
 export EXMODOP, UNIVMODOP

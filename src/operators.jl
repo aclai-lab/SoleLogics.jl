@@ -160,18 +160,19 @@ end
 #       behaviours        #
 ###########################
 const NEGATION = UNOP("¬")
+precedence(::typeof(NEGATION)) = 30
+
 const DIAMOND = EXMODOP("◊")
+precedence(::typeof(DIAMOND)) = 21
 const BOX = UNIVMODOP("□")
+precedence(::typeof(BOX)) = 20
 
 const CONJUNCTION = BINOP("∧")
+precedence(::typeof(CONJUNCTION)) = 12
 const DISJUNCTION = BINOP("∨")
+precedence(::typeof(DISJUNCTION)) = 11
 const IMPLICATION = BINOP("→")
+precedence(::typeof(IMPLICATION)) = 10
 
-#= At the moment, the following is already defined in SoleModelChecking, op_behaviour.jl
-except for ◊ and □ which needs to know what a KripkeModel is
-
-SoleLogics.NEGATION(a::Bool) = (!a)
-SoleLogics.CONJUNCTION(a::Bool, b::Bool) = (a&&b)
-SoleLogics.DISJUNCTION(a::Bool, b::Bool) = (a||b)
-SoleLogics.IMPLICATION(a::Bool, b::Bool) = ifelse(a == true && b == false, false, true)
-=#
+SoleTraits.is_commutative(::typeof(CONJUNCTION)) = true
+SoleTraits.is_commutative(::typeof(DISJUNCTION)) = true
