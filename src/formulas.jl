@@ -58,7 +58,7 @@ end
 
 # TODO: implement memoization as in size
 function height(ν::Node)
-    return isleaf(ν) ? 1 : 1 + max(
+    return isleaf(ν) ? 1 : 0 + max(
         (isdefined(ν, :leftchild) ? height(leftchild(ν)) : 0),
         (isdefined(ν, :rightchild) ? height(rightchild(ν)) : 0))
 end
