@@ -49,7 +49,7 @@ function UniversalModalOperator(t::NTuple{N,AbstractString}) where {N}
     return UniversalModalOperator(s)
 end
 UniversalModalOperator(s::AbstractString) = UniversalModalOperator{Symbol(s)}()
-UniversalModalOperator(s::Symbol)         = UniversalModalOperator{s}()
+UniversalModalOperator(s::Symbol) = UniversalModalOperator{s}()
 const UNIVMODOP(op) = UniversalModalOperator(op)
 
 reltype(::AbstractOperator{T}) where {T} = T
@@ -123,13 +123,13 @@ const HSRELATIONS = [
     "E̅",    # ended by
     "D̅",    # contains
     "B̅",    # begun by
-    "="     # equals/identity
+    "=",     # equals/identity
 ]
 
 const HS₃RELATIONS = [
     "L",    # later
     "L̅",    # before
-    "I"     # intersects
+    "I",     # intersects
 ]
 
 const HS₇RELATIONS = [
@@ -139,13 +139,13 @@ const HS₇RELATIONS = [
     "L̅",    # before
     "A̅O̅",   # met by or overlapped by
     "D̅B̅E̅",  # contains or begun by or ended by
-    "="     # equals/identity
+    "=",     # equals/identity
 ]
 
 # Macro to collect all modaloperators (e.g @modaloperators HSRELATIONS 1)
 macro modaloperators(R, d::Int)
     quote
-        rels = vec(collect(Iterators.product([$(R) for _ in 1:$(d)]...)))
+        rels = vec(collect(Iterators.product([$(R) for _ = 1:$(d)]...)))
         if "=" in $(R)
             rels = rels[1:end-1]
         end
