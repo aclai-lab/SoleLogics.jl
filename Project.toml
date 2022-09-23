@@ -4,7 +4,9 @@ authors = ["Eduard I. STAN", "Giovanni PAGLIARINI"]
 version = "0.1.0"
 
 [deps]
+DataStructures = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
 IterTools = "c8e1da08-722c-5040-9ed9-7db0dc04731e"
+Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 Reexport = "189a3867-3050-52da-a836-e630ba90ab69"
 SoleAlphabets = "bc461207-1577-452f-bfcc-57c11e9f51b7"
 SoleTraits = "f0cd7361-857b-4e5b-8aae-3a26fab9cfa9"

@@ -15,13 +15,7 @@ GENERAL TODOs:
 
 import Base: show
 using Reexport
-
-# Formula tree related exports
-export Node, Formula
-export token, formula, fhash, leftchild, rightchild, parent, size
-export formula!, leftchild!, rightchild!, parent!, size!
-export isleaf, height, modal_depth
-export inorder
+using DataStructures
 
 # Abstract types
 export AbstractLogic, CrispLogic, FuzzyLogic
@@ -47,12 +41,26 @@ export HSRELATIONS, HS₃RELATIONS, HS₇RELATIONS
 export Logic
 export MODAL_LOGIC, alphabet, operators
 
+# Formula tree definitions exports
+export Node, Formula
+export token, formula, fhash, leftchild, rightchild, parent, size
+export formula!, leftchild!, rightchild!, parent!, size!
+export isleaf, height, modal_depth
+export inorder
+export subformulas, fnormalize!
+
+# Formula tree input and construction
+export shunting_yard, tree
+
+# Formula tree generation
+export gen_formula
+
 @reexport using SoleAlphabets
 @reexport using SoleWorlds
 @reexport using SoleTraits
 
 include("operators.jl")
-include("formulas.jl")
 include("logics.jl")
+include("formulas.jl")
 
 end
