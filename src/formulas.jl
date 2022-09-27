@@ -3,38 +3,71 @@
 #      getters & setters        #
 #################################
 
+# Something wrappable in a FNode.
 const Token = Union{Letter,AbstractOperator}
 
+"""
+Formula (syntax) tree node.
+"""
 mutable struct FNode{L<:Logic}
-    token::Token            # token (e.g., Proposition)
-    formula::String         # human-readable string of the formula
-    size::Int               # size of the tree rooted here
+    token::Token             # token
+    formula::String          # human-readable string of the formula
+    size::Int                # size of the tree rooted here
 
-    parent::FNode{L}         # parent FNode
-    leftchild::FNode{L}      # left child FNode
-    rightchild::FNode{L}     # right child FNode
+    parent::FNode{L}
+    leftchild::FNode{L}
+    rightchild::FNode{L}
 
-    # root constructor
     FNode{L}(token::Token) where {L<:Logic} = new{L}(token)
 end
 
+Base.length
+
+"""
+FNode constructors.
+
+If a logic L is not specified, DEFAULT_LOGIC is setted.
+"""
 FNode(token::Token) = FNode{typeof(DEFAULT_LOGIC)}(token)
 FNode(token::Token, ::L) where {L} = FNode{L}(token)
 FNode(token::Token, L::Type) = FNode{L}(token)
 
+"""Return the token wrapped by `v`."""
 token(v::FNode) = v.token
+
+"""Return `v`'s parent."""
 parent(v::FNode) = v.parent
+
+"""Return `v`'s leftchild."""
 leftchild(v::FNode) = v.leftchild
+
+"""Return `v`'s rightchild."""
 rightchild(v::FNode) = v.rightchild
+
+"""Return a string representing the formula rooted in `v`."""
 formula(v::FNode) = v.formula
+
+"""Return the `hash` of `v`'s `formula`.
+See also [`hash`](@ref), [`hash`](@ref).
+"""
 fhash(v::FNode) = hash(formula(v))
+
+"""Return `v`'s size."""
 size(v::FNode) = v.size
 
-parent!(v::FNode, v′::FNode) = v.parent = v′
-leftchild!(v::FNode, v′::FNode) = v.leftchild = v′
-rightchild!(v::FNode, v′::FNode) = v.rightchild = v′
-formula!(v::FNode, v′::FNode) = v.formula = v′.formula
+"""Set `v` parent to be `w`."""
+parent!(v::FNode, w::FNode) = v.parent = w
 
+"""Set `v` left child to be `w`."""
+leftchild!(v::FNode, w::FNode) = v.leftchild = w
+
+"""Set `v` right child to be `w`."""
+rightchild!(v::FNode, w::FNode) = v.rightchild = w
+
+"""Copy `w`'s formula in `v`."""
+formula!(v::FNode, w::FNode) = v.formula = w.formula
+
+"""Return to which logic the node belongs."""
 extract_logic(v::FNode) = typeof(v).parameters[1]
 
 #################################
