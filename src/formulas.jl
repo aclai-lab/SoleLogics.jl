@@ -1,14 +1,14 @@
+using Random # formula generation
+
 #################################
-#       FNode structure          #
+#       FNode structure         #
 #      getters & setters        #
 #################################
 
 # Something wrappable in a FNode.
 const Token = Union{Letter,AbstractOperator}
 
-"""
-Formula (syntax) tree node.
-"""
+"""Formula (syntax) tree node."""
 mutable struct FNode{L<:Logic}
     token::Token             # token
     formula::String          # human-readable string of the formula
@@ -24,71 +24,123 @@ end
 Base.length
 
 """
-FNode constructors.
+    FNode(token::Token)
+    FNode(token::Token, ::L)
+    FNode(token::Token, L::Type)
 
+FNode constructors.
 If a logic L is not specified, DEFAULT_LOGIC is setted.
 """
 FNode(token::Token) = FNode{typeof(DEFAULT_LOGIC)}(token)
 FNode(token::Token, ::L) where {L} = FNode{L}(token)
 FNode(token::Token, L::Type) = FNode{L}(token)
 
-"""Return the token wrapped by `v`."""
+"""
+    token(v::FNode)
+Return the token wrapped by `v`.
+"""
 token(v::FNode) = v.token
 
-"""Return `v`'s parent."""
+"""
+    parent(v::FNode)
+Return `v`'s parent.
+"""
 parent(v::FNode) = v.parent
 
-"""Return `v`'s leftchild."""
+"""
+    leftchild(v::FNode)
+Return `v`'s leftchild.
+"""
 leftchild(v::FNode) = v.leftchild
 
-"""Return `v`'s rightchild."""
+"""
+    rightchild(v::Fnode)
+Return `v`'s rightchild.
+"""
 rightchild(v::FNode) = v.rightchild
 
-"""Return a string representing the formula rooted in `v`."""
+"""
+    formula(v::FNode)
+Return a string representing the formula rooted in `v`.
+"""
 formula(v::FNode) = v.formula
 
-"""Return the `hash` of `v`'s `formula`.
+"""
+    fhash(v::FNode)
+Return the `hash` of `v`'s `formula`.
 See also [`hash`](@ref), [`hash`](@ref).
 """
 fhash(v::FNode) = hash(formula(v))
 
-"""Return `v`'s size."""
+"""
+    size(v::FNode)
+Return `v`'s size.
+"""
 size(v::FNode) = v.size
 
-"""Set `v` parent to be `w`."""
+"""
+    parent!(v::FNode, w::FNode)
+Set `v` parent to be `w`.
+"""
 parent!(v::FNode, w::FNode) = v.parent = w
 
-"""Set `v` left child to be `w`."""
+"""
+    leftchild!(v::FNode, w::FNode)
+Set `v` left child to be `w`.
+"""
 leftchild!(v::FNode, w::FNode) = v.leftchild = w
 
-"""Set `v` right child to be `w`."""
+"""
+    rightchild!(v::FNode, w::FNode)
+Set `v` right child to be `w`.
+"""
 rightchild!(v::FNode, w::FNode) = v.rightchild = w
 
-"""Copy `w`'s formula in `v`."""
+"""
+    formula!(v::FNode, w::FNode)
+Copy `w`'s formula in `v`.
+"""
 formula!(v::FNode, w::FNode) = v.formula = w.formula
-
-"""Return to which logic the node belongs."""
-extract_logic(v::FNode) = typeof(v).parameters[1]
 
 #################################
 #          Formula              #
 #       and utilities           #
 #################################
 
+"""Formula (syntax) tree."""
 struct Formula
-    tree::FNode  # syntax tree
+    tree::FNode
 end
 
+"""
+    tree(f::Formula)
+Get the root node of a formula.
+"""
 tree(f::Formula) = f.tree
+
+"""
+    extract_logic(f::Formula)
+    extract_logic(v::FNode)
+Return to which logic a structure belongs.
+"""
+extract_logic(v::FNode) = typeof(v).parameters[1]
 extract_logic(f::Formula) = extract_logic(tree(f))
 
 show(io::IO, v::FNode) = print(io, inorder(v))
 show(io::IO, f::Formula) = print(io, inorder(tree(f)))
 
+"""
+    isleaf(v::FNode)
+Establish if `v` is a leaf-node.
+"""
 function isleaf(v::FNode)
     return !(isdefined(v, :leftchild) || isdefined(v, :rightchild)) ? true : false
 end
 
+"""
+    size!(v::FNode)
+Update the nodes sizes in the tree rooted in v.
+"""
 function size!(v::FNode)
     if isdefined(v, :leftchild)
         leftchild(v).size = size!(leftchild(v))
@@ -102,6 +154,10 @@ function size!(v::FNode)
         (isdefined(v, :rightchild) ? rightchild(v).size : 0)
 end
 
+"""
+    height(v::FNode)
+Return the height of the tree rooted in v.
+"""
 function height(v::FNode)
     return isleaf(v) ? 0 :
            1 + max(
@@ -110,6 +166,9 @@ function height(v::FNode)
     )
 end
 
+"""
+    modal_depth(v::FNode)
+Return the maximum number of modal operators among all the v-to-leaf paths."""
 function modal_depth(v::FNode)
     return is_modal_operator(token(v)) + max(
         (isdefined(v, :leftchild) ? modal_depth(leftchild(v)) : 0),
@@ -117,8 +176,11 @@ function modal_depth(v::FNode)
     )
 end
 
-# Collect each FNode in a tree, then sort them by size.
-function subformulas(root::FNode; sorted = true)
+"""
+    subformulas(root::FNode, sorted=true)
+Return each `FNode` in a tree, sorting them by size.
+"""
+function subformulas(root::FNode; sorted=true)
     nodes = FNode[]
     _subformulas(root, nodes)
     if sorted
@@ -139,7 +201,10 @@ function _subformulas(FNode::FNode, nodes::Vector{FNode})
     end
 end
 
-# Return tree visit as a string, collecting tokens found on the path
+"""
+    inorder(v::FNode)
+Return the visit of `v` tree as a string.
+"""
 function inorder(v::FNode)
     str = "("
     if isdefined(v, :leftchild)
@@ -229,6 +294,7 @@ given a certain token `tok`, 1 of 4 possible scenarios may occur:
     spot where to place `tok` in `opstack`.
 =#
 
+#TODO: check if a parsed operator is not legal for the specified logic.
 """
     shunting_yard(expression::String)
 Return `expression` in postfix notation.
@@ -242,7 +308,7 @@ function shunting_yard(expression::String; logic = MODAL_LOGIC)
         _shunting_yard(postfix, opstack, tok, logic)
     end
 
-    # Remaining tokens are pushed to postfix
+    # Remaining tokens are pushed to postfix.
     while !isempty(opstack)
         op = pop!(opstack)
         @assert op != "(" "Mismatching brackets"
@@ -285,8 +351,6 @@ function _shunting_yard(postfix, opstack, tok, logic::AbstractLogic)
     end
 end
 
-# Use postfix notation to generate formula-trees
-
 #=
 Formula (syntax) tree generation
 
@@ -303,9 +367,21 @@ Given a certain token `tok`, 1 of 3 possible scenarios may occur:
 3. It is a binary operator
     -> analogue to step 2., but 2 nodes are popped and linked to the new FNode.
 
-At the end, the only remaining FNode in `nodestack` is the root of the formula (syntax) build_tree.
+At the end, the only remaining FNode in `nodestack`
+is the root of the formula (syntax) build_tree.
 =#
 
+"""
+    build_tree(expression::Vector{Union{String,AbstractOperator}})
+Return a formula-tree from a its corresponding postfix-notation string.
+
+    build_tree(expression::Vector{<:Any})
+Return a formula-tree forcing the cast of `expression`
+into a `Vector{Union{String,AbstractOperator}}`.
+
+    build_tree(expression::String)
+Return a formula-tree directly from an infix-notation string.
+"""
 function build_tree(expression::Vector{Union{String,AbstractOperator}})
     nodestack = Stack{FNode}()
 
@@ -317,13 +393,11 @@ function build_tree(expression::Vector{Union{String,AbstractOperator}})
     return Formula(first(nodestack))
 end
 
-# Safe type dispatching
 function build_tree(expression::Vector{<:Any})
     build_tree(convert(Vector{Union{String,AbstractOperator}}, expression))
 end
 
-# Dispatch to directly create a formula tree from a non-preprocessed string
-build_tre(expression::String) = build_tre(shunting_yard(expression))
+build_tree(expression::String) = build_tree(shunting_yard(expression))
 
 # TODO: when a FNode will be internally associated with a Logic
 # modify this function in order to create leaf nodes "without repetitions"
@@ -364,35 +438,56 @@ end
 import SoleLogics: precedence
 SoleLogics.precedence(l::Letter) = Int(only(l))
 
+"""
+    fnormalize!(fx::Formula)
+    fnormalize!(v::FNode)
+Manipulate e formula (syntax) tree to follow a standard established order
+between propositional letters and operators.
+
+# Examples
+```jldoctest
+julia> ft = build_tree("(b∧a)∨(d∧c)")
+(((b)∧(a))∨((d)∧(c)))
+julia> ft = fnormalize!(ft)
+julia> ft
+(((a)∧(b))∨((c)∧(d)))
+```
+"""
 function fnormalize!(fx::Formula)
     fnormalize!(tree(fx))
 end
 
-function fnormalize!(FNode::FNode)
-    if isleaf(FNode)
+#= NOTE: check this case:
+build_tree("(b∧a)∨(d∧c)")
+build_tree("(d∧c)∨(a∧b)")
+Find a method to collapse those in the same formula
+=#
+function fnormalize!(v::FNode)
+    if isleaf(v)
         return
-    elseif is_commutative(token(FNode))
-        left_child = leftchild(FNode)
-        right_child = rightchild(FNode)
+    elseif is_commutative(token(v))
+        left_child = leftchild(v)
+        right_child = rightchild(v)
         if !is_less(token(left_child), token(right_child))
-            rightchild!(FNode, left_child)
-            leftchild!(FNode, right_child)
+            rightchild!(v, left_child)
+            leftchild!(v, right_child)
         end
     end
 
-    if isdefined(FNode, :leftchild)
-        fnormalize!(leftchild(FNode))
+    if isdefined(v, :leftchild)
+        fnormalize!(leftchild(v))
     end
-    if isdefined(FNode, :rightchild)
-        fnormalize!(rightchild(FNode))
+    if isdefined(v, :rightchild)
+        fnormalize!(rightchild(v))
     end
 end
 
+# Comparison function to normalize a formula.
 function is_less(
     a::T1,
     b::T2,
 ) where {T1<:Union{Letter,<:AbstractOperator},T2<:Union{Letter,<:AbstractOperator}}
-    return precedence(a) < precedence(b) ? true : false
+    return precedence(a) <= precedence(b) ? true : false
 end
 
 
@@ -401,15 +496,35 @@ end
 #         generation            #
 #################################
 
-using Random
+"""
+    gen_formula(
+        height;
+        P::LetterAlphabet=SoleLogics.alphabet(MODAL_LOGIC),
+        C::Operators=SoleLogics.operators(MODAL_LOGIC),
+        max_modepth::Integer=height,
+        pruning_factor::Float64=0.0,
+        rng::Union{Integer,AbstractRNG}=Random.GLOBAL_RNG
+    )
+Return a formula having the exact specified `height`.
 
+# Arguments
+- `height::Integer`: final height of the generated tree.
+- `P::LetterAlphabet`: pool of propositional letters, candidates to be leaves.
+- `C::Operators`: pool of valid operators, candidates to be internal nodes.
+- `max_modepth::Integer`: maximum number of modal operators in a path.
+- `pruning_factor::Float64`: float number between 0.0 and 1.0.
+    This correspond to the probability of "stop" the function at each step.
+    It's useful to randomly prune the generated tree between the specified
+    `height` and 0.
+- `rng::Union{Integer,AbstractRNG}`: an rng, or the seed to initialize one.
+"""
 function gen_formula(
     height::Integer;
-    P::LetterAlphabet = SoleLogics.alphabet(MODAL_LOGIC),
-    C::Operators = SoleLogics.operators(MODAL_LOGIC),
-    max_modepth::Integer = height,
-    pruning_factor::Float64 = 0.0,
-    rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG,
+    P::LetterAlphabet=SoleLogics.alphabet(MODAL_LOGIC),
+    C::Operators=SoleLogics.operators(MODAL_LOGIC),
+    max_modepth::Integer=height,
+    pruning_factor::Float64=0.0,
+    rng::Union{Integer,AbstractRNG}=Random.GLOBAL_RNG
 )
     rng = (typeof(rng) <: Integer) ? Random.MersenneTwister(rng) : rng
     fx = build_tree(
@@ -425,12 +540,32 @@ function gen_formula(
     return fx
 end
 
+"""
+    gen_formula(
+        height;
+        logic::AbstractLogic,
+        max_modepth::Integer=height,
+        pruning_factor::Float64=0.0,
+        rng::Union{Integer,AbstractRNG}=Random.GLOBAL_RNG
+    )
+Return a formula having the exact specified `height`.
+
+# Arguments
+- `height::Integer`: final height of the generated tree.
+- `L::AbstractLogic`: the logic where to find legal letters and operators.
+- `max_modepth::Integer`: maximum number of modal operators in a path.
+- `pruning_factor::Float64`: float number between 0.0 and 1.0.
+    This correspond to the probability of "stop" the function at each step.
+    It's useful to randomly prune the generated tree between the specified
+    `height` and 0.
+- `rng::Union{Integer,AbstractRNG}`: an rng, or the seed to initialize one.
+"""
 function gen_formula(
     height::Integer,
     logic::AbstractLogic;
-    max_modepth::Integer = height,
-    pruning_factor::Float64 = 0.0,
-    rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG,
+    max_modepth::Integer=height,
+    pruning_factor::Float64=0.0,
+    rng::Union{Integer,AbstractRNG}=Random.GLOBAL_RNG,
 )
     rng = (typeof(rng) <: Integer) ? Random.MersenneTwister(rng) : rng
     fx = build_tree(
@@ -446,6 +581,7 @@ function gen_formula(
     return fx
 end
 
+# gen_formula core
 function _gen_formula(
     height::Integer,
     P::LetterAlphabet,
