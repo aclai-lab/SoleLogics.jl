@@ -3,6 +3,7 @@ using IterTools
 #################################
 #       Abstract Types          #
 #################################
+"""Root of Operator abstract-types tree"""
 abstract type AbstractOperator{T} end
 
 abstract type AbstractUnaryOperator{T} <: AbstractOperator{T} end
@@ -19,12 +20,42 @@ abstract type AbstractUniversalModalOperator{T} <: AbstractModalOperator{T} end
 struct UnaryOperator{T} <: AbstractUnaryOperator{T} end
 UnaryOperator(s::AbstractString) = UnaryOperator{Symbol(s)}()
 UnaryOperator(s::Symbol) = UnaryOperator{s}()
-const UNOP(op) = UnaryOperator(op)
+
+"""
+    UNOP(op::Union{AbstractString,Symbol})
+Return a new unary operator as a singleton.
+
+# Example
+```jldoctest
+julia> myop = UNOP(:℘)
+℘
+julia> is_unary_operator(myop)
+true
+julia> is_modal_operator(myop)
+false
+```
+"""
+const UNOP(op::Union{AbstractString,Symbol}) = UnaryOperator(op)
 
 struct BinaryOperator{T} <: AbstractBinaryOperator{T} end
 BinaryOperator(s::AbstractString) = BinaryOperator{Symbol(s)}()
 BinaryOperator(s::Symbol) = BinaryOperator{s}()
-const BINOP(op) = BinaryOperator(op)
+
+"""
+    BINOP(op::Union{AbstractString,Symbol})
+Return a new binary operator as a singleton.
+
+# Example
+```jldoctest
+julia> myop = BINOP(:℘)
+℘
+julia> is_binary_operator(myop)
+true
+julia> is_modal_operator(myop)
+false
+```
+"""
+const BINOP(op::Union{AbstractString,Symbol}) = BinaryOperator(op)
 
 struct ExistentialModalOperator{T} <: AbstractExistentialModalOperator{T} end
 function ExistentialModalOperator(t::NTuple{N,AbstractString}) where {N}
@@ -37,7 +68,22 @@ function ExistentialModalOperator(t::NTuple{N,AbstractString}) where {N}
 end
 ExistentialModalOperator(s::AbstractString) = ExistentialModalOperator{Symbol(s)}()
 ExistentialModalOperator(s::Symbol) = ExistentialModalOperator{s}()
-const EXMODOP(op) = ExistentialModalOperator(op)
+
+"""
+    EXMODOP(op::Union{AbstractString,Symbol})
+Return a new existential modal operator as a singleton.
+
+# Example
+```jldoctest
+julia> myop = EXMODOP(:℘)
+⟨℘⟩
+julia> is_modal_operator(myop)
+true
+julia> is_existential_modal_operator(myop)
+true
+```
+"""
+const EXMODOP(op::Union{AbstractString,Symbol}) = ExistentialModalOperator(op)
 
 struct UniversalModalOperator{T} <: AbstractUniversalModalOperator{T} end
 function UniversalModalOperator(t::NTuple{N,AbstractString}) where {N}
@@ -50,9 +96,26 @@ function UniversalModalOperator(t::NTuple{N,AbstractString}) where {N}
 end
 UniversalModalOperator(s::AbstractString) = UniversalModalOperator{Symbol(s)}()
 UniversalModalOperator(s::Symbol) = UniversalModalOperator{s}()
-const UNIVMODOP(op) = UniversalModalOperator(op)
 
+"""
+    UNIVMODOP(op::Union{AbstractString,Symbol})
+Return a new universal modal operator as a singleton.
+
+# Example
+```jldoctest
+julia> myop = EXMODOP(:℘)
+[℘]
+julia> is_modal_operator(myop)
+true
+julia> is_universal_modal_operator(myop)
+true
+```
+"""
+const UNIVMODOP(op::Union{AbstractString,Symbol}) = UniversalModalOperator(op)
+
+"""Extract the symbol wrapped by an operator."""
 reltype(::AbstractOperator{T}) where {T} = T
+
 show(io::IO, op::AbstractOperator{T}) where {T} = print(io, "$(reltype(op))")
 
 function show(io::IO, op::AbstractExistentialModalOperator{T}) where {T}
@@ -85,13 +148,11 @@ SoleTraits.is_modal_operator(::AbstractModalOperator) = true
 SoleTraits.is_existential_modal_operator(::AbstractExistentialModalOperator) = true
 SoleTraits.is_universal_modal_operator(::AbstractUniversalModalOperator) = true
 
-# SoleTraits.is_commutative(typeof(CONJUNCTION)) = true <- bugfix here
-# SoleTraits.is_commutative(Type{DISJUNCTION}) = true   <- this becomes a new dispatch of Any type
-
 #################################
 #      `Operators` wrapper      #
 #         and utilities         #
 #################################
+"""Operators interface."""
 struct Operators <: AbstractArray{AbstractOperator,1}
     ops::AbstractArray{AbstractOperator,1}
 end
@@ -102,14 +163,21 @@ Base.getindex(ops::Operators, i::Int) = ops.ops[i]
 Base.setindex!(ops::Operators, op::AbstractOperator, i::Int) = ops.ops[i] = op
 
 # This could be considered a trait, consider modify SoleTraits
+"""
+    ariety(::AbstractOperator)
+    ariety(::AbstractUnaryOperator)
+    ariety(::AbstractBinaryOperator)
+Return the ariety associated with an operator type.
+"""
+ariety(::AbstractOperator) = error("Expand code")
 ariety(::AbstractUnaryOperator) = return 1
 ariety(::AbstractBinaryOperator) = return 2
-ariety(::AbstractOperator) = error("Expand code")
 
 #################################
 #    More on modal operators    #
 #   and modal logic extensions  #
 #################################
+"""Legal strings to generate HS opearators."""
 const HSRELATIONS = [
     "L",    # later
     "A",    # after
@@ -126,12 +194,14 @@ const HSRELATIONS = [
     "=",     # equals/identity
 ]
 
+"""Legal strings to generate HS₃ opearators."""
 const HS₃RELATIONS = [
     "L",    # later
     "L̅",    # before
     "I",     # intersects
 ]
 
+"""Legal strings to generate HS₇ opearators."""
 const HS₇RELATIONS = [
     "L",    # later
     "AO",   # after or overlaps
@@ -143,6 +213,33 @@ const HS₇RELATIONS = [
 ]
 
 # Macro to collect all modaloperators (e.g @modaloperators HSRELATIONS 1)
+"""
+    modaloperators(R, d::Int)
+Collect all the valid modal operators -both existential and universal- from a collection
+of strings or symbols.
+
+# Example
+```jldoctest
+julia> @modaloperators HSRELATIONS 1
+⟨L⟩
+⟨A⟩
+⟨O⟩
+⟨E⟩
+⋮
+[E̅]
+[D̅]
+[B̅]
+julia> @modaloperators HS₃RELATIONS 2
+⟨L,L⟩
+⟨L̅,L⟩
+⟨I,L⟩
+⟨L,L̅⟩
+⋮
+[L,I]
+[L̅,I]
+[I,I]
+```
+"""
 macro modaloperators(R, d::Int)
     quote
         rels = vec(collect(Iterators.product([$(R) for _ = 1:$(d)]...)))
@@ -159,18 +256,27 @@ end
 #     Definitions and     #
 #       behaviours        #
 ###########################
+"""Negation operator."""
 const NEGATION = UNOP("¬")
 precedence(::typeof(NEGATION)) = 30
 
+"""Diamond operator."""
 const DIAMOND = EXMODOP("◊")
 precedence(::typeof(DIAMOND)) = 21
+
+"""Box operator."""
 const BOX = UNIVMODOP("□")
 precedence(::typeof(BOX)) = 20
 
+"""Conjunction operator."""
 const CONJUNCTION = BINOP("∧")
 precedence(::typeof(CONJUNCTION)) = 12
+
+"""Disjunction operator."""
 const DISJUNCTION = BINOP("∨")
 precedence(::typeof(DISJUNCTION)) = 11
+
+"""Implication operator."""
 const IMPLICATION = BINOP("→")
 precedence(::typeof(IMPLICATION)) = 10
 
