@@ -30,7 +30,7 @@ export PROPOSITIONAL_LOGIC, MODAL_LOGIC, DEFAULT_LOGIC
 
 # Formula tree definitions exports
 export FNode, Formula
-export token, formula, fhash, leftchild, rightchild, parent, size, tree
+export token, formula, logic, fhash, leftchild, rightchild, parent, size, tree
 export formula!, leftchild!, rightchild!, parent!, size!
 export isleaf, height, modal_depth, inorder
 export extract_logic

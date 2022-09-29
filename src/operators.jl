@@ -70,7 +70,7 @@ ExistentialModalOperator(s::AbstractString) = ExistentialModalOperator{Symbol(s)
 ExistentialModalOperator(s::Symbol) = ExistentialModalOperator{s}()
 
 """
-    EXMODOP(op::Union{AbstractString,Symbol})
+    EXMODOP(op)
 Return a new existential modal operator as a singleton.
 
 # Example
@@ -83,7 +83,7 @@ julia> is_existential_modal_operator(myop)
 true
 ```
 """
-const EXMODOP(op::Union{AbstractString,Symbol}) = ExistentialModalOperator(op)
+const EXMODOP(op) = ExistentialModalOperator(op)
 
 struct UniversalModalOperator{T} <: AbstractUniversalModalOperator{T} end
 function UniversalModalOperator(t::NTuple{N,AbstractString}) where {N}
@@ -98,7 +98,7 @@ UniversalModalOperator(s::AbstractString) = UniversalModalOperator{Symbol(s)}()
 UniversalModalOperator(s::Symbol) = UniversalModalOperator{s}()
 
 """
-    UNIVMODOP(op::Union{AbstractString,Symbol})
+    UNIVMODOP(op)
 Return a new universal modal operator as a singleton.
 
 # Example
@@ -111,7 +111,7 @@ julia> is_universal_modal_operator(myop)
 true
 ```
 """
-const UNIVMODOP(op::Union{AbstractString,Symbol}) = UniversalModalOperator(op)
+const UNIVMODOP(op) = UniversalModalOperator(op)
 
 """Extract the symbol wrapped by an operator."""
 reltype(::AbstractOperator{T}) where {T} = T

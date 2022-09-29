@@ -11,6 +11,7 @@ const Token = Union{Letter,AbstractOperator}
 """Formula (syntax) tree node."""
 mutable struct FNode{L<:Logic}
     token::Token             # token
+    logic::Base.RefValue{L}  # reference to logic
     formula::String          # human-readable string of the formula
     size::Int                # size of the tree rooted here
 
@@ -18,28 +19,35 @@ mutable struct FNode{L<:Logic}
     leftchild::FNode{L}
     rightchild::FNode{L}
 
-    FNode{L}(token::Token) where {L<:Logic} = new{L}(token)
+    FNode{L}(token::Token, logic::L) where {L<:Logic} = begin
+        #NOTE: "is_proposition(token)" may changed to "!(token in alphabet(logic))" in the future
+        if !is_proposition(token) && !(token in operators(logic))
+            throw(error("Node $token is not legal for the specified logic $(typeof(logic))"))
+        end
+        new{L}(token, Ref(logic))
+    end
 end
-
-Base.length
-
 """
+    FNode(token::Token, L::Logic)
     FNode(token::Token)
-    FNode(token::Token, ::L)
-    FNode(token::Token, L::Type)
 
 FNode constructors.
 If a logic L is not specified, DEFAULT_LOGIC is setted.
 """
-FNode(token::Token) = FNode{typeof(DEFAULT_LOGIC)}(token)
-FNode(token::Token, ::L) where {L} = FNode{L}(token)
-FNode(token::Token, L::Type) = FNode{L}(token)
+FNode(token::Token, L::Logic) = FNode{typeof(L)}(token, L)
+FNode(token::Token) = FNode(token, DEFAULT_LOGIC)
 
 """
     token(v::FNode)
 Return the token wrapped by `v`.
 """
 token(v::FNode) = v.token
+
+"""
+    logic(v::FNode)
+Return the specific (unreferenced) logic to whom `v` belongs.
+"""
+logic(v::FNode) = v.logic[]
 
 """
     parent(v::FNode)
@@ -189,15 +197,15 @@ function subformulas(root::FNode; sorted=true)
     return nodes
 end
 
-function _subformulas(FNode::FNode, nodes::Vector{FNode})
-    if isdefined(FNode, :leftchild)
-        _subformulas(FNode.leftchild, nodes)
+function _subformulas(v::FNode, nodes::Vector{FNode})
+    if isdefined(v, :leftchild)
+        _subformulas(v.leftchild, nodes)
     end
 
-    push!(nodes, FNode)
+    push!(nodes, v)
 
-    if isdefined(FNode, :rightchild)
-        _subformulas(FNode.rightchild, nodes)
+    if isdefined(v, :rightchild)
+        _subformulas(v.rightchild, nodes)
     end
 end
 
@@ -224,7 +232,7 @@ end
 #################################
 
 # A simple lexer capable of distinguish operators in a string
-function tokenizer(expression::String; ops = operators(MODAL_LOGIC))
+function tokenizer(expression::String; ops::Operators = operators(MODAL_LOGIC))
     tokens = Union{AbstractOperator,String}[]
 
     sym_to_op = Dict{Symbol,AbstractOperator}()
@@ -294,12 +302,11 @@ given a certain token `tok`, 1 of 4 possible scenarios may occur:
     spot where to place `tok` in `opstack`.
 =#
 
-#TODO: check if a parsed operator is not legal for the specified logic.
 """
     shunting_yard(expression::String)
 Return `expression` in postfix notation.
 """
-function shunting_yard(expression::String; logic = MODAL_LOGIC)
+function shunting_yard(expression::String; logic::AbstractLogic=DEFAULT_LOGIC)
     postfix = Union{AbstractOperator,String}[]
     opstack = Stack{Union{AbstractOperator,String}}() # This contains operators or "("
 
@@ -308,14 +315,22 @@ function shunting_yard(expression::String; logic = MODAL_LOGIC)
         _shunting_yard(postfix, opstack, tok, logic)
     end
 
-    # Remaining tokens are pushed to postfix.
+    # Remaining tokens are pushed to postfix
     while !isempty(opstack)
         op = pop!(opstack)
-        @assert op != "(" "Mismatching brackets"
+        if op == "("
+            throw(error("Mismatching brackets."))
+        end
         push!(postfix, op)
     end
 
     return postfix
+end
+
+function _check_operator_validity(op, logic::AbstractLogic)
+    if !(typeof(op) <: AbstractOperator) || !(op in operators(logic))
+        throw(error("Operator $op is not legal for the specified logic $(typeof(logic))"))
+    end
 end
 
 function _shunting_yard(postfix, opstack, tok, logic::AbstractLogic)
@@ -338,6 +353,7 @@ function _shunting_yard(postfix, opstack, tok, logic::AbstractLogic)
             end
 
             op = pop!(opstack)  # This is not an "(", so it must be an operator
+            _check_operator_validity(op, logic)
 
             if precedence(op) > precedence(tok)
                 push!(postfix, op)
@@ -347,6 +363,8 @@ function _shunting_yard(postfix, opstack, tok, logic::AbstractLogic)
                 break
             end
         end
+
+        _check_operator_validity(tok, logic)
         push!(opstack, tok)
     end
 end
@@ -382,28 +400,32 @@ into a `Vector{Union{String,AbstractOperator}}`.
     build_tree(expression::String)
 Return a formula-tree directly from an infix-notation string.
 """
-function build_tree(expression::Vector{Union{String,AbstractOperator}})
+function build_tree(
+    expression::Vector{Union{String,AbstractOperator}};
+    logic::AbstractLogic=DEFAULT_LOGIC
+)
     nodestack = Stack{FNode}()
 
     for tok in expression
-        _build_tree(tok, nodestack)
+        _build_tree(tok, nodestack, logic)
     end
 
     SoleLogics.size!(first(nodestack))
     return Formula(first(nodestack))
 end
 
-function build_tree(expression::Vector{<:Any})
-    build_tree(convert(Vector{Union{String,AbstractOperator}}, expression))
+function build_tree(expression::Vector{<:Any}; logic::AbstractLogic=DEFAULT_LOGIC)
+    build_tree(convert(Vector{Union{String,AbstractOperator}}, expression), logic=logic)
 end
 
-build_tree(expression::String) = build_tree(shunting_yard(expression))
+build_tree(expression::String; logic::AbstractLogic=DEFAULT_LOGIC) =
+    build_tree(shunting_yard(expression,logic=logic), logic=logic)
 
 # TODO: when a FNode will be internally associated with a Logic
 # modify this function in order to create leaf nodes "without repetitions"
 # thus not wasting memory
-function _build_tree(tok, nodestack)
-    newnode = FNode(tok)
+function _build_tree(tok, nodestack, logic::AbstractLogic)
+    newnode = FNode(tok, logic)
     # 1
     if is_proposition(tok)
         newnode.formula = string(tok)
@@ -430,7 +452,7 @@ function _build_tree(tok, nodestack)
 
         push!(nodestack, newnode)
     else
-        throw(error("Unknown token $tok"))
+        throw(error("Unknown token $tok for the specified logic."))
     end
 end
 
