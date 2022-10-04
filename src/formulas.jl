@@ -117,8 +117,8 @@ formula!(v::FNode, w::FNode) = v.formula = w.formula
 #################################
 
 """Formula (syntax) tree."""
-struct Formula
-    tree::FNode
+struct Formula{L<:Logic}
+    tree::FNode{L}
 end
 
 """
