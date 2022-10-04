@@ -27,6 +27,7 @@ mutable struct FNode{L<:Logic}
         new{L}(token, Ref(logic))
     end
 end
+
 """
     FNode(token::Token, L::Logic)
     FNode(token::Token)
@@ -375,15 +376,15 @@ Formula (syntax) tree generation
 Given a certain token `tok`, 1 of 3 possible scenarios may occur:
 (regrouped in _build_tree function to keep code clean)
 
-1. `tok` is a propositional letter, hence a leaf in the formula tree
-    -> push a new FNode(tok) in the nodestack;
-
-2. `tok` is an unary operator
+1. `tok` is an unary operator
     -> make a new FNode(tok), then link it with the FNode popped from `nodestack` top.
     Then push the new FNode into `nodestack`.
 
-3. It is a binary operator
+2. It is a binary operator
     -> analogue to step 2., but 2 nodes are popped and linked to the new FNode.
+
+3. `tok` is a propositional letter, hence a leaf in the formula tree
+    -> push a new FNode(tok) in the nodestack;
 
 At the end, the only remaining FNode in `nodestack`
 is the root of the formula (syntax) build_tree.
@@ -405,9 +406,11 @@ function build_tree(
     logic::AbstractLogic=DEFAULT_LOGIC
 )
     nodestack = Stack{FNode}()
+    # This is needed to avoid memory waste repeating identical leaves.
+    leaves_pool = Dict(alphabet(logic) .=> [FNode(x, logic) for x in alphabet(logic)])
 
     for tok in expression
-        _build_tree(tok, nodestack, logic)
+        _build_tree(tok, nodestack, logic, leaves_pool)
     end
 
     SoleLogics.size!(first(nodestack))
@@ -421,17 +424,15 @@ end
 build_tree(expression::String; logic::AbstractLogic=DEFAULT_LOGIC) =
     build_tree(shunting_yard(expression,logic=logic), logic=logic)
 
-# TODO: when a FNode will be internally associated with a Logic
-# modify this function in order to create leaf nodes "without repetitions"
-# thus not wasting memory
-function _build_tree(tok, nodestack, logic::AbstractLogic)
-    newnode = FNode(tok, logic)
+function _build_tree(
+    tok,
+    nodestack,
+    logic::AbstractLogic,
+    letter_sentinels::Dict{Letter, FNode{L}}
+)   where L <: AbstractLogic
     # 1
-    if is_proposition(tok)
-        newnode.formula = string(tok)
-        push!(nodestack, newnode)
-        # 2
-    elseif typeof(tok) <: AbstractUnaryOperator
+    if typeof(tok) <: AbstractUnaryOperator
+        newnode = FNode(tok, logic)
         children = pop!(nodestack)
 
         SoleLogics.parent!(children, newnode)
@@ -439,8 +440,9 @@ function _build_tree(tok, nodestack, logic::AbstractLogic)
         newnode.formula = string(tok, children.formula)
 
         push!(nodestack, newnode)
-        # 3
+    # 2
     elseif typeof(tok) <: AbstractBinaryOperator
+        newnode = FNode(tok, logic)
         right_child = pop!(nodestack)
         left_child = pop!(nodestack)
 
@@ -450,6 +452,14 @@ function _build_tree(tok, nodestack, logic::AbstractLogic)
         leftchild!(newnode, left_child)
         newnode.formula = string("(", left_child.formula, tok, right_child.formula, ")")
 
+        push!(nodestack, newnode)
+    # 3
+    elseif tok in alphabet(logic)
+        # Identical propositional letters are not repeated,
+        # but leaves works as "sentinels" instead,
+        # thus, memory is not wasted
+        newnode = letter_sentinels[tok]
+        newnode.formula = string(tok)
         push!(nodestack, newnode)
     else
         throw(error("Unknown token $tok for the specified logic."))

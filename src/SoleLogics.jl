@@ -2,6 +2,7 @@ module SoleLogics
 
 import Base: show
 using DataStructures
+using Dictionaries
 using Reexport
 
 # Abstract types
