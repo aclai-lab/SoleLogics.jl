@@ -6,56 +6,52 @@ using IterTools
 """Root of Operator abstract-types tree"""
 abstract type AbstractOperator{T} end
 
-abstract type AbstractUnaryOperator{T} <: AbstractOperator{T} end
-abstract type AbstractBinaryOperator{T} <: AbstractOperator{T} end
-
-abstract type AbstractModalOperator{T} <: AbstractUnaryOperator{T} end
-
+abstract type AbstractModalOperator{T} <: AbstractOperator{T} end
 abstract type AbstractExistentialModalOperator{T} <: AbstractModalOperator{T} end
 abstract type AbstractUniversalModalOperator{T} <: AbstractModalOperator{T} end
 
 #################################
+#     Definition utilities      #
+#################################
+"""
+    ariety(op)
+Return the ariety associated with an operator.
+
+# Example
+```jldoctest
+julia> ariety(CONJUNCTION)
+2
+julia> my_op = OP(:m)
+julia> SoleLogics.ariety(my_op) = 1
+julia> ariety(my_op)
+1
+```
+"""
+ariety(op) = error(
+    "No ariety associated with $op.\n
+    Please, follow the example in the documentation to set an ariety."
+)
+
+#################################
 #       Concrete Types          #
 #################################
-struct UnaryOperator{T} <: AbstractUnaryOperator{T} end
-UnaryOperator(s::AbstractString) = UnaryOperator{Symbol(s)}()
-UnaryOperator(s::Symbol) = UnaryOperator{s}()
+
+struct Operator{T} <: AbstractOperator{T} end
+Operator(s::AbstractString) = Operator{Symbol(s)}()
+Operator(s::Symbol) = Operator{s}()
 
 """
-    UNOP(op::Union{AbstractString,Symbol})
-Return a new unary operator as a singleton.
+    OP(op::Union{AbstractString,Symbol})
+Return a new operator as a singleton.
 
 # Example
 ```jldoctest
-julia> myop = UNOP(:℘)
+julia> myop = OP(:℘)
 ℘
-julia> is_unary_operator(myop)
-true
-julia> is_modal_operator(myop)
-false
+julia> SoleLogics.ariety(myop) = 1
 ```
 """
-const UNOP(op::Union{AbstractString,Symbol}) = UnaryOperator(op)
-
-struct BinaryOperator{T} <: AbstractBinaryOperator{T} end
-BinaryOperator(s::AbstractString) = BinaryOperator{Symbol(s)}()
-BinaryOperator(s::Symbol) = BinaryOperator{s}()
-
-"""
-    BINOP(op::Union{AbstractString,Symbol})
-Return a new binary operator as a singleton.
-
-# Example
-```jldoctest
-julia> myop = BINOP(:℘)
-℘
-julia> is_binary_operator(myop)
-true
-julia> is_modal_operator(myop)
-false
-```
-"""
-const BINOP(op::Union{AbstractString,Symbol}) = BinaryOperator(op)
+const OP(op::Union{AbstractString,Symbol}) = Operator(op)
 
 struct ExistentialModalOperator{T} <: AbstractExistentialModalOperator{T} end
 function ExistentialModalOperator(t::NTuple{N,AbstractString}) where {N}
@@ -141,8 +137,8 @@ end
 #################################
 #            Traits             #
 #################################
-SoleTraits.is_unary_operator(::AbstractUnaryOperator) = true
-SoleTraits.is_binary_operator(::AbstractBinaryOperator) = true
+SoleTraits.is_unary_operator(op::AbstractOperator) = return (ariety(op) == 1)
+SoleTraits.is_binary_operator(op::AbstractOperator) = return (ariety(op) == 2)
 
 SoleTraits.is_modal_operator(::AbstractModalOperator) = true
 SoleTraits.is_existential_modal_operator(::AbstractExistentialModalOperator) = true
@@ -153,25 +149,7 @@ SoleTraits.is_universal_modal_operator(::AbstractUniversalModalOperator) = true
 #         and utilities         #
 #################################
 """Operators interface."""
-struct Operators <: AbstractArray{AbstractOperator,1}
-    ops::AbstractArray{AbstractOperator,1}
-end
-Base.size(ops::Operators) = (length(ops.ops))
-Base.axes(ops::Operators) = (1:length(ops.ops),)
-Base.IndexStyle(::Type{<:Operators}) = IndexLinear()
-Base.getindex(ops::Operators, i::Int) = ops.ops[i]
-Base.setindex!(ops::Operators, op::AbstractOperator, i::Int) = ops.ops[i] = op
-
-# This could be considered a trait, consider modify SoleTraits
-"""
-    ariety(::AbstractOperator)
-    ariety(::AbstractUnaryOperator)
-    ariety(::AbstractBinaryOperator)
-Return the ariety associated with an operator type.
-"""
-ariety(::AbstractOperator) = error("Expand code")
-ariety(::AbstractUnaryOperator) = return 1
-ariety(::AbstractBinaryOperator) = return 2
+const Operators = Vector{AbstractOperator}
 
 #################################
 #    More on modal operators    #
@@ -257,27 +235,33 @@ end
 #       behaviours        #
 ###########################
 """Negation operator."""
-const NEGATION = UNOP("¬")
+const NEGATION = OP("¬")
+SoleLogics.ariety(::typeof(NEGATION)) = 1
 precedence(::typeof(NEGATION)) = 30
 
 """Diamond operator."""
 const DIAMOND = EXMODOP("◊")
+SoleLogics.ariety(::typeof(DIAMOND)) = 1
 precedence(::typeof(DIAMOND)) = 21
 
 """Box operator."""
 const BOX = UNIVMODOP("□")
+SoleLogics.ariety(::typeof(BOX)) = 1
 precedence(::typeof(BOX)) = 20
 
 """Conjunction operator."""
-const CONJUNCTION = BINOP("∧")
+const CONJUNCTION = OP("∧")
+SoleLogics.ariety(::typeof(CONJUNCTION)) = 2
 precedence(::typeof(CONJUNCTION)) = 12
 
 """Disjunction operator."""
-const DISJUNCTION = BINOP("∨")
+const DISJUNCTION = OP("∨")
+SoleLogics.ariety(::typeof(DISJUNCTION)) = 2
 precedence(::typeof(DISJUNCTION)) = 11
 
 """Implication operator."""
-const IMPLICATION = BINOP("→")
+const IMPLICATION = OP("→")
+SoleLogics.ariety(::typeof(IMPLICATION)) = 2
 precedence(::typeof(IMPLICATION)) = 10
 
 SoleTraits.is_commutative(::typeof(CONJUNCTION)) = true

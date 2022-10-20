@@ -8,7 +8,8 @@ using Reexport
 # Abstract types
 export AbstractLogic, CrispLogic, FuzzyLogic
 
-export AbstractOperator, AbstractUnaryOperator, AbstractBinaryOperator
+export AbstractOperator
+# deprecated: AbstractUnaryOperator, AbstractBinaryOperator. Use ariety(op) instead
 export AbstractModalOperator
 export AbstractExistentialModalOperator, AbstractUniversalModalOperator
 
@@ -34,7 +35,6 @@ export FNode, Formula
 export token, formula, logic, fhash, leftchild, rightchild, parent, size, tree
 export formula!, leftchild!, rightchild!, parent!, size!
 export isleaf, height, modal_depth, inorder
-export extract_logic
 export subformulas, fnormalize!
 
 # Formula tree input and construction

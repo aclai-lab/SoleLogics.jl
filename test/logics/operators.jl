@@ -13,16 +13,11 @@
     @test is_binary_operator(DIAMOND) == false
     @test is_binary_operator(BOX) == false
 
-    @test typeof(DIAMOND) <: AbstractUnaryOperator
-    @test typeof(DIAMOND) <: AbstractModalOperator
-    @test typeof(DIAMOND) <: AbstractExistentialModalOperator
 
-    @test typeof(BOX) <: AbstractUnaryOperator
-    @test typeof(BOX) <: AbstractModalOperator
-    @test typeof(BOX) <: AbstractUniversalModalOperator
-
-    op1234 = EXMODOP(("OP1", "OP2", "OP3", "OP4"))
-    @test EXMODOP(("OP1", "OP2", "OP3", "OP4")) isa AbstractExistentialModalOperator
-    @test is_unary_operator(op1234) == true
-    @test is_binary_operator(op1234) == false
+    @test is_commutative(NEGATION) == false
+    @test is_commutative(IMPLICATION) == false
+    @test is_commutative(CONJUNCTION) == true
+    @test is_commutative(DISJUNCTION) == true
+    @test is_commutative(DIAMOND) == false
+    @test is_commutative(BOX) == false
 end

@@ -1,4 +1,5 @@
-using Random # formula generation
+using Lazy   # delegation pattern
+using Random # needed to formula generation
 
 #################################
 #       FNode structure         #
@@ -39,77 +40,78 @@ FNode(token::Token, L::Logic) = FNode{typeof(L)}(token, L)
 FNode(token::Token) = FNode(token, DEFAULT_LOGIC)
 
 """
-    token(v::FNode)
+    token(v::FNode{L})
 Return the token wrapped by `v`.
 """
-token(v::FNode) = v.token
+#NOTE: is L<:Logic redundant? Maybe "where {L}" it's enough
+token(v::FNode{L}) where {L<:Logic} = v.token
 
 """
     logic(v::FNode)
 Return the specific (unreferenced) logic to whom `v` belongs.
 """
-logic(v::FNode) = v.logic[]
+logic(v::FNode{L}) where {L<:Logic} = v.logic[]
 
 """
     parent(v::FNode)
 Return `v`'s parent.
 """
-parent(v::FNode) = v.parent
+parent(v::FNode{L}) where {L<:Logic} = v.parent
 
 """
     leftchild(v::FNode)
 Return `v`'s leftchild.
 """
-leftchild(v::FNode) = v.leftchild
+leftchild(v::FNode{L}) where {L<:Logic} = v.leftchild
 
 """
     rightchild(v::Fnode)
 Return `v`'s rightchild.
 """
-rightchild(v::FNode) = v.rightchild
+rightchild(v::FNode{L}) where {L<:Logic} = v.rightchild
 
 """
     formula(v::FNode)
 Return a string representing the formula rooted in `v`.
 """
-formula(v::FNode) = v.formula
+formula(v::FNode{L}) where {L<:Logic} = v.formula
 
 """
     fhash(v::FNode)
 Return the `hash` of `v`'s `formula`.
 See also [`hash`](@ref), [`hash`](@ref).
 """
-fhash(v::FNode) = hash(formula(v))
+fhash(v::FNode{L}) where {L<:Logic} = hash(formula(v))
 
 """
     size(v::FNode)
 Return `v`'s size.
 """
-size(v::FNode) = v.size
+size(v::FNode{L}) where {L<:Logic} = v.size
 
 """
     parent!(v::FNode, w::FNode)
 Set `v` parent to be `w`.
 """
-parent!(v::FNode, w::FNode) = v.parent = w
+parent!(v::FNode{L}, w::FNode{L}) where {L<:Logic} = v.parent = w
 
 """
     leftchild!(v::FNode, w::FNode)
 Set `v` left child to be `w`.
 """
-leftchild!(v::FNode, w::FNode) = v.leftchild = w
+leftchild!(v::FNode{L}, w::FNode{L}) where {L<:Logic} = v.leftchild = w
 
 """
     rightchild!(v::FNode, w::FNode)
 Set `v` right child to be `w`.
 """
-rightchild!(v::FNode, w::FNode) = v.rightchild = w
+rightchild!(v::FNode{L}, w::FNode{L}) where {L<:Logic} = v.rightchild = w
 
 """
     formula!(v::FNode, w::FNode)
 Copy `w`'s formula in `v`.
 """
-formula!(v::FNode, w::FNode) = v.formula = w.formula
+formula!(v::FNode{L}, w::FNode{L}) where {L<:Logic} = v.formula = w.formula
 
 #################################
 #          Formula              #
@@ -120,20 +122,15 @@ formula!(v::FNode, w::FNode) = v.formula = w.formula
 struct Formula{L<:Logic}
     tree::FNode{L}
 end
+@forward Formula.tree formula, formula!, fhash
+        size, parent, parent!,
+        leftchild, leftchild!, rightchild, rightchild!,
 
 """
     tree(f::Formula)
 Get the root node of a formula.
 """
-tree(f::Formula) = f.tree
-
-"""
-    extract_logic(f::Formula)
-    extract_logic(v::FNode)
-Return to which logic a structure belongs.
-"""
-extract_logic(v::FNode) = typeof(v).parameters[1]
-extract_logic(f::Formula) = extract_logic(tree(f))
+tree(f::Formula{L}) where {L<:Logic} = f.tree
 
 show(io::IO, v::FNode) = print(io, inorder(v))
 show(io::IO, f::Formula) = print(io, inorder(tree(f)))
@@ -142,7 +139,7 @@ show(io::IO, f::Formula) = print(io, inorder(tree(f)))
     isleaf(v::FNode)
 Establish if `v` is a leaf-node.
 """
-function isleaf(v::FNode)
+function isleaf(v::FNode{L}) where {L<:Logic}
     return !(isdefined(v, :leftchild) || isdefined(v, :rightchild)) ? true : false
 end
 
@@ -150,7 +147,7 @@ end
     size!(v::FNode)
 Update the nodes sizes in the tree rooted in v.
 """
-function size!(v::FNode)
+function size!(v::FNode{L}) where {L<:Logic}
     if isdefined(v, :leftchild)
         leftchild(v).size = size!(leftchild(v))
     end
@@ -167,7 +164,7 @@ end
     height(v::FNode)
 Return the height of the tree rooted in v.
 """
-function height(v::FNode)
+function height(v::FNode{L}) where {L<:Logic}
     return isleaf(v) ? 0 :
            1 + max(
         (isdefined(v, :leftchild) ? height(leftchild(v)) : 0),
@@ -178,7 +175,7 @@ end
 """
     modal_depth(v::FNode)
 Return the maximum number of modal operators among all the v-to-leaf paths."""
-function modal_depth(v::FNode)
+function modal_depth(v::FNode{L}) where {L<:Logic}
     return is_modal_operator(token(v)) + max(
         (isdefined(v, :leftchild) ? modal_depth(leftchild(v)) : 0),
         (isdefined(v, :rightchild) ? modal_depth(rightchild(v)) : 0),
@@ -189,8 +186,8 @@ end
     subformulas(root::FNode, sorted=true)
 Return each `FNode` in a tree, sorting them by size.
 """
-function subformulas(root::FNode; sorted=true)
-    nodes = FNode[]
+function subformulas(root::FNode{L}; sorted=true) where {L<:AbstractLogic}
+    nodes = FNode{L}[]
     _subformulas(root, nodes)
     if sorted
         sort!(nodes, by = n -> SoleLogics.size(n))
@@ -198,7 +195,7 @@ function subformulas(root::FNode; sorted=true)
     return nodes
 end
 
-function _subformulas(v::FNode, nodes::Vector{FNode})
+function _subformulas(v::FNode{L}, nodes::Vector{FNode{L}}) where {L<:AbstractLogic}
     if isdefined(v, :leftchild)
         _subformulas(v.leftchild, nodes)
     end
@@ -214,7 +211,7 @@ end
     inorder(v::FNode)
 Return the visit of `v` tree as a string.
 """
-function inorder(v::FNode)
+function inorder(v::FNode{L}) where {L<:AbstractLogic}
     str = "("
     if isdefined(v, :leftchild)
         str = string(str, inorder(v.leftchild))
@@ -429,41 +426,46 @@ function _build_tree(
     nodestack,
     logic::AbstractLogic,
     letter_sentinels::Dict{Letter, FNode{L}}
-)   where L <: AbstractLogic
-    # 1
-    if typeof(tok) <: AbstractUnaryOperator
-        newnode = FNode(tok, logic)
-        children = pop!(nodestack)
-
-        SoleLogics.parent!(children, newnode)
-        rightchild!(newnode, children)
-        newnode.formula = string(tok, children.formula)
-
-        push!(nodestack, newnode)
-    # 2
-    elseif typeof(tok) <: AbstractBinaryOperator
-        newnode = FNode(tok, logic)
-        right_child = pop!(nodestack)
-        left_child = pop!(nodestack)
-
-        SoleLogics.parent!(right_child, newnode)
-        SoleLogics.parent!(left_child, newnode)
-        rightchild!(newnode, right_child)
-        leftchild!(newnode, left_child)
-        newnode.formula = string("(", left_child.formula, tok, right_child.formula, ")")
-
-        push!(nodestack, newnode)
-    # 3
+)   where {L <: AbstractLogic}
+    # Case 1 or 2
+    if typeof(tok) <: AbstractOperator
+        __build_tree(Val(ariety(tok)), tok, nodestack, logic)
+    # Case 3
+    # Identical propositional letters are not repeated,
+    # but leaves works as "sentinels" instead,
+    # thus, memory is not wasted
     elseif tok in alphabet(logic)
-        # Identical propositional letters are not repeated,
-        # but leaves works as "sentinels" instead,
-        # thus, memory is not wasted
         newnode = letter_sentinels[tok]
         newnode.formula = string(tok)
         push!(nodestack, newnode)
     else
         throw(error("Unknown token $tok for the specified logic."))
     end
+end
+
+function __build_tree( ::Val{1}, tok::AbstractOperator, nodestack, logic::AbstractLogic)
+    newnode = FNode(tok, logic)
+    children = pop!(nodestack)
+
+    SoleLogics.parent!(children, newnode)
+    rightchild!(newnode, children)
+    newnode.formula = string(tok, children.formula)
+
+    push!(nodestack, newnode)
+end
+
+function __build_tree(::Val{2},tok,nodestack,logic::AbstractLogic)
+    newnode = FNode(tok, logic)
+    right_child = pop!(nodestack)
+    left_child = pop!(nodestack)
+
+    SoleLogics.parent!(right_child, newnode)
+    SoleLogics.parent!(left_child, newnode)
+    rightchild!(newnode, right_child)
+    leftchild!(newnode, left_child)
+    newnode.formula = string("(", left_child.formula, tok, right_child.formula, ")")
+
+    push!(nodestack, newnode)
 end
 
 # This has to be shifted somewhere in SoleLogics or SoleAlphabets
@@ -485,16 +487,17 @@ julia> ft
 (((a)∧(b))∨((c)∧(d)))
 ```
 """
-function fnormalize!(fx::Formula)
+function fnormalize!(fx::Formula{L}) where {L<:AbstractLogic}
     fnormalize!(tree(fx))
 end
 
-#= NOTE: check this case:
+#=
 build_tree("(b∧a)∨(d∧c)")
 build_tree("(d∧c)∨(a∧b)")
 Find a method to collapse those in the same formula
+NOTE: maybe using hashing?
 =#
-function fnormalize!(v::FNode)
+function fnormalize!(v::FNode{L}) where {L<:AbstractLogic}
     if isleaf(v)
         return
     elseif is_commutative(token(v))
@@ -653,3 +656,21 @@ function _gen_formula(
 
     return f
 end
+
+Int
+
+"""
+1) TODO:
+in SoleBase, define
+    const frame_name = Union{String, Integer}
+then
+    struct FramedFormula{L<:AbstractLogic}
+        name :: frame_name
+        formula :: Formula{L}
+    end
+
+2) TODO:
+define
+const Formula = Union{UFormula, FFormula}
+(find a better name, UnframedFormula and FramedFormula)
+"""
