@@ -1,5 +1,7 @@
 @testset "Formula construction from input" begin
 
+    # TODO: this test suite should be rewritten using
+    # formula-composition functions (e.g IMPLICATION(a,b))
     @testset "General suite" begin
         n1 = FNode(CONJUNCTION)
 

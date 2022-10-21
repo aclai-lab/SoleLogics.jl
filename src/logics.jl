@@ -1,7 +1,7 @@
-#################################
-#       Logic definitions       #
-#     and abstract hierarchy    #
-#################################
+############################################################################################
+#       Logic definitions
+#     and abstract hierarchy
+############################################################################################
 
 """Root of Logic abstract-types tree"""
 abstract type AbstractLogic end
@@ -16,7 +16,6 @@ struct Logic{T} <: AbstractLogic
 
     Logic{T}(ops::Operators, alphabet::LetterAlphabet) where {T} = new{T}(ops, alphabet)
 end
-
 
 """
     Logic(s::AbstractString, ops::Operators, alphabet::LetterAlphabet)
@@ -40,9 +39,9 @@ Return the propositional letters contained in a certain logic.
 """
 alphabet(l::Logic) = l.alphabet
 
-#################################
-#       Available logics        #
-#################################
+############################################################################################
+#       Available logics
+############################################################################################
 
 propositional_lops = Operators([CONJUNCTION, DISJUNCTION, IMPLICATION, NEGATION])
 propositional_lalphabet = LetterAlphabet(string.(collect('a':'z')))

@@ -1,10 +1,10 @@
 using Lazy   # delegation pattern
 using Random # needed to formula generation
 
-#################################
-#       FNode structure         #
-#      getters & setters        #
-#################################
+############################################################################################
+#       FNode structure
+#      getters & setters
+############################################################################################
 
 # Something wrappable in a FNode.
 const Token = Union{Letter,AbstractOperator}
@@ -113,18 +113,17 @@ Copy `w`'s formula in `v`.
 """
 formula!(v::FNode{L}, w::FNode{L}) where {L<:Logic} = v.formula = w.formula
 
-#################################
-#          Formula              #
-#       and utilities           #
-#################################
+############################################################################################
+#            Formula
+#         and utilities
+############################################################################################
 
 """Formula (syntax) tree."""
 struct Formula{L<:Logic}
     tree::FNode{L}
 end
-@forward Formula.tree formula, formula!, fhash
-        size, parent, parent!,
-        leftchild, leftchild!, rightchild, rightchild!,
+@forward Formula.tree formula, formula!, fhash, size, parent, parent!
+@forward Formula.tree leftchild, leftchild!, rightchild, rightchild!
 
 """
     tree(f::Formula)
@@ -224,10 +223,10 @@ function inorder(v::FNode{L}) where {L<:AbstractLogic}
     return str
 end
 
-#################################
-#        Formula input          #
-#       and construction        #
-#################################
+############################################################################################
+#        Formula input
+#       and construction
+############################################################################################
 
 # A simple lexer capable of distinguish operators in a string
 function tokenizer(expression::String; ops::Operators = operators(MODAL_LOGIC))
@@ -426,7 +425,7 @@ function _build_tree(
     nodestack,
     logic::AbstractLogic,
     letter_sentinels::Dict{Letter, FNode{L}}
-)   where {L <: AbstractLogic}
+) where {L <: AbstractLogic}
     # Case 1 or 2
     if typeof(tok) <: AbstractOperator
         __build_tree(Val(ariety(tok)), tok, nodestack, logic)
@@ -466,6 +465,64 @@ function __build_tree(::Val{2},tok,nodestack,logic::AbstractLogic)
     newnode.formula = string("(", left_child.formula, tok, right_child.formula, ")")
 
     push!(nodestack, newnode)
+end
+
+############################################################################################
+#      Formula composition
+############################################################################################
+
+function _link_fnode!(
+    a::FNode{L},
+    b::FNode{L},
+    child_direction::Symbol
+) where {L<:AbstractLogic}
+    parent!(b, a)
+    eval(child_direction)(a, b)
+end
+
+# Utility function to easily compose formulas
+# This is not exported, but could to extend this way of
+# do formula-compositions to custom user-defined operators.
+function _compose_fnode!(args...)
+    # Currently, only unary and binary operators are supported.
+    # In case of greater arieties, a vector should be used instead of
+    # :leftchild and :rightchild
+    n = length(args)
+
+    if n==2
+        _link_fnode!(args[1], args[2], :rightchild!)
+    elseif n==3
+        _link_fnode!(args[1], args[2], :leftchild!)
+        _link_fnode!(args[1], args[3], :rightchild!)
+    else
+        throw(error("Currently, only unary and binary operators are allowed."))
+    end
+
+    return args[1]
+end
+
+SoleLogics.NEGATION(p::FNode{L}) where {L<:AbstractLogic} = begin
+    return _compose_fnode!(FNode(NEGATION, logic(p)), p)
+end
+
+SoleLogics.DIAMOND(p::FNode{L}) where {L<:AbstractLogic} = begin
+    return _compose_fnode!(FNode(DIAMOND, logic(p)), p)
+end
+
+SoleLogics.BOX(p::FNode{L}) where {L<:AbstractLogic} = begin
+    return _compose_fnode!(FNode(BOX, logic(p)), p)
+end
+
+SoleLogics.CONJUNCTION(p::FNode{L}, q::FNode{L}) where {L<:AbstractLogic} = begin
+    return _compose_fnode!(FNode(CONJUNCTION, logic(p)), p, q)
+end
+
+SoleLogics.DISJUNCTION(p::FNode{L}, q::FNode{L}) where {L<:AbstractLogic} = begin
+    return _compose_fnode!(FNode(DISJUNCTION, logic(p)), p, q)
+end
+
+SoleLogics.IMPLICATION(p::FNode{L}, q::FNode{L}) where {L<:AbstractLogic} = begin
+    return _compose_fnode!(FNode(IMPLICATION, logic(p)), p, q)
 end
 
 # This has to be shifted somewhere in SoleLogics or SoleAlphabets
@@ -525,11 +582,10 @@ function is_less(
     return precedence(a) <= precedence(b) ? true : false
 end
 
-
-#################################
-#       Formula random          #
-#         generation            #
-#################################
+############################################################################################
+#       Formula random
+#         generation
+############################################################################################
 
 """
     gen_formula(
@@ -656,8 +712,6 @@ function _gen_formula(
 
     return f
 end
-
-Int
 
 """
 1) TODO:

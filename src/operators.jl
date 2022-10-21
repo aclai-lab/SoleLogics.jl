@@ -1,8 +1,8 @@
 using IterTools
 
-#################################
-#       Abstract Types          #
-#################################
+############################################################################################
+#       Abstract Types
+############################################################################################
 """Root of Operator abstract-types tree"""
 abstract type AbstractOperator{T} end
 
@@ -10,9 +10,9 @@ abstract type AbstractModalOperator{T} <: AbstractOperator{T} end
 abstract type AbstractExistentialModalOperator{T} <: AbstractModalOperator{T} end
 abstract type AbstractUniversalModalOperator{T} <: AbstractModalOperator{T} end
 
-#################################
-#     Definition utilities      #
-#################################
+############################################################################################
+#     Definition utilities
+############################################################################################
 """
     ariety(op)
 Return the ariety associated with an operator.
@@ -32,9 +32,9 @@ ariety(op) = error(
     Please, follow the example in the documentation to set an ariety."
 )
 
-#################################
-#       Concrete Types          #
-#################################
+############################################################################################
+#       Concrete Types
+############################################################################################
 
 struct Operator{T} <: AbstractOperator{T} end
 Operator(s::AbstractString) = Operator{Symbol(s)}()
@@ -134,9 +134,9 @@ function show(io::IO, op::AbstractUniversalModalOperator{T}) where {T}
     print(io, delim[1] * "$(reltype(op))" * delim[2])
 end
 
-#################################
-#            Traits             #
-#################################
+############################################################################################
+#            Traits
+############################################################################################
 SoleTraits.is_unary_operator(op::AbstractOperator) = return (ariety(op) == 1)
 SoleTraits.is_binary_operator(op::AbstractOperator) = return (ariety(op) == 2)
 
@@ -144,17 +144,17 @@ SoleTraits.is_modal_operator(::AbstractModalOperator) = true
 SoleTraits.is_existential_modal_operator(::AbstractExistentialModalOperator) = true
 SoleTraits.is_universal_modal_operator(::AbstractUniversalModalOperator) = true
 
-#################################
-#      `Operators` wrapper      #
-#         and utilities         #
-#################################
+############################################################################################
+#      `Operators` wrapper
+#         and utilities
+############################################################################################
 """Operators interface."""
 const Operators = Vector{AbstractOperator}
 
-#################################
-#    More on modal operators    #
-#   and modal logic extensions  #
-#################################
+############################################################################################
+#    More on modal operators
+#   and modal logic extensions
+############################################################################################
 """Legal strings to generate HS opearators."""
 const HSRELATIONS = [
     "L",    # later
@@ -230,10 +230,13 @@ macro modaloperators(R, d::Int)
     end
 end
 
-###########################
-#     Definitions and     #
-#       behaviours        #
-###########################
+############################################################################################
+#     Definitions and
+#       behaviours
+############################################################################################
+# TODO: when SoleModelChecking is merged here,
+# write each operator behaviour in this section here.
+
 """Negation operator."""
 const NEGATION = OP("¬")
 SoleLogics.ariety(::typeof(NEGATION)) = 1
