@@ -177,7 +177,7 @@ Return the maximum number of modal operators among all the v-to-leaf paths."""
 function modal_depth(v::FNode{L}) where {L<:Logic}
     return is_modal_operator(token(v)) + max(
         (isdefined(v, :leftchild) ? modal_depth(leftchild(v)) : 0),
-        (isdefined(v, :rightchild) ? modal_depth(rightchild(v)) : 0),
+        (isdefined(v, :rightchild) ? modal_depth(rightchild(v)) : 0)
     )
 end
 
@@ -500,6 +500,9 @@ function _compose_fnode!(args...)
 
     return args[1]
 end
+
+# TODO: `compose` macro to generalize composition methods.
+# compose(GENERIC_OPERATOR, args...)
 
 SoleLogics.NEGATION(p::FNode{L}) where {L<:AbstractLogic} = begin
     return _compose_fnode!(FNode(NEGATION, logic(p)), p)
