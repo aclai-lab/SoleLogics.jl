@@ -403,10 +403,10 @@ function build_tree(
 )
     nodestack = Stack{FNode}()
     # This is needed to avoid memory waste repeating identical leaves.
-    leaves_pool = Dict(alphabet(logic) .=> [FNode(x, logic) for x in alphabet(logic)])
+    letter_sentinels = Dict(alphabet(logic) .=> [FNode(x, logic) for x in alphabet(logic)])
 
     for tok in expression
-        _build_tree(tok, nodestack, logic, leaves_pool)
+        _build_tree(tok, nodestack, logic, letter_sentinels)
     end
 
     SoleLogics.size!(first(nodestack))
