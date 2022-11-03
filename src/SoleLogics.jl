@@ -44,7 +44,7 @@ export shunting_yard, build_tree
 export gen_formula
 
 @reexport using SoleAlphabets
-@reexport using SoleWorlds
+@reexport using SoleWorlds # NOTE: this is substituted with SoleLogics.Worlds.
 @reexport using SoleTraits
 
 include("operators.jl")
