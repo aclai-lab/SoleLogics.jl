@@ -43,6 +43,10 @@ export shunting_yard, build_tree
 # Formula tree generation
 export gen_formula
 
+# Submodules reexporting
+include("Relations/Relations.jl")
+using .Relations
+
 @reexport using SoleAlphabets
 @reexport using SoleWorlds # NOTE: this is substituted with SoleLogics.Worlds.
 @reexport using SoleTraits
