@@ -12,7 +12,7 @@ module Relations
     # Interval algebra relations 1D
 
     # IA
-    export _IA_A, _IA_L, _IA_B, _IA_E, _IA_D, _IA_O, _IA_Ai, _IA_Li, _IA_Bi, _IA_Ei, _IA_Di, _IA_O
+    export _IA_A, _IA_L, _IA_B, _IA_E, _IA_D, _IA_O, _IA_Ai, _IA_Li, _IA_Bi, _IA_Ei, _IA_Di, _IA_Oi
     export IA_A, IA_L, IA_B, IA_E, IA_D, IA_Ai, IA_Li, IA_Bi, IA_Ei, IA_Di, IA_Oi
 
     # IA7
