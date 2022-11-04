@@ -33,7 +33,10 @@ module Relations
     export _IABase
     export RectangleRelation
 
-    export IA2DRelations..., IA2D_URelations...
+    # Export IA2DRelations and IA2D_URelations contents
+    for relation in [IA2DRelations, IA2D_URelations]
+        @eval export $(Symbol(relation))
+    end
     export IA2DRelations, IA2D_URelations, IA2DRelations_extended
 
     # RCC8 relations
