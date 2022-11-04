@@ -47,6 +47,9 @@ export gen_formula
 include("Relations/Relations.jl")
 using .Relations
 
+include("Worlds/Worlds.jl")
+using .Worlds
+
 @reexport using SoleAlphabets
 @reexport using SoleWorlds # NOTE: this is substituted with SoleLogics.Worlds.
 @reexport using SoleTraits
