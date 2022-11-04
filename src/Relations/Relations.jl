@@ -1,6 +1,6 @@
 module Relations
 
-    include("interval.jl");
+    include("intervals.jl");
 
     export Relation,
         DirectionalRelation, IntervalRelation,
