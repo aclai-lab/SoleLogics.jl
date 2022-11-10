@@ -234,7 +234,7 @@ end
 #     Definitions and
 #       behaviours
 ############################################################################################
-# TODO: when SoleModelChecking is merged here,
+# TODO: when SoleModelChecking will be merged here,
 # write each operator behaviour in this section here.
 
 """Negation operator."""
@@ -267,5 +267,31 @@ const IMPLICATION = OP("→")
 SoleLogics.ariety(::typeof(IMPLICATION)) = 2
 precedence(::typeof(IMPLICATION)) = 10
 
+"""Equality operator."""
+const EQUAL = OP("=")
+SoleLogics.ariety(::typeof(EQUAL)) = 2
+precedence(::typeof(EQUAL)) = 10
+
+"""Greater than operator."""
+const GREATER = OP(">")
+SoleLogics.ariety(::typeof(GREATER)) = 2
+precedence(::typeof(GREATER)) = 10
+
+"""Greater than or equal operator."""
+const GREATER_EQUAL = OP("≥")
+SoleLogics.ariety(::typeof(GREATER_EQUAL)) = 2
+precedence(::typeof(GREATER_EQUAL)) = 10
+
+"""Lower than operator."""
+const LOWER = OP("<")
+SoleLogics.ariety(::typeof(LOWER)) = 2
+precedence(::typeof(LOWER)) = 10
+
+"""Lower than or equal operator."""
+const LOWER_EQUAL = OP("≤")
+SoleLogics.ariety(::typeof(LOWER_EQUAL)) = 2
+precedence(::typeof(LOWER_EQUAL)) = 10
+
 SoleTraits.is_commutative(::typeof(CONJUNCTION)) = true
 SoleTraits.is_commutative(::typeof(DISJUNCTION)) = true
+SoleTraits.is_commutative(::typeof(EQUAL)) = true

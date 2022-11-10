@@ -4,18 +4,19 @@ import Base: show
 using DataStructures
 using Dictionaries
 using Reexport
+@reexport using SoleTraits
 
 # Abstract types
 export AbstractLogic, CrispLogic, FuzzyLogic
 
 export AbstractOperator
-# deprecated: AbstractUnaryOperator, AbstractBinaryOperator. Use ariety(op) instead
 export AbstractModalOperator
 export AbstractExistentialModalOperator, AbstractUniversalModalOperator
 
 # Concrete types, collections, wrappers, utilities related to operators
 export UNOP, BINOP
 export NEGATION, CONJUNCTION, DISJUNCTION, IMPLICATION
+export EQUAL, GREATER, GREATER_EQUAL, LOWER, LOWER_EQUAL
 export Operators, reltype, ariety, precedence
 
 # Modal operators
@@ -43,19 +44,24 @@ export shunting_yard, build_tree
 # Formula tree generation
 export gen_formula
 
-# Submodules reexporting
-include("Relations/Relations.jl")
-using .Relations
-
-include("Worlds/Worlds.jl")
-using .Worlds
-
-@reexport using SoleAlphabets
-@reexport using SoleWorlds # NOTE: this is substituted with SoleLogics.Worlds.
-@reexport using SoleTraits
+# Previous dependecies within SoleAlphabet:
+# NOTE: will be deprecated
+const Letter = String
+const LetterAlphabet = Vector{Letter}
+SoleTraits.is_proposition(::Letter) = true
 
 include("operators.jl")
 include("logics.jl")
 include("formulas.jl")
+
+# Submodules reexporting
+include("Relations/Relations.jl")
+@reexport using .Relations
+
+include("Worlds/Worlds.jl")
+@reexport using .Worlds
+
+include("Alphabets/Alphabets.jl")
+@reexport using .Alphabets
 
 end
