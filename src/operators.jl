@@ -112,9 +112,9 @@ const UNIVMODOP(op) = UniversalModalOperator(op)
 """Extract the symbol wrapped by an operator."""
 reltype(::AbstractOperator{T}) where {T} = T
 
-show(io::IO, op::AbstractOperator{T}) where {T} = print(io, "$(reltype(op))")
+Base.show(io::IO, op::AbstractOperator{T}) where {T} = print(io, "$(reltype(op))")
 
-function show(io::IO, op::AbstractExistentialModalOperator{T}) where {T}
+function Base.show(io::IO, op::AbstractExistentialModalOperator{T}) where {T}
     # "⟨" and "⟩" delimeters should not be printed in the simplest case where T is :◊
     delim = ["⟨", "⟩"]
     if reltype(op) == Symbol("◊")
@@ -124,7 +124,7 @@ function show(io::IO, op::AbstractExistentialModalOperator{T}) where {T}
     print(io, delim[1] * "$(reltype(op))" * delim[2])
 end
 
-function show(io::IO, op::AbstractUniversalModalOperator{T}) where {T}
+function Base.show(io::IO, op::AbstractUniversalModalOperator{T}) where {T}
     # "[" and "]" delimeters should not be printed in the simplest case where T is :□
     delim = ["[", "]"]
     if reltype(op) == :□

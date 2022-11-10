@@ -92,3 +92,19 @@ struct Letter{T} <: AbstractPropositionalLetter
         new{T}(relation, feature, attribute, operator, threshold, isnothing(name) ? name : string(name))
     end
 end
+
+# Toy example of letter print.
+# TODO: separate verbose case (R f(A) ⋈ a) and non-verbose case ("p")
+function Base.show(io::IO, letter::Letter{T}) where {T}
+    if !(isnothing(letter.name))
+        print(letter.name)
+    else
+        output_string =
+            (isnothing(letter.relation) ? "" : "$(letter.relation) ") *
+            (isnothing(letter.feature)
+                ? "id($(letter.attribute)) "
+                : "$(letter.feature)($(letter.attribute)) ") *
+            "$(letter.operator) $(letter.threshold)"
+        print(output_string)
+    end
+end
