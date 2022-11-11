@@ -7,7 +7,7 @@ using Random # needed to formula generation
 ############################################################################################
 
 # Something wrappable in a FNode.
-const Token = Union{Letter,AbstractOperator}
+const Token = Union{Letter, AbstractOperator}    # TODO: Letter -> AbstractLetter
 
 """Formula (syntax) tree node."""
 mutable struct FNode{L<:Logic}
@@ -388,7 +388,9 @@ is the root of the formula (syntax) build_tree.
 
 """
     build_tree(expression::Vector{Union{String,AbstractOperator}})
-Return a formula-tree from a its corresponding postfix-notation string.
+Return a formula-tree from its corresponding postfix-notation string.
+The propositional letters (tree's leaves) are `Letter{T}`, with every
+field set to `nothing`.
 
     build_tree(expression::Vector{<:Any})
 Return a formula-tree forcing the cast of `expression`
@@ -402,8 +404,11 @@ function build_tree(
     logic::AbstractLogic=DEFAULT_LOGIC
 )
     nodestack = Stack{FNode}()
+
     # This is needed to avoid memory waste repeating identical leaves.
-    letter_sentinels = Dict(alphabet(logic) .=> [FNode(x, logic) for x in alphabet(logic)])
+    # We know for sure that each String in `_candidates` will become a `Letter`.
+    _candidates = [s for s in expression if typeof(s) == String]
+    letter_sentinels = Dict(_candidates .=> [FNode(SoleLogics.Alphabets.Letter(x), logic) for x in _candidates])
 
     for tok in expression
         _build_tree(tok, nodestack, logic, letter_sentinels)
@@ -424,15 +429,14 @@ function _build_tree(
     tok,
     nodestack,
     logic::AbstractLogic,
-    letter_sentinels::Dict{Letter, FNode{L}}
+    letter_sentinels::Dict{String, FNode{L}}
 ) where {L <: AbstractLogic}
     # Case 1 or 2
     if typeof(tok) <: AbstractOperator
         __build_tree(Val(ariety(tok)), tok, nodestack, logic)
     # Case 3
     # Identical propositional letters are not repeated,
-    # but leaves works as "sentinels" instead,
-    # thus, memory is not wasted
+    # but leaves works as "sentinels" instead, therefore, not wasting memory.
     elseif tok in alphabet(logic)
         newnode = letter_sentinels[tok]
         newnode.formula = string(tok)
@@ -442,7 +446,7 @@ function _build_tree(
     end
 end
 
-function __build_tree( ::Val{1}, tok::AbstractOperator, nodestack, logic::AbstractLogic)
+function __build_tree(::Val{1}, tok::AbstractOperator, nodestack, logic::AbstractLogic)
     newnode = FNode(tok, logic)
     children = pop!(nodestack)
 
@@ -453,7 +457,7 @@ function __build_tree( ::Val{1}, tok::AbstractOperator, nodestack, logic::Abstra
     push!(nodestack, newnode)
 end
 
-function __build_tree(::Val{2},tok,nodestack,logic::AbstractLogic)
+function __build_tree(::Val{2}, tok,nodestack,logic::AbstractLogic)
     newnode = FNode(tok, logic)
     right_child = pop!(nodestack)
     left_child = pop!(nodestack)

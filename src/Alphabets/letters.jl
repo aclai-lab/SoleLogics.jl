@@ -4,6 +4,9 @@ abstract type AbstractPropositionalLetter end
 # Utilities
 ############################################################################################
 
+# Default Letter type, used when nothing is specified (e.g. using an external constructor).
+const _DEFAULT_LETTER_TYPE = Number
+
 # Check whether is it legal to confront the specified attribute with threshold's type.
 function _is_comparable(a::Any, b::Any)
     if !(typeof(a) <: typeof(b))
@@ -18,6 +21,7 @@ function _is_valid_operator(operator::AbstractOperator)
     end
 end
 
+# NOTE: currently, Letter is immutable but looking ahead, we defined the setters anyway.
 struct Letter{T} <: AbstractPropositionalLetter
     relation::Union{Relation, Nothing}         # Relation of a certain custom-made modal logic formalism.
     feature::Union{Function, Nothing}          # Function manipulating the attribute.
@@ -93,6 +97,8 @@ struct Letter{T} <: AbstractPropositionalLetter
     end
 end
 
+Letter(name::String) = Letter{_DEFAULT_LETTER_TYPE}(name)
+
 #=
 How to implement propositional letters with shape "a1 ⋈ R f(A) ⋈ a2" is to be decided
 togheter. The following is just a toy example / idea using delegation pattern.
@@ -141,19 +147,22 @@ name(letter::Letter{T}) where {T} = letter.name
 name!(letter::Letter{T}, name::String) where {T} = letter.name = name
 
 """ TODO: add documentation. """
-function get_letter(letter::Letter{T}) where {T}
+Base.string(letter::Letter{T}) where {T} = begin
     # Attempt to return `letter` verbose string representation.
-    if !isnothing(letter.attribute) &&
+    if !isnothing(letter.name)
+        return letter.name
+    elseif !isnothing(letter.attribute) &&
         !isnothing(letter.operator) &&
         !isnothing(letter.threshold)
         return (isnothing(letter.relation) ? "" : "$(letter.relation) ") * (isnothing(letter.feature) ? "id($(letter.attribute)) " : "$(letter.feature)($(letter.attribute)) ") * "$(letter.operator) $(letter.threshold)"
     # Attempt to print `letter` .
     else
-        return letter.name
+        @warn "Unable to print $letter"
+        return ""
     end
 end
 
-Base.show(io::IO, letter::Letter) = print(io, get_letter(letter))
+Base.show(io::IO, letter::Letter) = print(io, string(letter))
 
 #=
 using SoleLogics.Alphabets
