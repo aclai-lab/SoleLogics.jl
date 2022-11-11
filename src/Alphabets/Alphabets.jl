@@ -1,4 +1,5 @@
 module Alphabets
+    import Base: show
 
     # TODO: think about importing only the needed resources
     # for example, import SoleLogics.Relations: AbstractRelation
