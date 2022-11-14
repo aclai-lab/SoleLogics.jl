@@ -334,17 +334,17 @@ function _check_operator_validity(op, logic::AbstractLogic)
 end
 
 function _shunting_yard(postfix, opstack, tok, logic::AbstractLogic)
-    # 1
-    if typeof(tok) <: String    # NOTE: @
-        push!(postfix, tok)
     # 2
-    elseif tok == "("
+    if tok == "("
         push!(opstack, tok)
     # 3
     elseif tok == ")"
         while !isempty(opstack) && (op = pop!(opstack)) != "("
             push!(postfix, op)
         end
+    # 1 (tok is certainly a propositional letter)
+    elseif typeof(tok) <: String
+        push!(postfix, tok)
     # 4 (tok is certainly an operator)
     else
         while !isempty(opstack)
@@ -441,7 +441,7 @@ function _build_tree(
     # Case 3
     # Identical propositional letters are not repeated,
     # but leaves works as "sentinels" instead, therefore, not wasting memory.
-    elseif haskey(letter_sentinels, tok) # NOTE: @
+    elseif haskey(letter_sentinels, tok)
         newnode = letter_sentinels[tok]
         newnode.formula = string(tok)
         push!(nodestack, newnode)

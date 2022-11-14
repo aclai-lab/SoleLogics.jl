@@ -12,9 +12,8 @@ abstract type AbstractModalLogic <: AbstractLogic end
 """A structure representing a certain logic."""
 struct Logic{T} <: AbstractLogic
     ops::Operators
-    # alphabet::LetterAlphabet NOTE: @
 
-    Logic{T}(ops::Operators) where {T} = new{T}(ops) # NOTE: @ tolto alphabet dal costruttore
+    Logic{T}(ops::Operators) where {T} = new{T}(ops)
 end
 
 """
@@ -23,8 +22,8 @@ end
 Logic constructors.
 A custom name can be provided as AbstractString or Symbol.
 """
-Logic(s::AbstractString, ops::Operators) = Logic{Symbol(s)}(ops) # NOTE: @ abbiamo tolto alphabet dai costruttori
-Logic(s::Symbol, ops::Operators) = Logic{s}(ops) # NOTE: @
+Logic(s::AbstractString, ops::Operators) = Logic{Symbol(s)}(ops)
+Logic(s::Symbol, ops::Operators) = Logic{s}(ops)
 
 """
     operators(l::Logic)
@@ -36,26 +35,23 @@ operators(l::Logic) = values(l.ops)
     alphabet(l::Logic)
 Return the propositional letters contained in a certain logic.
 """
-# alphabet(l::Logic) = l.alphabet NOTE: @
 
 ############################################################################################
 #       Available logics
 ############################################################################################
 
 propositional_lops = Operators([CONJUNCTION, DISJUNCTION, IMPLICATION, NEGATION])
-# propositional_lalphabet = LetterAlphabet(string.(collect('a':'z'))) NOTE: @
 """
 Default definition of PL.
 """
 const PROPOSITIONAL_LOGIC =
-    Logic("PropositionalLogic", propositional_lops) # NOTE: @ tolto alfabeto
+    Logic("PropositionalLogic", propositional_lops)
 
 modal_lops = Operators([CONJUNCTION, DISJUNCTION, IMPLICATION, NEGATION, DIAMOND, BOX])
-# modal_lalphabet = LetterAlphabet(string.(collect('a':'z'))) NOTE: @
 """
 Default definition of archetypal ML.
 """
-const MODAL_LOGIC = Logic("ModalLogic", modal_lops) # NOTE: @ tolto alfabeto
+const MODAL_LOGIC = Logic("ModalLogic", modal_lops)
 
 """
 Chosen logic, usually utilized whenever a custom argument of type `::AbstractLogic`
