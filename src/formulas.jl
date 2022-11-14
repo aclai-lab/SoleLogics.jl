@@ -7,7 +7,7 @@ using Random # needed to formula generation
 ############################################################################################
 
 # Something wrappable in a FNode.
-const Token = Union{Letter, AbstractOperator}    # TODO: Letter -> AbstractLetter
+const Token = Union{AbstractPropositionalLetter, AbstractOperator}
 
 """Formula (syntax) tree node."""
 mutable struct FNode{L<:Logic}
@@ -21,7 +21,6 @@ mutable struct FNode{L<:Logic}
     rightchild::FNode{L}
 
     FNode{L}(token::Token, logic::L) where {L<:Logic} = begin
-        #NOTE: "is_proposition(token)" may changed to "!(token in alphabet(logic))" in the future
         if !is_proposition(token) && !(token in operators(logic))
             throw(error("Node $token is not legal for the specified logic $(typeof(logic))"))
         end
@@ -332,17 +331,17 @@ end
 
 function _shunting_yard(postfix, opstack, tok, logic::AbstractLogic)
     # 1
-    if tok in alphabet(logic)
+    if typeof(tok) <: String    # NOTE: @
         push!(postfix, tok)
-        # 2
+    # 2
     elseif tok == "("
         push!(opstack, tok)
-        # 3
+    # 3
     elseif tok == ")"
         while !isempty(opstack) && (op = pop!(opstack)) != "("
             push!(postfix, op)
         end
-        # 4 (tok is certainly an operator)
+    # 4 (tok is certainly an operator)
     else
         while !isempty(opstack)
             if first(opstack) == "("
@@ -389,26 +388,26 @@ is the root of the formula (syntax) build_tree.
 """
     build_tree(expression::Vector{Union{String,AbstractOperator}})
 Return a formula-tree from its corresponding postfix-notation string.
-The propositional letters (tree's leaves) are `Letter{T}`, with every
+Each propositional letter (tree's leaves) is a `SoleLogics.Alphabets.Letter`, with every
 field set to `nothing`.
 
     build_tree(expression::Vector{<:Any})
 Return a formula-tree forcing the cast of `expression`
-into a `Vector{Union{String,AbstractOperator}}`.
+into a `Vector{Union{MetaLetter, AbstractOperator}}`.
 
     build_tree(expression::String)
 Return a formula-tree directly from an infix-notation string.
 """
 function build_tree(
-    expression::Vector{Union{String,AbstractOperator}};
+    expression::Vector{Union{MetaLetter, AbstractOperator}};
     logic::AbstractLogic=DEFAULT_LOGIC
 )
     nodestack = Stack{FNode}()
 
     # This is needed to avoid memory waste repeating identical leaves.
     # We know for sure that each String in `_candidates` will become a `Letter`.
-    _candidates = [s for s in expression if typeof(s) == String]
-    letter_sentinels = Dict(_candidates .=> [FNode(SoleLogics.Alphabets.Letter(x), logic) for x in _candidates])
+    _candidates = [s for s in expression if typeof(s) <: MetaLetter]
+    letter_sentinels = Dict(_candidates .=> [FNode(typeof(x) == String ? SoleLogics.Alphabets.Letter(x) : x, logic) for x in _candidates])
 
     for tok in expression
         _build_tree(tok, nodestack, logic, letter_sentinels)
@@ -419,17 +418,18 @@ function build_tree(
 end
 
 function build_tree(expression::Vector{<:Any}; logic::AbstractLogic=DEFAULT_LOGIC)
-    build_tree(convert(Vector{Union{String,AbstractOperator}}, expression), logic=logic)
+    build_tree(convert(Vector{Union{MetaLetter, AbstractOperator}}, expression), logic=logic)
 end
 
-build_tree(expression::String; logic::AbstractLogic=DEFAULT_LOGIC) =
-    build_tree(shunting_yard(expression,logic=logic), logic=logic)
+function build_tree(expression::String; logic::AbstractLogic=DEFAULT_LOGIC)
+    build_tree(shunting_yard(expression, logic=logic), logic=logic)
+end
 
 function _build_tree(
     tok,
     nodestack,
     logic::AbstractLogic,
-    letter_sentinels::Dict{String, FNode{L}}
+    letter_sentinels::Dict{<:AbstractPropositionalLetter, FNode{L}}
 ) where {L <: AbstractLogic}
     # Case 1 or 2
     if typeof(tok) <: AbstractOperator
@@ -437,7 +437,7 @@ function _build_tree(
     # Case 3
     # Identical propositional letters are not repeated,
     # but leaves works as "sentinels" instead, therefore, not wasting memory.
-    elseif tok in alphabet(logic)
+    elseif haskey(letter_sentinels, tok) # NOTE: @
         newnode = letter_sentinels[tok]
         newnode.formula = string(tok)
         push!(nodestack, newnode)
@@ -534,7 +534,7 @@ end
 
 # This has to be shifted somewhere in SoleLogics or SoleAlphabets
 import SoleLogics: precedence
-SoleLogics.precedence(l::Letter) = Int(only(l))
+SoleLogics.precedence(letter::AbstractPropositionalLetter) = hash(letter)
 
 """
     fnormalize!(fx::Formula)
@@ -559,7 +559,6 @@ end
 build_tree("(b∧a)∨(d∧c)")
 build_tree("(d∧c)∨(a∧b)")
 Find a method to collapse those in the same formula
-NOTE: maybe using hashing?
 =#
 function fnormalize!(v::FNode{L}) where {L<:AbstractLogic}
     if isleaf(v)
@@ -585,7 +584,7 @@ end
 function is_less(
     a::T1,
     b::T2,
-) where {T1<:Union{Letter,<:AbstractOperator},T2<:Union{Letter,<:AbstractOperator}}
+) where {T1<:Union{<:AbstractPropositionalLetter,<:AbstractOperator},T2<:Union{<:AbstractPropositionalLetter,<:AbstractOperator}}
     return precedence(a) <= precedence(b) ? true : false
 end
 
@@ -596,8 +595,8 @@ end
 
 """
     gen_formula(
-        height;
-        P::LetterAlphabet=SoleLogics.alphabet(MODAL_LOGIC),
+        height::Integer,
+        P::Vector{<:AbstractPropositionalLetter};
         C::Operators=SoleLogics.operators(MODAL_LOGIC),
         max_modepth::Integer=height,
         pruning_factor::Float64=0.0,
@@ -607,7 +606,8 @@ Return a formula having the exact specified `height`.
 
 # Arguments
 - `height::Integer`: final height of the generated tree.
-- `P::LetterAlphabet`: pool of propositional letters, candidates to be leaves.
+- `P::Vector{<:AbstractPropositionalLetter}`: pool of valid propositional letters,
+    candidates to be leaves.
 - `C::Operators`: pool of valid operators, candidates to be internal nodes.
 - `max_modepth::Integer`: maximum number of modal operators in a path.
 - `pruning_factor::Float64`: float number between 0.0 and 1.0.
@@ -617,8 +617,8 @@ Return a formula having the exact specified `height`.
 - `rng::Union{Integer,AbstractRNG}`: an rng, or the seed to initialize one.
 """
 function gen_formula(
-    height::Integer;
-    P::LetterAlphabet=SoleLogics.alphabet(MODAL_LOGIC),
+    height::Integer,
+    P::Vector{<:AbstractPropositionalLetter};
     C::Operators=SoleLogics.operators(MODAL_LOGIC),
     max_modepth::Integer=height,
     pruning_factor::Float64=0.0,
@@ -660,6 +660,7 @@ Return a formula having the exact specified `height`.
 """
 function gen_formula(
     height::Integer,
+    P::Vector{<:AbstractPropositionalLetter},
     logic::AbstractLogic;
     max_modepth::Integer=height,
     pruning_factor::Float64=0.0,
@@ -669,7 +670,7 @@ function gen_formula(
     fx = build_tree(
         _gen_formula(
             height,
-            SoleLogics.alphabet(logic),
+            P,
             SoleLogics.operators(logic),
             modal_depth = max_modepth,
             pruning_factor = pruning_factor,
@@ -682,7 +683,7 @@ end
 # gen_formula core
 function _gen_formula(
     height::Integer,
-    P::LetterAlphabet,
+    P::Vector{<:AbstractPropositionalLetter},
     C::Operators;
     modal_depth::Integer,
     pruning_factor::Float64 = 0.0,
@@ -714,7 +715,7 @@ function _gen_formula(
             1:ariety(op),
         )...,
     )
-    f = convert(Vector{Union{Letter,AbstractOperator}}, f)
+    f = convert(Vector{Union{AbstractPropositionalLetter, AbstractOperator}}, f)
     push!(f, op)
 
     return f

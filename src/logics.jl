@@ -12,9 +12,9 @@ abstract type AbstractModalLogic <: AbstractLogic end
 """A structure representing a certain logic."""
 struct Logic{T} <: AbstractLogic
     ops::Operators
-    alphabet::LetterAlphabet
+    # alphabet::LetterAlphabet NOTE: @
 
-    Logic{T}(ops::Operators, alphabet::LetterAlphabet) where {T} = new{T}(ops, alphabet)
+    Logic{T}(ops::Operators) where {T} = new{T}(ops) # NOTE: @ tolto alphabet dal costruttore
 end
 
 """
@@ -23,9 +23,8 @@ end
 Logic constructors.
 A custom name can be provided as AbstractString or Symbol.
 """
-Logic(s::AbstractString, ops::Operators, alphabet::LetterAlphabet) =
-    Logic{Symbol(s)}(ops, alphabet)
-Logic(s::Symbol, ops::Operators, alphabet::LetterAlphabet) = Logic{s}(ops, alphabet)
+Logic(s::AbstractString, ops::Operators) = Logic{Symbol(s)}(ops) # NOTE: @ abbiamo tolto alphabet dai costruttori
+Logic(s::Symbol, ops::Operators) = Logic{s}(ops) # NOTE: @
 
 """
     operators(l::Logic)
@@ -37,26 +36,26 @@ operators(l::Logic) = values(l.ops)
     alphabet(l::Logic)
 Return the propositional letters contained in a certain logic.
 """
-alphabet(l::Logic) = l.alphabet
+# alphabet(l::Logic) = l.alphabet NOTE: @
 
 ############################################################################################
 #       Available logics
 ############################################################################################
 
 propositional_lops = Operators([CONJUNCTION, DISJUNCTION, IMPLICATION, NEGATION])
-propositional_lalphabet = LetterAlphabet(string.(collect('a':'z')))
+# propositional_lalphabet = LetterAlphabet(string.(collect('a':'z'))) NOTE: @
 """
 Default definition of PL.
 """
 const PROPOSITIONAL_LOGIC =
-    Logic("PropositionalLogic", propositional_lops, propositional_lalphabet)
+    Logic("PropositionalLogic", propositional_lops) # NOTE: @ tolto alfabeto
 
 modal_lops = Operators([CONJUNCTION, DISJUNCTION, IMPLICATION, NEGATION, DIAMOND, BOX])
-modal_lalphabet = LetterAlphabet(string.(collect('a':'z')))
+# modal_lalphabet = LetterAlphabet(string.(collect('a':'z'))) NOTE: @
 """
 Default definition of archetypal ML.
 """
-const MODAL_LOGIC = Logic("ModalLogic", modal_lops, modal_lalphabet)
+const MODAL_LOGIC = Logic("ModalLogic", modal_lops) # NOTE: @ tolto alfabeto
 
 """
 Chosen logic, usually utilized whenever a custom argument of type `::AbstractLogic`

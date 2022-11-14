@@ -48,11 +48,10 @@ export gen_formula
 # NOTE: will be deprecated
 const Letter = String
 const LetterAlphabet = Vector{Letter}
-SoleTraits.is_proposition(::Letter) = true
+# SoleTraits.is_proposition(::Letter) = true
 
+# First of all, operators exports will be needed in SoleLogics.Alphabets
 include("operators.jl")
-include("logics.jl")
-include("formulas.jl")
 
 # Submodules reexporting
 include("Relations/Relations.jl")
@@ -63,5 +62,9 @@ include("Worlds/Worlds.jl")
 
 include("Alphabets/Alphabets.jl")
 @reexport using .Alphabets
+
+# New includes
+include("logics.jl")
+include("formulas.jl")
 
 end

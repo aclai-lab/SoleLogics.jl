@@ -1,4 +1,8 @@
 abstract type AbstractPropositionalLetter end
+SoleTraits.is_proposition(::AbstractPropositionalLetter) = true
+
+# This represents a variable that could be a letter (in the future) or already is one.
+const MetaLetter = Union{<:AbstractPropositionalLetter, String}
 
 ############################################################################################
 # Utilities
@@ -169,4 +173,15 @@ using SoleLogics.Alphabets
 using SoleLogics
 
 a = SoleLogics.Alphabets.Letter{Int64}(5, CONJUNCTION, 6, name="p");
+
+---------------------------------
+
+gen_formula driver
+
+generator = ["a", "b", "c", "d", "e"]
+letters = Vector{SoleLogics.Alphabets.Letter{Int64}}()
+for s in generator
+    push!(letters, SoleLogics.Alphabets.Letter{Int64}(s) )
+end
+gen_formula(4, letters)
 =#

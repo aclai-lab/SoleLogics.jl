@@ -13,5 +13,6 @@ module Alphabets
     # and relations definitions.
     # In other words, this module can't exist without SoleLogics.
 
+    export AbstractPropositionalLetter, MetaLetter
     export Letter
 end
