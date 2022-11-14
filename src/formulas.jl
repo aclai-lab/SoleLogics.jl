@@ -35,8 +35,12 @@ end
 FNode constructors.
 If a logic L is not specified, DEFAULT_LOGIC is setted.
 """
-FNode(token::Token, L::Logic) = FNode{typeof(L)}(token, L)
-FNode(token::Token) = FNode(token, DEFAULT_LOGIC)
+FNode(token::Token; logic::Logic=DEFAULT_LOGIC) = FNode{typeof(logic)}(token, logic)
+FNode(token::String; logic::Logic=DEFAULT_LOGIC) =
+    FNode(SoleLogics.Alphabets.Letter{Int64}(token), logic=logic)
+
+"""Return the FNode type associated with logic, that is to say, FNode{typeof(logic)}."""
+FNode(logic::Logic) = FNode{typeof(logic)}
 
 """
     token(v::FNode{L})
@@ -407,7 +411,7 @@ function build_tree(
     # This is needed to avoid memory waste repeating identical leaves.
     # We know for sure that each String in `_candidates` will become a `Letter`.
     _candidates = [s for s in expression if typeof(s) <: MetaLetter]
-    letter_sentinels = Dict(_candidates .=> [FNode(typeof(x) == String ? SoleLogics.Alphabets.Letter(x) : x, logic) for x in _candidates])
+    letter_sentinels = Dict{MetaLetter, FNode(logic)}(_candidates .=> [FNode(x, logic=logic) for x in _candidates])
 
     for tok in expression
         _build_tree(tok, nodestack, logic, letter_sentinels)
@@ -429,7 +433,7 @@ function _build_tree(
     tok,
     nodestack,
     logic::AbstractLogic,
-    letter_sentinels::Dict{<:AbstractPropositionalLetter, FNode{L}}
+    letter_sentinels::Dict{MetaLetter, FNode{L}}
 ) where {L <: AbstractLogic}
     # Case 1 or 2
     if typeof(tok) <: AbstractOperator
@@ -447,7 +451,7 @@ function _build_tree(
 end
 
 function __build_tree(::Val{1}, tok::AbstractOperator, nodestack, logic::AbstractLogic)
-    newnode = FNode(tok, logic)
+    newnode = FNode(tok, logic=logic)
     children = pop!(nodestack)
 
     SoleLogics.parent!(children, newnode)
@@ -458,7 +462,7 @@ function __build_tree(::Val{1}, tok::AbstractOperator, nodestack, logic::Abstrac
 end
 
 function __build_tree(::Val{2}, tok,nodestack,logic::AbstractLogic)
-    newnode = FNode(tok, logic)
+    newnode = FNode(tok, logic=logic)
     right_child = pop!(nodestack)
     left_child = pop!(nodestack)
 
