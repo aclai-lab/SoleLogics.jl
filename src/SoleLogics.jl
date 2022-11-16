@@ -53,12 +53,12 @@ const LetterAlphabet = Vector{Letter}
 # First of all, operators exports will be needed in SoleLogics.Alphabets
 include("operators.jl")
 
+include("Worlds/Worlds.jl")
+@reexport using .Worlds
+
 # Submodules reexporting
 include("Relations/Relations.jl")
 @reexport using .Relations
-
-include("Worlds/Worlds.jl")
-@reexport using .Worlds
 
 include("Alphabets/Alphabets.jl")
 @reexport using .Alphabets
