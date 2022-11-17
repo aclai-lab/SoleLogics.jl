@@ -44,27 +44,23 @@ export shunting_yard, build_tree
 # Formula tree generation
 export gen_formula
 
-# Previous dependecies within SoleAlphabet:
-# NOTE: will be deprecated
-const Letter = String
-const LetterAlphabet = Vector{Letter}
-# SoleTraits.is_proposition(::Letter) = true
-
-# First of all, operators exports will be needed in SoleLogics.Alphabets
-include("operators.jl")
-
+# The following includes and reexports are needed in this exact order
 include("Worlds/Worlds.jl")
 @reexport using .Worlds
 
-# Submodules reexporting
 include("Relations/Relations.jl")
 @reexport using .Relations
+
+include("operators.jl")
+include("logics.jl")
 
 include("Alphabets/Alphabets.jl")
 @reexport using .Alphabets
 
-# New includes
-include("logics.jl")
 include("formulas.jl")
+
+# include("kripke_models.jl")
+
+# include("model_checking.jl")
 
 end
