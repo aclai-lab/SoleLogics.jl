@@ -1,0 +1,14 @@
+□ Regroup Worlds and Relations in Ontologies.
+□ Move `Ontology` from ModalDecisionTrees.
+
+□ Think about the differences between SoleData and SoleLogics
+    SoleLogics will contain `NamedLetter`, that is, a concrete struct of
+    `AbstractLetter` who only wraps an Union{String,Symbol}.
+    Also, `check` dispatch in SoleLogics will only refer Kripke Models ("graph data") and `NamedLetter`s.
+
+    Everything that regards data, will be moved to SoleData.
+    For example, `a1 ⋈ f(A) ⋈ a2` will be defined in SoleData as `DimensionalCondition`. 
+
+    SoleLearning will overload SoleLogics' `check` dispatch and actually
+    work with the definitions in SoleLogics (e.g worlds, relations) on
+    real data (SoleBase, SoleData's `DimensionalCondition`).
