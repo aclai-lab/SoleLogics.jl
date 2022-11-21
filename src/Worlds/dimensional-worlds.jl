@@ -6,7 +6,7 @@
 abstract type DimensionalWorld <: World end
 
 # Dimensional worlds can be interpreted on dimensional data of given sizes.
-# The size is referred to as `dimensionality`, and must be specified for each newly defined 
+# The size is referred to as `dimensionality`, and must be specified for each newly defined
 #  world type via the following trait:
 goes_with_dimensionality(W::Type{<:DimensionalWorld}, d::Integer) = goes_with_dimensionality(W, Val(d))
 goes_with_dimensionality(::Type{<:DimensionalWorld}, ::Val) = false
@@ -17,7 +17,7 @@ goes_with_dimensionality(::Type{<:DimensionalWorld}, ::Val) = false
 
 struct OneWorld <: DimensionalWorld
     OneWorld() = new()
-    
+
     OneWorld(w::EmptyWorld) = new()
     OneWorld(w::CenteredWorld, args...) = new()
 end;
@@ -54,12 +54,12 @@ goes_with_dimensionality(::Type{OneWorld}, ::Val{0}) = true
 struct Interval <: DimensionalWorld
     x :: Integer
     y :: Integer
-    
+
     Interval(x::Integer,y::Integer) = new(x,y)
     Interval(w::Interval) = Interval(w.x,w.y)
     # TODO: perhaps check x<y (and  x<=N, y<=N ?), but only in debug mode.
     # Interval(x,y) = x>0 && y>0 && x < y ? new(x,y) : throw_n_log("Can't instantiate Interval(x={$x},y={$y})")
-    
+
     Interval(::EmptyWorld) = Interval(-1,0)
     Interval(::CenteredWorld, X::Integer) = Interval(div(X,2)+1,div(X,2)+1+1+(isodd(X) ? 0 : 1))
 end
@@ -82,11 +82,11 @@ goes_with_dimensionality(::Type{Interval}, ::Val{1}) = true
 struct Interval2D <: DimensionalWorld
     x :: Interval
     y :: Interval
-    
+
     Interval2D(x::Interval,y::Interval) = new(x,y)
     Interval2D(w::Interval2D) = Interval2D(w.x,w.y)
     Interval2D(x::Tuple{Integer,Integer}, y::Tuple{Integer,Integer}) = Interval2D(Interval(x),Interval(y))
-    
+
     Interval2D(w::EmptyWorld) = Interval2D(Interval(w),Interval(w))
     Interval2D(w::CenteredWorld, X::Integer, Y::Integer) = Interval2D(Interval(w,X),Interval(w,Y))
 end
