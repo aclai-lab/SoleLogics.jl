@@ -44,6 +44,15 @@ export shunting_yard, build_tree
 # Formula tree generation
 export gen_formula
 
+# Model checking exports
+#=
+export Worlds, Adjacents
+export KripkeModel, worlds, worlds!, adjacents, adjacents!, evaluations, evaluations!
+export memo, contains, push!
+export check
+export gen_kmodel, dispense_alphabet
+=#
+
 # The following includes and reexports are needed in this exact order
 include("Worlds/Worlds.jl")
 @reexport using .Worlds
@@ -59,8 +68,10 @@ include("Alphabets/Alphabets.jl")
 
 include("formulas.jl")
 
-# include("kripke_models.jl")
+include("ModelChecking/checker.jl")
+include("ModelChecking/op_behaviour.jl")
+include("ModelChecking/generator.jl")
 
-# include("model_checking.jl")
+# include modelchecking files here
 
 end
