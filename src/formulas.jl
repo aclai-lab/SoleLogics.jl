@@ -20,7 +20,6 @@ mutable struct FNode{L<:Logic}
     rightchild::FNode{L}
 
     FNode{L}(token::Token, logic::L) where {L<:Logic} = begin
-        #NOTE: "is_proposition(token)" may changed to "!(token in alphabet(logic))" in the future
         if !is_proposition(token) && !(token in operators(logic))
             throw(error("Node $token is not legal for the specified logic $(typeof(logic))"))
         end
@@ -489,11 +488,6 @@ function fnormalize!(fx::Formula)
     fnormalize!(tree(fx))
 end
 
-#= NOTE: check this case:
-build_tree("(b∧a)∨(d∧c)")
-build_tree("(d∧c)∨(a∧b)")
-Find a method to collapse those in the same formula
-=#
 function fnormalize!(v::FNode)
     if isleaf(v)
         return
