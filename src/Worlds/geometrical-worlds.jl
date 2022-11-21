@@ -2,20 +2,21 @@
 # Dimensonal Worlds
 ############################################################################################
 
-# Abstract type for dimensional worlds
-abstract type DimensionalWorld <: GeometricalWorld end
+# Abstract type for worlds with a geometrical interpretation
+abstract type GeometricalWorld <: World end
 
-# Dimensional worlds can be interpreted on dimensional data of given sizes.
-# The size is referred to as `dimensionality`, and must be specified for each newly defined 
-#  world type via the following trait:
-goes_with_dimensionality(W::Type{<:DimensionalWorld}, d::Integer) = goes_with_dimensionality(W, Val(d))
-goes_with_dimensionality(::Type{<:DimensionalWorld}, ::Val) = false
+# Some geometrical worlds (dimensional worlds) can be interpreted on dimensional data,
+#  that is, n-dimensional arrays.
+# The parameter n is referred to as `dimensionality`, and must be specified for each newly 
+#  defined dimensional world type via the following trait:
+goes_with_dimensionality(W::Type{<:GeometricalWorld}, d::Integer) = goes_with_dimensionality(W, Val(d))
+goes_with_dimensionality(::Type{<:GeometricalWorld}, ::Val) = false
 
 ############################################################################################
 # One unique world (propositional case)
 ############################################################################################
 
-struct OneWorld <: DimensionalWorld
+struct OneWorld <: GeometricalWorld
     OneWorld() = new()
     
     OneWorld(w::EmptyWorld) = new()
@@ -33,7 +34,7 @@ goes_with_dimensionality(::Type{OneWorld}, ::Val{0}) = true
 # Point 1D
 ############################################################################################
 
-# struct PointWorld <: DimensionalWorld
+# struct PointWorld <: GeometricalWorld
     # PointWorld(w::PointWorld) = new(w.x,w.y)
 #   x :: Integer
 #   # TODO check x<=N but only in debug mode
@@ -51,7 +52,7 @@ goes_with_dimensionality(::Type{OneWorld}, ::Val{0}) = true
 ############################################################################################
 
 # An interval is a pair of natural numbers (x,y) where: i) x > 0; ii) y > 0; iii) x < y.
-struct Interval <: DimensionalWorld
+struct Interval <: GeometricalWorld
     x :: Integer
     y :: Integer
     
@@ -79,7 +80,7 @@ goes_with_dimensionality(::Type{Interval}, ::Val{1}) = true
 ############################################################################################
 
 # 2-dimensional Interval counterpart: combination of two orthogonal Intervals
-struct Interval2D <: DimensionalWorld
+struct Interval2D <: GeometricalWorld
     x :: Interval
     y :: Interval
     
