@@ -19,7 +19,7 @@ is_symmetric(r::Relation) = false
 is_reflexive(r::Relation) = false
 is_transitive(r::Relation) = false
 
-# TODO add are_inverse_relation trait
+# TODO add are_inverse_relation/inverse_relation trait
 
 ############################################################################################
 # Singletons representing natural relations
@@ -44,6 +44,14 @@ Base.show(io::IO, ::_RelationGlob) = print(io, "G")
 is_symmetric(r::_RelationGlob) = true
 is_reflexive(r::_RelationGlob) = true
 is_transitive(r::_RelationGlob) = true
+
+############################################################################################
+
+# TODO add relation as union of relations.
+# struct UnionOfRelations     <: Relation
+#     relations :: NTuple{N,Relation} where {N}
+# end;
+# _accessibles(w::World, r::UnionOfRelations, args...) = Iterators.flatten((_accessibles(w, sub_relation,  args...) for sub_relation in topo2IARelations(r)))
 
 ############################################################################################
 

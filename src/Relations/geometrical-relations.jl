@@ -7,6 +7,9 @@ abstract type GeometricalRelation <: Relation end
 # By default, this does not hold:
 is_topological(r::GeometricalRelation) = false
 
+
+# TODO add pattern: combinazione cartesiana/prodotto di relazioni.
+
 # 1D Allen relations
 include("IA.jl")
 

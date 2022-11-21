@@ -20,6 +20,9 @@ const AbstractWorldSet{W} = Union{AbstractVector{W},AbstractSet{W}} where {W<:Wo
 const WorldSet{W} = Vector{W} where {W<:World}
 WorldSet{W}(S::WorldSet{W}) where {W<:World} = S
 
+
+abstract type GeometricalWorld <: World end
+
 include("dimensional-worlds.jl")
 
 export World

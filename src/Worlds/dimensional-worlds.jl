@@ -3,7 +3,7 @@
 ############################################################################################
 
 # Abstract type for dimensional worlds
-abstract type DimensionalWorld <: World end
+abstract type DimensionalWorld <: GeometricalWorld end
 
 # Dimensional worlds can be interpreted on dimensional data of given sizes.
 # The size is referred to as `dimensionality`, and must be specified for each newly defined 
