@@ -1,6 +1,6 @@
 name = "SoleLogics"
 uuid = "b002da8f-3cb3-4d91-bbe3-2953433912b5"
-authors = ["Eduard I. STAN", "Milella MAURO", "Giovanni PAGLIARINI"]
+authors = ["Mauro MILELLA", "Giovanni PAGLIARINI", "Eduard I. STAN"]
 version = "0.1.0"
 
 [deps]
