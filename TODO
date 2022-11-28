@@ -16,3 +16,18 @@
 □ Look for github Tags. 
     Resolve OVERLAY2022's repo dependencies, targetting specific branches of
     SoleModelChecking (mfmm), SoleLogics (overlay2022), SoleWorlds (worlds/mauro), SoleAlphabet (dev), SoleTraits (dev).
+
+SoleLogics structure
+
+SYNTAX:
+Letter{A}
+Alphabet{A} <: AbstractVector{Letter{A}} (complete/non complete trait?)
+
+AbstractOperator
+    ariety
+    is_unary
+    is_binary
+NamedOperator
+PropositionalOperators = Union{and, or, not, implication}
+
+SEMANTICS:

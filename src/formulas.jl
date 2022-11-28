@@ -128,6 +128,11 @@ end
 @forward Formula.tree formula, formula!, fhash, size, parent, parent!
 @forward Formula.tree leftchild, leftchild!, rightchild, rightchild!
 
+#=
+convert(::Type{Formula}, x::FNode) = T(x)
+convert(::Type{FNode},   x::Formula) = x.tree
+=#
+
 """
     tree(f::Formula)
 Get the root node of a formula.
