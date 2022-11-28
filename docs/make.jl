@@ -5,7 +5,7 @@ DocMeta.setdocmeta!(SoleLogics, :DocTestSetup, :(using SoleLogics); recursive = 
 
 makedocs(;
     modules = [SoleLogics],
-    authors = "Eduard I. STAN, Giovanni PAGLIARINI",
+    authors = "Mauro MILELLA, Giovanni PAGLIARINI, Eduard I. STAN",
     repo = "https://github.com/aclai-lab/SoleLogics.jl/blob/{commit}{path}#{line}",
     sitename = "SoleLogics.jl",
     format = Documenter.HTML(;

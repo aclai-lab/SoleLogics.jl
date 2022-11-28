@@ -1,5 +1,5 @@
 abstract type AbstractPropositionalLetter end
-SoleTraits.is_proposition(::AbstractPropositionalLetter) = true
+is_proposition(::AbstractPropositionalLetter) = true
 
 # This represents a variable that could be a letter (in the future) or already is one.
 const MetaLetter = Union{<:AbstractPropositionalLetter, String}

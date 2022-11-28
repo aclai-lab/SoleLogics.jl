@@ -1,7 +1,7 @@
 name = "SoleLogics"
 uuid = "b002da8f-3cb3-4d91-bbe3-2953433912b5"
 authors = ["Mauro MILELLA", "Giovanni PAGLIARINI", "Eduard I. STAN"]
-version = "0.1.0"
+version = "0.1.1"
 
 [deps]
 DataStructures = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
@@ -10,8 +10,7 @@ IterTools = "c8e1da08-722c-5040-9ed9-7db0dc04731e"
 Lazy = "50d2b5c4-7a5e-59d5-8109-a42b560f39c0"
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 Reexport = "189a3867-3050-52da-a836-e630ba90ab69"
-SoleTraits = "f0cd7361-857b-4e5b-8aae-3a26fab9cfa9"
-SoleWorlds = "d5f91e23-4e14-4856-a67b-b38735209aab"
+SoleBase = "142d03a6-36c4-4bac-9273-c7ed2abbbb4d"
 
 [compat]
 julia = "1"
