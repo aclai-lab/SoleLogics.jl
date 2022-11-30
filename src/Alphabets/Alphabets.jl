@@ -15,4 +15,5 @@ module Alphabets
 
     export AbstractPropositionalLetter, MetaLetter
     export Letter
+    export is_proposition
 end
