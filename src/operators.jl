@@ -137,6 +137,12 @@ end
 ############################################################################################
 #            Traits
 ############################################################################################
+is_unary_operator(::Any) = false
+is_binary_operator(::Any) = false
+is_modal_operator(::Any) = false
+is_existential_modal_operator(::Any) = false
+is_universal_modal_operator(::Any) = false
+
 is_unary_operator(op::AbstractOperator) = return (ariety(op) == 1)
 is_binary_operator(op::AbstractOperator) = return (ariety(op) == 2)
 
@@ -236,6 +242,7 @@ end
 ############################################################################################
 # TODO: when SoleModelChecking will be merged here,
 # write each operator behaviour in this section here.
+is_commutative(::Any) = false
 
 """Negation operator."""
 const NEGATION = OP("¬")

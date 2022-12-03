@@ -1,4 +1,5 @@
 abstract type AbstractPropositionalLetter end
+is_proposition(::Any) = false
 is_proposition(::AbstractPropositionalLetter) = true
 
 # This represents a variable that could be a letter (in the future) or already is one.
@@ -169,19 +170,18 @@ end
 Base.show(io::IO, letter::Letter) = print(io, string(letter))
 
 #=
-using SoleLogics.Alphabets
 using SoleLogics
 
-a = SoleLogics.Alphabets.Letter{Int64}(5, CONJUNCTION, 6, name="p");
+a = SoleLogics.Letter{Int64}(5, CONJUNCTION, 6, name="p");
 
 ---------------------------------
 
 gen_formula driver
 
 generator = ["a", "b", "c", "d", "e"]
-letters = Vector{SoleLogics.Alphabets.Letter{Int64}}()
+letters = Vector{SoleLogics.Letter{Int64}}()
 for s in generator
-    push!(letters, SoleLogics.Alphabets.Letter{Int64}(s) )
+    push!(letters, SoleLogics.Letter{Int64}(s) )
 end
 gen_formula(4, letters)
 =#

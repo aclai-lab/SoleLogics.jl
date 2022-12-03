@@ -37,7 +37,7 @@ If a logic L is not specified, DEFAULT_LOGIC is setted.
 """
 FNode(token::Token; logic::Logic=DEFAULT_LOGIC) = FNode{typeof(logic)}(token, logic)
 FNode(token::String; logic::Logic=DEFAULT_LOGIC) =
-    FNode(SoleLogics.Alphabets.Letter{Int64}(token), logic=logic)
+    FNode(SoleLogics.Letter{Int64}(token), logic=logic)
 
 """Return the FNode type associated with logic, that is to say, FNode{typeof(logic)}."""
 FNode(logic::Logic) = FNode{typeof(logic)}
@@ -397,7 +397,7 @@ is the root of the formula (syntax) build_tree.
 """
     build_tree(expression::Vector{Union{String,AbstractOperator}})
 Return a formula-tree from its corresponding postfix-notation string.
-Each propositional letter (tree's leaves) is a `SoleLogics.Alphabets.Letter`, with every
+Each propositional letter (tree's leaves) is a `SoleLogics.Letter`, with every
 field set to `nothing`.
 
     build_tree(expression::Vector{<:Any})

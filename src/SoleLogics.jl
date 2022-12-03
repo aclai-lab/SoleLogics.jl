@@ -38,6 +38,8 @@ export formula!, leftchild!, rightchild!, parent!, size!
 export isleaf, height, modal_depth, inorder
 export subformulas, fnormalize!
 
+export is_modal_operator, is_unary_operator, is_commutative, is_unary_operator, is_binary_operator, is_modal_operator, is_existential_modal_operator, is_universal_modal_operator
+
 # Formula tree input and construction
 export shunting_yard, build_tree
 
@@ -64,7 +66,6 @@ include("operators.jl")
 include("logics.jl")
 
 include("Alphabets/Alphabets.jl")
-@reexport using .Alphabets
 
 include("formulas.jl")
 
