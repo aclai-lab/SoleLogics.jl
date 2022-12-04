@@ -1,0 +1,129 @@
+Notes about SoleLogics structure.
+
+##########################
+#        syntax.jl       #
+##########################
+
+#### Letter ####
+Letter{A}
+ariety(::Letter)
+
+#### Alphabet ####
+AbstractAlphabet{A} <: AbstractVector{Letter{A}} # AbstractVector interface has to be implemented
+    is_complete(...)
+    letters(complete alphabet) = collect(...)
+    letters(non-complete alphabet, args...) = error
+    in_alphabet(::AbstractAlphabet{A}, Letter{A})
+    is_infinite(...)
+
+ExplicitAlphabet{A} <: AbstractAlphabet{A} # Wraps a Vector{Letter{A}}
+    is_complete(::ExplicitAlphabet) = true
+
+InfiniteAlphabet{A} <: AbstractAlphabet{A}
+    is_complete(::InfiniteAlphabet) = false
+
+NonCompleteDimensionalAlphabet # non-complete alphabet
+    is_complete(...) = false
+
+#### Operators ####
+AbstractOperator
+    ariety(...) = error
+    is_constant(...)
+    is_unary(...)
+    is_binary(...)
+
+NamedOperator{T} # \top, \bot, \wedge ...
+BaseOperators = Union{...}
+
+##########################
+#      semantics.jl      #
+##########################
+
+#### Algebra ####
+TruthValue = Type
+
+AbstractAlgebra
+    domain(...) = error
+    domain_type(...)::TruthValue = eltype(domain(...))
+    is_crisp()
+
+BooleanAlgebra # Singleton whose domain is [true,false], domain_type is Bool and is_crisp is true
+
+##########################
+#        logic.jl        #
+##########################
+
+#### Grammar ####
+AbstractGrammar{At, O} # Alphabet type, Operators
+    alphabet(...)
+    letters(...) = error
+    operators(...)
+    formulas(...) = error # rand(Grammar, rng) dispatch to generate a new valid formula
+
+ExplicitCompleteGrammar{At, O}
+    - alphabet
+
+#### Syntax node ####
+SyntaxNode{T, G} # Wrapped-token type, Grammar
+
+#### Logic ####
+Logic{At, O, Al}
+BaseLogic{At, O, Al}
+    - grammar::G{At, O}
+
+#### Formulas ####
+Formula{L}
+    convert(SyntaxNode, Formula)
+    convert(Formula, SyntaxNode)
+
+#### Model ####
+Model{L}
+    goes_with(::Model, ::Logic) = false
+    check(Formula, Model)
+    provides_specific_check(...) = false
+    check(Formula, Model, args...) = provides_specific_check(...) ? error() : error()
+
+PropositionalLogic{At, O, Al} <: Logic{At, O, Al}
+
+TruthDictionary{L} <: Model{L}
+    goes_with(::PropositionalLogic) = true
+    check(::Formula{L}, ::TruthDictionary)
+    check(::SyntaxNode{...}, ::TruthDictionary) # SyntaxNode is converted to Formula, then the new dispatch is applied
+    check(::Letter, ::TruthDict)
+
+#### Relations ####
+Relation
+RelationalOperator
+    relation(op::RelationalOperator) = op.relation
+DiamondRelationalOperator
+BoxRelationalOperator
+    is_modal(...)
+
+
+To be continued ...
+
+##########################
+#        traits.jl       #
+##########################
+# Things that could be moved in a traits.jl file.
+
+is_complete(...)
+is_infinite(...)
+
+is_constant(...)
+is_unary(...)
+is_binary(...)
+
+is_modal(...)
+
+is_crisp()
+is_fuzzy()
+
+letters()
+
+##########################
+#       Still TODO       #
+##########################
+Kripke Model (single/multi)
+Ontologies (Geometry, Dimensional)
+Model checking
