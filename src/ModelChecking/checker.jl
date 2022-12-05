@@ -5,6 +5,7 @@
 
 using SoleLogics.Worlds
 
+# Note: overwriting model name
 const Worlds = Array{World, 1}
 
 # Adjacents is the simplest type of relation-collection

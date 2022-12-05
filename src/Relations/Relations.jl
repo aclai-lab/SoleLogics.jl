@@ -63,6 +63,7 @@ export Relation,
 
 export _RelationGlob, _RelationId
 export RelationGlob, RelationId
+export goes_with
 
 # Interval algebra relations 1D
 
