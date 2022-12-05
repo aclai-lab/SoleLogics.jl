@@ -4,20 +4,55 @@
 #        syntax.jl       #
 ##########################
 
-#### Letter ####
-Letter{A}
-ariety(::Letter)
+For example, the AND operator can be instantiated as `NamedOperator{:∧}`.
 
-#### Alphabet ####
-AbstractAlphabet{A} <: AbstractVector{Letter{A}} # AbstractVector interface has to be implemented
-    # getters and traits involved
-    is_complete(...)
-    letters(complete alphabet) = collect(...)
-    letters(non-complete alphabet, args...) = error
-    is_listable(...)
-    in_alphabet(::AbstractAlphabet{A}, Letter{A})
-    is_infinite(...)
-    countable(...)
+struct NamedOperator{T} <: AbstractOperator end
+
+top = NamedOperator{:⊤}
+ariety(top) = 0
+
+bottom = NamedOperator{:⊥}
+ariety(bottom) = 0
+
+conjunction = NamedOperator{:∧}
+ariety(conjunction) = 2
+
+disjunction = NamedOperator{:∨}
+
+ariety(disjunction) = 2
+
+implication = NamedOperator{:⟹}
+ariety(implication) = 2
+
+BaseOperators = Union{top, bottom, conjunction, disjunction, implication}
+
+
+
+
+
+
+struct ExplicitAlphabet{A} <: AbstractAlphabet{A}
+    alphabet::Vector{<:A} # TODO: choose correct type here
+end
+length(EA::ExplicitAlphabet{A}) where {A} = length(EA.alphabet)
+...
+
+# This alphabet leverages generators to dynamically manipulate letters
+struct InfiniteAlphabet{A} <: AbstractAlphabet{A}
+    # ...
+end
+isfinite(::InfiniteAlphabet) = false
+isiterable(::InfiniteAlphabet) = false
+
+# This alphabet is not complete and its dispatches requires more arguments to work
+struct NonCompleteDimensionalAlphabet{A} <: AbstractAlphabet{A}
+    #
+end
+isfinite = false
+isiterable = false
+Base.length
+
+
 
 # AbstractAlphabet children types
 ExplicitAlphabet{A} # Wraps a Vector{Letter{A}}
@@ -31,22 +66,9 @@ NonCompleteDimensionalAlphabet
         FullUmbounded       # 4 parameters are combined using product
                             #but A is infinite (thresholds are needed to enumerate things)
 
-#### Operators ####
-AbstractOperator
-    ariety(...) = error
-    is_constant(...)
-    is_unary(...)
-    is_binary(...)
 
-NamedOperator{T} # \top, \bot, \wedge ...
-BaseOperators = Union{...}
 
-#### Grammar ####
-AbstractGrammar{At, O} # Alphabet type, Operators
-    alphabet(...)
-    letters(...) = error
-    operators(...)
-    formulas(...) = error # rand(Grammar, rng) dispatch to generate a new valid formula
+# rand(Grammar, rng) dispatch to generate a new valid formula
 
 ExplicitCompleteGrammar{At, O}
     - alphabet
@@ -54,36 +76,22 @@ ExplicitCompleteGrammar{At, O}
     #### Grammar: new things (5 december) ####
     BNFCompleteGrammar # Backus Naur Form
 
-#### Syntax node ####
-SyntaxNode{T, G} # Wrapped-token type, Grammar
-
 ##########################
 #      semantics.jl      #
 ##########################
 
 #### Algebra ####
-TruthValue = Type
 
-AbstractAlgebra
-    domain(...) = error
-    domain_type(...)::TruthValue = eltype(domain(...))
-    is_crisp()
-
-BooleanAlgebra # Singleton whose domain is [true,false], domain_type is Bool and is_crisp is true
+BooleanAlgebra # Singleton whose domain is [true,false], domain_type is Bool and iscrisp is true
 
 ##########################
-#        logic.jl        #
+#        base.jl        #
 ##########################
 
 #### Logic ####
-Logic{At, O, Al}
+
 BaseLogic{At, O, Al}
     - grammar::G{At, O}
-
-#### Formulas ####
-Formula{L}
-    convert(SyntaxNode, Formula)
-    convert(Formula, SyntaxNode)
 
 #### Model ####
 Model{L}
@@ -106,7 +114,7 @@ RelationalOperator
     relation(op::RelationalOperator) = op.relation
 DiamondRelationalOperator
 BoxRelationalOperator
-    is_modal(...)
+    ismodal(...)
 
 
 To be continued ...
@@ -116,17 +124,17 @@ To be continued ...
 ##########################
 # Things that could be moved in a traits.jl file.
 
-is_complete(...)
-is_infinite(...)
+isinfinite(...)
+isinfinite(...)
 
-is_constant(...)
-is_unary(...)
-is_binary(...)
+isconstant(...)
+isunary(...)
+isbinary(...)
 
-is_modal(...)
+ismodal(...)
 
-is_crisp()
-is_fuzzy()
+iscrisp()
+isfuzzy()
 
 letters()
 
