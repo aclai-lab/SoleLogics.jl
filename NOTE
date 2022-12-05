@@ -1,4 +1,4 @@
-Notes about SoleLogics structure.
+# Notes about SoleLogics structure.
 
 ##########################
 #        syntax.jl       #
@@ -10,20 +10,26 @@ ariety(::Letter)
 
 #### Alphabet ####
 AbstractAlphabet{A} <: AbstractVector{Letter{A}} # AbstractVector interface has to be implemented
+    # getters and traits involved
     is_complete(...)
     letters(complete alphabet) = collect(...)
     letters(non-complete alphabet, args...) = error
+    is_listable(...)
     in_alphabet(::AbstractAlphabet{A}, Letter{A})
     is_infinite(...)
+    countable(...)
 
-ExplicitAlphabet{A} <: AbstractAlphabet{A} # Wraps a Vector{Letter{A}}
-    is_complete(::ExplicitAlphabet) = true
+# AbstractAlphabet children types
+ExplicitAlphabet{A} # Wraps a Vector{Letter{A}}
+LazyAlphabet
+InfiniteAlphabet{A}
+NonCompleteDimensionalAlphabet
 
-InfiniteAlphabet{A} <: AbstractAlphabet{A}
-    is_complete(::InfiniteAlphabet) = false
-
-NonCompleteDimensionalAlphabet # non-complete alphabet
-    is_complete(...) = false
+    #### Alphabet: new things (5 december) ####
+    AbstractDimensionaAlphabet
+        DimensionalAlphabet # Wraps a Vector{L}
+        FullUmbounded       # 4 parameters are combined using product
+                            #but A is infinite (thresholds are needed to enumerate things)
 
 #### Operators ####
 AbstractOperator
@@ -34,6 +40,22 @@ AbstractOperator
 
 NamedOperator{T} # \top, \bot, \wedge ...
 BaseOperators = Union{...}
+
+#### Grammar ####
+AbstractGrammar{At, O} # Alphabet type, Operators
+    alphabet(...)
+    letters(...) = error
+    operators(...)
+    formulas(...) = error # rand(Grammar, rng) dispatch to generate a new valid formula
+
+ExplicitCompleteGrammar{At, O}
+    - alphabet
+
+    #### Grammar: new things (5 december) ####
+    BNFCompleteGrammar # Backus Naur Form
+
+#### Syntax node ####
+SyntaxNode{T, G} # Wrapped-token type, Grammar
 
 ##########################
 #      semantics.jl      #
@@ -52,19 +74,6 @@ BooleanAlgebra # Singleton whose domain is [true,false], domain_type is Bool and
 ##########################
 #        logic.jl        #
 ##########################
-
-#### Grammar ####
-AbstractGrammar{At, O} # Alphabet type, Operators
-    alphabet(...)
-    letters(...) = error
-    operators(...)
-    formulas(...) = error # rand(Grammar, rng) dispatch to generate a new valid formula
-
-ExplicitCompleteGrammar{At, O}
-    - alphabet
-
-#### Syntax node ####
-SyntaxNode{T, G} # Wrapped-token type, Grammar
 
 #### Logic ####
 Logic{At, O, Al}
