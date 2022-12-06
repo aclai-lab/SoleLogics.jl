@@ -4,94 +4,42 @@
 #        syntax.jl       #
 ##########################
 
-For example, the AND operator can be instantiated as `NamedOperator{:∧}`.
+	# This alphabet is not complete and its dispatches requires more arguments to work
+	struct NonCompleteDimensionalAlphabet{A} <: AbstractAlphabet{A}
+	    #
+	end
 
-struct NamedOperator{T} <: AbstractOperator end
-
-top = NamedOperator{:⊤}
-ariety(top) = 0
-
-bottom = NamedOperator{:⊥}
-ariety(bottom) = 0
-
-conjunction = NamedOperator{:∧}
-ariety(conjunction) = 2
-
-disjunction = NamedOperator{:∨}
-
-ariety(disjunction) = 2
-
-implication = NamedOperator{:⟹}
-ariety(implication) = 2
-
-BaseOperators = Union{top, bottom, conjunction, disjunction, implication}
-
-
-
-
-
-
-struct ExplicitAlphabet{A} <: AbstractAlphabet{A}
-    alphabet::Vector{<:A} # TODO: choose correct type here
-end
-length(EA::ExplicitAlphabet{A}) where {A} = length(EA.alphabet)
-...
-
-# This alphabet leverages generators to dynamically manipulate letters
-struct InfiniteAlphabet{A} <: AbstractAlphabet{A}
-    # ...
-end
-isfinite(::InfiniteAlphabet) = false
-isiterable(::InfiniteAlphabet) = false
-
-# This alphabet is not complete and its dispatches requires more arguments to work
-struct NonCompleteDimensionalAlphabet{A} <: AbstractAlphabet{A}
-    #
-end
-isfinite = false
-isiterable = false
-Base.length
-
-
-
-# AbstractAlphabet children types
-ExplicitAlphabet{A} # Wraps a Vector{Letter{A}}
-LazyAlphabet
-InfiniteAlphabet{A}
-NonCompleteDimensionalAlphabet
+	# AbstractAlphabet children types
+	propositions(::NonCompleteDimensionalAlphabet, thresholds...) = for for for for
 
     #### Alphabet: new things (5 december) ####
     AbstractDimensionaAlphabet
         DimensionalAlphabet # Wraps a Vector{L}
-        FullUmbounded       # 4 parameters are combined using product
+        FullUnbounded       # 4 parameters are combined using product
                             #but A is infinite (thresholds are needed to enumerate things)
 
 
+    # When real data is involved (see SoleData, SoleModels etc...)
+    # then a proposition is said to be a DimensionalProposition (a1 ⋈ f(A) ⋈ a2).
+    struct DimensionalProposition{A} <: Proposition{A}
+        # Here the following knowledge is required:
+        # - what a threshold is
+        # - what an operator is
+        # - what a feature is
+    end
+
 
 # rand(Grammar, rng) dispatch to generate a new valid formula
+# rand(Logic, rng) dispatch to generate a new valid formula
 
-ExplicitCompleteGrammar{At, O}
-    - alphabet
-
-    #### Grammar: new things (5 december) ####
-    BNFCompleteGrammar # Backus Naur Form
-
-##########################
-#      semantics.jl      #
-##########################
 
 #### Algebra ####
-
-BooleanAlgebra # Singleton whose domain is [true,false], domain_type is Bool and iscrisp is true
 
 ##########################
 #        base.jl        #
 ##########################
 
 #### Logic ####
-
-BaseLogic{At, O, Al}
-    - grammar::G{At, O}
 
 #### Model ####
 Model{L}
@@ -106,7 +54,7 @@ TruthDictionary{L} <: Model{L}
     goes_with(::PropositionalLogic) = true
     check(::Formula{L}, ::TruthDictionary)
     check(::SyntaxNode{...}, ::TruthDictionary) # SyntaxNode is converted to Formula, then the new dispatch is applied
-    check(::Letter, ::TruthDict)
+    check(::Proposition, ::TruthDict)
 
 #### Relations ####
 Relation
@@ -136,7 +84,7 @@ ismodal(...)
 iscrisp()
 isfuzzy()
 
-letters()
+propositions()
 
 ##########################
 #       Still TODO       #
