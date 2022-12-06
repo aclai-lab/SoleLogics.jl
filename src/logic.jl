@@ -40,8 +40,7 @@ end
 arity(::Type{<:Proposition}) = 0
 atom(p::Proposition) = p.atom
 
-
-Base.convert(::Type{P1}, t::P2) where {P1<:Proposition, P2<:Proposition} = P1(atom(p))
+Base.convert(::Type{P1}, t::P2) where {P1<:Proposition, P2<:Proposition} = P1(atom(t))
 
 """
     abstract type AbstractOperator <: SyntaxToken end
@@ -92,7 +91,8 @@ function Base.in(p::Proposition{A}, a::AbstractAlphabet)::Bool where {A}
     end
 end
 
-Base.in(p::A, a::AbstractAlphabet) where {A} = Base.in(Proposition(p), a)
+# Helper
+Base.in(o::Any, a::AbstractAlphabet) = Base.in(Proposition(o), a) # error("Attempting Base.in($(typeof(o)), ::$(typeof(a))), but only Proposition's can belong to alphabets.")
 
 """
 Each alphabet must specify whether it is iterable.
@@ -180,12 +180,12 @@ struct ExplicitAlphabet{A} <: AbstractAlphabet{A}
         new{A}(collect(propositions))
     end
 
-    function ExplicitAlphabet(propositions::AbstractVector{<:Proposition{A}}) where {A}
+    function ExplicitAlphabet(propositions::AbstractVector{Proposition{A}}) where {A}
         ExplicitAlphabet{A}(collect(propositions))
     end
 
     function ExplicitAlphabet(propositions::AbstractVector{A}) where {A}
-        ExplicitAlphabet{A}(Proposition.(propositions))
+        ExplicitAlphabet{A}(Proposition.(collect(propositions)))
     end
 end
 Base.in(p::Proposition, a::ExplicitAlphabet) = Base.in(p, a.propositions)
@@ -224,10 +224,10 @@ Base.length(a::ExplicitAlphabet) = length(a.propositions)
 
 An implicit infitine alphabet that includes all propositions with atoms of a subtype of A.
 """
-struct AlphabetOfAll{A} <: AbstractAlphabet{A} end
-Base.in(p::Proposition{AA}, a::AlphabetOfAll{A}) where {A, AA} = (AA<:A)
-Base.isfinite(::Type{<:AlphabetOfAll}) = false
-Base.isiterable(::Type{<:AlphabetOfAll}) = false
+struct AlphabetOfAny{A} <: AbstractAlphabet{A} end
+Base.in(p::Proposition{AA}, a::AlphabetOfAny{A}) where {A, AA} = (AA<:A)
+Base.isfinite(::Type{<:AlphabetOfAny}) = false
+Base.isiterable(::Type{<:AlphabetOfAny}) = false
 
 
 ############################################################################################
@@ -251,28 +251,49 @@ struct SyntaxTree{FT<:SyntaxToken, T<:FT}
     token::T
     children::NTuple{N, SyntaxTree} where {N}
 
-    function SyntaxTree{FT, T}(
-        token::T,
-        children::NTuple{N, SyntaxTree} = (),
-    ) where {FT<:SyntaxToken, T<:FT, N}
-        @assert arity(token) == N "Cannot instantiate SyntaxTree{::$(FT), ::$(T)} with token $(token) of arity $(arity(token)) and $(N) children."
-        @assert all(tokentypes.(children) .<: FT) "Cannot instantiate SyntaxTree{::$(FT), ::$(T)} with children of feasible tokens $(tokentypes.(children))."
-        new{FT, T}(token, children)
-    end
+    # function SyntaxTree{FT, T}(
+    #     token::T,
+    #     children::NTuple{N, SyntaxTree} = (),
+    # ) where {FT<:SyntaxToken, T<:FT, N}
+    #     @assert arity(token) == N "Cannot instantiate SyntaxTree{$(FT), $(T)} with token $(token) of arity $(arity(token)) and $(N) children."
+    #     @assert all(tokentypes.(children) .<: FT) "Cannot instantiate SyntaxTree{$(FT), $(T)} with children of feasible tokens $(tokentypes.(children))."
+    #     new{FT, T<:SyntaxToken}(token, children)
+    # end
 
-    function SyntaxTree{FT}(
-        token::T,
-        children::NTuple{N, SyntaxTree} = (),
-    ) where {FT<:SyntaxToken, T<:FT, N}
-        SyntaxTree{FT, T}(token, children)
-    end
+    # function SyntaxTree{FT}(
+    #     token::T,
+    #     children::NTuple{N, SyntaxTree} = (),
+    # ) where {FT<:SyntaxToken, T<:FT, N}
+    #     SyntaxTree{FT, T}(token, children)
+    # end
 
     function SyntaxTree(
         token::T,
         children::NTuple{N, SyntaxTree} = (),
-    ) where {T, N}
+    ) where {T<:SyntaxToken, N}
         @assert arity(token) == N "Cannot instantiate SyntaxTree with token $(token) of arity $(arity(token)) and $(N) children."
         new{SyntaxToken, T}(token, children)
+    end
+
+    # function SyntaxTree{FT, T}(
+    #     token::T,
+    #     children::SyntaxTree...,
+    # ) where {FT, T<:SyntaxToken}
+    #     SyntaxTree{FT, T}(token, children)
+    # end
+
+    # function SyntaxTree{FT}(
+    #     token::T,
+    #     children::SyntaxTree...,
+    # ) where {FT, T<:SyntaxToken}
+    #     SyntaxTree{FT}(token, children)
+    # end
+
+    function SyntaxTree(
+        token::T,
+        children::SyntaxTree...,
+    ) where {T<:SyntaxToken}
+        SyntaxTree(token, children)
     end
 end
 
@@ -281,6 +302,9 @@ children(t::SyntaxTree) = t.children
 
 tokentype(::SyntaxTree{FT, T}) where {FT, T} = T
 tokentypes(::SyntaxTree{FT}) where {FT} = FT
+
+Base.in(t::SyntaxToken, tree::SyntaxTree) =
+    t == token(tree) || any([Base.in(t, c) for c in children(tree)])
 
 """
     abstract type AbstractGrammar{A<:AbstractAlphabet, O<:AbstractOperator} end
@@ -303,13 +327,20 @@ alphabet(g::AbstractGrammar{A} where {A})::A = error("Please, provide method alp
 propositiontype(g::AbstractGrammar) = eltype(alphabet(g))
 tokentypes(g::AbstractGrammar) = Union{operatortypes(g),propositiontype(g)}
 
+Base.in(p::Proposition, g::AbstractGrammar) = Base.in(p, alphabet(g))
+# Base.in(o::Any, g::AbstractGrammar) = Base.in(o::Any, alphabet(g)) # better not
+
+Base.in(op::AbstractOperator, g::AbstractGrammar) = op <: operatortypes(O)
+
+
 """
 Each grammar must provide a method for establishing whether a formula
 (encoded as a syntax tree) belongs to it.
 
 See also [`AbstractGrammar`](@ref), [`SyntaxTree`](@ref).
 """
-Base.in(t::SyntaxTree, g::AbstractGrammar)::Bool = error("Please, provide method Base.in(::$(typeof(t)), ::$(typeof(g))).")
+Base.in(t::SyntaxTree, g::AbstractGrammar)::Bool =
+    error("Please, provide method Base.in(::$(typeof(t)), ::$(typeof(g))).")
 
 """
 Each grammar must provide a method for enumerating its formulas, encoded as syntax trees.
@@ -336,6 +367,28 @@ with p ∈ alphabet.
 """
 struct CompleteGrammar{A<:AbstractAlphabet, O<:AbstractOperator} <: AbstractGrammar{A, O}
     alphabet::A
+    operators::Vector{<:O}
+
+    function CompleteGrammar{A, O}(
+        alphabet::A,
+        operators::Vector{O},
+    ) where {A<:AbstractAlphabet, O<:AbstractOperator}
+        new{A, O}(alphabet, operators)
+    end
+
+    function CompleteGrammar{A}(
+        alphabet::A,
+        operators::Vector{O},
+    ) where {A<:AbstractAlphabet, O<:AbstractOperator}
+        CompleteGrammar{A, O}(alphabet, operators)
+    end
+
+    function CompleteGrammar(
+        alphabet::A,
+        operators::Vector{O},
+    ) where {A<:AbstractAlphabet, O<:AbstractOperator}
+        CompleteGrammar{A, O}(alphabet, operators)
+    end
 end
 
 alphabet(g::CompleteGrammar{A} where {A}) = g.alphabet
@@ -343,10 +396,14 @@ alphabet(g::CompleteGrammar{A} where {A}) = g.alphabet
 # A complete grammar includes any *safe* syntax tree that can be built with
 #  the grammar token types.
 function Base.in(t::SyntaxTree, g::CompleteGrammar)::Bool
-    if tokentypes(t) <: tokentype(g)
-        return true
-    else
-        all([Base.in(c, g) for c in children(t)])
+    if token(t) isa Proposition
+        token(t) in alphabet(g)
+    elseif token(t) isa AbstractOperator
+        if tokentypes(t) <: operatortypes(g)
+            true
+        else
+            all([Base.in(c, g) for c in children(t)])
+        end
     end
 end
 
@@ -400,6 +457,7 @@ See also [`AbstractAlgebra`](@ref).
 """
 domain(a::AbstractAlgebra)::AbstractVector{<:truthtype(a)} = error("Please, provide method domain(::$(typeof(a))).")
 truthtype(a::AbstractAlgebra)::Truth = eltype(domain(a))
+# Base.in(t::Truth, a::AbstractAlgebra) = Base.in(t, domain(a)) maybe one day?
 
 """
 Each algebra must provide a method for accessing its `top`.
@@ -421,7 +479,7 @@ An algebra is crisp (or *boolean*) when its domain type is... `Bool`, quite lite
 
 See also [`AbstractAlgebra`](@ref).
 """
-iscrisp(a::AbstractAlgebra)::Bool = (truthtype(a) == Bool)
+iscrisp(a::AbstractAlgebra) = (truthtype(a) == Bool)
 
 """
 An algebra must provide a `collate_truth` method for each operator that can be
@@ -431,21 +489,21 @@ See also [`AbstractAlgebra`](@ref).
 """
 function collate_truth(
     a::AbstractAlgebra,
-    o::AbstractOperator,
+    op::AbstractOperator,
     t::NTuple{N, T},
 ) where {N, T<:Truth}
     if truthtype(a) != length(t)
         error("Cannot collate $(length(t)) truth values of type $(T) with algebra $(typeof(a)) with truth type $(truthtype(a))).")
-    elseif arity(o) != length(t)
-        error("Cannot collate $(length(t)) truth values for operator $(typeof(o)) with arity $(arity(o))).")
+    elseif arity(op) != length(t)
+        error("Cannot collate $(length(t)) truth values for operator $(typeof(op)) with arity $(arity(op))).")
     else
-        error("Please, provide method collate_truth(::$(typeof(a)), ::$(typeof(o)), ::$(typeof(t))).")
+        error("Please, provide method collate_truth(::$(typeof(a)), ::$(typeof(op)), ::$(typeof(t))).")
     end
 end
 
 # Note that `collate_truth` for TOP and BOTTOM relies on the `top` and `bottom` methods.
-collate_truth(a::AbstractAlgebra, o::typeof(⊤), t::NTuple{0}) = top(a)
-collate_truth(a::AbstractAlgebra, o::typeof(⊥), t::NTuple{0}) = bottom(a)
+collate_truth(a::AbstractAlgebra, ::typeof(⊤), t::NTuple{0}) = top(a)
+collate_truth(a::AbstractAlgebra, ::typeof(⊥), t::NTuple{0}) = bottom(a)
 
 
 """
@@ -459,18 +517,28 @@ See also [`AbstractGrammar`](@ref), [`AbstractAlgebra`](@ref).
 abstract type AbstractLogic{G<:AbstractGrammar, A<:AbstractAlgebra} end
 
 """
-A logic must provide a method for accessing its algebra.
-"""
-function algebra(::AbstractLogic) end
-
-"""
 A logic must provide a method for accessing its grammar.
 """
 function grammar(::AbstractLogic) end
 
 alphabet(l::AbstractLogic) = alphabet(grammar(l))
 propositiontype(l::AbstractLogic) = propositiontype(alphabet(l))
-tokentypes(l::AbstractLogic) = grammar(l)
+tokentypes(l::AbstractLogic) = tokentypes(grammar(l))
+
+Base.in(op::AbstractOperator, l::AbstractLogic) = Base.in(op, grammar(l))
+Base.in(t::SyntaxTree, l::AbstractLogic) = Base.in(t, alphabet(l))
+Base.in(p::Proposition, l::AbstractLogic) = Base.in(p, alphabet(l))
+
+"""
+A logic must provide a method for accessing its algebra.
+"""
+function algebra(::AbstractLogic) end
+
+truthtype(l::AbstractLogic) = truthtype(algebra(l))
+top(l::AbstractLogic) = top(algebra(l))
+bottom(l::AbstractLogic) = bottom(algebra(l))
+iscrisp(l::AbstractLogic) = iscrisp(algebra(l))
+collate_truth(l::AbstractAlgebra, args...) = collate_truth(algebra(l, args...))
 
 """
     abstract type AbstractFormula{L<:AbstractLogic} end
@@ -482,7 +550,30 @@ on models of the logic.
 """
 abstract type AbstractFormula{L<:AbstractLogic} end
 
+"""
+Each formula must provide a method for accessing its `logic`.
+
+See also [`AbstractLogic`](@ref).
+"""
+logic(f::AbstractFormula) = error("Please, provide method logic(::$(typeof(f))).")
+iscrisp(f::AbstractFormula) = iscrisp(logic(f))
+grammar(f::AbstractFormula) = grammar(logic(f))
+algebra(f::AbstractFormula) = algebra(logic(f))
+
+"""
+Each formula must provide a method for establishing whether a proposition appears in it.
+
+See also [`Proposition`](@ref).
+"""
+Base.in(p::Proposition, f::AbstractFormula) = error("Please, provide method Base.in(::$(typeof(p)), ::$(typeof(f))).")
+
+# Maybe?
+# Base.in(op::AbstractOperator, f::AbstractFormula) = error("Please, provide method Base.in(::$(typeof(p)), ::$(typeof(f))).")
+
+# TODO
 Base.convert(::Type{F}, t::SyntaxTree) where {L, F<:AbstractFormula{L}} = F(L(), t)
+
+
 
 """
 A formula must provide a method for extracting its syntax tree.
@@ -491,8 +582,8 @@ Base.convert(S::Type{<:SyntaxTree}, f::AbstractFormula) =
     error("Please, provide method Base.convert(::$(typeof(S)), ::$(typeof(f))).")
 
 """
-    struct Formula{L<:AbstractLogic}
-        logic::Base.RefValue{L}
+    struct Formula{L<:AbstractLogic} <: AbstractFormula{L}
+        _logic::Base.RefValue{L}
         tree::SyntaxTree
     end
 
@@ -502,28 +593,34 @@ formula belonging to the grammar of the logic; b) the truth of the formula can b
 on models of the logic.
 """
 struct Formula{L<:AbstractLogic} <: AbstractFormula{L}
-    logic::Base.RefValue{L}
+    _logic::Base.RefValue{L}
     tree::SyntaxTree
 
+    _logic(l::AbstractLogic) = Base.RefValue(l)
+    _logic(l::Base.RefValue) = l
+
     function Formula{L}(
-        logic::Base.RefValue{L},
+        l::Union{L,Base.RefValue{L}},
         tree::SyntaxTree,
     ) where {L<:AbstractLogic}
-        @assert arity(token) == N "Cannot instantiate Formula{::$(L)} with token $(token) of arity $(arity(token)) and $(N) children."
-        @assert all(tokentypes.(children) .<: FT) "Cannot instantiate Formula{::$(L)} with children of feasible tokens $(tokentypes.(children))."
-        new{L}(logic, tree)
+        new{L}(_logic(l), tree)
     end
 
     function Formula(
-        logic::Base.RefValue{L},
+        l::Union{L,Base.RefValue{L}},
         tree::SyntaxTree,
     ) where {L<:AbstractLogic}
-        Formula{L}(logic, tree)
+        Formula{L}(_logic(l), tree)
     end
 end
 
-logic(l::Formula) = f.logic[]
-tree(::Formula{L}) where {L} = f.tree
+_logic(f::Formula) = f._logic
+logic(f::Formula) = f._logic[]
+tree(f::Formula) = f.tree
+
+Base.in(t::SyntaxToken, f::Formula) = Base.in(t, tree(f))
+Base.in(p::Proposition, f::Formula) = Base.in(p, tree(f))
+Base.in(op::AbstractOperator, f::Formula) = Base.in(op, tree(f))
 
 Base.convert(::Type{<:SyntaxTree}, f::Formula) = tree(f)
 
@@ -531,25 +628,34 @@ Base.convert(::Type{<:SyntaxTree}, f::Formula) = tree(f)
 ######################################### UTILS ############################################
 ############################################################################################
 
+Base.in(t::Union{SyntaxToken, SyntaxTree}, a::AbstractAlphabet) =
+    error("Attempting Base.in($(typeof(t)), ::$(typeof(a))), but $(typeof(t))'s cannot belong to alphabets.")
+
 """
 An alphabet can be used for instantiating propositions
 """
 (::AbstractAlphabet)(a::A) where {A} = Proposition{A}(a)
 
 """
-An operator can be used to compose a syntax tree/formula given some
-sub-trees/formulas children.
+Operator can be used to compose a syntax trees or formulas, the child nodes.
 """
+
+(op::AbstractOperator)(o::Any) = error("Cannot apply operator $(op)::$(typeof(op)) to object $(o)::$(typeof(o))")
+
+# (op::AbstractOperator)(p::Proposition, children::NTuple{0, SyntaxTree}) = op(p)
+(op::AbstractOperator)(p::Proposition) = op(SyntaxTree(p))
+
 (op::AbstractOperator)(children::SyntaxTree...) = op(children)
 (op::AbstractOperator)(children::NTuple{N, SyntaxTree}) where {N} =
     SyntaxTree(typeof(op)(), children)
 
+# TODO
 (op::AbstractOperator)(children::Formula...) = op(children)
 (op::AbstractOperator)(children::NTuple{N, F}) where {N, F<:AbstractFormula} = 
-    error("Please, provide method (op::$(typeof(op)))(NTuple{N, F})) where {N, F<:AbstractFormula}.")
+    error("Please, provide method (op::$(typeof(op)))(children::NTuple{$(N), F})) where {N, F<:AbstractFormula}.")
 
 Base.promote_rule(::Type{L}, ::Type{SyntaxTree}) where {L<:AbstractLogic} = L
 Base.promote_rule(::Type{SyntaxTree}, ::Type{L}) where {L<:AbstractLogic} = L
 
 (op::AbstractOperator)(children::NTuple{N, Formula}) where {N} =
-    Formula(f.logic, op(map(tree, children)))
+    Formula(logic(f), op(map(tree, children)))

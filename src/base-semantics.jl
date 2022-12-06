@@ -1,7 +1,3 @@
-############################################################################################
-########################################## SYNTAX ##########################################
-############################################################################################
-
 """
     struct NamedOperator{T<:Symbol} <: AbstractOperator end
 
@@ -18,7 +14,6 @@ const NEGATION = NamedOperator{:¬}()
 const ¬ = NEGATION
 arity(::typeof(¬)) = 1
 
-
 const CONJUNCTION = NamedOperator{:∧}()
 const ∧ = CONJUNCTION
 arity(::typeof(∧)) = 2
@@ -33,7 +28,9 @@ arity(::typeof(⟹)) = 2
 
 
 const base_operators = [⊤, ⊥, ¬, ∧, ∨, ⟹]
-BaseOperators = Union{typeof.(base_operators)...}
+const BaseOperators = Union{typeof.(base_operators)...}
+
+const base_grammar = CompleteGrammar(AlphabetOfAny{String}(), base_operators)
 
 """
 [https://en.m.wikipedia.org/wiki/Boolean_algebra](Boolean algebra) is defined on the values
@@ -55,8 +52,35 @@ collate_truth(a::AbstractAlgebra, o::typeof(∨), (t1, t2)::NTuple{2}) = max(t1,
 collate_truth(a::AbstractAlgebra, o::typeof(⟹), (t1, t2)::NTuple{2}) =
     collate_truth(a, ∨, (!(t1), t2))
 
-
+# TODO complete description
 struct BaseLogic{G<:AbstractGrammar, A<:AbstractAlgebra} <: AbstractLogic{G, A}
     grammar::G
     algebra::A
+
+    function BaseLogic{G, A}(
+        grammar::G = base_grammar,
+        algebra::A = BooleanAlgebra(),
+    ) where {G<:AbstractGrammar, A<:AbstractAlgebra}
+        # @assert all([goeswith(op, algebra) for op in operators(grammar)]) "Cannot instantiate BaseLogic{$(G), $(A)}: operators $(operators(grammar)[[goeswith(op, algebra) for op in operators(grammar)]]) cannot be interpreted on $(algebra)." # requires `goeswith` trait
+        new{G, A}(grammar, algebra)
+    end
+
+    function BaseLogic{G}(
+        grammar::G = base_grammar,
+        algebra::A = BooleanAlgebra(),
+    ) where {G<:AbstractGrammar, A<:AbstractAlgebra}
+        BaseLogic{G, A}(grammar, algebra)
+    end
+
+    function BaseLogic(
+        grammar::G = base_grammar,
+        algebra::A = BooleanAlgebra(),
+    ) where {G<:AbstractGrammar, A<:AbstractAlgebra}
+        BaseLogic{G, A}(grammar, algebra)
+    end
 end
+
+grammar(l::BaseLogic) = l.grammar
+algebra(l::BaseLogic) = l.algebra
+
+const base_logic = BaseLogic(base_grammar, BooleanAlgebra())
