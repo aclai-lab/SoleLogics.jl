@@ -11,9 +11,7 @@ function install(package::String, url::String, rev::String)
     try
         Pkg.rm(package)
     catch error
-        println()
-        showerror(stdout, error)
-        println()
+        println(); showerror(stdout, error); println()
     end
 
     printstyled(stdout, "\nFetching: $url at branch $rev\n", color=:green)
@@ -21,11 +19,8 @@ function install(package::String, url::String, rev::String)
         Pkg.add(url=url, rev=rev)
         printstyled(stdout, "\nPackage $package instantiated correctly\n", color=:green)
     catch error
-        println()
-        showerror(stdout, error)
-        println()
+        println(); showerror(stdout, error); println()
     end
-
 end
 
 install("SoleBase", "https://github.com/aclai-lab/SoleBase.jl", "dev")
