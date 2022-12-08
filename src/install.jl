@@ -6,21 +6,26 @@
 using Pkg
 
 # Remove the specified package (do not abort if it is already removed) and reinstall it.
-function update_dependency(
-    package::String;
-    branch::String="dev",
-    repository="https://github.com/aclai-lab/"
-)
-    println("Removing: ", package)
+function install(package::String, url::String, rev::String)
+    printstyled(stdout, "\nRemoving: $package\n", color=:green)
     try
         Pkg.rm(package)
-    catch
-        println(package, " not found in project or manifest")
+    catch error
+        println()
+        showerror(stdout, error)
+        println()
     end
 
-    url = repository * package * '#' * branch
-    println("Fetching: ", url)
-    Pkg.add(path=url)
+    printstyled(stdout, "\nFetching: $url at branch $rev\n", color=:green)
+    try
+        Pkg.add(url=url, rev=rev)
+        printstyled(stdout, "\nPackage $package instantiated correctly\n", color=:green)
+    catch error
+        println()
+        showerror(stdout, error)
+        println()
+    end
+
 end
 
-update_dependency("SoleBase.jl")
+install("SoleBase", "https://github.com/aclai-lab/SoleBase.jl", "dev")
