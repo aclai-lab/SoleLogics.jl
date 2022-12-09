@@ -28,6 +28,6 @@ export AbstractWorldSet, WorldSet
 
 export Interval, Interval2D, OneWorld
 export dimensionality
-export goes_with_dimensionality
+export goeswith_dim
 
 end

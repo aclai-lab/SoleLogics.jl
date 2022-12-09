@@ -7,11 +7,11 @@ abstract type Relation end
 
 ############################################################################################
 
-# Relations must indicate their compatible world types via `goes_with`.
+# Relations must indicate their compatible world types via `goeswith`.
 #  For example, if world type W is compatible with relation R
-# goes_with(::Type{W}, ::R) = true
+# goeswith(::Type{W}, ::R) = true
 # Here's the fallback:
-goes_with(::Type{W}, ::Relation) where {W<:World} = false
+goeswith(::Type{W}, ::Relation) where {W<:World} = false
 
 # Relations can be symmetric, reflexive and/or transitive.
 # By default, none of this cases holds:
@@ -63,7 +63,7 @@ export Relation,
 
 export _RelationGlob, _RelationId
 export RelationGlob, RelationId
-export goes_with
+export goeswith
 
 # Interval algebra relations 1D
 

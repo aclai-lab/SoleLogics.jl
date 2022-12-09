@@ -46,21 +46,6 @@ ismodal
 # rand(Grammar, rng) dispatch to generate a new valid formula
 # rand(Logic, rng) dispatch to generate a new valid formula
 
-#### Model ####
-Model{L}
-    goes_with(::Model, ::Logic) = false
-    check(Formula, Model)
-    provides_specific_check(...) = false
-    check(Formula, Model, args...) = provides_specific_check(...) ? error() : error()
-
-PropositionalLogic{At, O, Al} <: Logic{At, O, Al}
-
-TruthDictionary{L} <: Model{L}
-    goes_with(::PropositionalLogic) = true
-    check(::Formula{L}, ::TruthDictionary)
-    check(::SyntaxNode{...}, ::TruthDictionary) # SyntaxNode is converted to Formula, then the new dispatch is applied
-    check(::Proposition, ::TruthDict)
-
 #### Relations ####
 Relation
 RelationalOperator

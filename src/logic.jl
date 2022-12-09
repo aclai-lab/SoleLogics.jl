@@ -70,7 +70,7 @@ isbinary(op::Type{<:AbstractOperator}) = arity(op) == 2
 """
     abstract type AbstractAlphabet{A} end
 
-Abstract type for an alphabet of propositions with atoms of type `A`.
+Abstract type for representing an alphabet of propositions with atoms of type `A`.
 An alphabet (or propositional alphabet) is a
 [https://en.m.wikipedia.org/wiki/Countable_set](countable) set of propositions.
 
@@ -334,7 +334,7 @@ Base.convert(::Type{<:SyntaxTree}, t::SyntaxToken) = SyntaxTree(t)
 """
     abstract type AbstractGrammar{A<:AbstractAlphabet, O<:AbstractOperator} end
 
-Abstract type for a
+Abstract type for representing a
 [context-free grammar](https://en.m.wikipedia.org/wiki/Context-free_grammar)
 based on a *single* alphabet of type A, and a set of operators
 that consists of all the (singleton) child types of `O`.
@@ -407,7 +407,7 @@ end
     end
 
 Grammar that generates all well-formed formulas obtained by the arity-complying composition
-of propositions of an alphabet `A`, and all operators in `O`.
+of propositions of an alphabet of type `A`, and all operators with type in `O`.
 With n operators, this grammar has exactly n+1 production rules, and
 m+1 non-terminal symbols, where m is the number of nullary operators.
 for example, with `O = Union{⊥,∧,∨}`, the grammar is:
@@ -523,7 +523,7 @@ const ⊥ = BOTTOM
 """
     abstract type AbstractAlgebra end
 
-Abstract type for algebras. Algebras are used for grounding the truth of propositions
+Abstract type for representing algebras. Algebras are used for grounding the truth of propositions
 and the semantics of operators. They typically encode a
 [https://en.m.wikipedia.org/wiki/Lattice_(order)](lattice structure) where two elements
 (or nodes) *⊤* and *⊥* are referred to as *top* (or maximum) and *bottom* (or minimum).
@@ -820,4 +820,36 @@ function (op::AbstractOperator)(children::NTuple{N, Union{SyntaxToken, SyntaxTre
         isa(c, SyntaxToken) ? convert(SyntaxTree, c) : c
         end, children)
     op(Base.promote(_children...))
+end
+
+"""
+    abstract type AbstractLogicalModel{L<:AbstractLogic} end
+
+Abstract type for representing a logical model of a certain logic of type `L`.
+Classically, a model is referred to an
+[interpretation](https://en.m.wikipedia.org/wiki/Interpretation_(logic))
+in the case of [propositional logic](https://en.m.wikipedia.org/wiki/Propositional_calculus),
+while [Kripke structure](https://en.m.wikipedia.org/wiki/Kripke_structure_(model_checking))'s
+are used for modal and first-order logics.
+
+"""
+abstract type AbstractLogicalModel{L<:AbstractLogic} end
+
+"""
+A 
+"""
+goeswith(::AbstractLogicalModel{L}, ::L)::Bool where {L<:AbstractLogic} = true
+goeswith(::AbstractLogicalModel, ::Logic)::Bool = false
+check(::AbstractFormula, ::AbstractLogicalModel)
+
+check(::SyntaxNode{...}, ::TruthDictionary) # SyntaxNode is converted to Formula, then the new dispatch is applied
+check(::Proposition, ::TruthDict)
+
+provides_specific_check(::AbstractLogicalModel) = false
+function check(f::AbstractFormula, m::AbstractLogicalModel, args...)::Truth
+    if provides_specific_check(m)
+        error("Please, provide method check(::AbstractFormula, ::$(typeof(m)), args...) with args::$(typeof(args)).")
+    else
+        error("Cannot check formula $(f) of type $(typeof(f)) on model $(m) of type $(typeof(m)) with args $(args) of type $(typeof(args)).")
+    end
 end

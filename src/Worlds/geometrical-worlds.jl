@@ -9,8 +9,8 @@ abstract type GeometricalWorld <: World end
 #  that is, n-dimensional arrays.
 # The parameter n is referred to as `dimensionality`, and must be specified for each newly 
 #  defined dimensional world type via the following trait:
-goes_with_dimensionality(W::Type{<:GeometricalWorld}, d::Integer) = goes_with_dimensionality(W, Val(d))
-goes_with_dimensionality(::Type{<:GeometricalWorld}, ::Val) = false
+goeswith_dim(W::Type{<:GeometricalWorld}, d::Integer) = goeswith_dim(W, Val(d))
+goeswith_dim(::Type{<:GeometricalWorld}, ::Val) = false
 
 ############################################################################################
 # One unique world (propositional case)
@@ -27,7 +27,7 @@ Base.show(io::IO, w::OneWorld) = begin
     print(io, "−")
 end
 
-goes_with_dimensionality(::Type{OneWorld}, ::Val{0}) = true
+goeswith_dim(::Type{OneWorld}, ::Val{0}) = true
 
 
 ############################################################################################
@@ -44,7 +44,7 @@ goes_with_dimensionality(::Type{OneWorld}, ::Val{0}) = true
 
 # show(io::IO, r::PointWorld) = print(io, "($(x)×$(y))")
 
-# goes_with_dimensionality(::Type{PointWorld}, ::Val{1}) = true
+# goeswith_dim(::Type{PointWorld}, ::Val{1}) = true
 
 
 ############################################################################################
@@ -73,7 +73,7 @@ Base.show(io::IO, w::Interval) = begin
     print(io, ")")
 end
 
-goes_with_dimensionality(::Type{Interval}, ::Val{1}) = true
+goeswith_dim(::Type{Interval}, ::Val{1}) = true
 
 ############################################################################################
 # Interval 2D
@@ -100,4 +100,4 @@ Base.show(io::IO, w::Interval2D) = begin
     print(io, ")")
 end
 
-goes_with_dimensionality(::Type{Interval2D}, ::Val{2}) = true
+goeswith_dim(::Type{Interval2D}, ::Val{2}) = true

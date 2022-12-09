@@ -164,6 +164,3 @@ grammar(l::BaseLogic) = l.grammar
 algebra(l::BaseLogic) = l.algebra
 
 const base_logic = BaseLogic(base_grammar, BooleanAlgebra())
-
-# TODO...
-abstract type AbstractLogicalModel end
