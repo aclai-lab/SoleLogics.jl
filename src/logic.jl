@@ -1,6 +1,24 @@
 import Base: convert, promote_rule, _promote
 import Base: eltype, in, isiterable, iterate, IteratorSize, length
 
+export iscrisp, isfuzzy, isfinite,
+        isnullary, isunary, isbinary, ismodal
+
+export Proposition,
+        AbstractOperator,
+        ExplicitAlphabet,
+        LazyAlphabet,
+        SyntaxTree,
+        CompleteGrammar,
+        TruthOperator,
+        Formula
+
+export TOP, BOTTOM, ⊤, ⊥
+
+export arity, propositiontype, tokentype, tokentypes, propositiontypes, operatortypes, truthtype, collate_truth
+export goeswith, provides_specific_check
+export atom, propositions, token, children, alphabet, formulas, domain, top, bottom, grammar, algebra, logic, checktree
+
 ############################################################################################
 ########################################## SYNTAX ##########################################
 ############################################################################################

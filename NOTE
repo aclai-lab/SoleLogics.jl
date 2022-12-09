@@ -45,17 +45,8 @@ ismodal
 
 # rand(Grammar, rng) dispatch to generate a new valid formula
 # rand(Logic, rng) dispatch to generate a new valid formula
-
-#### Relations ####
-Relation
-RelationalOperator
-    relation(op::RelationalOperator) = op.relation
-DiamondRelationalOperator
-BoxRelationalOperator
-    ismodal(...)
-
-
-To be continued ...
+    
+Example: XOR in the docs.
 
 
 ##########################
@@ -64,3 +55,6 @@ To be continued ...
 Kripke Model (single/multi)
 Ontologies (Geometry, Dimensional)
 Model checking
+
+
+precedence(op) ...

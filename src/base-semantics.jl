@@ -1,3 +1,7 @@
+export ∧, ¬, ∨, ⟹
+export CONJUNCTION, NEGATION, DISJUNCTION, IMPLICATION
+
+
 """
     struct NamedOperator{Symbol} <: AbstractOperator end
 
@@ -121,8 +125,10 @@ bottom(a::BooleanAlgebra) = false
 collate_truth(a::AbstractAlgebra, o::typeof(¬), (t,)::NTuple{1}) = (!t)
 collate_truth(a::AbstractAlgebra, o::typeof(∧), (t1, t2)::NTuple{2}) = min(t1, t2)
 collate_truth(a::AbstractAlgebra, o::typeof(∨), (t1, t2)::NTuple{2}) = max(t1, t2)
+
+# the IMPLIES operator, ⟹, falls back to ¬
 collate_truth(a::AbstractAlgebra, o::typeof(⟹), (t1, t2)::NTuple{2}) =
-    collate_truth(a, ∨, (!(t1), t2))
+    collate_truth(a, ∨, (collate_truth(a, ¬, t1), t2))
 
 """
     struct BaseLogic{G<:AbstractGrammar, A<:AbstractAlgebra} <: AbstractLogic{G, A}
@@ -130,7 +136,7 @@ collate_truth(a::AbstractAlgebra, o::typeof(⟹), (t1, t2)::NTuple{2}) =
         algebra::A
     end
 
-Basic logic type based on a grammar and an algebra, where both grammar and algebra
+Basic logic type based on a grammar and an algebra, where both the grammar and the algebra
 are instantiated.
 """
 struct BaseLogic{G<:AbstractGrammar, A<:AbstractAlgebra} <: AbstractLogic{G, A}
