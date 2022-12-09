@@ -1,5 +1,19 @@
 # Notes about SoleLogics structure.
 
+exports:
+
+iscrisp
+isfuzzy
+
+propositions
+
+isfinite
+isconstant
+isunary
+isbinary
+
+ismodal
+
 ##########################
 #        syntax.jl       #
 ##########################
@@ -32,15 +46,6 @@
 # rand(Grammar, rng) dispatch to generate a new valid formula
 # rand(Logic, rng) dispatch to generate a new valid formula
 
-
-#### Algebra ####
-
-##########################
-#        base.jl        #
-##########################
-
-#### Logic ####
-
 #### Model ####
 Model{L}
     goes_with(::Model, ::Logic) = false
@@ -67,24 +72,6 @@ BoxRelationalOperator
 
 To be continued ...
 
-##########################
-#        traits.jl       #
-##########################
-# Things that could be moved in a traits.jl file.
-
-isinfinite(...)
-isinfinite(...)
-
-isconstant(...)
-isunary(...)
-isbinary(...)
-
-ismodal(...)
-
-iscrisp()
-isfuzzy()
-
-propositions()
 
 ##########################
 #       Still TODO       #
