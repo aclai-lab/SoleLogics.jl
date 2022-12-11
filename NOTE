@@ -1,19 +1,5 @@
 # Notes about SoleLogics structure.
 
-exports:
-
-iscrisp
-isfuzzy
-
-propositions
-
-isfinite
-isconstant
-isunary
-isbinary
-
-ismodal
-
 ##########################
 #        syntax.jl       #
 ##########################
@@ -58,3 +44,24 @@ Model checking
 
 
 precedence(op) ...
+
+
+# random.jl
+
+using Random
+
+# - an `rng` argument can be used to generate the formulas non-deterministically. TODO remove
+
+    # rng::Union{Random.AbstractRNG,Nothing} = nothing, TODO
+
+# if isnothing(rng)
+# else
+#     if isnothing(nformulas)
+#         # Generate all with maxdepth and shuffle
+#         shuffle(rng, formulas(g, maxdepth = maxdepth))
+#     else
+#         # Generate nformulas with maxdepth and limit
+#         shuffle(rng, formulas(g, maxdepth = maxdepth))[1:nformulas]
+#     end
+# end
+# 

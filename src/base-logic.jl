@@ -1,6 +1,9 @@
 
+export NamedOperator
+
 export ∧, ¬, ∨, ⟹
 export CONJUNCTION, NEGATION, DISJUNCTION, IMPLICATION
+
 export BooleanAlgebra, BaseLogic
 
 ############################################################################################
@@ -184,6 +187,10 @@ end
 grammar(l::BaseLogic) = l.grammar
 algebra(l::BaseLogic) = l.algebra
 
+"""
+A base logic can be used to instantiate `Formula`s out of syntax trees.
+"""
+(l::BaseLogic)(t::SyntaxTree, args...) = Formula(Base.RefValue(l), t; args...)
 
 ############################################################################################
 ########################################### BASE ###########################################

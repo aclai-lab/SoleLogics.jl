@@ -2,22 +2,28 @@ import Base: convert, promote_rule, _promote
 import Base: eltype, in, getindex, isiterable, iterate, IteratorSize, length
 
 export iscrisp, isfuzzy, isfinite,
-        isnullary, isunary, isbinary, ismodal
+        isnullary, isunary, isbinary
 
 export Proposition,
-        AbstractOperator,
+        # 
         ExplicitAlphabet,
         LazyAlphabet,
+        # 
+        AbstractOperator,
+        # 
         SyntaxTree,
+        # 
         CompleteFlatGrammar,
+        # 
         TruthOperator,
+        # 
         Formula
 
 export TOP, BOTTOM, ⊤, ⊥
 
 export arity, atomtype, propositiontype, tokentype, tokentypes, propositiontypes, operatortypes, truthtype, collate_truth
-export goeswith, provides_specific_check
-export atom, propositions, token, children, alphabet, formulas, domain, top, bottom, grammar, algebra, logic, checktree
+export check
+export atom, propositions, token, children, alphabet, formulas, domain, top, bottom, grammar, algebra, logic, check, tree
 export tokens, operators, propositions
 
 ############################################################################################
@@ -813,41 +819,44 @@ propositions(f::AbstractFormula)::AbstractVector{<:propositiontype(logic(f))} =
 
 """
 A formula can be used for instating other formulas of the same logic.
-"""
-(::F where {F<:AbstractFormula})(t::SyntaxTree)::F =
-    error("Please, provide method (::$(F))(t::SyntaxTree)::$(F).")
 
-
-"""
 In order to use operators for composing formulas, along with syntax tokens (e.g., propositions)
-and syntax trees, each formula should specify an explicit promotion method:
-
-    Base._promote(x::F, y::SyntaxTree)::NTuple{2, F} where {F<:AbstractFormula}
-
-This method should return a tuple (x, ŷ) where ŷ is a formula of the same type as x, but
-representing the same formula as y.
-Refer to https://github.com/JuliaLang/julia/blob/master/base/promotion.jl.
+and syntax trees, each formula should specify a method for constructing formulas of the same logic
+out of syntax trees. Let F<:AbstractFormula, this method should have the following signature:
+    
+    (f::F)(t::SyntaxTree)::F
 
 See also [`SyntaxToken`](@ref), [`SyntaxTree`](@ref), [`AbstractOperator`](@ref).
 """
-function Base._promote(x::F, y::SyntaxTree)::NTuple{2, F} where {F<:AbstractFormula}
-    error("Please, provide method Base._promote(x::$(F), ::SyntaxTree) (refer to https://github.com/JuliaLang/julia/blob/master/base/promotion.jl).")
+function (f::F where {F<:AbstractFormula})(t::SyntaxTree)
+    error("Please, provide method (::$(typeof(f)))(t::SyntaxTree)::$(typeof(f))" *
+        " for instantiating a formula of the same logic.")
 end
+
+# Adapted from https://github.com/JuliaLang/julia/blob/master/base/promotion.jl
+function Base._promote(x::AbstractFormula, y::SyntaxTree)
+    @inline
+    return (x, x(y))
+end
+
 function Base._promote(x::F, y::SyntaxToken) where {F<:AbstractFormula}
     Base._promote(x, Base.convert(SyntaxTree, y))
 end
-Base._promote(x::Union{SyntaxTree,SyntaxToken}, y::AbstractFormula) = reverse(Base._promote(y, x))
+Base._promote(x::Union{SyntaxTree, SyntaxToken}, y::AbstractFormula) = reverse(Base._promote(y, x))
 
 """
 In order to use operators for composing formulas, along with syntax tokens (e.g., propositions)
 and syntax trees, each formula should specify a composition method:
 
-    (op::AbstractOperator)(children::NTuple{N, F})::F where {N, F<:AbstractFormula}
+    (op::AbstractOperator)(children::NTuple{N, F}, args...) where {N, F<:AbstractFormula}
+
+Note that, since `op` might not be in the logic of the child formulas,
+the resulting formula may be of a different logic.
 
 See also [`AbstractFormula`](@ref), [`SyntaxTree`](@ref), [`AbstractOperator`](@ref).
 """
-function (op::AbstractOperator)(children::NTuple{N, F})::F where {N, F<:AbstractFormula}
-    error("Please, provide method (op::AbstractOperator)(children::NTuple{N, $(F)}) where {N}.")
+function (op::AbstractOperator)(children::NTuple{N, F}, args...)::F where {N, F<:AbstractFormula}
+    error("Please, provide method (op::AbstractOperator)(children::NTuple{N, $(F)}, args...) where {N}.")
 end
 
 """
@@ -861,6 +870,13 @@ a certain logic; that is: a) the tree encodes a formula belonging to the grammar
 of the logic; b) the truth of the formula can be evaluated
 on models of the logic. Note that, here, the logicis represented by a reference.
 
+Upon construction, the logic can be passed either directly, or via a RefValue.
+Additionally, the following keyword arguments may be specified:
+- `check_propositions`: whether to perform or not a check that the propositions
+ belong to the alphabet of the logic;
+- `check_tree`: whether to perform or not a check that the formula's syntax tree
+ honors the grammar (includes the check performed with `check_propositions = true`) (TODO);
+
 See also [`AbstractLogic`](@ref).
 """
 struct Formula{L<:AbstractLogic} <: AbstractFormula{L}
@@ -873,19 +889,22 @@ struct Formula{L<:AbstractLogic} <: AbstractFormula{L}
     function Formula{L}(
         l::Union{L,Base.RefValue{L}},
         ttf::Union{SyntaxToken, SyntaxTree, AbstractFormula};
-        check_propositions = false
+        check_propositions = false,
+        check_tree = false,
     ) where {L<:AbstractLogic}
         _logic = _l(l)
         tree = convert(SyntaxTree, ttf)
 
-        if check_propositions
+        if check_tree
+            error("TODO implement check_tree parameter when constructing Formula's!")
+        end
+        # Check that the propositions belong to the alphabet of the logic
+        if !check_tree && check_propositions
             @assert all([p in alphabet(_logic[]) for p in propositions(tree)]) "Cannot instantiate Formula{$(L)} with illegal propositions: $(filter((p)->!(p in alphabet(_logic[])), propositions(tree)))"
         end
 
-        # Note: this is merely a type-check: it checks that the tokens in the tree
-        # satisfy the allowed token types of the logic (e.g., the type of propositions
-        # and operators).
-        # It does not check that the propositions belong to the alphabet of the logic.
+        # Check that the token types of the tree are a subset of the tokens
+        #  allowed by the logic
         @assert tokentypes(tree) <: tokentypes(_logic[]) "Cannot instantiate Formula{$(L)} with illegal token types $(tokentypes(tree)). Token types should be <: $(tokentypes(_logic[]))."
         
         new{L}(_logic, tree)
@@ -906,18 +925,15 @@ tree(f::Formula) = f.tree
 
 Base.in(t::SyntaxToken, f::Formula) = Base.in(t, tree(f))
 
-(f::Formula)(t::SyntaxTree) = Formula(f._logic, t)
+# When constructing a new formula from a syntax tree, the logic is passed by reference.
+(f::Formula)(t::SyntaxTree) = Formula(_logic(f), t)
 
-# Adapted from https://github.com/JuliaLang/julia/blob/master/base/promotion.jl
-function Base._promote(x::F, y::SyntaxTree) where {F<:Formula}
-    @inline
-    return (x, F(_logic(x), y))
-end
-
-function (op::AbstractOperator)(children::NTuple{N, Formula}) where {N}
+function (op::AbstractOperator)(children::NTuple{N, Formula}, args...) where {N}
     ls = unique(logic.(children))
     @assert length(ls) == 1 "Cannot build formula by combination of formulas with different logics: $(ls)."
-    Formula(first(ls), op(map(tree, children)))
+    l = first(ls)
+    @assert typeof(op) <: operatortypes(l) "TODO expand logic's set of operators (op is not in it: $(typeof(op)) ∉ $(operatortypes(l)))."
+    Formula(l, op(map(tree, children)))
 end
 
 """

@@ -125,8 +125,6 @@ t2_int = @test_nowarn ¬(t1_int)
 @test_nowarn ∧((¬(t2_int), t2_int),)
 @test_nowarn ¬(¬(p1))
 
-@test propositions(f_int ∨ (p1 ∨ p100)) == [p1, p1, p100]
-@test all(isa.(propositions(f_int ∨ (p1 ∨ p100)), propositiontype(logic(f_int))))
 @test_nowarn f_int ∨ ⊤
 @test_nowarn ⊥ ∨ f_int
 @test_nowarn ¬(f_int)
@@ -136,6 +134,8 @@ t2_int = @test_nowarn ¬(t1_int)
 @test_nowarn f_int ∨ p1
 @test_nowarn t2_int ∨ f_int
 @test_nowarn f_int ∨ t2_int
+@test propositions(f_int ∨ (p1 ∨ p100)) == [p1, p1, p100]
+@test all(isa.(propositions(f_int ∨ (p1 ∨ p100)), propositiontype(logic(f_int))))
 
 @test_nowarn p1 ∨ t2_int
 @test typeof(¬(f_int)) == typeof(f_int)
@@ -182,6 +182,9 @@ empty_logic = @test_nowarn propositional_logic(; operators = AbstractOperator[],
 @test length(formulas(empty_logic, maxdepth = 2, nformulas = 2)) == 0
 
 
-@test propositional_logic() isa SoleLogics.BasePropositionalLogic
-@test propositional_logic(; operators = [¬, ∨]) isa SoleLogics.BasePropositionalLogic
-@test propositional_logic(; alphabet = ["p", "q"]) isa SoleLogics.BasePropositionalLogic
+@test propositional_logic() isa BasePropositionalLogic
+@test propositional_logic(; operators = [¬, ∨]) isa BasePropositionalLogic
+
+@test_throws AssertionError propositional_logic(; operators = [¬, ∨])(¬ p1)
+@test_nowarn propositional_logic(; operators = [¬, ∨])(¬ p_string)
+@test propositional_logic(; alphabet = ["p", "q"]) isa BasePropositionalLogic

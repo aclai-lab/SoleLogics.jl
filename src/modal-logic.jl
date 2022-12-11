@@ -1,13 +1,21 @@
-#### Relations ####
-abstract type Relation end
+export ismodal
+export DIAMOND, BOX, ◊, □
 
+export ismultimodal
+export Relation, RelationalOperator, DiamondRelationalOperator, BoxRelationalOperator
+export relationtype
 
-ismodal(::AbstractOperator) = false
+############################################################################################
+############################################################################################
+############################################################################################
+
+ismodal(::Type{<:AbstractOperator}) = false
+ismodal(o::AbstractOperator)::Bool = ismodal(typeof(o))
 
 doc_DIAMOND = """
     const DIAMOND = NamedOperator{:◊}()
     const ◊ = DIAMOND
-    arity(::typeof(◊)) = 1
+    arity(::NamedOperator{:◊}) = 1
 
 Logical diamond operator, typically interpreted as the modal existential quantifier.
 
@@ -21,14 +29,14 @@ const DIAMOND = NamedOperator{:◊}()
 $(doc_DIAMOND)
 """
 const ◊ = DIAMOND
-ismodal(::typeof(◊)) = true
-arity(::typeof(◊)) = 1
+ismodal(::NamedOperator{:◊}) = true
+arity(::NamedOperator{:◊}) = 1
 
 
 doc_BOX = """
     const BOX = NamedOperator{:□}()
     const □ = BOX
-    arity(::typeof(□)) = 1
+    arity(::NamedOperator{:□}) = 1
 
 Logical box operator, typically interpreted as the modal universal quantifier.
 
@@ -42,13 +50,38 @@ const BOX = NamedOperator{:□}()
 $(doc_BOX)
 """
 const □ = BOX
-ismodal(::typeof(□)) = true
-arity(::typeof(□)) = 1
+ismodal(::NamedOperator{:□}) = true
+arity(::NamedOperator{:□}) = 1
 
 
-RelationalOperator
-    relation(op::RelationalOperator) = op.relation
-DiamondRelationalOperator
-BoxRelationalOperator
-    ismodal(...)
+############################################################################################
+############################################################################################
+############################################################################################
 
+abstract type Relation end
+
+abstract type RelationalOperator{R<:Relation} end
+
+ismultimodal(::Type{<:AbstractOperator}) = false
+ismultimodal(o::AbstractOperator)::Bool = ismultimodal(typeof(o))
+ismultimodal(::Type{<:RelationalOperator}) = true
+
+relationtype(::RelationalOperator{R}) where {R<:Relation} = R
+
+struct DiamondRelationalOperator{R<:Relation} <: RelationalOperator{R} end
+
+struct BoxRelationalOperator{R<:Relation} <: RelationalOperator{R} end
+
+
+# TODO kripke frames represented by graphs of "named" worlds with labelled, "named" relations
+
+# # Named-world type
+# struct NamedWorld <: World end
+#     name::Symbol
+# end
+
+# # Named-relation type
+# struct NamedRelation <: Relation end
+#     name::Symbol
+#     adjacency matrix between NamedWorld's
+# end

@@ -1,3 +1,6 @@
+export propositional_logic
+
+export Interpretation, TruthDict
 
 """
     propositional_logic(;
