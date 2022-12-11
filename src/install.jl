@@ -24,3 +24,5 @@ function install(package::String, url::String, rev::String)
 end
 
 install("SoleBase", "https://github.com/aclai-lab/SoleBase.jl", "dev")
+
+Pkg.instantiate()
