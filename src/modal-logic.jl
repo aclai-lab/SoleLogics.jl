@@ -1,9 +1,66 @@
+using DataStructures: OrderedDict
+using NamedArrays
+
 export ismodal
 export DIAMOND, BOX, ◊, □
 
-export ismultimodal
-export Relation, RelationalOperator, DiamondRelationalOperator, BoxRelationalOperator
-export relationtype
+############################################################################################
+############################################################################################
+############################################################################################
+
+abstract type AbstractWorld end
+
+abstract type AbstractKripkeFrame{W<:AbstractWorld, T<:TruthValue} end
+
+"""
+    truthtype(::Type{<:AbstractKripkeFrame{W, T}}) where {W<:AbstractWorld, T<:TruthValue} = T
+    truthtype(a::AbstractKripkeFrame) = truthtype(typeof(a))
+
+The Julia type for representing truth values of the algebra.
+
+See also [`AbstractKripkeFrame`](@ref).
+"""
+truthtype(::Type{<:AbstractKripkeFrame{W, T}}) where {W<:AbstractWorld, T<:TruthValue} = T
+truthtype(a::AbstractKripkeFrame) = truthtype(typeof(a))
+
+function nworlds(::AbstractKripkeFrame)::Integer end
+function firstworld(::AbstractKripkeFrame{W})::W where {W<:AbstractWorld} end
+function accessible_worlds(::AbstractKripkeFrame{W}, ::W) where {W<:AbstractWorld} end
+
+struct AdjMatKripkeFrame{W<:AbstractWorld, T<:TruthValue} <: AbstractKripkeFrame{W, T}
+    adjacents::NamedMatrix{T, Matrix{T}, Tuple{OrderedDict{W, Int64}, OrderedDict{W, Int64}}}
+end
+
+
+"""
+    abstract type KripkeModel{A, T<:TruthValue} <: AbstractLogicalModel{A, T} end
+
+Abstract type for representing 
+[Kripke structures](https://en.m.wikipedia.org/wiki/Kripke_structure_(model_checking))'s).
+It comprehends a directed graph structure (Kripke frame), where nodes are referred to as *worlds*,
+and the binary relation between them is referred to as the *accessibility relation*.
+Additionally, each world is associated with a mapping from `Proposition`'s of atom type `A`
+to truth values of type `T`.
+
+See also [`AbstractLogicalModel`](@ref).
+"""
+abstract type AbstractKripkeModel{W<:AbstractWorld, A, T<:TruthValue} <: AbstractLogicalModel{A, T} end
+
+frame(m::AbstractKripkeModel)::AbstractKripkeFrame =
+    error("Please, provide method frame(m::$(typeof(m))).")
+
+nworlds(m::AbstractKripkeModel) = nworlds(frame(m))
+firstworld(m::AbstractKripkeModel) = firstworld(frame(m))
+accessible_worlds(m::AbstractKripkeModel) = accessible_worlds(frame(m))
+
+# Most general case
+struct KripkeModel{W<:AbstractWorld, A, T<:TruthValue, K<:AbstractKripkeFrame{W, T}, V<:Interpretation{A, T}} <: AbstractKripkeModel{W, A, T}
+    frame::K
+    valuations::Dict{W, V}
+end
+
+function check(f::Formula, m::KripkeModel{A, T})::T where {A, T<:TruthValue}
+end
 
 ############################################################################################
 ############################################################################################
@@ -53,35 +110,15 @@ const □ = BOX
 ismodal(::NamedOperator{:□}) = true
 arity(::NamedOperator{:□}) = 1
 
-
 ############################################################################################
+######################################## BASE ##############################################
 ############################################################################################
-############################################################################################
-
-abstract type Relation end
-
-abstract type RelationalOperator{R<:Relation} end
-
-ismultimodal(::Type{<:AbstractOperator}) = false
-ismultimodal(o::AbstractOperator)::Bool = ismultimodal(typeof(o))
-ismultimodal(::Type{<:RelationalOperator}) = true
-
-relationtype(::RelationalOperator{R}) where {R<:Relation} = R
-
-struct DiamondRelationalOperator{R<:Relation} <: RelationalOperator{R} end
-
-struct BoxRelationalOperator{R<:Relation} <: RelationalOperator{R} end
 
 
-# TODO kripke frames represented by graphs of "named" worlds with labelled, "named" relations
 
-# # Named-world type
-# struct NamedWorld <: World end
-#     name::Symbol
-# end
+# A type for a world identified by its name
+struct World{T} <: AbstractWorld
+    name::T
+end
 
-# # Named-relation type
-# struct NamedRelation <: Relation end
-#     name::Symbol
-#     adjacency matrix between NamedWorld's
-# end
+

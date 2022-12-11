@@ -4,6 +4,8 @@ using Test
 include("general.jl")
 include("base-logic.jl")
 include("propositional-logic.jl")
+include("modal-logic.jl")
+include("multimodal-logic.jl")
 
 p1 = @test_nowarn Proposition(1)
 p2 = @test_nowarn Proposition(2)

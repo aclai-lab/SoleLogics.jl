@@ -43,6 +43,7 @@ abstract type SyntaxToken end
 Each syntax token must provide a method yielding its `arity`:
 
     arity(::Type{<:SyntaxToken})::Integer
+    arity(t::SyntaxToken)::Integer = arity(typeof(t))
 
 The arity of a token is the expected number of children of a node that
 wraps it in a syntax tree.
@@ -636,7 +637,16 @@ See also [`BooleanAlgebra`](@ref), [`AbstractOperator`](@ref), [`collate_truth`]
 """
 abstract type AbstractAlgebra{T<:TruthValue} end
 
-truthtype(a::AbstractAlgebra{T}) where {T<:TruthValue} = T
+"""
+    truthtype(::Type{<:AbstractAlgebra{T}}) where {T<:TruthValue} = T
+    truthtype(a::AbstractAlgebra) = truthtype(typeof(a))
+
+The Julia type for representing truth values of the algebra.
+
+See also [`AbstractAlgebra`](@ref).
+"""
+truthtype(::Type{<:AbstractAlgebra{T}}) where {T<:TruthValue} = T
+truthtype(a::AbstractAlgebra) = truthtype(typeof(a))
 
 """
     domain(a::AbstractAlgebra)
@@ -671,13 +681,16 @@ bottom(a::AbstractAlgebra{T} where {T})::T = error("Please, provide method botto
 
 
 """
-    iscrisp(a::AbstractAlgebra) = (truthtype(a) == Bool)
+    iscrisp(::Type{<:AbstractAlgebra}) = (truthtype(a) == Bool)
+    iscrisp(a::AbstractAlgebra) = iscrisp(typeof(a))
 
 An algebra is crisp (or *boolean*) when its domain type is... `Bool`, quite literally!
+The antonym of crisp is *fuzzy*.
 
 See also [`AbstractAlgebra`](@ref).
 """
-iscrisp(a::AbstractAlgebra) = (truthtype(a) == Bool)
+iscrisp(::Type{<:AbstractAlgebra}) = (truthtype(a) == Bool)
+iscrisp(a::AbstractAlgebra) = iscrisp(typeof(a))
 isfuzzy = !iscrisp
 
 """
@@ -708,9 +721,9 @@ end
 collate_truth(a::AbstractAlgebra, ::typeof(⊤), t::NTuple{0}) = top(a)
 collate_truth(a::AbstractAlgebra, ::typeof(⊥), t::NTuple{0}) = bottom(a)
 
-# Helper
-collate_truth(a::AbstractAlgebra, op::AbstractOperator, t::NTuple{N, T}...) where {N, T<:TruthValue} =
-    collate_truth(a, op, t)
+# # Helper
+# collate_truth(a::AbstractAlgebra, op::AbstractOperator, t::NTuple{N, T}...) where {N, T<:TruthValue} =
+#     collate_truth(a, op, t)
 
 """
     abstract type AbstractLogic{G<:AbstractGrammar, A<:AbstractAlgebra} end
