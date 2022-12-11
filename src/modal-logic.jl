@@ -2,7 +2,7 @@
 abstract type Relation end
 
 
-is_modal(::AbstractOperator) = false
+ismodal(::AbstractOperator) = false
 
 doc_DIAMOND = """
     const DIAMOND = NamedOperator{:◊}()
@@ -21,7 +21,7 @@ const DIAMOND = NamedOperator{:◊}()
 $(doc_DIAMOND)
 """
 const ◊ = DIAMOND
-is_modal(::typeof(◊)) = true
+ismodal(::typeof(◊)) = true
 arity(::typeof(◊)) = 1
 
 
@@ -42,7 +42,7 @@ const BOX = NamedOperator{:□}()
 $(doc_BOX)
 """
 const □ = BOX
-is_modal(::typeof(□)) = true
+ismodal(::typeof(□)) = true
 arity(::typeof(□)) = 1
 
 
