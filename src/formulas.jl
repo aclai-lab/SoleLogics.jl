@@ -121,8 +121,10 @@ formula!(v::FNode{L}, w::FNode{L}) where {L<:Logic} = v.formula = w.formula
 #         and utilities
 ############################################################################################
 
+abstract type AbstractFormula{L<:AbstractLogic} end
+
 """Formula (syntax) tree."""
-struct Formula{L<:Logic}
+struct Formula{L<:Logic} <: AbstractFormula{L}
     tree::FNode{L}
 end
 @forward Formula.tree formula, formula!, fhash, size, parent, parent!
