@@ -1,7 +1,7 @@
 
 export NamedOperator
 
-export ∧, ¬, ∨, ⟹
+export ∧, ¬, ∨, →
 export CONJUNCTION, NEGATION, DISJUNCTION, IMPLICATION
 
 export BooleanAlgebra, BaseLogic
@@ -14,7 +14,9 @@ export BooleanAlgebra, BaseLogic
     struct NamedOperator{Symbol} <: AbstractOperator end
 
 A singleton type for representing operators defined by a name or a symbol.
-For example, the AND operator (logical conjuction) can be defined as the subtype:
+
+# Examples
+The AND operator (logical conjuction) can be defined as the subtype:
 
     const CONJUNCTION = NamedOperator{:∧}()
     const ∧ = CONJUNCTION
@@ -82,9 +84,9 @@ const ∨ = DISJUNCTION
 arity(::Type{NamedOperator{:∨}}) = 2
 
 doc_IMPLICATION = """
-    const IMPLICATION = NamedOperator{:⟹}()
-    const ⟹ = IMPLICATION
-    arity(::Type{NamedOperator{:⟹}}) = 2
+    const IMPLICATION = NamedOperator{:→}()
+    const → = IMPLICATION
+    arity(::Type{NamedOperator{:→}}) = 2
 
 Logical implication.
 
@@ -93,12 +95,12 @@ See also [`NamedOperator`](@ref), [`AbstractOperator`](@ref).
 """
 $(doc_IMPLICATION)
 """
-const IMPLICATION = NamedOperator{:⟹}()
+const IMPLICATION = NamedOperator{:→}()
 """
 $(doc_IMPLICATION)
 """
-const ⟹ = IMPLICATION
-arity(::Type{NamedOperator{:⟹}}) = 2
+const → = IMPLICATION
+arity(::Type{NamedOperator{:→}}) = 2
 
 ############################################################################################
 ########################################## ALGEBRA #########################################
@@ -125,8 +127,8 @@ collate_truth(a::BooleanAlgebra, o::typeof(¬), (t,)::NTuple{1}) = (!t)
 collate_truth(a::BooleanAlgebra, o::typeof(∧), (t1, t2)::NTuple{2}) = min(t1, t2)
 collate_truth(a::BooleanAlgebra, o::typeof(∨), (t1, t2)::NTuple{2}) = max(t1, t2)
 
-# The IMPLIES operator, ⟹, falls back to ¬
-collate_truth(a::BooleanAlgebra, o::typeof(⟹), (t1, t2)::NTuple{2}) =
+# The IMPLIES operator, →, falls back to ¬
+collate_truth(a::BooleanAlgebra, o::typeof(→), (t1, t2)::NTuple{2}) =
     collate_truth(a, ∨, (collate_truth(a, ¬, t1), t2))
 
 default_algebra(::Type{Bool}) = BooleanAlgebra{Bool}()
@@ -200,13 +202,13 @@ A base logic can be used to instantiate `Formula`s out of syntax trees.
 # This can be useful for standard phrasing of propositional formulas with string propositions.
 
 """
-    const base_operators = [⊤, ⊥, ¬, ∧, ∨, ⟹]
+    const base_operators = [⊤, ⊥, ¬, ∧, ∨, →]
 
 Basic logical operators.
 
 See also [`TOP`](@ref), [`BOTTOM`](@ref), [`NEGATION`](@ref), [`CONJUCTION`](@ref), [`AbstractOperator`](@ref).
 """
-const base_operators = [⊤, ⊥, ¬, ∧, ∨, ⟹]
+const base_operators = [⊤, ⊥, ¬, ∧, ∨, →]
 const BaseOperators = Union{typeof.(base_operators)...}
 
 const base_alphabet = AlphabetOfAny{String}()

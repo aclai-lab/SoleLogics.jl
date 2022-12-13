@@ -5,8 +5,8 @@ export Interpretation, TruthDict
 """
     propositional_logic(;
         alphabet = AlphabetOfAny{String}(),
-        operators = [⊤, ⊥, ¬, ∧, ∨, ⟹],
-        grammar = CompleteFlatGrammar(AlphabetOfAny{String}(), [⊤, ⊥, ¬, ∧, ∨, ⟹]),
+        operators = [⊤, ⊥, ¬, ∧, ∨, →],
+        grammar = CompleteFlatGrammar(AlphabetOfAny{String}(), [⊤, ⊥, ¬, ∧, ∨, →]),
         algebra = BooleanAlgebra(),
     )
 

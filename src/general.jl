@@ -78,7 +78,7 @@ Base.convert(::Type{P1}, t::P2) where {P1<:Proposition, P2<:Proposition} = P1(at
 
 An operator is a [logical constant](https://en.m.wikipedia.org/wiki/Logical_connective)
 which establishes a relation between propositions (i.e., facts).
-For example, the boolean operators AND, OR and IMPLIES (stylized as ∧, ∨ and ⟹)
+For example, the boolean operators AND, OR and IMPLIES (stylized as ∧, ∨ and →)
 are used to connect propositions and express derived concepts.
 
 Since operators display very different algorithmic behaviors,
@@ -359,6 +359,21 @@ function propositions(t::SyntaxTree)
     ps = token(t) isa Proposition ? [token(t)] : []
     [vcat(propositions.(children(t))...)..., ps...]
 end
+
+"""
+TODO Michele
+"""
+function ntokens(t::SyntaxTree)
+    # TODO Michele
+end
+
+"""
+TODO Michele
+"""
+function npropositions(t::SyntaxTree)
+    # TODO Michele
+end
+
 
 # We use standard promotion between syntax tokens and trees
 Base.promote_rule(::Type{<:SyntaxToken}, ::Type{S}) where {S<:SyntaxTree} = S

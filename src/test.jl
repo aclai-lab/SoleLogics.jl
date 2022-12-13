@@ -1,6 +1,7 @@
 # julia
 using Revise
 using Test
+
 include("general.jl")
 include("base-logic.jl")
 include("propositional-logic.jl")
