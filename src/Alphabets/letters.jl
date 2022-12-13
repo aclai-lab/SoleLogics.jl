@@ -50,7 +50,7 @@ struct Letter{T} <: AbstractPropositionalLetter
         attribute::Any,
         operator::AbstractOperator,
         threshold::T;
-        name::Union{String, Symbol, Nothing}=nothing
+        name::Union{String, Symbol, Nothing} = nothing
     ) where {T}
         _is_comparable(attribute, threshold)
         _is_valid_operator(operator)
@@ -64,7 +64,7 @@ struct Letter{T} <: AbstractPropositionalLetter
         attribute::Any,
         operator::AbstractOperator,
         threshold::T;
-        name::Union{String, Symbol, Nothing}=nothing
+        name::Union{String, Symbol, Nothing} = nothing
     ) where {T}
         _is_comparable(attribute, threshold)
         _is_valid_operator(operator)
@@ -78,7 +78,7 @@ struct Letter{T} <: AbstractPropositionalLetter
         attribute::Any,
         operator::AbstractOperator,
         threshold::T;
-        name::Union{String, Symbol, Nothing}=nothing
+        name::Union{String, Symbol, Nothing} = nothing
     ) where {T}
         _is_comparable(attribute, threshold)
         _is_valid_operator(operator)
@@ -93,7 +93,7 @@ struct Letter{T} <: AbstractPropositionalLetter
         attribute::Any,
         operator::AbstractOperator,
         threshold::T;
-        name::Union{String, Symbol, Nothing}=nothing
+        name::Union{String, Symbol, Nothing} = nothing
     ) where {T}
         _is_comparable(attribute, threshold)
         _is_valid_operator(operator)

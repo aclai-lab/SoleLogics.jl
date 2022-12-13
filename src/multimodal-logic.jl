@@ -1,25 +1,25 @@
 
 export ismultimodal
-export Relation, RelationalOperator, DiamondRelationalOperator, BoxRelationalOperator
+export AbstractRelationalOperator, DiamondRelationalOperator, BoxRelationalOperator
 export relationtype
 
 ############################################################################################
 ############################################################################################
 ############################################################################################
 
-abstract type Relation end
+abstract type AbstractRelation end
 
-abstract type RelationalOperator{R<:Relation} end
+abstract type AbstractRelationalOperator{R<:AbstractRelation} end
+# TODO: why the type parameter?
+# TODO-reply: We want to dispatch on it. In this case, because different relations
+#  carry different algorithmic behaviors (e.g., Later vs. After are computed in a
+#  different way).
 
-ismultimodal(::Type{<:AbstractOperator}) = false
-ismultimodal(o::AbstractOperator)::Bool = ismultimodal(typeof(o))
-ismultimodal(::Type{<:RelationalOperator}) = true
+relationtype(::AbstractRelationalOperator{R}) where {R<:AbstractRelation} = R
 
-relationtype(::RelationalOperator{R}) where {R<:Relation} = R
+struct DiamondRelationalOperator{R<:AbstractRelation} <: AbstractRelationalOperator{R} end
 
-struct DiamondRelationalOperator{R<:Relation} <: RelationalOperator{R} end
-
-struct BoxRelationalOperator{R<:Relation} <: RelationalOperator{R} end
+struct BoxRelationalOperator{R<:AbstractRelation} <: AbstractRelationalOperator{R} end
 
 ############################################################################################
 ######################################## BASE ##############################################
@@ -30,7 +30,7 @@ struct BoxRelationalOperator{R<:Relation} <: RelationalOperator{R} end
 
 
 # # Named-relation type
-# struct NamedRelation <: Relation
+# struct NamedRelation <: AbstractRelation
 #     name::Symbol
 #     # adjacency matrix between NamedWorld's
 # end

@@ -1,4 +1,3 @@
-
 export NamedOperator
 
 export ∧, ¬, ∨, →
@@ -22,7 +21,8 @@ The AND operator (logical conjuction) can be defined as the subtype:
     const ∧ = CONJUNCTION
     arity(::Type{NamedOperator{:∧}}) = 2
 
-See also [`NEGATION`](@ref), [`CONJUNCTION`](@ref), [`DISJUNCTION`](@ref), [`IMPLICATION`](@ref), [`AbstractOperator`](@ref).
+See also [`NEGATION`](@ref), [`CONJUNCTION`](@ref), [`DISJUNCTION`](@ref),
+[`IMPLICATION`](@ref), [`AbstractOperator`](@ref).
 """
 struct NamedOperator{Symbol} <: AbstractOperator end
 
@@ -118,18 +118,19 @@ See also [`TruthValue`](@ref).
 """
 struct BooleanAlgebra <: AbstractAlgebra{Bool} end
 
-domain(a::BooleanAlgebra) = [true, false]
+domain(::BooleanAlgebra) = [true, false]
 top(a::BooleanAlgebra) = true
 bottom(a::BooleanAlgebra) = false
 
 # Standard semantics for NOT, AND, OR, IMPLIES
-collate_truth(a::BooleanAlgebra, o::typeof(¬), (t,)::NTuple{1}) = (!t)
-collate_truth(a::BooleanAlgebra, o::typeof(∧), (t1, t2)::NTuple{2}) = min(t1, t2)
-collate_truth(a::BooleanAlgebra, o::typeof(∨), (t1, t2)::NTuple{2}) = max(t1, t2)
+collate_truth(::BooleanAlgebra, ::typeof(¬), (t,)::NTuple{1}) = (!t)
+collate_truth(::BooleanAlgebra, ::typeof(∧), (t1, t2)::NTuple{2}) = min(t1, t2)
+collate_truth(::BooleanAlgebra, ::typeof(∨), (t1, t2)::NTuple{2}) = max(t1, t2)
 
 # The IMPLIES operator, →, falls back to ¬
-collate_truth(a::BooleanAlgebra, o::typeof(→), (t1, t2)::NTuple{2}) =
-    collate_truth(a, ∨, (collate_truth(a, ¬, t1), t2))
+function collate_truth(a::BooleanAlgebra, ::typeof(→), (t1, t2)::NTuple{2})
+    return collate_truth(a, ∨, (collate_truth(a, ¬, t1), t2))
+end
 
 default_algebra(::Type{Bool}) = BooleanAlgebra{Bool}()
 
@@ -159,30 +160,30 @@ are instantiated.
 
 See also [`AbstractGrammar`](@ref), [`AbstractAlgebra`](@ref), [`AbstractLogic`](@ref).
 """
-struct BaseLogic{G<:AbstractGrammar, A<:AbstractAlgebra} <: AbstractLogic{G, A}
+struct BaseLogic{G<:AbstractGrammar,A<:AbstractAlgebra} <: AbstractLogic{G,A}
     grammar::G
     algebra::A
 
-    function BaseLogic{G, A}(
+    function BaseLogic{G,A}(
         grammar::G = base_grammar,
         algebra::A = BooleanAlgebra(),
-    ) where {G<:AbstractGrammar, A<:AbstractAlgebra}
+    ) where {G<:AbstractGrammar,A<:AbstractAlgebra}
         # @assert all([goeswith(op, algebra) for op in operators(grammar)]) "Cannot instantiate BaseLogic{$(G), $(A)}: operators $(operators(grammar)[[goeswith(op, algebra) for op in operators(grammar)]]) cannot be interpreted on $(algebra)." # requires `goeswith` trait
-        new{G, A}(grammar, algebra)
+        return new{G,A}(grammar, algebra)
     end
 
     function BaseLogic{G}(
         grammar::G = base_grammar,
         algebra::A = BooleanAlgebra(),
-    ) where {G<:AbstractGrammar, A<:AbstractAlgebra}
-        BaseLogic{G, A}(grammar, algebra)
+    ) where {G<:AbstractGrammar,A<:AbstractAlgebra}
+        return BaseLogic{G,A}(grammar, algebra)
     end
 
     function BaseLogic(
         grammar::G = base_grammar,
         algebra::A = BooleanAlgebra(),
-    ) where {G<:AbstractGrammar, A<:AbstractAlgebra}
-        BaseLogic{G, A}(grammar, algebra)
+    ) where {G<:AbstractGrammar,A<:AbstractAlgebra}
+        return BaseLogic{G,A}(grammar, algebra)
     end
 end
 
@@ -206,7 +207,8 @@ A base logic can be used to instantiate `Formula`s out of syntax trees.
 
 Basic logical operators.
 
-See also [`TOP`](@ref), [`BOTTOM`](@ref), [`NEGATION`](@ref), [`CONJUCTION`](@ref), [`AbstractOperator`](@ref).
+See also [`TOP`](@ref), [`BOTTOM`](@ref), [`NEGATION`](@ref),
+[`CONJUCTION`](@ref), [`AbstractOperator`](@ref).
 """
 const base_operators = [⊤, ⊥, ¬, ∧, ∨, →]
 const BaseOperators = Union{typeof.(base_operators)...}
