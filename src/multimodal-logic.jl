@@ -7,10 +7,11 @@ export relationtype
 ############################################################################################
 ############################################################################################
 
-abstract type Relation end
+abstract type Relation end # TODO: why exporting an abstract type? also if it is abstract it should be called something like AbstractRelation
 
-abstract type RelationalOperator{R<:Relation} end
+abstract type RelationalOperator{R<:Relation} end # TODO: why the type parameter?
 
+# TODO: the logic should be "multimodal" or not, not the operators (which, the latter, should be "modal" or not)
 ismultimodal(::Type{<:AbstractOperator}) = false
 ismultimodal(o::AbstractOperator)::Bool = ismultimodal(typeof(o))
 ismultimodal(::Type{<:RelationalOperator}) = true
