@@ -31,7 +31,7 @@
 
 # rand(Grammar, rng) dispatch to generate a new valid formula
 # rand(Logic, rng) dispatch to generate a new valid formula
-    
+
 Example: XOR in the docs.
 
 
@@ -43,7 +43,17 @@ Ontologies (Geometry, Dimensional)
 Model checking
 
 
-precedence(op) ...
+##########################
+#      To keep from      #
+#    previous version    #
+##########################
+
+* SyntaxTree built from a string (precedence, tokenizer+shunting_yard or some package to deal with grammars)
+* formula normalization heuristic (can be done using precedence for letters, and precedence + hashing for operators)
+* gen_formula() to generate pseudo random formulas
+* model checking with adjacents
+* fan-in fan-out method to generate pseudorandom Kripke Frames
+* macro to define modal operators
 
 
 # random.jl
@@ -64,4 +74,4 @@ using Random
 #         shuffle(rng, formulas(g, maxdepth = maxdepth))[1:nformulas]
 #     end
 # end
-# 
+#
