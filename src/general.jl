@@ -440,17 +440,27 @@ function propositions(t::SyntaxTree)::AbstractVector{<:Proposition}
 end
 
 """
-TODO Michele
+    ntokens(t::SyntaxTree)::Integer
+
+Count all tokens appearing in a tree
+
+See also ...
+
 """
 function ntokens(t::SyntaxTree)
-    # TODO Michele
+    length(children(t)) == 0 ? 1 : 1 + sum(ntoken(c) for c in children(t))
 end
 
 """
-TODO Michele
+    npropositions(t::SyntaxTree)::Integer
+
+Count all propositions appearing in a tree
+
+See also ...
 """
 function npropositions(t::SyntaxTree)
-    # TODO Michele
+    pr = token(t) isa Proposition ? 1 : 0
+    return length(children(t)) == 0 ? pr : pr + sum(npropositions(c) for c in children(t))
 end
 
 
