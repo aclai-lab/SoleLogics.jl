@@ -6,6 +6,7 @@ export iscrisp, isfuzzy, isfinite,
 
 export Proposition,
     #
+    AlphabetOfAny,
     ExplicitAlphabet,
     LazyAlphabet,
     #
