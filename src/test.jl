@@ -191,3 +191,9 @@ empty_logic = @test_nowarn propositional_logic(; operators = AbstractOperator[],
 @test_throws AssertionError propositional_logic(; operators = [¬, ∨])(¬ p1)
 @test_nowarn propositional_logic(; operators = [¬, ∨])(¬ p_string)
 @test propositional_logic(; alphabet = ["p", "q"]) isa BasePropositionalLogic
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ random.jl ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+alphabet = ExplicitAlphabet(Proposition.([1,2]))
+operators = [NEGATION, CONJUNCTION, IMPLICATION]
+@test_broken generate(10, alphabet, operators)

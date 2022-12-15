@@ -21,7 +21,8 @@ function generate(
     rng::Union{Integer, AbstractRNG}=Random.GLOBAL_RNG
 )
     if !isiterable(alphabet)
-        return error("Please, provide method propositions(::$(typeof(a))).")
+        return error("Please, provide method propositions(::$(typeof(a)))" *
+        " to allow formula generation.")
     end
 
     rng = (typeof(rng) <: Integer) ? Random.MersenneTwister(rng) : rng
@@ -29,7 +30,7 @@ function generate(
     return _generate(height, alphabet, operators, rng=rng)
 end
 
-@boundscheck function _generate(
+function _generate(
     height::Int,
     alphabet::AbstractAlphabet,
     operators::Vector{<:AbstractOperator};
@@ -41,15 +42,6 @@ end
 
     op = rand(rng, operators)
 
-    # TODO: split on more rows
     return SyntaxTree(op,
         Tuple([_generate(height-1, alphabet, operators; rng=rng) for _ in 1:arity(op)]))
 end
-
-#= Fast REPL test
-
-alphabet = ExplicitAlphabet(Proposition.([1,2]))
-operators = [NEGATION, CONJUNCTION, IMPLICATION]
-generate(5, alphabet, operators)
-
-=#
