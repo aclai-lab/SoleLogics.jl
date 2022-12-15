@@ -1,12 +1,7 @@
 # julia
 using Revise
 using Test
-
-include("general.jl")
-include("base-logic.jl")
-include("propositional-logic.jl")
-include("modal-logic.jl")
-include("multimodal-logic.jl")
+using SoleLogics
 
 p1 = @test_nowarn Proposition(1)
 p2 = @test_nowarn Proposition(2)
@@ -18,7 +13,7 @@ p1_number = @test_nowarn Proposition{Number}(1)
 p_string = @test_nowarn Proposition{String}("1")
 
 @test arity(p1) == 0
-@test propositiontype(AbstractAlphabet{Int}) == Proposition{Int}
+@test propositiontype(SoleLogics.AbstractAlphabet{Int}) == Proposition{Int}
 
 @test_nowarn ExplicitAlphabet(Proposition.([1,2]))
 @test_nowarn ExplicitAlphabet([1,2])
@@ -71,7 +66,7 @@ t1n_int = @test_nowarn SyntaxTree(¬, (t1_int,))
 t2_int = @test_nowarn SyntaxTree(∧, (t1_int, t1_int))
 @test tokentypes(SyntaxTree(∧, (t2_int, t1n_int))) == Union{typeof(∧), tokentypes(t1n_int)}
 
-grammar_int = CompleteFlatGrammar(alphabet_int, base_operators)
+grammar_int = CompleteFlatGrammar(alphabet_int, SoleLogics.base_operators)
 
 @test Proposition(1) in grammar_int
 @test ! (Proposition(11) in grammar_int)
@@ -84,9 +79,9 @@ grammar_int = CompleteFlatGrammar(alphabet_int, base_operators)
 
 logic_int = BaseLogic(grammar_int, BooleanAlgebra())
 
-@test_throws MethodError "aoeu" in base_logic
-@test Proposition("aoeu") in base_logic
-@test ! (Proposition(1) in base_logic)
+@test_throws MethodError "aoeu" in SoleLogics.base_logic
+@test Proposition("aoeu") in SoleLogics.base_logic
+@test ! (Proposition(1) in SoleLogics.base_logic)
 
 @test_nowarn Formula(Base.RefValue(logic_int), t1_int)
 f_int = @test_nowarn Formula(logic_int, t1_int)
