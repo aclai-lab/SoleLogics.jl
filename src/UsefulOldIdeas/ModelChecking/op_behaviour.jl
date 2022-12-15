@@ -1,4 +1,4 @@
-#= # NOTE: token type could be directly added to node
+# NOTE: token type could be directly added to node
 # in order to avoid writing typeof(token(node))
 
 # TODO: Define WorldsSet{T} where T is forced to be <:AbstractWorld
@@ -74,4 +74,3 @@ function dispatch_modop(
 
     return s
 end
- =#
