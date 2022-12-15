@@ -48,30 +48,26 @@ Model checking
 #    previous version    #
 ##########################
 
+# Done
+* `generate()` to generate pseudo random formulas
+
+# To see with Giovanni. Is it possible to leverage an external package?
+# Also it could be cool to implement `priority` and `associativity` since this could
+# make the package more flexible.
 * SyntaxTree built from a string (precedence, tokenizer+shunting_yard or some package to deal with grammars)
+
 * formula normalization heuristic (can be done using precedence for letters, and precedence + hashing for operators)
-* gen_formula() to generate pseudo random formulas
-* model checking with adjacents
+
 * fan-in fan-out method to generate pseudorandom Kripke Frames
+
+# To see with Giovanni
 * macro to define modal operators
 
+# Todo refine worlds and relations
+* `generate()` to generate pseudo random Kripke Frames
 
-# random.jl
+# Todo relations
+* model checking
 
-using Random
-
-# - an `rng` argument can be used to generate the formulas non-deterministically. TODO remove
-
-    # rng::Union{Random.AbstractRNG,Nothing} = nothing, TODO
-
-# if isnothing(rng)
-# else
-#     if isnothing(nformulas)
-#         # Generate all with maxdepth and shuffle
-#         shuffle(rng, formulas(g, maxdepth = maxdepth))
-#     else
-#         # Generate nformulas with maxdepth and limit
-#         shuffle(rng, formulas(g, maxdepth = maxdepth))[1:nformulas]
-#     end
-# end
-#
+# TODO:
+# print

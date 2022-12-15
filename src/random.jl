@@ -1,6 +1,6 @@
 using Random
 
-export gen_formula
+export generate
 
 """
     TODO: add documentation after refining the function.
@@ -14,7 +14,7 @@ export gen_formula
     * If the alphabet is not iterable, this function should not work.
         The message in the thrown error is repeated (see general.jl)
 """
-function gen_formula(
+function generate(
     height::Int,
     alphabet::AbstractAlphabet,
     operators::Vector{<:AbstractOperator};
@@ -26,30 +26,30 @@ function gen_formula(
 
     rng = (typeof(rng) <: Integer) ? Random.MersenneTwister(rng) : rng
 
-    return _gen_formula(height, alphabet, operators, rng=rng)
+    return _generate(height, alphabet, operators, rng=rng)
 end
 
-@boundscheck function _gen_formula(
+@boundscheck function _generate(
     height::Int,
     alphabet::AbstractAlphabet,
     operators::Vector{<:AbstractOperator};
     rng::Union{Integer, AbstractRNG}=Random.GLOBAL_RNG
 )
-    # Base case
     if height == 0
         return SyntaxTree(rand(rng, propositions(alphabet)))
     end
 
     op = rand(rng, operators)
 
+    # TODO: split on more rows
     return SyntaxTree(op,
-        Tuple([_gen_formula(height-1, alphabet, operators; rng=rng) for _ in 1:arity(op)]))
+        Tuple([_generate(height-1, alphabet, operators; rng=rng) for _ in 1:arity(op)]))
 end
 
 #= Fast REPL test
 
 alphabet = ExplicitAlphabet(Proposition.([1,2]))
 operators = [NEGATION, CONJUNCTION, IMPLICATION]
-gen_formula(5, alphabet, operators)
+generate(5, alphabet, operators)
 
 =#
