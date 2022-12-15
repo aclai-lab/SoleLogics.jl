@@ -1,6 +1,6 @@
 export propositional_logic
 
-export Interpretation, TruthDict, DefaultedTruthDict, BasePropositionalLogic
+export Interpretation, TruthDict
 
 """
     propositional_logic(;
@@ -60,7 +60,7 @@ function propositional_logic(;
     end
 
     algebra = isnothing(algebra) ? base_algebra : algebra
-    
+
     return BaseLogic(grammar, algebra)
 end
 
