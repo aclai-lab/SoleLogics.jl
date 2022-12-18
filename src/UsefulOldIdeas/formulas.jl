@@ -1,220 +1,6 @@
-using Lazy   # delegation pattern
-using Random # needed to formula generation
+export parseformula
 
-############################################################################################
-#       FNode structure
-#      getters & setters
-############################################################################################
-
-# Something wrappable in a FNode.
-const Token = Union{AbstractPropositionalLetter, AbstractOperator}
-
-"""Formula (syntax) tree node."""
-mutable struct FNode{L<:Logic}
-    token::Token             # token
-    logic::Base.RefValue{L}  # reference to logic
-    formula::String          # human-readable string of the formula
-    size::Int                # size of the tree rooted here
-
-    parent::FNode{L}
-    leftchild::FNode{L}
-    rightchild::FNode{L}
-
-    FNode{L}(token::Token, logic::L) where {L<:Logic} = begin
-        if !is_proposition(token) && !(token in operators(logic))
-            throw(error("Node $token is not legal for the specified logic $(typeof(logic))"))
-        end
-        new{L}(token, Ref(logic))
-    end
-end
-
-"""
-    FNode(token::Token, L::Logic)
-    FNode(token::Token)
-
-FNode constructors.
-If a logic L is not specified, DEFAULT_LOGIC is setted.
-"""
-FNode(token::Token; logic::Logic=DEFAULT_LOGIC) = FNode{typeof(logic)}(token, logic)
-FNode(token::String; logic::Logic=DEFAULT_LOGIC) =
-    FNode(SoleLogics.Letter{Int64}(token), logic=logic)
-
-"""Return the FNode type associated with logic, that is to say, FNode{typeof(logic)}."""
-FNode(logic::Logic) = FNode{typeof(logic)}
-
-"""
-    token(v::FNode{L})
-Return the token wrapped by `v`.
-"""
-#NOTE: is L<:Logic redundant? Maybe "where {L}" it's enough
-token(v::FNode{L}) where {L<:Logic} = v.token
-
-"""
-    logic(v::FNode)
-Return the specific (unreferenced) logic to whom `v` belongs.
-"""
-logic(v::FNode{L}) where {L<:Logic} = v.logic[]
-
-"""
-    parent(v::FNode)
-Return `v`'s parent.
-"""
-parent(v::FNode{L}) where {L<:Logic} = v.parent
-
-"""
-    leftchild(v::FNode)
-Return `v`'s leftchild.
-"""
-leftchild(v::FNode{L}) where {L<:Logic} = v.leftchild
-
-"""
-    rightchild(v::Fnode)
-Return `v`'s rightchild.
-"""
-rightchild(v::FNode{L}) where {L<:Logic} = v.rightchild
-
-"""
-    formula(v::FNode)
-Return a string representing the formula rooted in `v`.
-"""
-formula(v::FNode{L}) where {L<:Logic} = v.formula
-
-"""
-    fhash(v::FNode)
-Return the `hash` of `v`'s `formula`.
-See also [`hash`](@ref), [`hash`](@ref).
-"""
-fhash(v::FNode{L}) where {L<:Logic} = hash(formula(v))
-
-"""
-    size(v::FNode)
-Return `v`'s size.
-"""
-size(v::FNode{L}) where {L<:Logic} = v.size
-
-"""
-    parent!(v::FNode, w::FNode)
-Set `v` parent to be `w`.
-"""
-parent!(v::FNode{L}, w::FNode{L}) where {L<:Logic} = v.parent = w
-
-"""
-    leftchild!(v::FNode, w::FNode)
-Set `v` left child to be `w`.
-"""
-leftchild!(v::FNode{L}, w::FNode{L}) where {L<:Logic} = v.leftchild = w
-
-"""
-    rightchild!(v::FNode, w::FNode)
-Set `v` right child to be `w`.
-"""
-rightchild!(v::FNode{L}, w::FNode{L}) where {L<:Logic} = v.rightchild = w
-
-"""
-    formula!(v::FNode, w::FNode)
-Copy `w`'s formula in `v`.
-"""
-formula!(v::FNode{L}, w::FNode{L}) where {L<:Logic} = v.formula = w.formula
-
-############################################################################################
-#            Formula
-#         and utilities
-############################################################################################
-
-abstract type AbstractFormula{L<:AbstractLogic} end
-
-"""Formula (syntax) tree."""
-struct Formula{L<:Logic} <: AbstractFormula{L}
-    tree::FNode{L}
-end
-@forward Formula.tree formula, formula!, fhash, size, parent, parent!
-@forward Formula.tree leftchild, leftchild!, rightchild, rightchild!
-
-#=
-convert(::Type{Formula}, x::FNode) = T(x)
-convert(::Type{FNode},   x::Formula) = x.tree
-=#
-
-"""
-    tree(f::Formula)
-Get the root node of a formula.
-"""
-tree(f::Formula{L}) where {L<:Logic} = f.tree
-
-show(io::IO, v::FNode) = print(io, inorder(v))
 show(io::IO, f::Formula) = print(io, inorder(tree(f)))
-
-"""
-    isleaf(v::FNode)
-Establish if `v` is a leaf-node.
-"""
-function isleaf(v::FNode{L}) where {L<:Logic}
-    return !(isdefined(v, :leftchild) || isdefined(v, :rightchild)) ? true : false
-end
-
-"""
-    size!(v::FNode)
-Update the nodes sizes in the tree rooted in v.
-"""
-function size!(v::FNode{L}) where {L<:Logic}
-    if isdefined(v, :leftchild)
-        leftchild(v).size = size!(leftchild(v))
-    end
-    if isdefined(v, :rightchild)
-        rightchild(v).size = size!(rightchild(v))
-    end
-    return v.size =
-        1 +
-        (isdefined(v, :leftchild) ? leftchild(v).size : 0) +
-        (isdefined(v, :rightchild) ? rightchild(v).size : 0)
-end
-
-"""
-    height(v::FNode)
-Return the height of the tree rooted in v.
-"""
-function height(v::FNode{L}) where {L<:Logic}
-    return isleaf(v) ? 0 :
-           1 + max(
-        (isdefined(v, :leftchild) ? height(leftchild(v)) : 0),
-        (isdefined(v, :rightchild) ? height(rightchild(v)) : 0),
-    )
-end
-
-"""
-    modal_depth(v::FNode)
-Return the maximum number of modal operators among all the v-to-leaf paths."""
-function modal_depth(v::FNode{L}) where {L<:Logic}
-    return is_modal_operator(token(v)) + max(
-        (isdefined(v, :leftchild) ? modal_depth(leftchild(v)) : 0),
-        (isdefined(v, :rightchild) ? modal_depth(rightchild(v)) : 0)
-    )
-end
-
-"""
-    subformulas(root::FNode, sorted=true)
-Return each `FNode` in a tree, sorting them by size.
-"""
-function subformulas(root::FNode{L}; sorted=true) where {L<:AbstractLogic}
-    nodes = FNode{L}[]
-    _subformulas(root, nodes)
-    if sorted
-        sort!(nodes, by = n -> SoleLogics.size(n))
-    end
-    return nodes
-end
-
-function _subformulas(v::FNode{L}, nodes::Vector{FNode{L}}) where {L<:AbstractLogic}
-    if isdefined(v, :leftchild)
-        _subformulas(v.leftchild, nodes)
-    end
-
-    push!(nodes, v)
-
-    if isdefined(v, :rightchild)
-        _subformulas(v.rightchild, nodes)
-    end
-end
 
 """
     inorder(v::FNode)
@@ -380,7 +166,7 @@ end
 Formula (syntax) tree generation
 
 Given a certain token `tok`, 1 of 3 possible scenarios may occur:
-(regrouped in _build_tree function to keep code clean)
+(regrouped in _parseformula function to keep code clean)
 
 1. `tok` is an unary operator
     -> make a new FNode(tok), then link it with the FNode popped from `nodestack` top.
@@ -421,7 +207,7 @@ function parseformula(
     letter_sentinels = Dict{MetaLetter, FNode(logic)}(_candidates .=> [FNode(x, logic=logic) for x in _candidates])
 
     for tok in expression
-        _build_tree(tok, nodestack, logic, letter_sentinels)
+        _parseformula(tok, nodestack, logic, letter_sentinels)
     end
 
     SoleLogics.size!(first(nodestack))
@@ -436,7 +222,7 @@ function parseformula(expression::String; logic::AbstractLogic=DEFAULT_LOGIC)
     parseformula(shunting_yard(expression, logic=logic), logic=logic)
 end
 
-function _build_tree(
+function _parseformula(
     tok,
     nodestack,
     logic::AbstractLogic,
@@ -444,7 +230,7 @@ function _build_tree(
 ) where {L <: AbstractLogic}
     # Case 1 or 2
     if typeof(tok) <: AbstractOperator
-        __build_tree(Val(ariety(tok)), tok, nodestack, logic)
+        __parseformula(Val(ariety(tok)), tok, nodestack, logic)
     # Case 3
     # Identical propositional letters are not repeated,
     # but leaves works as "sentinels" instead, therefore, not wasting memory.
@@ -457,7 +243,7 @@ function _build_tree(
     end
 end
 
-function __build_tree(::Val{1}, tok::AbstractOperator, nodestack, logic::AbstractLogic)
+function __parseformula(::Val{1}, tok::AbstractOperator, nodestack, logic::AbstractLogic)
     newnode = FNode(tok, logic=logic)
     children = pop!(nodestack)
 
@@ -468,7 +254,7 @@ function __build_tree(::Val{1}, tok::AbstractOperator, nodestack, logic::Abstrac
     push!(nodestack, newnode)
 end
 
-function __build_tree(::Val{2}, tok,nodestack,logic::AbstractLogic)
+function __parseformula(::Val{2}, tok,nodestack,logic::AbstractLogic)
     newnode = FNode(tok, logic=logic)
     right_child = pop!(nodestack)
     left_child = pop!(nodestack)
@@ -480,67 +266,6 @@ function __build_tree(::Val{2}, tok,nodestack,logic::AbstractLogic)
     newnode.formula = string("(", left_child.formula, tok, right_child.formula, ")")
 
     push!(nodestack, newnode)
-end
-
-############################################################################################
-#      Formula composition
-############################################################################################
-
-function _link_fnode!(
-    a::FNode{L},
-    b::FNode{L},
-    child_direction::Symbol
-) where {L<:AbstractLogic}
-    parent!(b, a)
-    eval(child_direction)(a, b)
-end
-
-# Utility function to easily compose formulas
-# This is not exported, but could to extend this way of
-# do formula-compositions to custom user-defined operators.
-function _compose_fnode!(args...)
-    # Currently, only unary and binary operators are supported.
-    # In case of greater arieties, a vector should be used instead of
-    # :leftchild and :rightchild
-    n = length(args)
-
-    if n==2
-        _link_fnode!(args[1], args[2], :rightchild!)
-    elseif n==3
-        _link_fnode!(args[1], args[2], :leftchild!)
-        _link_fnode!(args[1], args[3], :rightchild!)
-    else
-        throw(error("Currently, only unary and binary operators are allowed."))
-    end
-
-    return args[1]
-end
-
-# TODO: `compose` macro to generalize composition methods.
-# compose(GENERIC_OPERATOR, args...)
-
-SoleLogics.NEGATION(p::FNode{L}) where {L<:AbstractLogic} = begin
-    return _compose_fnode!(FNode(NEGATION, logic(p)), p)
-end
-
-SoleLogics.DIAMOND(p::FNode{L}) where {L<:AbstractLogic} = begin
-    return _compose_fnode!(FNode(DIAMOND, logic(p)), p)
-end
-
-SoleLogics.BOX(p::FNode{L}) where {L<:AbstractLogic} = begin
-    return _compose_fnode!(FNode(BOX, logic(p)), p)
-end
-
-SoleLogics.CONJUNCTION(p::FNode{L}, q::FNode{L}) where {L<:AbstractLogic} = begin
-    return _compose_fnode!(FNode(CONJUNCTION, logic(p)), p, q)
-end
-
-SoleLogics.DISJUNCTION(p::FNode{L}, q::FNode{L}) where {L<:AbstractLogic} = begin
-    return _compose_fnode!(FNode(DISJUNCTION, logic(p)), p, q)
-end
-
-SoleLogics.IMPLICATION(p::FNode{L}, q::FNode{L}) where {L<:AbstractLogic} = begin
-    return _compose_fnode!(FNode(IMPLICATION, logic(p)), p, q)
 end
 
 import SoleLogics: precedence
@@ -730,19 +455,3 @@ function _gen_formula(
 
     return f
 end
-
-"""
-1) TODO:
-in SoleBase, define
-    const frame_name = Union{String, Integer}
-then
-    struct FramedFormula{L<:AbstractLogic}
-        name :: frame_name
-        formula :: Formula{L}
-    end
-
-2) TODO:
-define
-const Formula = Union{UFormula, FFormula}
-(find a better name, UnframedFormula and FramedFormula)
-"""

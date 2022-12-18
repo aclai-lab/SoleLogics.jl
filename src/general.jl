@@ -88,6 +88,8 @@ atomtype(::Proposition{A}) where {A} = A
 atomtype(::Type{Proposition{A}}) where {A} = A
 atom(p::Proposition) = p.atom
 
+show(io::IO, t::Proposition) = print(io, atom(t))
+
 Base.convert(::Type{P1}, t::P2) where {P1<:Proposition,P2<:Proposition} = P1(atom(t))
 
 """
@@ -388,6 +390,24 @@ end
 function SyntaxTree(token::T, children...) where {T<:SyntaxToken}
     return SyntaxTree(token, children)
 end
+
+"""
+    inorder(t::SyntaxTree{FT,T}) where {FT, T}
+
+Return `t`'s in-order visit as a string.
+"""
+function inorder(t::SyntaxTree{FT,T}) where {FT, T}
+    return length(children(t)) == 0 ? string(token(t)) : string(token(t)) * "(" * join([inorder(c) for c in children(t)], ", ") * ")"
+end
+
+#=
+using SoleLogics
+alphabet = ExplicitAlphabet(Proposition.([1,2]))
+operators = [NEGATION, CONJUNCTION, IMPLICATION]
+generate(2, alphabet, operators)
+=#
+
+show(io::IO, t::SyntaxTree) = print(io, inorder(t))
 
 # Getters
 token(t::SyntaxTree) = t.token

@@ -1,4 +1,4 @@
-#= ######################
+######################
 #       Models       #
 #     generation     #
 ######################
@@ -178,4 +178,3 @@ function gen_kmodel(n::Integer, P::LetterAlphabet, method::Symbol, kwargs...)
     evs = dispense_alphabet(ws, P = P)
     return KripkeModel{PointWorld}(ws, adjs, evs)
 end
- =#

@@ -26,6 +26,10 @@ See also [`NEGATION`](@ref), [`CONJUNCTION`](@ref), [`DISJUNCTION`](@ref),
 """
 struct NamedOperator{Symbol} <: AbstractOperator end
 
+name(::NamedOperator{Symbol}) where {Symbol} = Symbol
+
+Base.show(io::IO, op::NamedOperator{Symbol}) where {Symbol} = print(io, "$(name(op))")
+
 doc_NEGATION = """
     const NEGATION = NamedOperator{:¬}()
     const ¬ = NEGATION
