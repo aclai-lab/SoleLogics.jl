@@ -460,28 +460,19 @@ function propositions(t::SyntaxTree)::AbstractVector{<:Proposition}
 end
 
 """
-    ntokens(t::SyntaxTree)::Integer
-
-Counts all tokens appearing in a tree
-
-See also ...
-
+TODO Michele
 """
-function ntokens(t::SyntaxTree)::Integer
-    length(children(t)) == 0 ? 1 : 1 + sum(ntoken(c) for c in children(t))
+function ntokens(t::SyntaxTree)
+    # TODO Michele
 end
 
 """
-    npropositions(t::SyntaxTree)::Integer
-
-Counts all propositions appearing in a tree
-
-See also ...
+TODO Michele
 """
-function npropositions(t::SyntaxTree)::Integer
-    pr = token(t) isa Proposition ? 1 : 0
-    return length(children(t)) == 0 ? pr : pr + sum(npropositions(c) for c in children(t))
+function npropositions(t::SyntaxTree)
+    # TODO Michele
 end
+
 
 # We use standard promotion between syntax tokens and trees
 Base.promote_rule(::Type{<:SyntaxToken}, ::Type{S}) where {S<:SyntaxTree} = S
@@ -982,12 +973,9 @@ doc_tokopprop = """
     tokens(f::AbstractFormula)::AbstractVector{<:tokentypes(logic(f))}
     operators(f::AbstractFormula)::AbstractVector{<:operatortypes(logic(f))}
     propositions(f::AbstractFormula)::AbstractVector{<:propositiontype(logic(f))}
-    ntokens(f::AbstractFormula)::Integer
-    npropositions(f::AbstractFormula)::Integer
 
 A formula can provide a method for extracting its tokens/operators/propositions.
-The fallbacks extract the tokens/operators/propositions
-appearing in its syntax tree representation.
+It fallsback to enumerating the propositions appearing in its syntax tree representation.
 
 See also [`SyntaxTree`](@ref).
 """
@@ -1004,15 +992,6 @@ end
 function propositions(f::AbstractFormula)::AbstractVector{propositiontype(logic(f))}
     return propositions(tree(f))
 end
-"""$(doc_tokopprop)"""
-function ntokens(f::AbstractFormula)::Integer
-    return ntokens(tree(f))
-end
-"""$(doc_tokopprop)"""
-function npropositions(f::AbstractFormula)::Integer
-    return npropositions(tree(f))
-end
-
 # error("Please, provide method propositions(::$(typeof(f)))::AbstractVector{<:$(propositiontype(logic(f)))}.") # TODO: remove it?
 
 
@@ -1236,10 +1215,6 @@ function (op::AbstractOperator)(
             isa(c, SyntaxToken) ? convert(SyntaxTree, c) : c
         end, children)
     return op(Base.promote(_children...))
-end
-# Resolve ambiguity with nullary operators
-function (op::AbstractOperator)()
-    return SyntaxTree(op)
 end
 
 """
