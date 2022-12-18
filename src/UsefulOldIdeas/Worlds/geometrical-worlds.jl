@@ -3,7 +3,7 @@
 ############################################################################################
 
 # Abstract type for worlds with a geometrical interpretation
-abstract type GeometricalWorld <: World end
+abstract type GeometricalWorld <: AbstractWorld end
 
 # Some geometrical worlds (dimensional worlds) can be interpreted on dimensional data,
 #  that is, n-dimensional arrays.

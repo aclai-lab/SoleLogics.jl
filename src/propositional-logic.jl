@@ -1,6 +1,6 @@
 export propositional_logic
 
-export Interpretation, TruthDict
+export Interpretation, TruthDict, DefaultedTruthDict
 
 """
     propositional_logic(;

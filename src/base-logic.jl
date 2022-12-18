@@ -106,6 +106,40 @@ $(doc_IMPLICATION)
 const → = IMPLICATION
 arity(::Type{NamedOperator{:→}}) = 2
 
+# Helpers
+function CONJUNCTION(
+        c1::Union{SyntaxToken,SyntaxTree,AbstractFormula},
+        c2::Union{SyntaxToken,SyntaxTree,AbstractFormula},
+        c3::Union{SyntaxToken,SyntaxTree,AbstractFormula},
+        cs::Union{SyntaxToken,SyntaxTree,AbstractFormula}...
+)
+    return CONJUNCTION(c1, CONJUNCTION(c2, c3, cs...))
+end
+function CONJUNCTION(
+        c1::Union{SyntaxToken,SyntaxTree},
+        c2::Union{SyntaxToken,SyntaxTree},
+        c3::Union{SyntaxToken,SyntaxTree},
+        cs::Union{SyntaxToken,SyntaxTree}...
+)
+    return CONJUNCTION(c1, CONJUNCTION(c2, c3, cs...))
+end
+function DISJUNCTION(
+        c1::Union{SyntaxToken,SyntaxTree,AbstractFormula},
+        c2::Union{SyntaxToken,SyntaxTree,AbstractFormula},
+        c3::Union{SyntaxToken,SyntaxTree,AbstractFormula},
+        cs::Union{SyntaxToken,SyntaxTree,AbstractFormula}...
+)
+    return DISJUNCTION(c1, DISJUNCTION(c2, c3, cs...))
+end
+function DISJUNCTION(
+        c1::Union{SyntaxToken,SyntaxTree},
+        c2::Union{SyntaxToken,SyntaxTree},
+        c3::Union{SyntaxToken,SyntaxTree},
+        cs::Union{SyntaxToken,SyntaxTree}...
+)
+    return DISJUNCTION(c1, DISJUNCTION(c2, c3, cs...))
+end
+
 ############################################################################################
 ########################################## ALGEBRA #########################################
 ############################################################################################

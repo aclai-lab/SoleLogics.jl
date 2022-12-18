@@ -2,6 +2,7 @@
 using Revise
 using Test
 using SoleLogics
+using SoleLogics: BasePropositionalLogic
 
 p1 = @test_nowarn Proposition(1)
 p2 = @test_nowarn Proposition(2)
@@ -135,6 +136,18 @@ t2_int = @test_nowarn ¬(t1_int)
 @test propositions(f_int ∨ (p1 ∨ p100)) == [p1, p1, p100]
 @test all(isa.(propositions(f_int ∨ (p1 ∨ p100)), propositiontype(logic(f_int))))
 
+f_conj_int = @test_nowarn CONJUNCTION(f_int, f_int, f_int)
+@test_nowarn DISJUNCTION(f_int, f_int, f_conj_int)
+@test_nowarn CONJUNCTION(f_int, f_int, p1)
+@test_nowarn CONJUNCTION(p1, f_int, p1)
+@test_nowarn CONJUNCTION(t2_int, f_int, p1)
+@test_nowarn CONJUNCTION(f_int, t2_int, p1)
+@test_nowarn CONJUNCTION(t2_int, t2_int)
+@test_nowarn CONJUNCTION(t2_int, t2_int, p1)
+@test_nowarn CONJUNCTION(t2_int, p1, p1)
+@test_nowarn CONJUNCTION(p1, p1)
+@test_nowarn CONJUNCTION(p1, p1, p1)
+
 @test_nowarn p1 ∨ t2_int
 @test typeof(¬(f_int)) == typeof(f_int)
 @test_nowarn ∧((¬(f_int), f_int),)
@@ -189,6 +202,6 @@ empty_logic = @test_nowarn propositional_logic(; operators = AbstractOperator[],
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ random.jl ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-alphabet = ExplicitAlphabet(Proposition.([1,2]))
-operators = [NEGATION, CONJUNCTION, IMPLICATION]
-@test_broken generate(10, alphabet, operators)
+_alphabet = ExplicitAlphabet(Proposition.([1,2]))
+_operators = [NEGATION, CONJUNCTION, IMPLICATION]
+@test_broken generate(10, _alphabet, _operators)

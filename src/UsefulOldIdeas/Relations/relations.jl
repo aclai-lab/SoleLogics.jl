@@ -1,9 +1,5 @@
-module Relations
-
-using ..Worlds
-
 # Abstract types for relations
-abstract type Relation end
+abstract type AbstractRelation end
 
 ############################################################################################
 
@@ -11,13 +7,13 @@ abstract type Relation end
 #  For example, if world type W is compatible with relation R
 # goeswith(::Type{W}, ::R) = true
 # Here's the fallback:
-goeswith(::Type{W}, ::Relation) where {W<:World} = false
+goeswith(::Type{W}, ::AbstractRelation) where {W<:AbstractWorld} = false
 
 # Relations can be symmetric, reflexive and/or transitive.
 # By default, none of this cases holds:
-is_symmetric(r::Relation) = false
-is_reflexive(r::Relation) = false
-is_transitive(r::Relation) = false
+is_symmetric(r::AbstractRelation) = false
+is_reflexive(r::AbstractRelation) = false
+is_transitive(r::AbstractRelation) = false
 
 # TODO add are_inverse_relation/inverse_relation trait
 
@@ -26,7 +22,7 @@ is_transitive(r::Relation) = false
 ############################################################################################
 
 # Identity relation: any world -> itself
-struct _RelationId <: Relation end; const RelationId   = _RelationId();
+struct _RelationId <: AbstractRelation end; const RelationId   = _RelationId();
 
 Base.show(io::IO, ::_RelationId) = print(io, "=")
 
@@ -37,7 +33,7 @@ is_transitive(r::_RelationId) = true
 ############################################################################################
 
 # Global relation: any world -> all worlds
-struct _RelationGlob <: Relation end; const RelationGlob  = _RelationGlob();
+struct _RelationGlob <: AbstractRelation end; const RelationGlob  = _RelationGlob();
 
 Base.show(io::IO, ::_RelationGlob) = print(io, "G")
 
@@ -48,17 +44,17 @@ is_transitive(r::_RelationGlob) = true
 ############################################################################################
 
 # TODO add relation as union of relations.
-# struct UnionOfRelations     <: Relation
-#     relations :: NTuple{N,Relation} where {N}
+# struct UnionOfRelations     <: AbstractRelation
+#     relations :: NTuple{N,AbstractRelation} where {N}
 # end;
-# _accessibles(w::World, r::UnionOfRelations, args...) = Iterators.flatten((_accessibles(w, sub_relation,  args...) for sub_relation in topo2IARelations(r)))
+# _accessibles(w::AbstractWorld, r::UnionOfRelations, args...) = Iterators.flatten((_accessibles(w, sub_relation,  args...) for sub_relation in topo2IARelations(r)))
 
 ############################################################################################
 
 
 include("geometrical-relations.jl");
 
-export Relation,
+export AbstractRelation,
     IntervalRelation, RCCRelation
 
 export _RelationGlob, _RelationId
@@ -108,5 +104,3 @@ export Topo_DR, Topo_PP, Topo_PPi
 export RCC8Relations, RCC5Relations
 export RCC8RelationFromIA
 export topo2IARelations, RCC52RCC8Relations, RCC52IARelations
-
-end

@@ -147,6 +147,6 @@ arity(::NamedOperator{:□}) = 1
 
 
 # A type for a world identified by its name
-struct World{T} <: AbstractWorld
+struct NamedWorld{T} <: AbstractWorld
     name::T
 end
