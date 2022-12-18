@@ -39,6 +39,7 @@ See also [`AbstractKripkeFrame`](@ref).
 truthtype(::Type{<:AbstractKripkeFrame{W,T}}) where {W<:AbstractWorld,T<:TruthValue} = T
 truthtype(a::AbstractKripkeFrame) = truthtype(typeof(a))
 
+function worlds(::AbstractKripkeFrame{W})::AbstractVector{<:W} where {W<:AbstractWorld} end
 function nworlds(::AbstractKripkeFrame)::Integer end
 function initialworld(::AbstractKripkeFrame{W})::W where {W<:AbstractWorld} end
 function accessible_worlds(::AbstractKripkeFrame{W}, ::W) where {W<:AbstractWorld} end

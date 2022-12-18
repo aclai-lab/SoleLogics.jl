@@ -393,23 +393,23 @@ Given a certain token `tok`, 1 of 3 possible scenarios may occur:
     -> push a new FNode(tok) in the nodestack;
 
 At the end, the only remaining FNode in `nodestack`
-is the root of the formula (syntax) build_tree.
+is the root of the formula (syntax) parseformula.
 =#
 
 """
-    build_tree(expression::Vector{Union{String,AbstractOperator}})
+    parseformula(expression::Vector{Union{String,AbstractOperator}})
 Return a formula-tree from its corresponding postfix-notation string.
 Each propositional letter (tree's leaves) is a `SoleLogics.Letter`, with every
 field set to `nothing`.
 
-    build_tree(expression::Vector{<:Any})
+    parseformula(expression::Vector{<:Any})
 Return a formula-tree forcing the cast of `expression`
 into a `Vector{Union{MetaLetter, AbstractOperator}}`.
 
-    build_tree(expression::String)
+    parseformula(expression::String)
 Return a formula-tree directly from an infix-notation string.
 """
-function build_tree(
+function parseformula(
     expression::Vector{Union{MetaLetter, AbstractOperator}};
     logic::AbstractLogic=DEFAULT_LOGIC
 )
@@ -428,12 +428,12 @@ function build_tree(
     return Formula(first(nodestack))
 end
 
-function build_tree(expression::Vector{<:Any}; logic::AbstractLogic=DEFAULT_LOGIC)
-    build_tree(convert(Vector{Union{MetaLetter, AbstractOperator}}, expression), logic=logic)
+function parseformula(expression::Vector{<:Any}; logic::AbstractLogic=DEFAULT_LOGIC)
+    parseformula(convert(Vector{Union{MetaLetter, AbstractOperator}}, expression), logic=logic)
 end
 
-function build_tree(expression::String; logic::AbstractLogic=DEFAULT_LOGIC)
-    build_tree(shunting_yard(expression, logic=logic), logic=logic)
+function parseformula(expression::String; logic::AbstractLogic=DEFAULT_LOGIC)
+    parseformula(shunting_yard(expression, logic=logic), logic=logic)
 end
 
 function _build_tree(
@@ -554,7 +554,7 @@ between propositional letters and operators.
 
 # Examples
 ```jldoctest
-julia> ft = build_tree("(b∧a)∨(d∧c)")
+julia> ft = parseformula("(b∧a)∨(d∧c)")
 (((b)∧(a))∨((d)∧(c)))
 julia> ft = fnormalize!(ft)
 julia> ft
@@ -566,8 +566,8 @@ function fnormalize!(fx::Formula{L}) where {L<:AbstractLogic}
 end
 
 #=
-build_tree("(b∧a)∨(d∧c)")
-build_tree("(d∧c)∨(a∧b)")
+parseformula("(b∧a)∨(d∧c)")
+parseformula("(d∧c)∨(a∧b)")
 Find a method to collapse those in the same formula
 =#
 function fnormalize!(v::FNode{L}) where {L<:AbstractLogic}
@@ -635,7 +635,7 @@ function gen_formula(
     rng::Union{Integer,AbstractRNG}=Random.GLOBAL_RNG
 )
     rng = (typeof(rng) <: Integer) ? Random.MersenneTwister(rng) : rng
-    fx = build_tree(
+    fx = parseformula(
         _gen_formula(
             height,
             P,
@@ -677,7 +677,7 @@ function gen_formula(
     rng::Union{Integer,AbstractRNG}=Random.GLOBAL_RNG,
 )
     rng = (typeof(rng) <: Integer) ? Random.MersenneTwister(rng) : rng
-    fx = build_tree(
+    fx = parseformula(
         _gen_formula(
             height,
             P,

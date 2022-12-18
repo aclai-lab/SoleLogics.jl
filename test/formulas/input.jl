@@ -100,7 +100,7 @@
 
         exp1 = "(¬(p∧q)∨(□r∧◊s))"
         sh1 = shunting_yard(exp1)
-        f1 = build_tree(sh1)
+        f1 = parseformula(sh1)
         @test sh1 == [
             "p",
             "q",
@@ -128,7 +128,7 @@
         #                 s t
         exp2 = "(p∧q∧r∧s∧t)"
         sh2 = shunting_yard(exp2)
-        f2 = build_tree(sh2)
+        f2 = parseformula(sh2)
         @test sh2 == ["p", "q", "r", "s", "t", fill(CONJUNCTION, (1, 4))...]
         @test inorder(tree(f2)) == "((p)∧((q)∧((r)∧((s)∧(t)))))"
 
@@ -142,7 +142,7 @@
 
         exp3 = "(p∧q)∧(r∧s)∧(◊t)"
         sh3 = shunting_yard(exp3)
-        f3 = build_tree(sh3)
+        f3 = parseformula(sh3)
         @test sh3 == [
             "p",
             "q",

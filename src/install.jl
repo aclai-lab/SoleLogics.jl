@@ -1,6 +1,6 @@
 # This file can be used to automatically resolve dependencies
 # involving unregistered packages.
-# To do so, simply call `update_dependency()` one time for each package
+# To do so, simply call `install` one time for each package
 # respecting the correct dependency order.
 
 using Pkg

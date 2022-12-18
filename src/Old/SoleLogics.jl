@@ -39,7 +39,11 @@ export isleaf, height, modal_depth, inorder
 export subformulas, fnormalize!
 
 # Formula tree input and construction
-export shunting_yard, build_tree
+export shunting_yard, parseformula
+
+# TODO remove build_tree:
+build_tree = parseformula
+export build_tree
 
 # Formula tree generation
 export gen_formula
