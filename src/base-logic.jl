@@ -262,7 +262,7 @@ const base_logic = BaseLogic(base_grammar, base_algebra)
 ############################ COULD BE IMPLEMENTED ##########################################
 ############################################################################################
 
-# Atleast 3 degree of priority can be distinguished:
+# Atleast 3 degrees of priority can be distinguished:
 #
 # HIGH_PRIORITY = 15 (this value is Base.operator_precedence(:^))
 # BASE_PRIORITY = 12 (this value is Base.operator_precedence(:*))
@@ -277,17 +277,17 @@ const base_logic = BaseLogic(base_grammar, base_algebra)
 doc_priority = """
     Standard integer representing a precedence.
     High numbers take precedence over low numbers.
-    This is needed to establish unambiguous implementations of parse-related algorithms.
+    This is needed to establish unambiguous implementations of parsing-related algorithms.
 """
 
 """$(doc_priority)"""
-HIGH_PRIORITY = 15
+HIGH_PRIORITY = Base.operator_precedence(:^)
 
 """$(doc_priority)"""
-BASE_PRIORITY = 12
+BASE_PRIORITY = Base.operator_precedence(:*)
 
 """$(doc_priority)"""
-LOW_PRIORITY  = 11
+LOW_PRIORITY  = Base.operator_precedence(:+)
 
 Base.operator_precedence(::AbstractOperator) = BASE_PRIORITY
 Base.operator_precedence(::typeof(NEGATION)) = HIGH_PRIORITY

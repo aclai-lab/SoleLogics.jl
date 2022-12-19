@@ -118,7 +118,7 @@ isbinary(O::Type{<:AbstractOperator}) = arity(O) == 2
 isbinary(o::AbstractOperator) = isbinary(typeof(o))
 """
 TODO: Observe that there can be, e.g., modal operators which are ternary as the ones in the CDT logic.
-Therefore, maybe we should also have a check_arity(::T, a::Int) function, if there isnt one already.
+Therefore, maybe we should also have a check_arity(::T, a::Integer) function, if there isnt one already.
 TODO-reply: These are just helpers, for now there's no need.
 """
 
@@ -392,20 +392,13 @@ function SyntaxTree(token::T, children...) where {T<:SyntaxToken}
 end
 
 """
-    inorder(t::SyntaxTree{FT,T}) where {FT, T}
+    inorder(t::SyntaxTree)::String
 
-Return `t`'s in-order visit as a string.
+Performs an in-order visit of `t`, returning it as a string.
 """
-function inorder(t::SyntaxTree{FT,T}) where {FT, T}
+function inorder(t::SyntaxTree)
     return length(children(t)) == 0 ? string(token(t)) : string(token(t)) * "(" * join([inorder(c) for c in children(t)], ", ") * ")"
 end
-
-#=
-using SoleLogics
-alphabet = ExplicitAlphabet(Proposition.([1,2]))
-operators = [NEGATION, CONJUNCTION, IMPLICATION]
-generate(2, alphabet, operators)
-=#
 
 show(io::IO, t::SyntaxTree) = print(io, inorder(t))
 
@@ -415,6 +408,7 @@ children(t::SyntaxTree) = t.children
 
 tokentype(::SyntaxTree{FT,T}) where {FT,T} = T
 tokentypes(::SyntaxTree{FT}) where {FT} = FT
+operatortypes(t::SyntaxTree) = typeintersect(AbstractOperator, tokentypes(t))
 propositiontypes(t::SyntaxTree) = typeintersect(Proposition, tokentypes(t))
 
 function Base.in(t::SyntaxToken, tree::SyntaxTree)
@@ -422,39 +416,39 @@ function Base.in(t::SyntaxToken, tree::SyntaxTree)
 end
 
 """
-    tokens(t::SyntaxTree)::AbstractVector{<:SyntaxToken}
+    tokens(t::SyntaxTree)::AbstractVector{tokentypes(t)}
 
 Enumerates all tokens appearing in a tree
 
 See also [`SyntaxToken`](@ref).
 
 """
-function tokens(t::SyntaxTree)::AbstractVector{<:SyntaxToken}
+function tokens(t::SyntaxTree)::AbstractVector{tokentypes(t)}
     return SyntaxToken[vcat(tokens.(children(t))...)..., token(t)]
 end
 
 """
-    operators(t::SyntaxTree)::AbstractVector{<:AbstractOperator}
+    operators(t::SyntaxTree)::AbstractVector{operatortypes(t)}
 
 Enumerates all operators appearing in a tree
 
 See also [`propositions`](@ref), [`tokens`](@ref), [`SyntaxToken`](@ref).
 
 """
-function operators(t::SyntaxTree)::AbstractVector{<:AbstractOperator}
+function operators(t::SyntaxTree)::AbstractVector{operatortypes(t)}
     ops = token(t) isa AbstractOperator ? [token(t)] : []
     return AbstractOperator[vcat(operators.(children(t))...)..., ops...]
 end
 
 """
-    propositions(t::SyntaxTree)::AbstractVector{<:Proposition}
+    propositions(t::SyntaxTree)::AbstractVector{propositiontypes(t)}
 
 Enumerates all propositions appearing in a tree
 
 See also [`operators`](@ref), [`tokens`](@ref), [`SyntaxToken`](@ref).
 
 """
-function propositions(t::SyntaxTree)::AbstractVector{<:Proposition}
+function propositions(t::SyntaxTree)::AbstractVector{propositiontypes(t)}
     ps = token(t) isa Proposition ? [token(t)] : []
     return Proposition[vcat(propositions.(children(t))...)..., ps...]
 end

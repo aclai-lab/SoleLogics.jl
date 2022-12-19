@@ -205,3 +205,4 @@ empty_logic = @test_nowarn propositional_logic(; operators = AbstractOperator[],
 _alphabet = ExplicitAlphabet(Proposition.([1,2]))
 _operators = [NEGATION, CONJUNCTION, IMPLICATION]
 @test_broken generate(10, _alphabet, _operators)
+@test_nowarn generate(2, _alphabet, _operators)

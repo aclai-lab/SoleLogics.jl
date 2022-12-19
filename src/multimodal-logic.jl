@@ -15,6 +15,8 @@ abstract type AbstractRelationalOperator{R<:AbstractRelation} end
 #  carry different algorithmic behaviors (e.g., Later vs. After are computed in a
 #  different way).
 
+Base.operator_precedence(::AbstractRelationalOperator) = HIGH_PRIORITY
+
 relationtype(::AbstractRelationalOperator{R}) where {R<:AbstractRelation} = R
 
 struct DiamondRelationalOperator{R<:AbstractRelation} <: AbstractRelationalOperator{R} end
@@ -40,7 +42,7 @@ struct BoxRelationalOperator{R<:AbstractRelation} <: AbstractRelationalOperator{
     With "the same shape" I mean that every property related to the relation creation itself
     must be the same (e.g ismodal trait, arity, etc...)
 
-macro modaloperators(R, d::Int)
+macro modaloperators(R, d::Integer)
     quote
         rels = vec(collect(Iterators.product([$(R) for _ = 1:$(d)]...)))
 

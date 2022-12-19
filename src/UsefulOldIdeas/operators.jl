@@ -1,6 +1,6 @@
 # Macro to collect all modaloperators (e.g @modaloperators HSRELATIONS 1)
 """
-    modaloperators(R, d::Int)
+    modaloperators(R, d::Integer)
 Collect all the valid modal operators -both existential and universal- from a collection
 of strings or symbols.
 
@@ -26,7 +26,7 @@ julia> @modaloperators HS₃RELATIONS 2
 [I,I]
 ```
 """
-macro modaloperators(R, d::Int)
+macro modaloperators(R, d::Integer)
     quote
         rels = vec(collect(Iterators.product([$(R) for _ = 1:$(d)]...)))
         if "=" in $(R)

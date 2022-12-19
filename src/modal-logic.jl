@@ -140,6 +140,9 @@ const □ = BOX
 ismodal(::NamedOperator{:□}) = true
 arity(::NamedOperator{:□}) = 1
 
+Base.operator_precedence(::typeof(DIAMOND)) = HIGH_PRIORITY
+Base.operator_precedence(::typeof(BOX)) = HIGH_PRIORITY
+
 ############################################################################################
 ######################################## BASE ##############################################
 ############################################################################################

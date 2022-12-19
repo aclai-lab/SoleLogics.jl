@@ -15,7 +15,7 @@ export generate
         The message in the thrown error is repeated (see general.jl)
 """
 function generate(
-    height::Int,
+    height::Integer,
     alphabet::AbstractAlphabet,
     operators::Vector{<:AbstractOperator};
     rng::Union{Integer, AbstractRNG}=Random.GLOBAL_RNG
@@ -31,7 +31,7 @@ function generate(
 end
 
 function _generate(
-    height::Int,
+    height::Integer,
     alphabet::AbstractAlphabet,
     operators::Vector{<:AbstractOperator};
     rng::Union{Integer, AbstractRNG}=Random.GLOBAL_RNG
