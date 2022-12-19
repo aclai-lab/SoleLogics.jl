@@ -147,9 +147,40 @@ Base.operator_precedence(::typeof(BOX)) = HIGH_PRIORITY
 ######################################## BASE ##############################################
 ############################################################################################
 
-
-
 # A type for a world identified by its name
 struct NamedWorld{T} <: AbstractWorld
     name::T
 end
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Notes of 15/12 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+# Up above, this definition already exists as "AbstractKripkeFrame";
+# think about renaming all the occurrences in this.
+"""
+    abstract type AbstractFrame{W<:AbstractWorld,T<:TruthValue} end
+
+Abstract type for an accessibility graph (Kripke frame), that gives the structure to
+    [Kripke models](https://en.m.wikipedia.org/wiki/Kripke_structure_(model_checking))'s).
+
+See also [`AbstractKripkeModel`](@ref), [`AbstractWorld`](@ref).
+"""
+abstract type AbstractFrame{W<:AbstractWorld,T<:TruthValue} end
+
+"""
+    abstract type AbstractModalFrame{
+        W<:AbstractWorld,
+        T<:TruthValue
+    } <: AbstractFrame{W,T} end
+
+Specific frame involving modal logic.
+
+See also [`AbstractFrame`](@ref)
+"""
+abstract type AbstractModalFrame{W<:AbstractWorld,T<:TruthValue} <: AbstractFrame{W,T} end
+
+# Association "(w1,w2) => truth_value". Not recommended in sparse scenarios.
+struct AdjacencyModalFrame{W<:AbstractWorld,T<:TruthValue} <: AbstractModalFrame{W,T}
+    adjacents::NamedMatrix{T,Matrix{T},Tuple{OrderedDict{W,Int64},OrderedDict{W,Int64}}}
+end
+
+# function enum_accessibles(...)

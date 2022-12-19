@@ -973,9 +973,9 @@ end
 Base.convert(::Type{<:SyntaxTree}, f::AbstractFormula) = tree(f)
 
 doc_tokopprop = """
-    tokens(f::AbstractFormula)::AbstractVector{<:tokentypes(logic(f))}
-    operators(f::AbstractFormula)::AbstractVector{<:operatortypes(logic(f))}
-    propositions(f::AbstractFormula)::AbstractVector{<:propositiontype(logic(f))}
+    tokens(f::AbstractFormula)::AbstractVector{tokentypes(logic(f))}
+    operators(f::AbstractFormula)::AbstractVector{operatortypes(logic(f))}
+    propositions(f::AbstractFormula)::AbstractVector{propositiontype(logic(f))}
     ntokens(f::AbstractFormula)::Integer
     npropositions(f::AbstractFormula)::Integer
 
@@ -1008,7 +1008,6 @@ function npropositions(f::AbstractFormula)::Integer
 end
 
 # error("Please, provide method propositions(::$(typeof(f)))::AbstractVector{<:$(propositiontype(logic(f)))}.") # TODO: remove it?
-
 
 """
 A formula can be used for instating other formulas of the same logic.
@@ -1235,6 +1234,7 @@ end
 function (op::AbstractOperator)()
     return SyntaxTree(op)
 end
+
 
 """
    default_algebra(::Type{T})::AbstractAlgebra{<:T} where {T<:TruthValue}
