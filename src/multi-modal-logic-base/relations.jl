@@ -52,7 +52,7 @@ is_transitive(r::_RelationGlob) = true
 ############################################################################################
 
 
-include("geometrical-relations.jl");
+include("relations/geometrical-relations.jl");
 
 export AbstractRelation,
     IntervalRelation, RCCRelation

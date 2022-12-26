@@ -14,14 +14,13 @@ include("general.jl")
 include("base-logic.jl")
 include("propositional-logic.jl")
 include("modal-logic.jl")
-include("multimodal-logic.jl")
 
-# TODO: to see with Giovanni
-include("UsefulOldIdeas/Worlds/worlds.jl")
-include("UsefulOldIdeas/Relations/relations.jl")
+include("parsing.jl")
+
+include("multi-modal-logic-base/worlds.jl")
+include("multi-modal-logic-base/relations.jl")
 
 
-# TODO: to see with Giovanni
 include("random.jl")
 
 end
