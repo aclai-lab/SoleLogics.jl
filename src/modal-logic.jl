@@ -4,9 +4,10 @@ using NamedArrays
 export ismodal
 export DIAMOND, BOX, ◊, □
 
-############################################################################################
-############################################################################################
-############################################################################################
+export KripkeModel
+export AbstractRelationalOperator, DiamondRelationalOperator, BoxRelationalOperator
+export relationtype
+
 
 """
     abstract type AbstractWorld end
@@ -14,41 +15,158 @@ export DIAMOND, BOX, ◊, □
 Abstract type for the nodes of an annotated accessibility graph (Kripke structure/model).
 In modal logic, the truth of formulas is relativized to *worlds*, that is, nodes of a graph.
 
-See also [`AbstractKripkeModel`](@ref), [`AbstractKripkeFrame`](@ref).
+See also [`AbstractKripkeModel`](@ref), [`AbstractFrame`](@ref).
 """
 abstract type AbstractWorld end
 
 """
-    abstract type AbstractKripkeFrame{W<:AbstractWorld,T<:TruthValue} end
+    abstract type AbstractFrame{W<:AbstractWorld,T<:TruthValue} end
 
 Abstract type for an accessibility graph (Kripke frame), that gives the structure to
     [Kripke models](https://en.m.wikipedia.org/wiki/Kripke_structure_(model_checking))'s).
 
 See also [`AbstractKripkeModel`](@ref), [`AbstractWorld`](@ref).
 """
-abstract type AbstractKripkeFrame{W<:AbstractWorld,T<:TruthValue} end
+abstract type AbstractFrame{W<:AbstractWorld,T<:TruthValue} end
 
 """
-    truthtype(::Type{<:AbstractKripkeFrame{W,T}}) where {W<:AbstractWorld,T<:TruthValue} = T
-    truthtype(a::AbstractKripkeFrame) = truthtype(typeof(a))
+    truthtype(::Type{<:AbstractFrame{W,T}}) where {W<:AbstractWorld,T<:TruthValue} = T
+    truthtype(a::AbstractFrame) = truthtype(typeof(a))
 
-The Julia type for representing truth values of the algebra.
+The truth type for the relation(s) in the frame.
 
-See also [`AbstractKripkeFrame`](@ref).
+See also [`AbstractFrame`](@ref).
 """
-truthtype(::Type{<:AbstractKripkeFrame{W,T}}) where {W<:AbstractWorld,T<:TruthValue} = T
-truthtype(a::AbstractKripkeFrame) = truthtype(typeof(a))
-
-function worlds(::AbstractKripkeFrame{W})::AbstractVector{<:W} where {W<:AbstractWorld} end
-function nworlds(::AbstractKripkeFrame)::Integer end
-function initialworld(::AbstractKripkeFrame{W})::W where {W<:AbstractWorld} end
-function accessible_worlds(::AbstractKripkeFrame{W}, ::W) where {W<:AbstractWorld} end
+truthtype(::Type{<:AbstractFrame{W,T}}) where {W<:AbstractWorld,T<:TruthValue} = T
+truthtype(a::AbstractFrame) = truthtype(typeof(a))
 
 """
+    worldtype(::Type{<:AbstractFrame{W,T}}) where {W<:AbstractWorld,T<:TruthValue} = W
+    worldtype(a::AbstractFrame) = worldtype(typeof(a))
+
+The world type of the frame.
+
+See also [`AbstractFrame`](@ref).
 """
-struct AdjMatKripkeFrame{W<:AbstractWorld,T<:TruthValue} <: AbstractKripkeFrame{W,T}
-    adjacents::NamedMatrix{T,Matrix{T},Tuple{OrderedDict{W,Int64},OrderedDict{W,Int64}}}
+worldtype(::Type{<:AbstractFrame{W,T}}) where {W<:AbstractWorld,T<:TruthValue} = W
+worldtype(a::AbstractFrame) = worldtype(typeof(a))
+
+"""
+TODO
+"""
+function worlds(::AbstractFrame{W})::AbstractVector{<:W} where {W<:AbstractWorld}
+    error("Please, provide ...")
 end
+function nworlds(::AbstractFrame)::Integer
+    error("Please, provide ...")
+end
+function initialworld(::AbstractFrame{W})::W where {W<:AbstractWorld}
+    error("Please, provide ...")
+end
+
+
+############################################################################################
+############################################################################################
+############################################################################################
+
+"""
+    abstract type AbstractModalFrame{
+        W<:AbstractWorld,
+        T<:TruthValue
+    } <: AbstractFrame{W,T} end
+
+Frame of a modal logic based on a single accessibility relation.
+
+See also [`AbstractFrame`](@ref)
+"""
+abstract type AbstractModalFrame{W<:AbstractWorld,T<:TruthValue} <: AbstractFrame{W,T} end
+
+"""
+TODO
+"""
+function accessibles(f::AbstractModalFrame{W}, w::W)::Vector{W} where {W<:AbstractWorld}
+    error("Please, provide method accessibles(f::$(typeof(f)), w::$(typeof(w)))::Vector{$(W)}.")
+end
+
+
+# """
+# TODO Association "(w1,w2) => truth_value". Not recommended in sparse scenarios.
+# """
+# struct AdjMatModalFrame{W<:AbstractWorld,T<:TruthValue} <: AbstractModalFrame{W,T}
+#     adjacents::NamedMatrix{T,Matrix{T},Tuple{OrderedDict{W,Int64},OrderedDict{W,Int64}}}
+# end
+# accessibles(...) = ...
+
+
+abstract type AbstractRelation end
+
+"""
+    abstract type AbstractMultiModalFrame{
+        W<:AbstractWorld,
+        T<:TruthValue,
+        NR,
+        Rs<:NTuple{NR,<:AbstractRelation}
+    } <: AbstractFrame{W<:AbstractWorld,T<:TruthValue} end
+
+Frame of a multi-modal logic, that is, a modal logic based on a set
+of accessibility relations.
+
+See also [`AbstractFrame`](@ref), [`AbstractModalFrame`](@ref).
+"""
+abstract type AbstractMultiModalFrame{
+    W<:AbstractWorld,
+    T<:TruthValue,
+    NR,
+    Rs<:NTuple{NR,<:AbstractRelation}
+} <: AbstractFrame{W<:AbstractWorld,T<:TruthValue} end
+
+"""
+TODO
+"""
+function accessibles(::AbstractModalFrame{W}, ::W, ::AbstractRelation)::Vector{W} where {W<:AbstractWorld}
+    error("Please, provide ...")
+end
+
+
+"""
+    TODO
+Wrapper used to manage many `AbstractRelation`'s using a specific `AbstractModalFrame` for
+each of them.
+
+See also [`AbstractRelation`](@ref), [`AbstractModalFrame`](@ref).
+"""
+struct WrapperMultiModalFrame{W<:AbstractWorld,T<:TruthValue,NR,Rs} <: AbstractMultiModalFrame{W,T,NR,Rs}
+    frames::Dict{<:eltype(Rs),<:AbstractModalFrame{W,T}} # Could be done better?
+end
+# accessibles(...) = ...
+
+"""
+TODO
+"""
+struct AdjMatMultiModalFrame{W<:AbstractWorld,T<:TruthValue,NR,Rs} <: AbstractMultiModalFrame{W,T,NR,Rs}
+    adjacents::NamedArray{W,3}
+end
+# accessibles(...) = ...
+
+"""
+TODO
+"""
+abstract type AbstractAssignment{W<:AbstractWorld,A,T<:TruthValue} end
+
+"""
+TODO
+"""
+function check(::AbstractAssignment{W,A,T}, ::W, ::Proposition{A})::T # TODO?: ::Formula
+    error("Please, provide ...")
+end
+
+# struct GenericAssignment{W<:AbstractWorld,A,T<:TruthValue} <: AbstractAssignment{W,A,T}
+#     dict::Dict{W,Interpretation{A,T}}
+# end
+
+############################################################################################
+############################################################################################
+############################################################################################
 
 
 """
@@ -63,18 +181,31 @@ It comprehends a directed graph structure (Kripke frame), where nodes are referr
 
 See also [`AbstractLogicalModel`](@ref).
 """
-abstract type AbstractKripkeModel{W<:AbstractWorld,A,T<:TruthValue} <: AbstractLogicalModel{A,T} end
+abstract type AbstractKripkeModel{
+    W<:AbstractWorld,
+    A,
+    T<:TruthValue,
+    KF<:AbstractFrame{W,T},
+} <: AbstractLogicalModel{A,T} end
 
-function frame(m::AbstractKripkeModel)::AbstractKripkeFrame
+function check(::AbstractKripkeModel{W,A,T,KF}, ::W, ::Proposition{A})::T
+    error("Please, provide ...")
+end
+
+function check(::AbstractKripkeModel{W,A,T,KF}, ::W, ::Formula{A})::T
+    error("Please, provide ...")
+end
+
+function frame(m::AbstractKripkeModel{...,KF})::KF
     return error("Please, provide method frame(m::$(typeof(m))).")
 end
 
 nworlds(m::AbstractKripkeModel) = nworlds(frame(m))
 initialworld(m::AbstractKripkeModel) = initialworld(frame(m))
-accessible_worlds(m::AbstractKripkeModel) = accessible_worlds(frame(m))
+accessibles(m::AbstractKripkeModel, args...) = accessibles(frame(m), args...)
 
 """
-    struct KripkeModel{W<:AbstractWorld,A,T<:TruthValue,K<:AbstractKripkeFrame{W,T},D<:AbstractDict{W,V<:Interpretation{A,T}}} <: AbstractKripkeModel{W,A,T}
+    struct KripkeModel{W<:AbstractWorld,A,T<:TruthValue,K<:AbstractFrame{W,T},D<:AbstractDict{W,V<:Interpretation{A,T}}} <: AbstractKripkeModel{W,A,T}
         frame::K
         interpretations::D
     end
@@ -84,12 +215,20 @@ Structure for representing
 explicitly; it wraps a `frame`, and an abstract dictionary that assigns an interpretation to
 each world.
 """
-struct KripkeModel{W<:AbstractWorld,A,T<:TruthValue,K<:AbstractKripkeFrame{W,T},D<:AbstractDict{W,<:Interpretation{A,T}}} <: AbstractKripkeModel{W,A,T}
-    frame::K
-    interpretations::D
+struct KripkeModel{W<:AbstractWorld,A,T<:TruthValue,KF<:AbstractFrame{W,T}, AS<:AbstractAssignment{W,A,T}} <: AbstractKripkeModel{W,A,T,KF}
+    frame::KF
+    assignment::AS
 end
 
-function check(f::Formula, m::KripkeModel{A,T})::T where {A,T<:TruthValue} end
+function check(m::KripkeModel{W,A,T}, w::W, f::Formula)::T where {W<:AbstractWorld,A,T<:TruthValue}
+
+function check(m::KripkeModel{W,A,T}, f::Formula)::T where {W<:AbstractWorld,A,T<:TruthValue}
+    check(m, initial(m), f)
+end
+check(m::AbstractKripkeModel{W,A}, w::W, p::Proposition{A}) = check(m.assignment, w, p)
+
+# TODO maybe this yields the worlds where a certain formula is true...?
+# function check(m::KripkeModel{W,A,T}, f::Formula)::AbstractVector{W} where {W<:AbstractWorld,A,T<:TruthValue}
 
 ############################################################################################
 ############################################################################################
@@ -143,6 +282,21 @@ arity(::NamedOperator{:□}) = 1
 Base.operator_precedence(::typeof(DIAMOND)) = HIGH_PRIORITY
 Base.operator_precedence(::typeof(BOX)) = HIGH_PRIORITY
 
+
+abstract type AbstractRelationalOperator{R<:AbstractRelation} end
+# TODO: why the type parameter?
+# TODO-reply: We want to dispatch on it. In this case, because different relations
+#  carry different algorithmic behaviors (e.g., Later vs. After are computed in a
+#  different way).
+
+Base.operator_precedence(::AbstractRelationalOperator) = HIGH_PRIORITY
+
+relationtype(::AbstractRelationalOperator{R}) where {R<:AbstractRelation} = R
+
+struct DiamondRelationalOperator{R<:AbstractRelation} <: AbstractRelationalOperator{R} end
+
+struct BoxRelationalOperator{R<:AbstractRelation} <: AbstractRelationalOperator{R} end
+
 ############################################################################################
 ######################################## BASE ##############################################
 ############################################################################################
@@ -152,35 +306,11 @@ struct NamedWorld{T} <: AbstractWorld
     name::T
 end
 
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Notes of 15/12 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-# Up above, this definition already exists as "AbstractKripkeFrame";
-# think about renaming all the occurrences in this.
-"""
-    abstract type AbstractFrame{W<:AbstractWorld,T<:TruthValue} end
-
-Abstract type for an accessibility graph (Kripke frame), that gives the structure to
-    [Kripke models](https://en.m.wikipedia.org/wiki/Kripke_structure_(model_checking))'s).
-
-See also [`AbstractKripkeModel`](@ref), [`AbstractWorld`](@ref).
-"""
-abstract type AbstractFrame{W<:AbstractWorld,T<:TruthValue} end
-
-"""
-    abstract type AbstractModalFrame{
-        W<:AbstractWorld,
-        T<:TruthValue
-    } <: AbstractFrame{W,T} end
-
-Specific frame involving modal logic.
-
-See also [`AbstractFrame`](@ref)
-"""
-abstract type AbstractModalFrame{W<:AbstractWorld,T<:TruthValue} <: AbstractFrame{W,T} end
-
-# Association "(w1,w2) => truth_value". Not recommended in sparse scenarios.
-struct AdjacencyModalFrame{W<:AbstractWorld,T<:TruthValue} <: AbstractModalFrame{W,T}
-    adjacents::NamedMatrix{T,Matrix{T},Tuple{OrderedDict{W,Int64},OrderedDict{W,Int64}}}
+# Named-relation type
+struct NamedRelation <: AbstractRelation
+    name::Symbol
+    # adjacency matrix between NamedWorld's
 end
 
-# function enum_accessibles(...)
+
