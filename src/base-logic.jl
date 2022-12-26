@@ -293,7 +293,4 @@ Base.operator_precedence(::AbstractOperator) = BASE_PRIORITY
 Base.operator_precedence(::typeof(NEGATION)) = HIGH_PRIORITY
 Base.operator_precedence(::typeof(IMPLICATION)) = LOW_PRIORITY
 
-# Repeat for DIAMOND and BOX
-
-
 # NOTE: could operator associativity be implemented in the future?

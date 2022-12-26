@@ -65,7 +65,7 @@ function dispatch_modop(
     # intuitively this should be good in fact, by iterating neighbors one by one,
     # sometime short-circuit happens
     s = start_cond
-    for neighbor in adjacents(km, w)
+    for neighbor in adjacents(km, w) # TODO Note (Gio) I believe this is actually wrong: you should use the adjacents of the "inverse directed graph".
         s = op(s, contains(km, φ, neighbor))
         if s == !start_cond
             break
