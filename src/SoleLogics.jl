@@ -20,7 +20,6 @@ include("parsing.jl")
 include("multi-modal-logic-base/worlds.jl")
 include("multi-modal-logic-base/relations.jl")
 
-
 include("random.jl")
 
 end

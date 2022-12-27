@@ -1,99 +1,46 @@
 export parseformula
 
-show(io::IO, f::Formula) = print(io, inorder(tree(f)))
+export tokenizer
 
-"""
-    inorder(v::FNode)
-Return the visit of `v` tree as a string.
-"""
-function inorder(v::FNode{L}) where {L<:AbstractLogic}
-    str = "("
-    if isdefined(v, :leftchild)
-        str = string(str, inorder(v.leftchild))
-    end
-    str = string(str, v.token)
-    if isdefined(v, :rightchild)
-        str = string(str, inorder(v.rightchild))
-    end
-    str = string(str, ")")
-    return str
-end
+using ReadableRegex
 
-############################################################################################
-#        Formula input
-#       and construction
-############################################################################################
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Input and construction ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # A simple lexer capable of distinguish operators in a string
-function tokenizer(expression::String; ops::Operators = operators(MODAL_LOGIC))
-    tokens = Union{AbstractOperator,String}[]
+function tokenizer(expression::String, operators::Vector{<:NamedOperator})
+    # Collection responsible for split `expression` in the correct points.
+    splitter = vcat(["(", ")"], String.(Symbol.(operators)))
 
-    sym_to_op = Dict{Symbol,AbstractOperator}()
-    for op in ops
-        sym_to_op[Symbol(op)] = op
-    end
+    return split(expression, Regex(
+            either(
+                [look_for("", before=sep) for sep in splitter]...,
+                [look_for("", after=sep) for sep in splitter]...,
 
-    # Classical operators such as ∧ are represented by one character
-    # but "expression" is splitted (after whitespaces removal) in order to
-    # recognize multicharacter-operators such as [L] or ⟨My_123_cus7om_456_0p3r4!or⟩.
-    expression = filter(x -> !isspace(x), expression)
-    slices = string.(split(expression, r"((?<=\])|(?=\[))|((?<=⟩)|(?=⟨))"))
+                look_for("", before = "("),
+                look_for("", after = "("),
 
-    # Multicharacter-operators are recognized,
-    # while the rest of the expression is expanded.
-    for slice in slices
-        if slice[1] == '[' || slice[1] == '⟨'
-            push!(tokens, sym_to_op[Symbol(slice)])
-        else
-            append!(tokens, string.(split(slice, "")))
-        end
-    end
-
-    # Other operators are recognized
-    for i in eachindex(tokens)
-        if tokens[i] isa String && haskey(sym_to_op, Symbol(tokens[i]))
-            tokens[i] = sym_to_op[Symbol(tokens[i])]
-        end
-    end
-
-    return tokens
+                look_for("", before = ")"),
+                look_for("", after = ")")
+            )
+        )
+    )
 end
 
-#=
-Shunting yard algorithm explanation.
+"""
+    parseformula(expression::String, operators::Vector{<:NamedOperator})
 
-Goal:
-translate an infix expression to postfix notation. (also called Reverse Polish Notation)
-e.g. "□c∧◊d" becomes "c□d◊∧"
-This preprocessing is useful to simplify formula (syntax) trees generations.
+Return a `SyntaxTree` starting from `expression`.
 
-Data structures involved:
-* `postfix`: vector of tokens (String or AbstractOperator) in RPN; this is returned
-* `opstack`: stack of tokens (AbstractOperators except for the "(" string)
+// TODO: valid `operators` might be deducted? In any case, if the user want to
+// perform parsing using custom operators (e.g :myop) he must specify it.
 
-Algorithm:
-given a certain token `tok`, 1 of 4 possible scenarios may occur:
-(regrouped in _shunting_yard function to keep code clean)
+See also [`SyntaxTree`](@ref)
+"""
+function parseformula(expression::String, operators::Vector{<:NamedOperator})
+    return ""
+end
 
-1. `tok` is a valid propositional letter
-    -> push "p" in `postfix`
-
-2. `tok` is an opening bracket
-    -> push "(" in `operators`
-
-3. `tok` is a closing bracket
-    -> pop from `opstack`.
-    If an operator is popped, then push it into `postfix` and repeat.
-    Else, if an opening bracket it's found then process the next token.
-    This algorithm step it's the reason why "(" are placed in `opstack`
-    and `opstack` content type is Union{AbstractOperator, String}.
-
-4. `tok` has to be an operator
-    -> pop `op` from `opstack` and push it into `postfix` if it has an higher precedence
-    than `tok` and repeat.
-    When the condition is no more satisfied, then it means we have found the correct
-    spot where to place `tok` in `opstack`.
-=#
+#= Work in progress
 
 """
     shunting_yard(expression::String)
@@ -323,11 +270,12 @@ function is_less(
     return precedence(a) <= precedence(b) ? true : false
 end
 
+#= Part of the following code has already been rewritten in random.jl
+
 ############################################################################################
 #       Formula random
 #         generation
 ############################################################################################
-
 """
     gen_formula(
         height::Integer,
@@ -455,3 +403,5 @@ function _gen_formula(
 
     return f
 end
+=#
+=#
