@@ -200,9 +200,19 @@ empty_logic = @test_nowarn propositional_logic(; operators = AbstractOperator[],
 @test_nowarn propositional_logic(; operators = [¬, ∨])(¬ p_string)
 @test propositional_logic(; alphabet = ["p", "q"]) isa BasePropositionalLogic
 
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ parsing.jl ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+@test_nowarn parseformula("¬p∧q∧(¬s∧¬z)", [NEGATION, CONJUNCTION])
+@test_nowarn parseformula("¬p∧q→(¬s∧¬z)", [NEGATION, CONJUNCTION, IMPLICATION])
+@test_nowarn parseformula("¬p∧q→     (¬s∧¬z)", [NEGATION, CONJUNCTION, IMPLICATION])
+@test_nowarn parseformula("□p∧q∧(□s∧◊z)", [BOX, DIAMOND, CONJUNCTION])
+@test_nowarn parseformula("◊◊◊◊p∧q", [DIAMOND, CONJUNCTION])
+
+@test_throws ErrorException parseformula("(p∧q", [NEGATION])
+@test_throws BoundsError parseformula("))))", [CONJUNCTION])
+
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ random.jl ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 _alphabet = ExplicitAlphabet(Proposition.([1,2]))
 _operators = [NEGATION, CONJUNCTION, IMPLICATION]
-@test_broken generate(10, _alphabet, _operators)
-@test_nowarn generate(2, _alphabet, _operators)
+# @test_broken generate(10, _alphabet, _operators)
+# @test_nowarn generate(2, _alphabet, _operators)
