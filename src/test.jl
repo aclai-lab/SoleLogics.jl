@@ -204,10 +204,11 @@ empty_logic = @test_nowarn propositional_logic(; operators = AbstractOperator[],
 @test_nowarn parseformula("¬p∧q∧(¬s∧¬z)", [NEGATION, CONJUNCTION])
 @test_nowarn parseformula("¬p∧q→(¬s∧¬z)", [NEGATION, CONJUNCTION, IMPLICATION])
 @test_nowarn parseformula("¬p∧q→     (¬s∧¬z)", [NEGATION, CONJUNCTION, IMPLICATION])
-@test_nowarn parseformula("□p∧q∧(□s∧◊z)", [BOX, DIAMOND, CONJUNCTION])
-@test_nowarn parseformula("◊◊◊◊p∧q", [DIAMOND, CONJUNCTION])
+@test_nowarn parseformula("□p∧   q∧(□s∧◊z)", [BOX, DIAMOND, CONJUNCTION])
+@test_nowarn parseformula("◊ ◊ ◊ ◊ p∧q", [DIAMOND, CONJUNCTION])
+@test_nowarn parseformula("¬¬¬ □□□ ◊◊◊ p ∧ ¬¬¬ q", [DIAMOND, CONJUNCTION, NEGATION, BOX])
 
-@test_throws ErrorException parseformula("(p∧q", [NEGATION])
+@test_throws ErrorException parseformula("(p∧q", [NEGATION, CONJUNCTION])
 @test_throws BoundsError parseformula("))))", [CONJUNCTION])
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ random.jl ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

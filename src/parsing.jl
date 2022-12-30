@@ -53,8 +53,9 @@ function tokenizer(expression::String, operators::Vector{<:NamedOperator})
     # Collection responsible for split `expression` in the correct points.
     splitter = vcat(["(", ")"], String.(symops))
 
-    # NOTE: this code, unfortunately, doesn't work and splits at each character;
-    # "my_long_name1 ∧ my_long_name2" is not parsed correctly.
+    # NOTE: at the moment this code only works with single-char long variables.
+    # For example "my_long_name1 ∧ my_long_name2" is not parsed correctly;
+    # This happens because the following split behaves like a split(expression, "")
     split(expression, Regex(
             either(
                 [look_for("", before=sep) for sep in splitter]...,
@@ -111,7 +112,27 @@ function parseformula(expression::String, operators::Vector{<:NamedOperator})
     opstack = Vector{SoleLogics.SyntaxToken}([])
     postfix = Vector{SoleLogics.SyntaxToken}([])
 
-    # There are 4 possible cases
+    shunting_yard(tokens, opstack, postfix)
+
+    # Consume the leftovers in the opstack
+    while !isempty(opstack)
+        op = pop!(opstack)
+
+        # Starting expression is not well formatted, or a "(" is found
+        if !(op isa NamedOperator)
+            throw(error("Mismatching brackets"))
+        end
+        push!(postfix, op)
+    end
+
+    return buildformula(postfix)
+end
+
+function shunting_yard(
+    tokens::Vector{SoleLogics.SyntaxToken},
+    opstack::Vector{SoleLogics.SyntaxToken},
+    postfix::Vector{SoleLogics.SyntaxToken}
+)
     for tok in tokens
 
         # tok is an operator, something must be done until another operator
@@ -144,19 +165,6 @@ function parseformula(expression::String, operators::Vector{<:NamedOperator})
             push!(postfix, tok)
         end
     end
-
-    # Consume the leftovers in the opstack
-    while !isempty(opstack)
-        op = pop!(opstack)
-
-        # Starting expression is not well formatted, or a "(" is found
-        if !(op isa NamedOperator)
-            throw(error("Mismatching brackets"))
-        end
-        push!(postfix, op)
-    end
-
-    return buildformula(postfix)
 end
 
 #= Repl fast test
