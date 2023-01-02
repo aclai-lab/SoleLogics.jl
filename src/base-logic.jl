@@ -107,35 +107,36 @@ const → = IMPLICATION
 arity(::Type{NamedOperator{:→}}) = 2
 
 # Helpers
+# TODO2: I am not a great fan of this.. it is really the best way to do it?
 function CONJUNCTION(
-        c1::Union{SyntaxToken,SyntaxTree,AbstractFormula},
-        c2::Union{SyntaxToken,SyntaxTree,AbstractFormula},
-        c3::Union{SyntaxToken,SyntaxTree,AbstractFormula},
-        cs::Union{SyntaxToken,SyntaxTree,AbstractFormula}...
+    c1::Union{SyntaxToken,SyntaxTree,AbstractFormula},
+    c2::Union{SyntaxToken,SyntaxTree,AbstractFormula},
+    c3::Union{SyntaxToken,SyntaxTree,AbstractFormula},
+    cs::Union{SyntaxToken,SyntaxTree,AbstractFormula}...
 )
     return CONJUNCTION(c1, CONJUNCTION(c2, c3, cs...))
 end
 function CONJUNCTION(
-        c1::Union{SyntaxToken,SyntaxTree},
-        c2::Union{SyntaxToken,SyntaxTree},
-        c3::Union{SyntaxToken,SyntaxTree},
-        cs::Union{SyntaxToken,SyntaxTree}...
+    c1::Union{SyntaxToken,SyntaxTree},
+    c2::Union{SyntaxToken,SyntaxTree},
+    c3::Union{SyntaxToken,SyntaxTree},
+    cs::Union{SyntaxToken,SyntaxTree}...
 )
     return CONJUNCTION(c1, CONJUNCTION(c2, c3, cs...))
 end
 function DISJUNCTION(
-        c1::Union{SyntaxToken,SyntaxTree,AbstractFormula},
-        c2::Union{SyntaxToken,SyntaxTree,AbstractFormula},
-        c3::Union{SyntaxToken,SyntaxTree,AbstractFormula},
-        cs::Union{SyntaxToken,SyntaxTree,AbstractFormula}...
+    c1::Union{SyntaxToken,SyntaxTree,AbstractFormula},
+    c2::Union{SyntaxToken,SyntaxTree,AbstractFormula},
+    c3::Union{SyntaxToken,SyntaxTree,AbstractFormula},
+    cs::Union{SyntaxToken,SyntaxTree,AbstractFormula}...
 )
     return DISJUNCTION(c1, DISJUNCTION(c2, c3, cs...))
 end
 function DISJUNCTION(
-        c1::Union{SyntaxToken,SyntaxTree},
-        c2::Union{SyntaxToken,SyntaxTree},
-        c3::Union{SyntaxToken,SyntaxTree},
-        cs::Union{SyntaxToken,SyntaxTree}...
+    c1::Union{SyntaxToken,SyntaxTree},
+    c2::Union{SyntaxToken,SyntaxTree},
+    c3::Union{SyntaxToken,SyntaxTree},
+    cs::Union{SyntaxToken,SyntaxTree}...
 )
     return DISJUNCTION(c1, DISJUNCTION(c2, c3, cs...))
 end
@@ -203,23 +204,23 @@ struct BaseLogic{G<:AbstractGrammar,A<:AbstractAlgebra} <: AbstractLogic{G,A}
     algebra::A
 
     function BaseLogic{G,A}(
-        grammar::G = base_grammar,
-        algebra::A = BooleanAlgebra(),
+        grammar::G=base_grammar,
+        algebra::A=BooleanAlgebra(),
     ) where {G<:AbstractGrammar,A<:AbstractAlgebra}
         # @assert all([goeswith(op, algebra) for op in operators(grammar)]) "Cannot instantiate BaseLogic{$(G), $(A)}: operators $(operators(grammar)[[goeswith(op, algebra) for op in operators(grammar)]]) cannot be interpreted on $(algebra)." # requires `goeswith` trait
         return new{G,A}(grammar, algebra)
     end
 
     function BaseLogic{G}(
-        grammar::G = base_grammar,
-        algebra::A = BooleanAlgebra(),
+        grammar::G=base_grammar,
+        algebra::A=BooleanAlgebra(),
     ) where {G<:AbstractGrammar,A<:AbstractAlgebra}
         return BaseLogic{G,A}(grammar, algebra)
     end
 
     function BaseLogic(
-        grammar::G = base_grammar,
-        algebra::A = BooleanAlgebra(),
+        grammar::G=base_grammar,
+        algebra::A=BooleanAlgebra(),
     ) where {G<:AbstractGrammar,A<:AbstractAlgebra}
         return BaseLogic{G,A}(grammar, algebra)
     end
@@ -248,6 +249,7 @@ Basic logical operators.
 See also [`TOP`](@ref), [`BOTTOM`](@ref), [`NEGATION`](@ref),
 [`CONJUCTION`](@ref), [`AbstractOperator`](@ref).
 """
+# TODO2: All of the following, if they are not types, please use CAPITAL letters (they are constants)
 const base_operators = [⊤, ⊥, ¬, ∧, ∨, →]
 const BaseOperators = Union{typeof.(base_operators)...}
 
@@ -287,7 +289,7 @@ HIGH_PRIORITY = Base.operator_precedence(:^)
 BASE_PRIORITY = Base.operator_precedence(:*)
 
 """$(doc_priority)"""
-LOW_PRIORITY  = Base.operator_precedence(:+)
+LOW_PRIORITY = Base.operator_precedence(:+)
 
 Base.operator_precedence(::AbstractOperator) = BASE_PRIORITY
 Base.operator_precedence(::typeof(NEGATION)) = HIGH_PRIORITY

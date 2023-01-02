@@ -10,10 +10,6 @@ export relationtype
 abstract type AbstractRelation end
 
 abstract type AbstractRelationalOperator{R<:AbstractRelation} end
-# TODO: why the type parameter?
-# TODO-reply: We want to dispatch on it. In this case, because different relations
-#  carry different algorithmic behaviors (e.g., Later vs. After are computed in a
-#  different way).
 
 Base.operator_precedence(::AbstractRelationalOperator) = HIGH_PRIORITY
 
@@ -45,7 +41,7 @@ See also [`AbstractModalFrame`](@ref).
 """
 abstract type AbstractMultiModalFrame{
     W<:AbstractWorld,
-    R<:NTuple{N,Type{AbstractRelation}} where {N} # Why "where" position is correct here?
+    R<:NTuple{N,Type{AbstractRelation}} where {N} # Why "where" position is correct here? <-- TODO2: ?
 } end
 
 """
@@ -55,12 +51,14 @@ Wrapper used to manage many `AbstractRelation`'s using a specific `AbstractModal
 each of them.
 
 See also [`AbstractRelation`](@ref), [`AbstractModalFrame`](@ref).
+
+TODO2: The following is WrapperMultiModalFrame but the docstring refers to AbstractFrame
 """
 struct WrapperMultiModalFrame{
     W<:AbstractWorld,
     R<:NTuple{N,Type{AbstractRelation}} where {N}
 } <: AbstractMultiModalFrame{W,R}
-    frames::OrderedDict{<:AbstractRelation, <:AbstractModalFrame} # Could be done better?
+    frames::OrderedDict{<:AbstractRelation,<:AbstractModalFrame} # Could be done better?
 end
 
 struct AdjacencyMultiModalFrame{
@@ -71,3 +69,5 @@ struct AdjacencyMultiModalFrame{
 end
 
 # function enum_accessibles(...)
+
+# TODO2: Here we cannot provide a "basic" multimodal logic, am I right? Because there are many of them, there is not canonical one.

@@ -89,7 +89,7 @@ struct KripkeModel{W<:AbstractWorld,A,T<:TruthValue,K<:AbstractKripkeFrame{W,T},
     interpretations::D
 end
 
-function check(f::Formula, m::KripkeModel{A,T})::T where {A,T<:TruthValue} end
+function check(::Formula, ::KripkeModel{A,T})::T where {A,T<:TruthValue} end
 
 ############################################################################################
 ############################################################################################
@@ -156,6 +156,7 @@ end
 
 # Up above, this definition already exists as "AbstractKripkeFrame";
 # think about renaming all the occurrences in this.
+# TODO2: I did not understand this.. I assume, at this point, that is correct.
 """
     abstract type AbstractFrame{W<:AbstractWorld,T<:TruthValue} end
 
@@ -184,3 +185,5 @@ struct AdjacencyModalFrame{W<:AbstractWorld,T<:TruthValue} <: AbstractModalFrame
 end
 
 # function enum_accessibles(...)
+
+# TODO2: Should we not provide some constants for the "basic" modal logic? Similar to propositional logic?
