@@ -39,12 +39,12 @@ Base.operator_precedence(::typeof(NEGATION)) = HIGH_PRIORITY
 # "a∧b → c∧d" is parsed "(a∧b) → (c∧d)" instead of "a ∧ (b→c) ∧ d"
 Base.operator_precedence(::typeof(IMPLICATION)) = LOW_PRIORITY
 
-# TODO: place DIAMOND and BOX precedences here from modal-logic.jl
+# TODO: could place DIAMOND and BOX precedences here from modal-logic.jl
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Input and construction ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-# A simple lexer capable of distinguish operators in a string.
-# Returns a Vector{SoleLogics.SyntaxTree}
+# A simple lexer capable of distinguish operators in a string,
+# return a Vector{SoleLogics.SyntaxTree}.
 function tokenizer(expression::String, operators::Vector{<:NamedOperator})
     # Symbolic represention of given OPERATORS
     expression = filter(x -> !isspace(x), expression)
@@ -55,7 +55,9 @@ function tokenizer(expression::String, operators::Vector{<:NamedOperator})
 
     # NOTE: at the moment this code only works with single-char long variables.
     # For example "my_long_name1 ∧ my_long_name2" is not parsed correctly;
-    # This happens because the following split behaves like a split(expression, "")
+    # this happens because the following split behaves like a split(expression, "").
+    # A macro should be created to dynamically generate a look_for("", before="some_string")
+    # for each element in spliter.
     split(expression, Regex(
             either(
                 [look_for("", before=sep) for sep in splitter]...,
@@ -70,65 +72,16 @@ function tokenizer(expression::String, operators::Vector{<:NamedOperator})
         )
     )
 
-    # Vector{SoleLogics.SyntaxToken}
-    return [Symbol(st) in symops ?
+    return SoleLogics.SyntaxToken[Symbol(st) in symops ?
         NamedOperator{Symbol(st)}() :
         Proposition(st)
         for st in expression
     ]
 end
 
-# Build a formula starting from a Vector{SyntaxToken} representing its postfix notation
-function buildformula(postfix::Vector{SyntaxToken})
-    stack = SyntaxTree[]
-
-    # Each tok might be a Proposition or a NamedOperator
-    for tok in postfix
-        # Stack collapses, composing a new part of the syntax tree
-        if tok isa NamedOperator
-            children = [pop!(stack) for _ in 1:arity(tok)]
-            push!(stack, SyntaxTree(tok, Tuple(children)))
-        else
-            push!(stack, SyntaxTree(tok))
-        end
-    end
-    println(stack)
-    return stack[1]
-end
-
-"""
-    parseformula(expression::String, operators::Vector{<:NamedOperator})
-
-Return a `SyntaxTree` starting from `expression`.
-TODO: `operators` could be defaulted to a certain, exhaustive, set of `NamedOperators`'s.
-
-See also [`SyntaxTree`](@ref)
-"""
-function parseformula(expression::String, operators::Vector{<:NamedOperator})
-    tokens = tokenizer(expression, operators) # Still a Vector{SoleLogics.SyntaxToken}
-
-    # Stack containing operators. Needed to transform the expression in postfix notation;
-    # opstack may contain Proposition("("), Proposition(")") and NamedOperators
-    opstack = Vector{SoleLogics.SyntaxToken}([])
-    postfix = Vector{SoleLogics.SyntaxToken}([])
-
-    shunting_yard(tokens, opstack, postfix)
-
-    # Consume the leftovers in the opstack
-    while !isempty(opstack)
-        op = pop!(opstack)
-
-        # Starting expression is not well formatted, or a "(" is found
-        if !(op isa NamedOperator)
-            throw(error("Mismatching brackets"))
-        end
-        push!(postfix, op)
-    end
-
-    return buildformula(postfix)
-end
-
-function shunting_yard(
+# Rearrange a serie of token, from infix to postfix notation.
+# Tokens are consumed from `tokens` in order to fill `postfix` and `opstack`.
+function shunting_yard!(
     tokens::Vector{SoleLogics.SyntaxToken},
     opstack::Vector{SoleLogics.SyntaxToken},
     postfix::Vector{SoleLogics.SyntaxToken}
@@ -167,8 +120,58 @@ function shunting_yard(
     end
 end
 
-#= Repl fast test
-ops = [NEGATION, CONJUNCTION]
-expr = "¬a∧b∧(¬c∧¬d)"
-parseformula(expr,ops)
-=#
+# Build a formula starting from a Vector{SyntaxToken} representing its postfix notation
+function buildformula(postfix::Vector{SyntaxToken})
+    stack = SyntaxTree[]
+
+    # Each tok might be a Proposition or a NamedOperator
+    for tok in postfix
+        # Stack collapses, composing a new part of the syntax tree
+        if tok isa NamedOperator
+            children = [pop!(stack) for _ in 1:arity(tok)]
+            push!(stack, SyntaxTree(tok, Tuple(children)))
+        else
+            push!(stack, SyntaxTree(tok))
+        end
+    end
+
+    return stack[1]
+end
+
+"""
+    parseformula(expression::String, operators::Vector{<:NamedOperator})
+
+Return a `SyntaxTree` starting from `expression`.
+Each proposition in `expression` must be represented with a single character.
+
+# Examples
+```julia-repl
+julia> parseformula("¬p∧q∧(¬s∧¬z)", [NEGATION, CONJUNCTION])
+∧(∧(∧(¬(z), ¬(s)), q), ¬(p))
+```
+
+See also [`SyntaxTree`](@ref)
+"""
+function parseformula(expression::String, operators::Vector{<:NamedOperator})
+    tokens = tokenizer(expression, operators) # Still a Vector{SoleLogics.SyntaxToken}
+
+    # Stack containing operators. Needed to transform the expression in postfix notation;
+    # opstack may contain Proposition("("), Proposition(")") and NamedOperators
+    opstack = Vector{SoleLogics.SyntaxToken}([])
+    postfix = Vector{SoleLogics.SyntaxToken}([])
+
+    shunting_yard!(tokens, opstack, postfix)
+
+    # Consume the leftovers in the opstack
+    while !isempty(opstack)
+        op = pop!(opstack)
+
+        # Starting expression is not well formatted, or a "(" is found
+        if !(op isa NamedOperator)
+            throw(error("Mismatching brackets"))
+        end
+        push!(postfix, op)
+    end
+
+    return buildformula(postfix)
+end
