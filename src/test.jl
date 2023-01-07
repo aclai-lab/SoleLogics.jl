@@ -208,11 +208,14 @@ empty_logic = @test_nowarn propositional_logic(; operators = AbstractOperator[],
 @test_nowarn parseformula("◊ ◊ ◊ ◊ p∧q", [DIAMOND, CONJUNCTION])
 @test_nowarn parseformula("¬¬¬ □□□ ◊◊◊ p ∧ ¬¬¬ q", [DIAMOND, CONJUNCTION, NEGATION, BOX])
 
+# Malformed input
 @test_throws ErrorException parseformula("(p∧q", [NEGATION, CONJUNCTION])
 @test_throws BoundsError parseformula("))))", [CONJUNCTION])
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ random.jl ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+# Mauro: I commented the following tests since a cryptic error message fills up the REPL.
+# This is strange, also because `generate` actually returns correct SyntaxTrees.
 _alphabet = ExplicitAlphabet(Proposition.([1,2]))
 _operators = [NEGATION, CONJUNCTION, IMPLICATION]
 # @test_broken generate(10, _alphabet, _operators)
