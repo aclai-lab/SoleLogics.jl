@@ -4,31 +4,32 @@ abstract type AbstractRelation end
 ############################################################################################
 
 # Relations must indicate their compatible world types via `goeswith`.
-#  For example, if world type W is compatible with relation R
+# For example, if world type W is compatible with relation R
 # goeswith(::Type{W}, ::R) = true
 # Here's the fallback:
 goeswith(::Type{W}, ::AbstractRelation) where {W<:AbstractWorld} = false
 
 # Relations can be symmetric, reflexive and/or transitive.
 # By default, none of this cases holds:
-is_symmetric(r::AbstractRelation) = false
-is_reflexive(r::AbstractRelation) = false
-is_transitive(r::AbstractRelation) = false
-
-# TODO add are_inverse_relation/inverse_relation trait
+is_symmetric(::AbstractRelation) = false
+is_reflexive(::AbstractRelation) = false
+is_transitive(::AbstractRelation) = false
+is_inverse(::AbstractRelation, ::AbstractRelation) = false
 
 ############################################################################################
 # Singletons representing natural relations
 ############################################################################################
 
 # Identity relation: any world -> itself
-struct _RelationId <: AbstractRelation end; const RelationId   = _RelationId();
+struct _RelationId <: AbstractRelation end;
+const RelationId   = _RelationId();
 
 Base.show(io::IO, ::_RelationId) = print(io, "=")
 
-is_symmetric(r::_RelationId) = true
-is_reflexive(r::_RelationId) = true
-is_transitive(r::_RelationId) = true
+is_symmetric(::_RelationId) = true
+is_reflexive(::_RelationId) = true
+is_transitive(::_RelationId) = true
+is_inverse(::_RelationId, ::_RelationId) = true
 
 ############################################################################################
 
@@ -37,9 +38,10 @@ struct _RelationGlob <: AbstractRelation end; const RelationGlob  = _RelationGlo
 
 Base.show(io::IO, ::_RelationGlob) = print(io, "G")
 
-is_symmetric(r::_RelationGlob) = true
-is_reflexive(r::_RelationGlob) = true
-is_transitive(r::_RelationGlob) = true
+is_symmetric(::_RelationGlob) = true
+is_reflexive(::_RelationGlob) = true
+is_transitive(::_RelationGlob) = true
+# TODO: add is_inverse here. Should be all worlds -> any (single) world
 
 ############################################################################################
 
@@ -54,8 +56,7 @@ is_transitive(r::_RelationGlob) = true
 
 include("relations/geometrical-relations.jl");
 
-export AbstractRelation,
-    IntervalRelation, RCCRelation
+export AbstractRelation, IntervalRelation, RCCRelation
 
 export _RelationGlob, _RelationId
 export RelationGlob, RelationId
