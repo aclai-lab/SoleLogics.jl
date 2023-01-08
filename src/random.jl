@@ -44,6 +44,8 @@ function _generate(
 
     op = rand(rng, operators)
 
-    return SyntaxTree(op,
-        Tuple([_generate(height-1, alphabet, operators; rng=rng) for _ in 1:arity(op)]))
+    return SyntaxTree(
+        op,
+        Tuple([_generate(height-1, alphabet, operators; rng=rng) for _ in 1:arity(op)])
+    )
 end
