@@ -18,7 +18,7 @@ function generate(
     height::Integer,
     alphabet::AbstractAlphabet,
     operators::Vector{<:AbstractOperator};
-    rng::Union{Integer, AbstractRNG}=Random.GLOBAL_RNG
+    rng::Union{Integer, AbstractRNG} = Random.GLOBAL_RNG
 )
     # If the alphabet is not iterable, this function should not work.
     # NOTE: the error message here is the same as in general.jl.
@@ -36,7 +36,7 @@ function _generate(
     height::Integer,
     alphabet::AbstractAlphabet,
     operators::Vector{<:AbstractOperator};
-    rng::Union{Integer, AbstractRNG}=Random.GLOBAL_RNG
+    rng::Union{Integer, AbstractRNG} = Random.GLOBAL_RNG
 )
     if height == 0
         return SyntaxTree(rand(rng, propositions(alphabet)))
