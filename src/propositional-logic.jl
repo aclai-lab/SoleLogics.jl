@@ -28,10 +28,10 @@ julia> propositional_logic(; alphabet = ExplicitAlphabet([Proposition("p"), Prop
 See also [`AbstractAlphabet`](@ref), [`AbstractAlgebra`](@ref).
 """
 function propositional_logic(;
-    alphabet::Union{Nothing,Vector,AbstractAlphabet}=nothing,
-    operators::Union{Nothing,Vector{<:AbstractOperator}}=nothing,
-    grammar::Union{Nothing,AbstractGrammar}=nothing,
-    algebra::Union{Nothing,AbstractAlgebra}=nothing
+    alphabet::Union{Nothing,Vector,AbstractAlphabet} = nothing,
+    operators::Union{Nothing,Vector{<:AbstractOperator}} = nothing,
+    grammar::Union{Nothing,AbstractGrammar} = nothing,
+    algebra::Union{Nothing,AbstractAlgebra} = nothing
 )
     @assert isnothing(grammar) || (isnothing(alphabet) && isnothing(operators)) ||
             "Cannot instantiate propositional logic by specifing a grammar together with parameter(s):
@@ -44,10 +44,10 @@ function propositional_logic(;
     grammar = begin
         if isnothing(grammar)
             if isnothing(alphabet) && isnothing(operators)
-                base_grammar
+                BASE_GRAMMAR
             else
-                alphabet = isnothing(alphabet) ? base_alphabet : alphabet
-                operators = isnothing(operators) ? base_operators : operators
+                alphabet = isnothing(alphabet) ? BASE_ALPHABET : alphabet
+                operators = isnothing(operators) ? BASE_OPERATORS : operators
                 if alphabet isa Vector
                     alphabet = ExplicitAlphabet(map(Proposition, alphabet))
                 end
@@ -59,7 +59,7 @@ function propositional_logic(;
         end
     end
 
-    algebra = isnothing(algebra) ? base_algebra : algebra
+    algebra = isnothing(algebra) ? BASE_ALGEBRA : algebra
 
     return BaseLogic(grammar, algebra)
 end
@@ -70,7 +70,7 @@ const BasePropositionalLogic = AbstractLogic{G,A} where {ALP,G<:AbstractGrammar{
 """
     abstract type Interpretation{A,T<:TruthValue} <: AbstractLogicalModel{A,T} end
 
-A propositional interpretation, encoding a mapping from `Proposition`'s of atom type `A`
+A propositional interpretation, encoding a mapping from `Proposition`ss of atom type `A`
 to truth values of type `T`.
 
 See also [`AbstractLogicalModel`](@ref).
@@ -162,11 +162,6 @@ struct TruthDict{A,T<:TruthValue} <: Interpretation{A,T}
     end
     function TruthDict(d::Dict{Proposition{A},T}) where {A,T<:TruthValue}
         return TruthDict{A,T}(d)
-        # TODO: why not new instead of TruthDict?
-        # TODO-reply: because, let's say one day I have to perform a check upon construction.
-        # If I use new, then I have to write the check n-times (one per constructor);
-        # Instead, by cascading, I can write it only once, in the single constructor that uses new.
-        # TODO2: Ok so this then answers an issue pointed in the general TODOs; I agree, we can remove the comments
     end
     function TruthDict(v::AbstractVector{Tuple{Proposition{A},T}}) where {A,T<:TruthValue}
         return TruthDict(Dict(v))
@@ -175,7 +170,6 @@ struct TruthDict{A,T<:TruthValue} <: Interpretation{A,T}
         return TruthDict(Dict(v))
     end
     function TruthDict(p::Pair{Proposition{A},T}) where {A,T<:TruthValue}
-        # TODO-reply: Additionally, I could not use new here, since [p] is not a Dict:
         return TruthDict([p])
     end
     function TruthDict(t::Tuple{Proposition{A},T}) where {A,T<:TruthValue}

@@ -18,7 +18,7 @@ function generate(
     height::Integer,
     alphabet::AbstractAlphabet,
     operators::Vector{<:AbstractOperator};
-    rng::Union{Integer, AbstractRNG}=Random.GLOBAL_RNG
+    rng::Union{Integer, AbstractRNG} = Random.GLOBAL_RNG
 )
     if !isiterable(alphabet)
         return error("Please, provide method propositions(::$(typeof(a)))" *
@@ -34,7 +34,7 @@ function _generate(
     height::Integer,
     alphabet::AbstractAlphabet,
     operators::Vector{<:AbstractOperator};
-    rng::Union{Integer, AbstractRNG}=Random.GLOBAL_RNG
+    rng::Union{Integer, AbstractRNG} = Random.GLOBAL_RNG
 )
     if height == 0
         return SyntaxTree(rand(rng, propositions(alphabet)))

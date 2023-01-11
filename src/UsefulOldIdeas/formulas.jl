@@ -335,7 +335,7 @@ end
         C::Operators=SoleLogics.operators(MODAL_LOGIC),
         max_modepth::Integer=height,
         pruning_factor::Float64=0.0,
-        rng::Union{Integer,AbstractRNG}=Random.GLOBAL_RNG
+        rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG
     )
 Return a formula having the exact specified `height`.
 
@@ -357,7 +357,7 @@ function gen_formula(
     C::Operators=SoleLogics.operators(MODAL_LOGIC),
     max_modepth::Integer=height,
     pruning_factor::Float64=0.0,
-    rng::Union{Integer,AbstractRNG}=Random.GLOBAL_RNG
+    rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG
 )
     rng = (typeof(rng) <: Integer) ? Random.MersenneTwister(rng) : rng
     fx = parseformula(
@@ -379,7 +379,7 @@ end
         logic::AbstractLogic,
         max_modepth::Integer=height,
         pruning_factor::Float64=0.0,
-        rng::Union{Integer,AbstractRNG}=Random.GLOBAL_RNG
+        rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG
     )
 Return a formula having the exact specified `height`.
 
@@ -399,7 +399,7 @@ function gen_formula(
     logic::AbstractLogic;
     max_modepth::Integer=height,
     pruning_factor::Float64=0.0,
-    rng::Union{Integer,AbstractRNG}=Random.GLOBAL_RNG,
+    rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG,
 )
     rng = (typeof(rng) <: Integer) ? Random.MersenneTwister(rng) : rng
     fx = parseformula(
