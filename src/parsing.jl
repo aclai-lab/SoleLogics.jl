@@ -56,8 +56,8 @@ function tokenizer(expression::String, operators::Vector{<:AbstractOperator})
     string_to_op = Dict([string(op) => op for op in operators])
 
     # Collection responsible for split `expression` in the correct points.
-    splitter = vcat(["(", ")"], collect(keys(string_to_op)))
-
+    splitter = ["(", ")", keys(string_to_op)...]
+    
     # NOTE: at the moment, this code only works with single-char long variables.
     # For example "my_long_name1 ∧ my_long_name2" is not parsed correctly;
     # this happens because the following split behaves like a split(expression, "").
@@ -76,11 +76,11 @@ function tokenizer(expression::String, operators::Vector{<:AbstractOperator})
             )
         )
     )
-    
-    # Trick: wrap chars like '(' and 'p' into propositions. shunting_yard will
+
+    # Trick: wrap chars like '(' and 'p' into Proposition{String}'s. shunting_yard will
     #  take care of this.
-    return SoleLogics.SyntaxToken[st in keys(string_to_op) ?
-        string_to_op[st] :
+    return SoleLogics.SyntaxToken[string(st) in keys(string_to_op) ?
+        string_to_op[string(st)] :
         Proposition{String}(string(st))
         for st in expression
     ]
@@ -136,7 +136,7 @@ function buildformulatree(postfix::Vector{SyntaxToken})
         # Stack collapses, composing a new part of the syntax tree
         if tok isa AbstractOperator
             children = [pop!(stack) for _ in 1:arity(tok)]
-            push!(stack, SyntaxTree(tok, Tuple(children)))
+            push!(stack, SyntaxTree(tok, Tuple(reverse(children))))
         else
             push!(stack, SyntaxTree(tok))
         end
@@ -164,7 +164,7 @@ function parseformulatree(
     expression::String,
     operators::Vector{<:AbstractOperator} = AbstractOperator[],
 )
-    operators = AbstractOperator[base_parsable_operators..., operators...]
+    operators = unique(AbstractOperator[base_parsable_operators..., operators...])
     tokens = tokenizer(expression, operators) # Still a Vector{SoleLogics.SyntaxToken}
 
     # Stack containing operators. Needed to transform the expression in postfix notation;
@@ -199,7 +199,7 @@ function parseformula(
     operators = (isnothing(operators) ? AbstractOperator[] : operators)
     t = parseformulatree(expression, operators)
     base_formula(t;
-        operators = AbstractOperator[operators..., SoleLogics.operators(t)...],
+        operators = unique(AbstractOperator[operators..., SoleLogics.operators(t)...]),
         # alphabet = alphabet,
         alphabet = AlphabetOfAny{String}(),
         grammar = grammar,
