@@ -59,7 +59,7 @@ Abstract type for representing
 It comprehends a directed graph structure (Kripke frame), where nodes are referred to as
 *worlds*, and the binary relation between them is referred to as the
 *accessibility relation*. Additionally, each world is associated with a mapping from
-`Proposition`'s of atom type `A` to truth values of type `T`.
+`Proposition`ss of atom type `A` to truth values of type `T`.
 
 See also [`AbstractLogicalModel`](@ref).
 """
@@ -89,7 +89,7 @@ struct KripkeModel{W<:AbstractWorld,A,T<:TruthValue,K<:AbstractKripkeFrame{W,T},
     interpretations::D
 end
 
-function check(f::Formula, m::KripkeModel{A,T})::T where {A,T<:TruthValue} end
+function check(::Formula, ::KripkeModel{A,T})::T where {A,T<:TruthValue} end
 
 ############################################################################################
 ############################################################################################
@@ -142,8 +142,8 @@ arity(::Type{typeof(□)}) = 1
 
 ############################################################################################
 
-const base_modal_operators = [base_propositional_operators..., ◊, □]
-const BaseModalOperators = Union{typeof.(base_modal_operators)...}
+const BASE_MODAL_OPERATORS = [BASE_PROPOSITIONAL_OPERATORS..., ◊, □]
+const BaseModalOperators = Union{typeof.(BASE_MODAL_OPERATORS)...}
 
 """
     modal_logic(;
@@ -173,7 +173,7 @@ function modal_logic(;
     grammar::Union{Nothing,AbstractGrammar} = nothing,
     algebra::Union{Nothing,AbstractAlgebra} = nothing,
 )
-    if !isnothing(operators) && length(setdiff(operators, base_propositional_operators)) == 0
+    if !isnothing(operators) && length(setdiff(operators, BASE_PROPOSITIONAL_OPERATORS)) == 0
         @warn "Instantiating modal logic (via `modal_logic`) with solely" *
             " propositional operators. Consider using propositional_logic instead."
     end
@@ -182,7 +182,7 @@ function modal_logic(;
         operators = operators,
         grammar = grammar,
         algebra = algebra;
-        default_operators = base_modal_operators,
+        default_operators = BASE_MODAL_OPERATORS,
         logictypename = "modal logic",
     )
 end
@@ -205,6 +205,7 @@ end
 
 # Up above, this definition already exists as "AbstractKripkeFrame";
 # think about renaming all the occurrences in this.
+# TODO2: I did not understand this.. I assume, at this point, that is correct.
 """
     abstract type AbstractFrame{W<:AbstractWorld,T<:TruthValue} end
 
@@ -233,3 +234,6 @@ struct AdjacencyModalFrame{W<:AbstractWorld,T<:TruthValue} <: AbstractModalFrame
 end
 
 # function enum_accessibles(...)
+
+# TODO2: Should we not provide some constants for the "basic" modal logic? Similar to propositional logic?
+# TODO: I'm on it.

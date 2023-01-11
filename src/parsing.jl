@@ -25,13 +25,13 @@ doc_priority = """
 """
 
 """$(doc_priority)"""
-HIGH_PRIORITY = Base.operator_precedence(:^)
+const HIGH_PRIORITY = Base.operator_precedence(:^)
 
 """$(doc_priority)"""
-BASE_PRIORITY = Base.operator_precedence(:*)
+const BASE_PRIORITY = Base.operator_precedence(:*)
 
 """$(doc_priority)"""
-LOW_PRIORITY  = Base.operator_precedence(:+)
+const LOW_PRIORITY  = Base.operator_precedence(:+)
 
 function Base.operator_precedence(op::AbstractOperator)
     if isunary(op)
@@ -44,7 +44,7 @@ end
 # "a∧b → c∧d" is parsed "(a∧b) → (c∧d)" instead of "a ∧ (b→c) ∧ d"
 Base.operator_precedence(::typeof(IMPLICATION)) = LOW_PRIORITY
 
-const base_parsable_operators = [base_modal_operators...]
+const base_parsable_operators = [BASE_MODAL_OPERATORS...]
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Input and construction ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -79,7 +79,7 @@ function tokenizer(expression::String, operators::Vector{<:AbstractOperator})
 
     # Trick: wrap chars like '(' and 'p' into Proposition{String}'s. shunting_yard will
     #  take care of this.
-    return SoleLogics.SyntaxToken[string(st) in keys(string_to_op) ?
+    return SoleLogics.AbstractSyntaxToken[string(st) in keys(string_to_op) ?
         string_to_op[string(st)] :
         Proposition{String}(string(st))
         for st in expression
@@ -89,9 +89,9 @@ end
 # Rearrange a serie of token, from infix to postfix notation.
 # Tokens are consumed from `tokens` in order to fill `postfix` and `opstack`.
 function shunting_yard!(
-    tokens::Vector{SoleLogics.SyntaxToken},
-    opstack::Vector{SoleLogics.SyntaxToken},
-    postfix::Vector{SoleLogics.SyntaxToken}
+    tokens::Vector{SoleLogics.AbstractSyntaxToken},
+    opstack::Vector{SoleLogics.AbstractSyntaxToken},
+    postfix::Vector{SoleLogics.AbstractSyntaxToken}
 )
     for tok in tokens
 
@@ -127,8 +127,8 @@ function shunting_yard!(
     end
 end
 
-# Build a formula starting from a Vector{SyntaxToken} representing its postfix notation
-function buildformulatree(postfix::Vector{SyntaxToken})
+# Build a formula starting from a Vector{AbstractSyntaxToken} representing its postfix notation
+function buildformulatree(postfix::Vector{AbstractSyntaxToken})
     stack = SyntaxTree[]
 
     # Each tok might be a Proposition or a AbstractOperator
@@ -165,12 +165,12 @@ function parseformulatree(
     operators::Vector{<:AbstractOperator} = AbstractOperator[],
 )
     operators = unique(AbstractOperator[base_parsable_operators..., operators...])
-    tokens = tokenizer(expression, operators) # Still a Vector{SoleLogics.SyntaxToken}
+    tokens = tokenizer(expression, operators) # Still a Vector{SoleLogics.AbstractSyntaxToken}
 
     # Stack containing operators. Needed to transform the expression in postfix notation;
     # opstack may contain Proposition("("), Proposition(")") and operators
-    opstack = Vector{SoleLogics.SyntaxToken}([])
-    postfix = Vector{SoleLogics.SyntaxToken}([])
+    opstack = Vector{SoleLogics.AbstractSyntaxToken}([])
+    postfix = Vector{SoleLogics.AbstractSyntaxToken}([])
 
     shunting_yard!(tokens, opstack, postfix)
 

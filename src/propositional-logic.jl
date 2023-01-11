@@ -2,8 +2,8 @@ export propositional_logic
 
 export Interpretation, TruthDict, DefaultedTruthDict
 
-const base_propositional_operators = base_operators
-const BasePropositionalOperators = Union{typeof.(base_propositional_operators)...}
+const BASE_PROPOSITIONAL_OPERATORS = base_operators
+const BasePropositionalOperators = Union{typeof.(BASE_PROPOSITIONAL_OPERATORS)...}
 
 """
     propositional_logic(;
@@ -34,14 +34,14 @@ function propositional_logic(;
     alphabet::Union{Nothing,Vector,AbstractAlphabet} = nothing,
     operators::Union{Nothing,Vector{<:AbstractOperator}} = nothing,
     grammar::Union{Nothing,AbstractGrammar} = nothing,
-    algebra::Union{Nothing,AbstractAlgebra} = nothing,
+    algebra::Union{Nothing,AbstractAlgebra} = nothing
 )
     _base_logic(
         alphabet = alphabet,
         operators = operators,
         grammar = grammar,
         algebra = algebra;
-        default_operators = base_propositional_operators,
+        default_operators = BASE_PROPOSITIONAL_OPERATORS,
         logictypename = "propositional logic",
     )
 end
@@ -54,7 +54,7 @@ const BasePropositionalLogic = AbstractLogic{G,A} where {ALP,G<:AbstractGrammar{
 """
     abstract type Interpretation{A,T<:TruthValue} <: AbstractLogicalModel{A,T} end
 
-A propositional interpretation, encoding a mapping from `Proposition`'s of atom type `A`
+A propositional interpretation, encoding a mapping from `Proposition`ss of atom type `A`
 to truth values of type `T`.
 
 See also [`AbstractLogicalModel`](@ref).
@@ -72,9 +72,9 @@ function Base.getindex(
     args...
 )::T where {AA,A<:AA,T<:TruthValue}
     return error("Please, provide method" *
-        " Base.getindex(::$(typeof(m))," *
-        " ::Proposition{$(atomtype(m))}, args...)::$(truthtype(m))" *
-        " with args::$(typeof(args)).")
+                 " Base.getindex(::$(typeof(m))," *
+                 " ::Proposition{$(atomtype(m))}, args...)::$(truthtype(m))" *
+                 " with args::$(typeof(args)).")
 end
 
 """
@@ -85,8 +85,8 @@ for a given proposition.
 """
 function Base.in(::Proposition{A}, m::Interpretation{AA})::Bool where {AA,A<:AA}
     return error("Please, provide method" *
-        " Base.in(::Proposition{$(atomtype(m))}," *
-        " ::$(typeof(m)))::Bool.")
+                 " Base.in(::Proposition{$(atomtype(m))}," *
+                 " ::$(typeof(m)))::Bool.")
 end
 
 """
@@ -121,7 +121,7 @@ function check(
         return collate_truth(a, token(tree), ts)
     else
         return error("Unknown token type encountered when checking formula" *
-            " on model of type $(typeof(m)): $(typeof(token(tree))).")
+                     " on model of type $(typeof(m)): $(typeof(token(tree))).")
     end
 end
 
@@ -146,10 +146,6 @@ struct TruthDict{A,T<:TruthValue} <: Interpretation{A,T}
     end
     function TruthDict(d::Dict{Proposition{A},T}) where {A,T<:TruthValue}
         return TruthDict{A,T}(d)
-        # TODO: why not new instead of TruthDict?
-        # TODO-reply: because, let's say one day I have to perform a check upon construction.
-        # If I use new, then I have to write the check n-times (one per constructor);
-        # Instead, by cascading, I can write it only once, in the single constructor that uses new.
     end
     function TruthDict(v::AbstractVector{Tuple{Proposition{A},T}}) where {A,T<:TruthValue}
         return TruthDict(Dict(v))
@@ -158,7 +154,6 @@ struct TruthDict{A,T<:TruthValue} <: Interpretation{A,T}
         return TruthDict(Dict(v))
     end
     function TruthDict(p::Pair{Proposition{A},T}) where {A,T<:TruthValue}
-        # TODO-reply: Additionally, I could not use new here, since [p] is not a Dict:
         return TruthDict([p])
     end
     function TruthDict(t::Tuple{Proposition{A},T}) where {A,T<:TruthValue}
@@ -196,13 +191,13 @@ struct DefaultedTruthDict{A,T<:TruthValue} <: Interpretation{A,T}
         d::Dict{Proposition{A},T},
         default_truth::T
     ) where {A,T<:TruthValue}
-        return DefaultedTruthDict{A,T}(d, default_truth) # TODO: as above (i.e., why not new?)
+        return DefaultedTruthDict{A,T}(d, default_truth)
     end
     function DefaultedTruthDict(
         v::AbstractVector{Tuple{Proposition{A},T}},
         default_truth::T
     ) where {A,T<:TruthValue}
-        return DefaultedTruthDict(Dict(v), default_truth) # TODO: as above
+        return DefaultedTruthDict(Dict(v), default_truth)
     end
     function DefaultedTruthDict(
         v::AbstractVector,
@@ -211,27 +206,27 @@ struct DefaultedTruthDict{A,T<:TruthValue} <: Interpretation{A,T}
         return DefaultedTruthDict(
             Vector{Tuple{Proposition{TruthValue},T}}(v),
             default_truth
-        ) # TODO: as above
+        )
         return DefaultedTruthDict(
             v::AbstractVector{Pair{Proposition{A},T}},
             default_truth::T
         ) where {A,T<:TruthValue}
-        return DefaultedTruthDict(Dict(v), default_truth) # TODO: as above
+        return DefaultedTruthDict(Dict(v), default_truth)
     end
     function DefaultedTruthDict(
         p::Pair{Proposition{A},T},
         default_truth::T
     ) where {A,T<:TruthValue}
-        return DefaultedTruthDict([p], default_truth) # TODO: as above
+        return DefaultedTruthDict([p], default_truth)
     end
     function DefaultedTruthDict(
         t::Tuple{Proposition{A},T},
         default_truth::T
     ) where {A,T<:TruthValue}
-        return DefaultedTruthDict(Pair(t...), default_truth) # TODO: as above
+        return DefaultedTruthDict(Pair(t...), default_truth)
     end
     function DefaultedTruthDict(default_truth::T) where {T<:TruthValue}
-        return DefaultedTruthDict([], default_truth) # TODO: as above
+        return DefaultedTruthDict([], default_truth)
     end
 end
 

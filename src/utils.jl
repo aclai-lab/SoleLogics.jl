@@ -1,5 +1,5 @@
 function base_formula(
-    ttf::Union{SyntaxToken,SyntaxTree,AbstractFormula};
+    ttf::Union{AbstractSyntaxToken,SyntaxTree,AbstractFormula};
     operators::Vector{<:AbstractOperator} = AbstractOperator[],
     # additional_operators::Vector{<:AbstractOperator} = AbstractOperator[],
     args...,
@@ -10,12 +10,12 @@ function base_formula(
     # props = propositions(tree)
 
     logic = begin
-        if issubset(operators, base_propositional_operators)
+        if issubset(operators, BASE_PROPOSITIONAL_OPERATORS)
             propositional_logic(;
                 operators = operators,
                 args...,
             )
-        elseif issubset(operators, base_modal_operators)
+        elseif issubset(operators, BASE_MODAL_OPERATORS)
             modal_logic(;
                 operators = operators,
                 args...,

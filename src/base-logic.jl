@@ -107,35 +107,36 @@ const → = IMPLICATION
 arity(::Type{typeof(→)}) = 2
 
 # Helpers
+# TODO2: I am not a great fan of this.. it is really the best way to do it?
 function CONJUNCTION(
-        c1::Union{SyntaxToken,SyntaxTree,AbstractFormula},
-        c2::Union{SyntaxToken,SyntaxTree,AbstractFormula},
-        c3::Union{SyntaxToken,SyntaxTree,AbstractFormula},
-        cs::Union{SyntaxToken,SyntaxTree,AbstractFormula}...
+    c1::Union{AbstractSyntaxToken,SyntaxTree,AbstractFormula},
+    c2::Union{AbstractSyntaxToken,SyntaxTree,AbstractFormula},
+    c3::Union{AbstractSyntaxToken,SyntaxTree,AbstractFormula},
+    cs::Union{AbstractSyntaxToken,SyntaxTree,AbstractFormula}...
 )
     return CONJUNCTION(c1, CONJUNCTION(c2, c3, cs...))
 end
 function CONJUNCTION(
-        c1::Union{SyntaxToken,SyntaxTree},
-        c2::Union{SyntaxToken,SyntaxTree},
-        c3::Union{SyntaxToken,SyntaxTree},
-        cs::Union{SyntaxToken,SyntaxTree}...
+    c1::Union{AbstractSyntaxToken,SyntaxTree},
+    c2::Union{AbstractSyntaxToken,SyntaxTree},
+    c3::Union{AbstractSyntaxToken,SyntaxTree},
+    cs::Union{AbstractSyntaxToken,SyntaxTree}...
 )
     return CONJUNCTION(c1, CONJUNCTION(c2, c3, cs...))
 end
 function DISJUNCTION(
-        c1::Union{SyntaxToken,SyntaxTree,AbstractFormula},
-        c2::Union{SyntaxToken,SyntaxTree,AbstractFormula},
-        c3::Union{SyntaxToken,SyntaxTree,AbstractFormula},
-        cs::Union{SyntaxToken,SyntaxTree,AbstractFormula}...
+    c1::Union{AbstractSyntaxToken,SyntaxTree,AbstractFormula},
+    c2::Union{AbstractSyntaxToken,SyntaxTree,AbstractFormula},
+    c3::Union{AbstractSyntaxToken,SyntaxTree,AbstractFormula},
+    cs::Union{AbstractSyntaxToken,SyntaxTree,AbstractFormula}...
 )
     return DISJUNCTION(c1, DISJUNCTION(c2, c3, cs...))
 end
 function DISJUNCTION(
-        c1::Union{SyntaxToken,SyntaxTree},
-        c2::Union{SyntaxToken,SyntaxTree},
-        c3::Union{SyntaxToken,SyntaxTree},
-        cs::Union{SyntaxToken,SyntaxTree}...
+    c1::Union{AbstractSyntaxToken,SyntaxTree},
+    c2::Union{AbstractSyntaxToken,SyntaxTree},
+    c3::Union{AbstractSyntaxToken,SyntaxTree},
+    cs::Union{AbstractSyntaxToken,SyntaxTree}...
 )
     return DISJUNCTION(c1, DISJUNCTION(c2, c3, cs...))
 end
@@ -203,7 +204,7 @@ struct BaseLogic{G<:AbstractGrammar,A<:AbstractAlgebra} <: AbstractLogic{G,A}
     algebra::A
 
     function BaseLogic{G,A}(
-        grammar::G = base_grammar,
+        grammar::G = BASE_GRAMMAR,
         algebra::A = BooleanAlgebra(),
     ) where {G<:AbstractGrammar,A<:AbstractAlgebra}
         # @assert all([goeswith(op, algebra) for op in operators(grammar)]) "Cannot instantiate BaseLogic{$(G), $(A)}: operators $(operators(grammar)[[goeswith(op, algebra) for op in operators(grammar)]]) cannot be interpreted on $(algebra)." # requires `goeswith` trait
@@ -211,14 +212,14 @@ struct BaseLogic{G<:AbstractGrammar,A<:AbstractAlgebra} <: AbstractLogic{G,A}
     end
 
     function BaseLogic{G}(
-        grammar::G = base_grammar,
+        grammar::G = BASE_GRAMMAR,
         algebra::A = BooleanAlgebra(),
     ) where {G<:AbstractGrammar,A<:AbstractAlgebra}
         return BaseLogic{G,A}(grammar, algebra)
     end
 
     function BaseLogic(
-        grammar::G = base_grammar,
+        grammar::G = BASE_GRAMMAR,
         algebra::A = BooleanAlgebra(),
     ) where {G<:AbstractGrammar,A<:AbstractAlgebra}
         return BaseLogic{G,A}(grammar, algebra)
@@ -241,23 +242,23 @@ A base logic can be used to instantiate `Formula`s out of syntax trees.
 # This can be useful for standard phrasing of propositional formulas with string propositions.
 
 """
-    const base_operators = [⊤, ⊥, ¬, ∧, ∨, →]
+    const BASE_OPERATORS = [⊤, ⊥, ¬, ∧, ∨, →]
 
 Basic logical operators.
 
 See also [`TOP`](@ref), [`BOTTOM`](@ref), [`NEGATION`](@ref),
 [`CONJUCTION`](@ref), [`AbstractOperator`](@ref).
 """
-const base_operators = [⊤, ⊥, ¬, ∧, ∨, →]
-const BaseOperators = Union{typeof.(base_operators)...}
+const BASE_OPERATORS = [⊤, ⊥, ¬, ∧, ∨, →]
+const BaseOperators = Union{typeof.(BASE_OPERATORS)...}
 
-const base_alphabet = AlphabetOfAny{String}()
+const BASE_ALPHABET = AlphabetOfAny{String}()
 
-const base_grammar = CompleteFlatGrammar(base_alphabet, base_operators)
-const base_algebra = BooleanAlgebra()
+const BASE_GRAMMAR = CompleteFlatGrammar(BASE_ALPHABET, BASE_OPERATORS)
+const BASE_ALGEBRA = BooleanAlgebra()
 
-const base_logic = BaseLogic(base_grammar, base_algebra)
-
+# Useful? TODO remove
+# const BASE_LOGIC = BaseLogic(BASE_GRAMMAR, BASE_ALGEBRA)
 
 function _base_logic(;
     alphabet::Union{Nothing,Vector,AbstractAlphabet} = nothing,
@@ -268,19 +269,19 @@ function _base_logic(;
     logictypename::String,
 )
     @assert isnothing(grammar) || (isnothing(alphabet) && isnothing(operators)) ||
-        "Cannot instantiate $(logictypename) by specifing a grammar together with parameter(s):
-        $(join([
-            (!isnothing(alphabet) ? ["alphabet"] : [])...,
-            (!isnothing(operators) ? ["operators"] : [])...,
-            (!isnothing(grammar) ? ["grammar"] : [])...,
-            ], ", "))."
+            "Cannot instantiate $(logictypename) by specifing a grammar together with parameter(s):
+            $(join([
+                (!isnothing(alphabet) ? ["alphabet"] : [])...,
+                (!isnothing(operators) ? ["operators"] : [])...,
+                (!isnothing(grammar) ? ["grammar"] : [])...,
+                ], ", "))."
 
     grammar = begin
         if isnothing(grammar)
             if isnothing(alphabet) && isnothing(operators)
-                base_grammar
+                BASE_GRAMMAR
             else
-                alphabet = isnothing(alphabet) ? base_alphabet : alphabet
+                alphabet = isnothing(alphabet) ? BASE_ALPHABET : alphabet
                 operators = begin
                     if isnothing(operators)
                         default_operators
@@ -304,7 +305,7 @@ function _base_logic(;
         end
     end
 
-    algebra = isnothing(algebra) ? base_algebra : algebra
+    algebra = isnothing(algebra) ? BASE_ALGEBRA : algebra
 
     return BaseLogic(grammar, algebra)
 end
