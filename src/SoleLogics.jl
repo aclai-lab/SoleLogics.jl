@@ -33,6 +33,7 @@ include("general.jl")
 include("base-logic.jl")
 include("propositional-logic.jl")
 include("modal-logic.jl")
+include("multimodal-logic.jl")
 
 include("utils.jl")
 
