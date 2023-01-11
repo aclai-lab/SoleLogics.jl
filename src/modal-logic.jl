@@ -206,6 +206,7 @@ end
 # Up above, this definition already exists as "AbstractKripkeFrame";
 # think about renaming all the occurrences in this.
 # TODO2: I did not understand this.. I assume, at this point, that is correct.
+# TODO We are working on this.
 """
     abstract type AbstractFrame{W<:AbstractWorld,T<:TruthValue} end
 

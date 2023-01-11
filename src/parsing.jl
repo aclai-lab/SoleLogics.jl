@@ -44,7 +44,7 @@ end
 # "a∧b → c∧d" is parsed "(a∧b) → (c∧d)" instead of "a ∧ (b→c) ∧ d"
 Base.operator_precedence(::typeof(IMPLICATION)) = LOW_PRIORITY
 
-const base_parsable_operators = [BASE_MODAL_OPERATORS...]
+const BASE_PARSABLE_OPERATORS = [BASE_MODAL_OPERATORS...]
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Input and construction ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -164,7 +164,7 @@ function parseformulatree(
     expression::String,
     operators::Vector{<:AbstractOperator} = AbstractOperator[],
 )
-    operators = unique(AbstractOperator[base_parsable_operators..., operators...])
+    operators = unique(AbstractOperator[BASE_PARSABLE_OPERATORS..., operators...])
     tokens = tokenizer(expression, operators) # Still a Vector{SoleLogics.AbstractSyntaxToken}
 
     # Stack containing operators. Needed to transform the expression in postfix notation;

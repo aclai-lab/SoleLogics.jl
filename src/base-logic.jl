@@ -108,6 +108,8 @@ arity(::Type{typeof(→)}) = 2
 
 # Helpers
 # TODO2: I am not a great fan of this.. it is really the best way to do it?
+# TODO I could find a way that is more elegant that would not introduce ambiguity in dispatching.
+# Note that these are only helpers, so it's not really problem if they are hard to understand.
 function CONJUNCTION(
     c1::Union{AbstractSyntaxToken,SyntaxTree,AbstractFormula},
     c2::Union{AbstractSyntaxToken,SyntaxTree,AbstractFormula},
@@ -257,8 +259,7 @@ const BASE_ALPHABET = AlphabetOfAny{String}()
 const BASE_GRAMMAR = CompleteFlatGrammar(BASE_ALPHABET, BASE_OPERATORS)
 const BASE_ALGEBRA = BooleanAlgebra()
 
-# Useful? TODO remove
-# const BASE_LOGIC = BaseLogic(BASE_GRAMMAR, BASE_ALGEBRA)
+const BASE_LOGIC = BaseLogic(BASE_GRAMMAR, BASE_ALGEBRA)
 
 function _base_logic(;
     alphabet::Union{Nothing,Vector,AbstractAlphabet} = nothing,

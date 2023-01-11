@@ -18,8 +18,6 @@ given a grammar and an algebra. Alternatively, an alphabet and a set of operator
 can be specified instead of the grammar.
 
 
-TODO: the examples do not work (since the function is not exported?).
-TODO-reply: Are you sure? The function is exported, and test.jl test well for me.
 # Examples
 ```julia-repl
 julia> propositional_logic()

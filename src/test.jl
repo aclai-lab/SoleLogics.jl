@@ -78,6 +78,8 @@ grammar_int = CompleteFlatGrammar(alphabet_int, SoleLogics.BASE_OPERATORS)
 
 @test_nowarn formulas(grammar_int; maxdepth = 2, nformulas = 100)
 
+@test SoleLogics.BASE_LOGIC == propositional_logic()
+
 logic_int = BaseLogic(grammar_int, BooleanAlgebra())
 
 @test_throws MethodError "aoeu" in SoleLogics.propositional_logic()

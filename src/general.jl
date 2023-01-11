@@ -88,7 +88,7 @@ which establishes a relation between propositions (i.e., facts).
 For example, the boolean operators AND, OR and IMPLIES (stylized as ∧, ∨ and →)
 are used to connect propositions and express derived concepts.
 TODO: Correct, but perhaps not enough.
-TODO-reply: Ok boomer, scrivi what it's missing.
+TODO-reply: What is now missing here?
 
 Since operators display very different algorithmic behaviors,
 all `struct`ss that are subtypes of `AbstractOperator` must
@@ -310,9 +310,6 @@ of the child nodes.
 
 See also [`AbstractSyntaxToken`](@ref), [`arity`](@ref), [`Proposition`](@ref), [`Operator`](@ref).
 """
-
-# TODO: Perhaps we should have some macros, or something, for the errors/asserts/etc for homogeneity in the returned messages
-# TODO-reply: yes, definitely.
 struct SyntaxTree{FT<:AbstractSyntaxToken,T<:AbstractSyntaxToken} # T<:FT
     token::T
     children::NTuple{N,SyntaxTree} where {N}
@@ -894,6 +891,8 @@ function grammar(l::AbstractLogic{G})::G where {G}
 end
 
 operatorstype(l::AbstractLogic) = operatorstype(grammar(l))
+alphabettype(l::AbstractLogic) = alphabettype(grammar(l))
+operators(l::AbstractLogic) = operators(grammar(l))
 alphabet(l::AbstractLogic) = alphabet(grammar(l))
 propositionstype(l::AbstractLogic) = propositionstype(alphabet(l))
 tokenstype(l::AbstractLogic) = tokenstype(grammar(l))
@@ -1003,8 +1002,6 @@ function npropositions(f::AbstractFormula)::Integer
     return npropositions(tree(f))
 end
 
-# error("Please, provide method propositions(::$(typeof(f)))::AbstractVector{<:$(propositionstype(logic(f)))}.") # TODO: remove it?
-
 """
 A formula can be used for instating other formulas of the same logic.
 
@@ -1020,8 +1017,11 @@ have the following signature:
 # Examples
 ```julia-repl
 julia> f = parseformula("◊(p→q)")
-julia> f2 = f("p")
+julia> t = parseformulatree("p")
+julia> f2 = f(t)
+julia> @assert logic(f) == logic(f2)
 julia> @assert ◊ in operators(logic(f2))
+julia> @assert ◊ isa operatorstype(logic(f2))
 ```
 
 See also [`AbstractSyntaxToken`](@ref), [`SyntaxTree`](@ref), [`AbstractOperator`](@ref).
@@ -1123,8 +1123,8 @@ struct Formula{L<:AbstractLogic} <: AbstractFormula{L}
     end
 end
 
-_logic(f::Formula) = f._logic # TODO: so _logic is a "private" function? Yes.
-logic(f::Formula) = f._logic[] # TODO: why []? Dereferencing.
+_logic(f::Formula) = f._logic
+logic(f::Formula) = f._logic[]
 tree(f::Formula) = f.tree
 
 Base.in(t::AbstractSyntaxToken, f::Formula) = Base.in(t, tree(f))

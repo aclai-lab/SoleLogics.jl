@@ -17,6 +17,7 @@ GENERAL TODOs:
     * Why some functions have returned types and others do not have it? Is there an internal rule or something?
         -> Yes: returned types are specified when defining interfaces, and the reason is to convey to the user
             the expected return type of the method that they should write.
+    * We should have some macros, or something, for the errors/asserts/etc for homogeneity in the returned messages
 """
 
 # TODO: We should implement show methods for objects, such as logics
