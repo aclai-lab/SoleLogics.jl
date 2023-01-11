@@ -8,7 +8,7 @@ abstract type GeometricalRelation <: AbstractRelation end
 istopological(r::GeometricalRelation) = false
 
 
-# TODO add pattern: combinazione cartesiana/prodotto di relazioni.
+# TODO add pattern: carthesian product of relations
 
 # 1D Allen relations
 include("IA.jl")
