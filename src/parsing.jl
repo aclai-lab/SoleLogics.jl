@@ -211,7 +211,7 @@ function parseformula(
     expression::String,
     logic::AbstractLogic,
 )
-    Formula(parseformulatree(expression, operatortypes(logic)), logic)
+    Formula(parseformulatree(expression, operatorstype(logic)), logic)
 end
 
 function parseformula(

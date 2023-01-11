@@ -2,7 +2,7 @@ export propositional_logic
 
 export Interpretation, TruthDict, DefaultedTruthDict
 
-const BASE_PROPOSITIONAL_OPERATORS = base_operators
+const BASE_PROPOSITIONAL_OPERATORS = BASE_OPERATORS
 const BasePropositionalOperators = Union{typeof.(BASE_PROPOSITIONAL_OPERATORS)...}
 
 """

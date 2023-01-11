@@ -213,8 +213,8 @@ empty_logic = @test_nowarn propositional_logic(; operators = AbstractOperator[],
 @test filter(!isspace, string(parseformulatree("¬p∧q∧(¬s∧¬z)"))) == "∧(¬(p),∧(q,∧(¬(s),¬(z))))"
 @test_nowarn parseformulatree("¬p∧q∧(¬s∧¬z)", [NEGATION, CONJUNCTION])
 @test_nowarn parseformulatree("¬p∧q∧(¬s∧¬z)", [NEGATION])
-@test_nowarn operatortypes(logic(parseformula("¬p∧q∧(¬s∧¬z)", [BOX]))) == Union{typeof(□), typeof(¬)}
-@test_nowarn operatortypes(logic(parseformula("¬p∧q∧(¬s∧¬z)"))) == typeof(¬)
+@test_nowarn operatorstype(logic(parseformula("¬p∧q∧(¬s∧¬z)", [BOX]))) == Union{typeof(□), typeof(¬)}
+@test_nowarn operatorstype(logic(parseformula("¬p∧q∧(¬s∧¬z)"))) == typeof(¬)
 @test_nowarn parseformulatree("¬p∧q→(¬s∧¬z)")
 @test filter(!isspace, string(parseformulatree("¬p∧q→(¬s∧¬z)"))) == "→(∧(¬(p),q),∧(¬(s),¬(z)))"
 @test_nowarn parseformulatree("¬p∧q→     (¬s∧¬z)")
