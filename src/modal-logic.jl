@@ -59,7 +59,7 @@ Abstract type for representing
 It comprehends a directed graph structure (Kripke frame), where nodes are referred to as
 *worlds*, and the binary relation between them is referred to as the
 *accessibility relation*. Additionally, each world is associated with a mapping from
-`Proposition`ss of atom type `A` to truth values of type `T`.
+`Proposition`s of atom type `A` to truth values of type `T`.
 
 See also [`AbstractLogicalModel`](@ref).
 """

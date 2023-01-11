@@ -52,7 +52,7 @@ const BasePropositionalLogic = AbstractLogic{G,A} where {ALP,G<:AbstractGrammar{
 """
     abstract type Interpretation{A,T<:TruthValue} <: AbstractLogicalModel{A,T} end
 
-A propositional interpretation, encoding a mapping from `Proposition`ss of atom type `A`
+A propositional interpretation, encoding a mapping from `Proposition`s of atom type `A`
 to truth values of type `T`.
 
 See also [`AbstractLogicalModel`](@ref).

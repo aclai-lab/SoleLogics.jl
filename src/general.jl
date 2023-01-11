@@ -91,7 +91,7 @@ TODO: Correct, but perhaps not enough.
 TODO-reply: What is now missing here?
 
 Since operators display very different algorithmic behaviors,
-all `struct`ss that are subtypes of `AbstractOperator` must
+all `struct`s that are subtypes of `AbstractOperator` must
 be parametric singleton types, which can be dispatched upon.
 
 See also [`AbstractSyntaxToken`](@ref), [`NamedOperator`](@ref), [`check`](@ref).
@@ -113,7 +113,7 @@ iscommutative(o::AbstractOperator) = iscommutative(typeof(o))
 
 Abstract type for representing an alphabet of propositions with atoms of type `A`.
 An alphabet (or propositional alphabet) is assumed to be a
-[https://en.m.wikipedia.org/wiki/Countable_set](countable) set of propositions.
+[countable](https://en.m.wikipedia.org/wiki/Countable_set) set of propositions.
 
 See also [`Proposition`](@ref), [`AbstractGrammar`](@ref).
 """
@@ -145,7 +145,7 @@ end
 """
 Each alphabet must specify whether it is *iterable* or not.
 An alphabet is iterable if it provides the (two) `iterate` methods required by the
-[https://docs.julialang.org/en/v1/manual/interfaces/#man-interface-iteration](iteration interface).
+[iteration interface](https://docs.julialang.org/en/v1/manual/interfaces/#man-interface-iteration).
 
 By default, an alphabet is considered iterable:
 
@@ -198,7 +198,7 @@ function Base.length(a::AbstractAlphabet)
     end
 end
 
-# [https://docs.julialang.org/en/v1/manual/interfaces/#man-interface-iteration](Iteration interface) util.
+# [Iteration interface](https://docs.julialang.org/en/v1/manual/interfaces/#man-interface-iteration) util.
 function Base.IteratorSize(::Type{A}) where {A<:AbstractAlphabet}
     return Base.isfinite(A) ? Base.HasLength() : Base.IsInfinite()
 end
@@ -305,7 +305,7 @@ has as many children as the `arity` of the token.
 This implementation is *safe*, in that, this arity check is performed upon construction.
 An additional type parameter `FT` ensures that the token types of the sub-tree are
 constrained to a predefined set of types.
-When it is not specified, this parameter defaults to the `Union` between `T`, and the `FT`ss
+When it is not specified, this parameter defaults to the `Union` between `T`, and the `FT`s
 of the child nodes.
 
 See also [`AbstractSyntaxToken`](@ref), [`arity`](@ref), [`Proposition`](@ref), [`Operator`](@ref).
@@ -760,7 +760,7 @@ end
 
 Abstract type for representing algebras. Algebras are used for grounding the truth of
 propositions and the semantics of operators. They typically encode a
-[https://en.m.wikipedia.org/wiki/Lattice_(order)](lattice structure) where two elements
+[lattice structure](https://en.m.wikipedia.org/wiki/Lattice_(order)) where two elements
 (or nodes) *⊤* and *⊥* are referred to as *top* (or maximum) and *bottom* (or minimum).
 Each node in the lattice represents a truth value that a proposition or a formula can have
 on a model, and the semantics of operators is given in terms of operations between truth
@@ -1010,9 +1010,7 @@ propositions) and syntax trees, each formula should specify a method for constru
 formulas of the same logic out of syntax trees. Let F<:AbstractFormula, this method should
 have the following signature:
 
-    (f::F)(t::SyntaxTree)::F # TODO: there is no return type in the definition -- please check. I know, I tried it but I cannot make it work. I think it's useful in the docstring though.
-    # TODO2: We should talk on this
-    # TODO: okay.
+    (f::F)(t::SyntaxTree)::F
 
 # Examples
 ```julia-repl

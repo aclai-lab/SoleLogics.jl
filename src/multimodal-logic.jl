@@ -46,7 +46,7 @@ abstract type AbstractMultiModalFrame{
 """
     abstract type AbstractFrame{W<:AbstractWorld,T<:TruthValue} end
 
-Wrapper used to manage many `AbstractRelation`ss using a specific `AbstractModalFrame` for
+Wrapper used to manage many `AbstractRelation`s using a specific `AbstractModalFrame` for
 each of them.
 
 See also [`AbstractRelation`](@ref), [`AbstractModalFrame`](@ref).

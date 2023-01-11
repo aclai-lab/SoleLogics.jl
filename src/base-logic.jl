@@ -150,7 +150,7 @@ end
 """
     struct BooleanAlgebra <: AbstractAlgebra{Bool} end
 
-[https://en.m.wikipedia.org/wiki/Boolean_algebra](Boolean algebra) is defined on the values
+[Boolean algebra](https://en.m.wikipedia.org/wiki/Boolean_algebra) is defined on the values
 `true` (top) and `false` (bottom). For this algebra, the basic operators negation,
 conjunction and disjunction (stylized as ¬, ∧, ∨) can be defined as the complement, minimum
 and maximum, respectively.

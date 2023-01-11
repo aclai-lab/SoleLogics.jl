@@ -2,10 +2,6 @@ module SoleLogics
 
 """
 GENERAL TODOs:
-    * Check the links in the documentation, see AbstractOperator information about "logical constant"
-        and see also AbstractAlphabet information about "countable" <-- when I'm trying to see the docstring
-        I'm puzzled (we can talk about this face2face)
-        -> I'm not sure I understand: is there something wrong with url links?
     * I've seen that some docstrings of functions are out of bounds due to the first definition. I propose to use
         # Parameters in docstrings so that we can avoid to use the explicit definition of functions
         that is, instead of using check(a::T1, b::T2, c::T3) we can use check(a,b,c) and then put
