@@ -9,13 +9,11 @@ export relationtype
 
 abstract type AbstractRelation end
 
-abstract type AbstractRelationalOperator{R<:AbstractRelation} end
+abstract type AbstractRelationalOperator{R<:AbstractRelation} <: AbstractOperator end
 # TODO: why the type parameter?
 # TODO-reply: We want to dispatch on it. In this case, because different relations
 #  carry different algorithmic behaviors (e.g., Later vs. After are computed in a
 #  different way).
-
-Base.operator_precedence(::AbstractRelationalOperator) = HIGH_PRIORITY
 
 relationtype(::AbstractRelationalOperator{R}) where {R<:AbstractRelation} = R
 

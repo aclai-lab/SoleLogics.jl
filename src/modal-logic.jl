@@ -1,7 +1,7 @@
 using DataStructures: OrderedDict
 using NamedArrays
 
-export ismodal
+export ismodal, modal_logic
 export DIAMOND, BOX, ◊, □
 
 ############################################################################################
@@ -102,7 +102,7 @@ doc_DIAMOND = """
     const DIAMOND = NamedOperator{:◊}()
     const ◊ = DIAMOND
     ismodal(::NamedOperator{:◊}) = true
-    arity(::NamedOperator{:◊}) = 1
+    arity(::Type{typeof(◊)}) = 1
 
 Logical diamond operator, typically interpreted as the modal existential quantifier.
 
@@ -117,13 +117,13 @@ $(doc_DIAMOND)
 """
 const ◊ = DIAMOND
 ismodal(::NamedOperator{:◊}) = true
-arity(::NamedOperator{:◊}) = 1
+arity(::Type{typeof(◊)}) = 1
 
 
 doc_BOX = """
     const BOX = NamedOperator{:□}()
     const □ = BOX
-    arity(::NamedOperator{:□}) = 1
+    arity(::Type{typeof(□)}) = 1
 
 Logical box operator, typically interpreted as the modal universal quantifier.
 
@@ -138,10 +138,59 @@ $(doc_BOX)
 """
 const □ = BOX
 ismodal(::NamedOperator{:□}) = true
-arity(::NamedOperator{:□}) = 1
+arity(::Type{typeof(□)}) = 1
 
-Base.operator_precedence(::typeof(DIAMOND)) = HIGH_PRIORITY
-Base.operator_precedence(::typeof(BOX)) = HIGH_PRIORITY
+############################################################################################
+
+const base_modal_operators = [base_propositional_operators..., ◊, □]
+const BaseModalOperators = Union{typeof.(base_modal_operators)...}
+
+"""
+    modal_logic(;
+        alphabet = AlphabetOfAny{String}(),
+        operators = [⊤, ⊥, ¬, ∧, ∨, →, ◊, □],
+        grammar = CompleteFlatGrammar(AlphabetOfAny{String}(), [⊤, ⊥, ¬, ∧, ∨, →, ◊, □]),
+        algebra = BooleanAlgebra(),
+    )
+
+Instantiates a [modal logic](https://simple.m.wikipedia.org/wiki/Modal_logic)
+given a grammar and an algebra. Alternatively, an alphabet and a set of operators
+can be specified instead of the grammar.
+
+# Examples
+```julia-repl
+julia> modal_logic()
+julia> modal_logic(; operators = [¬, ∨])
+julia> modal_logic(; alphabet = ["p", "q"])
+julia> modal_logic(; alphabet = ExplicitAlphabet([Proposition("p"), Proposition("q")]))
+```
+
+See also [`AbstractAlphabet`](@ref), [`AbstractAlgebra`](@ref).
+"""
+function modal_logic(;
+    alphabet::Union{Nothing,Vector,AbstractAlphabet} = nothing,
+    operators::Union{Nothing,Vector{<:AbstractOperator}} = nothing,
+    grammar::Union{Nothing,AbstractGrammar} = nothing,
+    algebra::Union{Nothing,AbstractAlgebra} = nothing,
+)
+    if !isnothing(operators) && length(setdiff(operators, base_propositional_operators)) == 0
+        @warn "Instantiating modal logic (via `modal_logic`) with solely" *
+            " propositional operators. Consider using propositional_logic instead."
+    end
+    _base_logic(
+        alphabet = alphabet,
+        operators = operators,
+        grammar = grammar,
+        algebra = algebra;
+        default_operators = base_modal_operators,
+        logictypename = "modal logic",
+    )
+end
+
+# A modal logic based on the base modal operators
+const BaseModalLogic = AbstractLogic{G,A} where {ALP,G<:AbstractGrammar{ALP,<:BaseModalOperators},A<:AbstractAlgebra}
+
+############################################################################################
 
 ############################################################################################
 ######################################## BASE ##############################################

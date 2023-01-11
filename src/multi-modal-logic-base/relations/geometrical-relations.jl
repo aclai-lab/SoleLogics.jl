@@ -5,7 +5,7 @@ abstract type GeometricalRelation <: AbstractRelation end
 # Geometrical relations can have geometrical properties such as being topological (i.e.,
 #  invariant under homeomorphisms. # see https://en.m.wikipedia.org/wiki/Topological_property
 # By default, this does not hold:
-is_topological(r::GeometricalRelation) = false
+istopological(r::GeometricalRelation) = false
 
 
 # TODO add pattern: combinazione cartesiana/prodotto di relazioni.

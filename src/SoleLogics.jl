@@ -15,6 +15,8 @@ include("base-logic.jl")
 include("propositional-logic.jl")
 include("modal-logic.jl")
 
+include("utils.jl")
+
 include("parsing.jl")
 
 include("multi-modal-logic-base/worlds.jl")

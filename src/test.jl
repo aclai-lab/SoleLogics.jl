@@ -201,22 +201,46 @@ empty_logic = @test_nowarn propositional_logic(; operators = AbstractOperator[],
 @test propositional_logic(; alphabet = ["p", "q"]) isa BasePropositionalLogic
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ parsing.jl ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-@test_nowarn parseformula("¬p∧q∧(¬s∧¬z)", [NEGATION, CONJUNCTION])
-@test_nowarn parseformula("¬p∧q→(¬s∧¬z)", [NEGATION, CONJUNCTION, IMPLICATION])
-@test_nowarn parseformula("¬p∧q→     (¬s∧¬z)", [NEGATION, CONJUNCTION, IMPLICATION])
-@test_nowarn parseformula("□p∧   q∧(□s∧◊z)", [BOX, DIAMOND, CONJUNCTION])
-@test_nowarn parseformula("◊ ◊ ◊ ◊ p∧q", [DIAMOND, CONJUNCTION])
-@test_nowarn parseformula("¬¬¬ □□□ ◊◊◊ p ∧ ¬¬¬ q", [DIAMOND, CONJUNCTION, NEGATION, BOX])
+
+@test_nowarn parseformulatree("p")
+@test_nowarn parseformulatree("⊤")
+
+@test string(parseformulatree("p∧q")) == "∧(p, q)"
+@test string(parseformulatree("p→q")) == "→(p, q)"
+@test parseformulatree("¬p∧q") == parseformulatree("¬(p)∧q")
+@test parseformulatree("¬p∧q") != parseformulatree("¬(p∧q)")
+
+@test string(parseformulatree("¬p∧q∧(¬s∧¬z)")) == "∧(¬(p),∧(q,∧(¬(s),¬(z))))"
+@test_nowarn parseformulatree("¬p∧q∧(¬s∧¬z)", [NEGATION, CONJUNCTION])
+@test_nowarn parseformulatree("¬p∧q∧(¬s∧¬z)", [NEGATION])
+@test_nowarn operatortypes(logic(parseformula("¬p∧q∧(¬s∧¬z)", [BOX]))) == Union{typeof(□), typeof(¬)}
+@test_nowarn operatortypes(logic(parseformula("¬p∧q∧(¬s∧¬z)"))) == typeof(¬)
+@test_nowarn parseformulatree("¬p∧q→(¬s∧¬z)")
+@test string(parseformulatree("¬p∧q→(¬s∧¬z)")) == "→(∧(¬(p),q),∧(¬(s),¬(z))))"
+@test_nowarn parseformulatree("¬p∧q→     (¬s∧¬z)")
+@test parseformulatree("□p∧   q∧(□s∧◊z)", [BOX]) == parseformulatree("□p∧   q∧(□s∧◊z)")
+@test string(parseformulatree("◊ ◊ ◊ ◊ p∧q")) == "∧(◊(◊(◊(◊(p)))), q)"
+@test string(parseformulatree("¬¬¬ □□□ ◊◊◊ p ∧ ¬¬¬ q")) == "∧(¬(¬(¬(□(□(□(◊(◊(◊(p))))))))), ¬(¬(¬(q))))"
+
+@test alphabet(logic(parseformula("p→q"))) == AlphabetOfAny{String}()
 
 # Malformed input
-@test_throws ErrorException parseformula("(p∧q", [NEGATION, CONJUNCTION])
-@test_throws BoundsError parseformula("))))", [CONJUNCTION])
+@test_throws ErrorException parseformulatree("¬p◊")
+@test_throws ErrorException parseformulatree("¬p◊q")
+@test_throws ErrorException parseformulatree("(p∧q", [NEGATION, CONJUNCTION])
+@test_throws ErrorException parseformulatree("))))", [CONJUNCTION])
+
+# TODO
+@test ErrorException parseformulatree("⟨G⟩p", [DiamondRelationalOperator{_RelationGlob}()])
+
+
+@test_nowarn parseformula("p")
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ random.jl ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # Mauro: I commented the following tests since a cryptic error message fills up the REPL.
 # This is strange, also because `generate` actually returns correct SyntaxTrees.
-_alphabet = ExplicitAlphabet(Proposition.([1,2]))
-_operators = [NEGATION, CONJUNCTION, IMPLICATION]
+# _alphabet = ExplicitAlphabet(Proposition.([1,2]))
+# _operators = [NEGATION, CONJUNCTION, IMPLICATION]
 # @test_broken generate(10, _alphabet, _operators)
 # @test_nowarn generate(2, _alphabet, _operators)

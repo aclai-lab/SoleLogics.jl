@@ -19,21 +19,21 @@ The AND operator (logical conjuction) can be defined as the subtype:
 
     const CONJUNCTION = NamedOperator{:∧}()
     const ∧ = CONJUNCTION
-    arity(::Type{NamedOperator{:∧}}) = 2
+    arity(::Type{typeof(∧)}) = 2
 
 See also [`NEGATION`](@ref), [`CONJUNCTION`](@ref), [`DISJUNCTION`](@ref),
 [`IMPLICATION`](@ref), [`AbstractOperator`](@ref).
 """
 struct NamedOperator{Symbol} <: AbstractOperator end
 
-name(::NamedOperator{Symbol}) where {Symbol} = Symbol
+name(::NamedOperator{S}) where {S} = S
 
-Base.show(io::IO, op::NamedOperator{Symbol}) where {Symbol} = print(io, "$(name(op))")
+Base.show(io::IO, op::NamedOperator) = print(io, "$(name(op))")
 
 doc_NEGATION = """
     const NEGATION = NamedOperator{:¬}()
     const ¬ = NEGATION
-    arity(::Type{NamedOperator{:¬}}) = 1
+    arity(::Type{typeof(¬)}) = 1
 
 Logical negation.
 
@@ -47,12 +47,12 @@ const NEGATION = NamedOperator{:¬}()
 $(doc_NEGATION)
 """
 const ¬ = NEGATION
-arity(::Type{NamedOperator{:¬}}) = 1
+arity(::Type{typeof(¬)}) = 1
 
 doc_CONJUNCTION = """
     const CONJUNCTION = NamedOperator{:∧}()
     const ∧ = CONJUNCTION
-    arity(::Type{NamedOperator{:∧}}) = 2
+    arity(::Type{typeof(∧)}) = 2
 
 Logical conjunction.
 
@@ -66,12 +66,12 @@ const CONJUNCTION = NamedOperator{:∧}()
 $(doc_CONJUNCTION)
 """
 const ∧ = CONJUNCTION
-arity(::Type{NamedOperator{:∧}}) = 2
+arity(::Type{typeof(∧)}) = 2
 
 doc_DISJUNCTION = """
     const DISJUNCTION = NamedOperator{:∨}()
     const ∨ = DISJUNCTION
-    arity(::Type{NamedOperator{:∨}}) = 2
+    arity(::Type{typeof(∨)}) = 2
 
 Logical disjunction.
 
@@ -85,12 +85,12 @@ const DISJUNCTION = NamedOperator{:∨}()
 $(doc_DISJUNCTION)
 """
 const ∨ = DISJUNCTION
-arity(::Type{NamedOperator{:∨}}) = 2
+arity(::Type{typeof(∨)}) = 2
 
 doc_IMPLICATION = """
     const IMPLICATION = NamedOperator{:→}()
     const → = IMPLICATION
-    arity(::Type{NamedOperator{:→}}) = 2
+    arity(::Type{typeof(→)}) = 2
 
 Logical implication.
 
@@ -104,7 +104,7 @@ const IMPLICATION = NamedOperator{:→}()
 $(doc_IMPLICATION)
 """
 const → = IMPLICATION
-arity(::Type{NamedOperator{:→}}) = 2
+arity(::Type{typeof(→)}) = 2
 
 # Helpers
 function CONJUNCTION(
@@ -257,3 +257,54 @@ const base_grammar = CompleteFlatGrammar(base_alphabet, base_operators)
 const base_algebra = BooleanAlgebra()
 
 const base_logic = BaseLogic(base_grammar, base_algebra)
+
+
+function _base_logic(;
+    alphabet::Union{Nothing,Vector,AbstractAlphabet} = nothing,
+    operators::Union{Nothing,Vector{<:AbstractOperator}} = nothing,
+    grammar::Union{Nothing,AbstractGrammar} = nothing,
+    algebra::Union{Nothing,AbstractAlgebra} = nothing,
+    default_operators::Vector{<:AbstractOperator},
+    logictypename::String,
+)
+    @assert isnothing(grammar) || (isnothing(alphabet) && isnothing(operators)) ||
+        "Cannot instantiate $(logictypename) by specifing a grammar together with parameter(s):
+        $(join([
+            (!isnothing(alphabet) ? ["alphabet"] : [])...,
+            (!isnothing(operators) ? ["operators"] : [])...,
+            (!isnothing(grammar) ? ["grammar"] : [])...,
+            ], ", "))."
+
+    grammar = begin
+        if isnothing(grammar)
+            if isnothing(alphabet) && isnothing(operators)
+                base_grammar
+            else
+                alphabet = isnothing(alphabet) ? base_alphabet : alphabet
+                operators = begin
+                    if isnothing(operators)
+                        default_operators
+                    else
+                        if length(setdiff(operators, default_operators)) > 0
+                            @warn "Instantiating $(logictypename) with operators not in" *
+                                " $(default_operators): " *
+                                join(", ", setdiff(operators, default_operators)) * "."
+                        end
+                        operators
+                    end
+                end
+                if alphabet isa Vector
+                    alphabet = ExplicitAlphabet(map(Proposition, alphabet))
+                end
+                CompleteFlatGrammar(alphabet, operators)
+            end
+        else
+            @assert isnothing(alphabet) && isnothing(operators)
+            grammar
+        end
+    end
+
+    algebra = isnothing(algebra) ? base_algebra : algebra
+
+    return BaseLogic(grammar, algebra)
+end

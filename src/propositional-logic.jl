@@ -2,6 +2,9 @@ export propositional_logic
 
 export Interpretation, TruthDict, DefaultedTruthDict
 
+const base_propositional_operators = base_operators
+const BasePropositionalOperators = Union{typeof.(base_propositional_operators)...}
+
 """
     propositional_logic(;
         alphabet = AlphabetOfAny{String}(),
@@ -33,39 +36,20 @@ function propositional_logic(;
     grammar::Union{Nothing,AbstractGrammar} = nothing,
     algebra::Union{Nothing,AbstractAlgebra} = nothing,
 )
-    @assert isnothing(grammar) || (isnothing(alphabet) && isnothing(operators)) ||
-        "Cannot instantiate propositional logic by specifing a grammar together with parameter(s):
-        $(join([
-            (!isnothing(alphabet) ? ["alphabet"] : [])...,
-            (!isnothing(operators) ? ["operators"] : [])...,
-            (!isnothing(grammar) ? ["grammar"] : [])...,
-            ], ", "))."
-
-    grammar = begin
-        if isnothing(grammar)
-            if isnothing(alphabet) && isnothing(operators)
-                base_grammar
-            else
-                alphabet = isnothing(alphabet) ? base_alphabet : alphabet
-                operators = isnothing(operators) ? base_operators : operators
-                if alphabet isa Vector
-                    alphabet = ExplicitAlphabet(map(Proposition, alphabet))
-                end
-                CompleteFlatGrammar(alphabet, operators)
-            end
-        else
-            @assert isnothing(alphabet) && isnothing(operators)
-            grammar
-        end
-    end
-
-    algebra = isnothing(algebra) ? base_algebra : algebra
-
-    return BaseLogic(grammar, algebra)
+    _base_logic(
+        alphabet = alphabet,
+        operators = operators,
+        grammar = grammar,
+        algebra = algebra;
+        default_operators = base_propositional_operators,
+        logictypename = "propositional logic",
+    )
 end
 
-# A propositional logic based on the base operators
-const BasePropositionalLogic = AbstractLogic{G,A} where {ALP,G<:AbstractGrammar{ALP,<:BaseOperators},A<:AbstractAlgebra}
+# A propositional logic based on the base propositional operators
+const BasePropositionalLogic = AbstractLogic{G,A} where {ALP,G<:AbstractGrammar{ALP,<:BasePropositionalOperators},A<:AbstractAlgebra}
+
+############################################################################################
 
 """
     abstract type Interpretation{A,T<:TruthValue} <: AbstractLogicalModel{A,T} end

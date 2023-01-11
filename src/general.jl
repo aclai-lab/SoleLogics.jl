@@ -2,7 +2,7 @@ import Base: convert, promote_rule, _promote
 import Base: eltype, in, getindex, isiterable, iterate, IteratorSize, length
 
 export iscrisp, isfuzzy, isfinite,
-    isnullary, isunary, isbinary
+    isnullary, isunary, isbinary, iscommutative
 
 export Proposition,
     #
@@ -116,6 +116,9 @@ isunary(O::Type{<:AbstractOperator}) = arity(O) == 1
 isunary(o::AbstractOperator) = isunary(typeof(o))
 isbinary(O::Type{<:AbstractOperator}) = arity(O) == 2
 isbinary(o::AbstractOperator) = isbinary(typeof(o))
+
+iscommutative(::Type{AbstractOperator}) = false
+iscommutative(o::AbstractOperator) = iscommutative(typeof(o))
 """
 TODO: Observe that there can be, e.g., modal operators which are ternary as the ones in the CDT logic.
 Therefore, maybe we should also have a check_arity(::T, a::Integer) function, if there isnt one already.
@@ -722,7 +725,6 @@ See also [`TOP`](@ref), [`BOTTOM`](@ref), [`TruthValue`](@ref).
 abstract type AbstractTruthOperator <: AbstractOperator end
 arity(::Type{<:AbstractTruthOperator}) = 0
 
-
 doc_TOP = """
     struct TopOperator <: AbstractTruthOperator end
     const TOP = TopOperator()
@@ -739,6 +741,8 @@ const TOP = TopOperator()
 """$(doc_TOP)""" # TODO: perhaps useless
 const ⊤ = TOP
 
+Base.show(io::IO, op::TopOperator) = print(io, "⊤")
+
 doc_BOTTOM = """
     struct BottomOperator <: AbstractTruthOperator end
     const BOTTOM = BottomOperator()
@@ -754,6 +758,8 @@ struct BottomOperator <: AbstractTruthOperator end
 const BOTTOM = BottomOperator()
 """$(doc_BOTTOM)""" # TODO: as above
 const ⊥ = BOTTOM
+
+Base.show(io::IO, op::BottomOperator) = print(io, "⊥")
 
 """
     struct TruthOperator{T<:TruthValue} <: AbstractTruthOperator
