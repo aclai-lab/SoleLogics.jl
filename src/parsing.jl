@@ -57,7 +57,7 @@ function tokenizer(expression::String, operators::Vector{<:AbstractOperator})
 
     # Collection responsible for split `expression` in the correct points.
     splitter = ["(", ")", keys(string_to_op)...]
-    
+
     # NOTE: at the moment, this code only works with single-char long variables.
     # For example "my_long_name1 ∧ my_long_name2" is not parsed correctly;
     # this happens because the following split behaves like a split(expression, "").
@@ -101,7 +101,6 @@ function shunting_yard!(
             while !isempty(opstack) &&
                 (opstack[end] isa AbstractOperator &&
                 Base.operator_precedence(opstack[end]) > Base.operator_precedence(tok))
-
                 push!(postfix, pop!(opstack))
             end
             # Now push the current operator onto the opstack
@@ -146,7 +145,6 @@ function buildformulatree(postfix::Vector{AbstractSyntaxToken})
         throw(error("Malformed input"))
     end
 
-    println(length(stack))
     return stack[1]
 end
 
