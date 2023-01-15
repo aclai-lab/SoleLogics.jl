@@ -135,6 +135,11 @@ function buildformula(postfix::Vector{SyntaxToken})
         end
     end
 
+    if length(stack) != 1
+        throw(error("Malformed input"))
+    end
+
+    println(length(stack))
     return stack[1]
 end
 
