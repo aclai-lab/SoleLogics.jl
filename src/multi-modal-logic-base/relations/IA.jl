@@ -64,16 +64,16 @@ Base.show(io::IO, ::_IA_Di) = print(io, "D̅")
 Base.show(io::IO, ::_IA_Oi) = print(io, "O̅")
 
 # Properties
-is_transitive(r::_IA_L) = true
-is_transitive(r::_IA_Li) = true
-is_transitive(r::_IA_D) = true
-is_transitive(r::_IA_Di) = true
-is_transitive(r::_IA_B) = true
-is_transitive(r::_IA_Bi) = true
-is_transitive(r::_IA_E) = true
-is_transitive(r::_IA_Ei) = true
-is_topological(r::_IA_D) = true
-is_topological(r::_IA_Di) = true
+istransitive(r::_IA_L) = true
+istransitive(r::_IA_Li) = true
+istransitive(r::_IA_D) = true
+istransitive(r::_IA_Di) = true
+istransitive(r::_IA_B) = true
+istransitive(r::_IA_Bi) = true
+istransitive(r::_IA_E) = true
+istransitive(r::_IA_Ei) = true
+istopological(r::_IA_D) = true
+istopological(r::_IA_Di) = true
 
 ############################################################################################
 
@@ -87,9 +87,9 @@ struct _IA_DiorBiorEi <: IntervalRelation end; const IA_DiorBiorEi = _IA_DiorBio
 struct _IA_I          <: IntervalRelation end; const IA_I          = _IA_I();   # Intersecting (ABEDO ∪ ABEDO inverse)
 
 # Properties
-is_transitive(r::_IA_DorBorE) = true
-is_transitive(r::_IA_DiorBiorEi) = true
-is_topological(r::_IA_I) = true
+istransitive(r::_IA_DorBorE) = true
+istransitive(r::_IA_DiorBiorEi) = true
+istopological(r::_IA_I) = true
 
 IA72IARelations(::_IA_AorO)       = [IA_A,  IA_O]
 IA72IARelations(::_IA_AiorOi)     = [IA_Ai, IA_Oi]

@@ -1,7 +1,7 @@
 using DataStructures: OrderedDict
 using NamedArrays
 
-export ismodal
+export ismodal, modal_logic
 export DIAMOND, BOX, ◊, □
 
 ############################################################################################
@@ -59,7 +59,7 @@ Abstract type for representing
 It comprehends a directed graph structure (Kripke frame), where nodes are referred to as
 *worlds*, and the binary relation between them is referred to as the
 *accessibility relation*. Additionally, each world is associated with a mapping from
-`Proposition`'s of atom type `A` to truth values of type `T`.
+`Proposition`s of atom type `A` to truth values of type `T`.
 
 See also [`AbstractLogicalModel`](@ref).
 """
@@ -89,7 +89,7 @@ struct KripkeModel{W<:AbstractWorld,A,T<:TruthValue,K<:AbstractKripkeFrame{W,T},
     interpretations::D
 end
 
-function check(f::Formula, m::KripkeModel{A,T})::T where {A,T<:TruthValue} end
+function check(::Formula, ::KripkeModel{A,T})::T where {A,T<:TruthValue} end
 
 ############################################################################################
 ############################################################################################
@@ -102,7 +102,7 @@ doc_DIAMOND = """
     const DIAMOND = NamedOperator{:◊}()
     const ◊ = DIAMOND
     ismodal(::NamedOperator{:◊}) = true
-    arity(::NamedOperator{:◊}) = 1
+    arity(::Type{typeof(◊)}) = 1
 
 Logical diamond operator, typically interpreted as the modal existential quantifier.
 
@@ -117,13 +117,13 @@ $(doc_DIAMOND)
 """
 const ◊ = DIAMOND
 ismodal(::NamedOperator{:◊}) = true
-arity(::NamedOperator{:◊}) = 1
+arity(::Type{typeof(◊)}) = 1
 
 
 doc_BOX = """
     const BOX = NamedOperator{:□}()
     const □ = BOX
-    arity(::NamedOperator{:□}) = 1
+    arity(::Type{typeof(□)}) = 1
 
 Logical box operator, typically interpreted as the modal universal quantifier.
 
@@ -138,10 +138,59 @@ $(doc_BOX)
 """
 const □ = BOX
 ismodal(::NamedOperator{:□}) = true
-arity(::NamedOperator{:□}) = 1
+arity(::Type{typeof(□)}) = 1
 
-Base.operator_precedence(::typeof(DIAMOND)) = HIGH_PRIORITY
-Base.operator_precedence(::typeof(BOX)) = HIGH_PRIORITY
+############################################################################################
+
+const BASE_MODAL_OPERATORS = [BASE_PROPOSITIONAL_OPERATORS..., ◊, □]
+const BaseModalOperators = Union{typeof.(BASE_MODAL_OPERATORS)...}
+
+"""
+    modal_logic(;
+        alphabet = AlphabetOfAny{String}(),
+        operators = [⊤, ⊥, ¬, ∧, ∨, →, ◊, □],
+        grammar = CompleteFlatGrammar(AlphabetOfAny{String}(), [⊤, ⊥, ¬, ∧, ∨, →, ◊, □]),
+        algebra = BooleanAlgebra(),
+    )
+
+Instantiates a [modal logic](https://simple.m.wikipedia.org/wiki/Modal_logic)
+given a grammar and an algebra. Alternatively, an alphabet and a set of operators
+can be specified instead of the grammar.
+
+# Examples
+```julia-repl
+julia> modal_logic()
+julia> modal_logic(; operators = [¬, ∨])
+julia> modal_logic(; alphabet = ["p", "q"])
+julia> modal_logic(; alphabet = ExplicitAlphabet([Proposition("p"), Proposition("q")]))
+```
+
+See also [`AbstractAlphabet`](@ref), [`AbstractAlgebra`](@ref).
+"""
+function modal_logic(;
+    alphabet::Union{Nothing,Vector,AbstractAlphabet} = nothing,
+    operators::Union{Nothing,Vector{<:AbstractOperator}} = nothing,
+    grammar::Union{Nothing,AbstractGrammar} = nothing,
+    algebra::Union{Nothing,AbstractAlgebra} = nothing,
+)
+    if !isnothing(operators) && length(setdiff(operators, BASE_PROPOSITIONAL_OPERATORS)) == 0
+        @warn "Instantiating modal logic (via `modal_logic`) with solely" *
+            " propositional operators. Consider using propositional_logic instead."
+    end
+    _base_logic(
+        alphabet = alphabet,
+        operators = operators,
+        grammar = grammar,
+        algebra = algebra;
+        default_operators = BASE_MODAL_OPERATORS,
+        logictypename = "modal logic",
+    )
+end
+
+# A modal logic based on the base modal operators
+const BaseModalLogic = AbstractLogic{G,A} where {ALP,G<:AbstractGrammar{ALP,<:BaseModalOperators},A<:AbstractAlgebra}
+
+############################################################################################
 
 ############################################################################################
 ######################################## BASE ##############################################
@@ -156,6 +205,8 @@ end
 
 # Up above, this definition already exists as "AbstractKripkeFrame";
 # think about renaming all the occurrences in this.
+# TODO2: I did not understand this.. I assume, at this point, that is correct.
+# TODO We are working on this.
 """
     abstract type AbstractFrame{W<:AbstractWorld,T<:TruthValue} end
 
@@ -184,3 +235,6 @@ struct AdjacencyModalFrame{W<:AbstractWorld,T<:TruthValue} <: AbstractModalFrame
 end
 
 # function enum_accessibles(...)
+
+# TODO2: Should we not provide some constants for the "basic" modal logic? Similar to propositional logic?
+# TODO: I'm on it.

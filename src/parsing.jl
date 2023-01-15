@@ -1,4 +1,4 @@
-export parseformula
+export parseformula, parseformulatree
 
 export tokenizer
 
@@ -25,35 +25,40 @@ doc_priority = """
 """
 
 """$(doc_priority)"""
-HIGH_PRIORITY = Base.operator_precedence(:^)
+const HIGH_PRIORITY = Base.operator_precedence(:^)
 
 """$(doc_priority)"""
-BASE_PRIORITY = Base.operator_precedence(:*)
+const BASE_PRIORITY = Base.operator_precedence(:*)
 
 """$(doc_priority)"""
-LOW_PRIORITY  = Base.operator_precedence(:+)
+const LOW_PRIORITY  = Base.operator_precedence(:+)
 
-Base.operator_precedence(::AbstractOperator) = BASE_PRIORITY
-Base.operator_precedence(::typeof(NEGATION)) = HIGH_PRIORITY
+function Base.operator_precedence(op::AbstractOperator)
+    if isunary(op)
+        HIGH_PRIORITY
+    else
+        BASE_PRIORITY
+    end
+end
 
 # "a∧b → c∧d" is parsed "(a∧b) → (c∧d)" instead of "a ∧ (b→c) ∧ d"
 Base.operator_precedence(::typeof(IMPLICATION)) = LOW_PRIORITY
 
-# TODO: could place DIAMOND and BOX precedences here from modal-logic.jl
+const BASE_PARSABLE_OPERATORS = [BASE_MODAL_OPERATORS...]
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Input and construction ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # A simple lexer capable of distinguish operators in a string,
-# return a Vector{SoleLogics.SyntaxTree}.
-function tokenizer(expression::String, operators::Vector{<:NamedOperator})
+# returning a Vector{SoleLogics.SyntaxTree}.
+function tokenizer(expression::String, operators::Vector{<:AbstractOperator})
     # Symbolic represention of given OPERATORS
     expression = filter(x -> !isspace(x), expression)
-    symops = Symbol.(operators)
+    string_to_op = Dict([string(op) => op for op in operators])
 
     # Collection responsible for split `expression` in the correct points.
-    splitter = vcat(["(", ")"], String.(symops))
-
-    # NOTE: at the moment this code only works with single-char long variables.
+    splitter = ["(", ")", keys(string_to_op)...]
+    
+    # NOTE: at the moment, this code only works with single-char long variables.
     # For example "my_long_name1 ∧ my_long_name2" is not parsed correctly;
     # this happens because the following split behaves like a split(expression, "").
     # A macro should be created to dynamically generate a look_for("", before="some_string")
@@ -72,9 +77,11 @@ function tokenizer(expression::String, operators::Vector{<:NamedOperator})
         )
     )
 
-    return SoleLogics.SyntaxToken[Symbol(st) in symops ?
-        NamedOperator{Symbol(st)}() :
-        Proposition(st)
+    # Trick: wrap chars like '(' and 'p' into Proposition{String}'s. shunting_yard will
+    #  take care of this.
+    return SoleLogics.AbstractSyntaxToken[string(st) in keys(string_to_op) ?
+        string_to_op[string(st)] :
+        Proposition{String}(string(st))
         for st in expression
     ]
 end
@@ -82,17 +89,17 @@ end
 # Rearrange a serie of token, from infix to postfix notation.
 # Tokens are consumed from `tokens` in order to fill `postfix` and `opstack`.
 function shunting_yard!(
-    tokens::Vector{SoleLogics.SyntaxToken},
-    opstack::Vector{SoleLogics.SyntaxToken},
-    postfix::Vector{SoleLogics.SyntaxToken}
+    tokens::Vector{SoleLogics.AbstractSyntaxToken},
+    opstack::Vector{SoleLogics.AbstractSyntaxToken},
+    postfix::Vector{SoleLogics.AbstractSyntaxToken}
 )
     for tok in tokens
 
         # tok is an operator, something must be done until another operator
         # is placed at the top of the stack.
-        if tok isa NamedOperator
+        if tok isa AbstractOperator
             while !isempty(opstack) &&
-                (opstack[end] isa NamedOperator &&
+                (opstack[end] isa AbstractOperator &&
                 Base.operator_precedence(opstack[end]) > Base.operator_precedence(tok))
 
                 push!(postfix, pop!(opstack))
@@ -101,14 +108,14 @@ function shunting_yard!(
             push!(opstack, tok)
 
         # Start a new "context" in the expression
-        elseif atom(tok) === '('
+        elseif atom(tok) === "("
             push!(opstack, tok)
 
         # opstack shrinkens and postfix vector is filled
-        elseif atom(tok) === ')'
+        elseif atom(tok) === ")"
             while !isempty(opstack)
                 op = pop!(opstack)
-                if op isa NamedOperator || atom(op) != '('
+                if op isa AbstractOperator || atom(op) != "("
                     push!(postfix, op)
                 end
             end
@@ -120,16 +127,16 @@ function shunting_yard!(
     end
 end
 
-# Build a formula starting from a Vector{SyntaxToken} representing its postfix notation
-function buildformula(postfix::Vector{SyntaxToken})
+# Build a formula starting from a Vector{AbstractSyntaxToken} representing its postfix notation
+function buildformulatree(postfix::Vector{AbstractSyntaxToken})
     stack = SyntaxTree[]
 
-    # Each tok might be a Proposition or a NamedOperator
+    # Each tok might be a Proposition or a AbstractOperator
     for tok in postfix
         # Stack collapses, composing a new part of the syntax tree
-        if tok isa NamedOperator
+        if tok isa AbstractOperator
             children = [pop!(stack) for _ in 1:arity(tok)]
-            push!(stack, SyntaxTree(tok, Tuple(children)))
+            push!(stack, SyntaxTree(tok, Tuple(reverse(children))))
         else
             push!(stack, SyntaxTree(tok))
         end
@@ -144,26 +151,31 @@ function buildformula(postfix::Vector{SyntaxToken})
 end
 
 """
-    parseformula(expression::String, operators::Vector{<:NamedOperator})
+    parseformulatree(expression::String, operators::Vector{<:AbstractOperator})
 
-Return a `SyntaxTree` starting from `expression`.
-Each proposition in `expression` must be represented with a single character.
+Returns a `SyntaxTree` which is the result from parsing `expression`.
+At the moment, the propositional letters in `expression` must be represented with
+ a single character (e.g., "p", "q", etc...).
 
 # Examples
 ```julia-repl
-julia> parseformula("¬p∧q∧(¬s∧¬z)", [NEGATION, CONJUNCTION])
+julia> parseformulatree("¬p∧q∧(¬s∧¬z)")
 ∧(∧(∧(¬(z), ¬(s)), q), ¬(p))
 ```
 
 See also [`SyntaxTree`](@ref)
 """
-function parseformula(expression::String, operators::Vector{<:NamedOperator})
-    tokens = tokenizer(expression, operators) # Still a Vector{SoleLogics.SyntaxToken}
+function parseformulatree(
+    expression::String,
+    operators::Vector{<:AbstractOperator} = AbstractOperator[],
+)
+    operators = unique(AbstractOperator[BASE_PARSABLE_OPERATORS..., operators...])
+    tokens = tokenizer(expression, operators) # Still a Vector{SoleLogics.AbstractSyntaxToken}
 
     # Stack containing operators. Needed to transform the expression in postfix notation;
-    # opstack may contain Proposition("("), Proposition(")") and NamedOperators
-    opstack = Vector{SoleLogics.SyntaxToken}([])
-    postfix = Vector{SoleLogics.SyntaxToken}([])
+    # opstack may contain Proposition("("), Proposition(")") and operators
+    opstack = Vector{SoleLogics.AbstractSyntaxToken}([])
+    postfix = Vector{SoleLogics.AbstractSyntaxToken}([])
 
     shunting_yard!(tokens, opstack, postfix)
 
@@ -172,11 +184,45 @@ function parseformula(expression::String, operators::Vector{<:NamedOperator})
         op = pop!(opstack)
 
         # Starting expression is not well formatted, or a "(" is found
-        if !(op isa NamedOperator)
+        if !(op isa AbstractOperator)
             throw(error("Mismatching brackets"))
         end
         push!(postfix, op)
     end
 
-    return buildformula(postfix)
+    return buildformulatree(postfix)
+end
+
+function parseformula(
+    expression::String;
+    # TODO add alphabet parameter add custom parser for propositions
+    # alphabet::Union{Nothing,Vector,AbstractAlphabet} = nothing,
+    operators::Union{Nothing,Vector{<:AbstractOperator}} = nothing,
+    grammar::Union{Nothing,AbstractGrammar} = nothing,
+    algebra::Union{Nothing,AbstractAlgebra} = nothing,
+)
+    operators = (isnothing(operators) ? AbstractOperator[] : operators)
+    t = parseformulatree(expression, operators)
+    base_formula(t;
+        operators = unique(AbstractOperator[operators..., SoleLogics.operators(t)...]),
+        # alphabet = alphabet,
+        alphabet = AlphabetOfAny{String}(),
+        grammar = grammar,
+        algebra = algebra,
+    )
+end
+
+function parseformula(
+    expression::String,
+    logic::AbstractLogic,
+)
+    Formula(parseformulatree(expression, operatorstype(logic)), logic)
+end
+
+function parseformula(
+    expression::String,
+    operators::Union{Nothing,Vector{<:AbstractOperator}};
+    args...,
+)
+    parseformula(expression; operators = operators, args...)
 end

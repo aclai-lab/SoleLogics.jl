@@ -11,10 +11,10 @@ goeswith(::Type{W}, ::AbstractRelation) where {W<:AbstractWorld} = false
 
 # Relations can be symmetric, reflexive and/or transitive.
 # By default, none of this cases holds:
-is_symmetric(::AbstractRelation) = false
-is_reflexive(::AbstractRelation) = false
-is_transitive(::AbstractRelation) = false
-is_inverse(::AbstractRelation, ::AbstractRelation) = false
+issymmetric(::AbstractRelation) = false
+isreflexive(::AbstractRelation) = false
+istransitive(::AbstractRelation) = false
+isinverse(::AbstractRelation, ::AbstractRelation) = false
 
 ############################################################################################
 # Singletons representing natural relations
@@ -26,10 +26,10 @@ const RelationId   = _RelationId();
 
 Base.show(io::IO, ::_RelationId) = print(io, "=")
 
-is_symmetric(::_RelationId) = true
-is_reflexive(::_RelationId) = true
-is_transitive(::_RelationId) = true
-is_inverse(::_RelationId, ::_RelationId) = true
+issymmetric(::_RelationId) = true
+isreflexive(::_RelationId) = true
+istransitive(::_RelationId) = true
+isinverse(::_RelationId, ::_RelationId) = true
 
 ############################################################################################
 
@@ -38,10 +38,10 @@ struct _RelationGlob <: AbstractRelation end; const RelationGlob  = _RelationGlo
 
 Base.show(io::IO, ::_RelationGlob) = print(io, "G")
 
-is_symmetric(::_RelationGlob) = true
-is_reflexive(::_RelationGlob) = true
-is_transitive(::_RelationGlob) = true
-# TODO: add is_inverse here. Should be all worlds -> any (single) world
+issymmetric(::_RelationGlob) = true
+isreflexive(::_RelationGlob) = true
+istransitive(::_RelationGlob) = true
+isinverse(::_RelationGlob, ::_RelationGlob) = true
 
 ############################################################################################
 
