@@ -52,14 +52,14 @@ const Memo{T} = Dict{UInt64,MemoValueType{T}}
 # const MemoValue{T} = Worlds{T}            <- a possible working alternative
 # const Memo{T} = Dict{Integer, Worlds{T}}  <-
 
-struct KripkeModel{T<:AbstractWorld}
+struct KripkeStructure{T<:AbstractWorld}
     worlds::Worlds{T}                    # worlds in the model
     adjacents::Adjacents{T}              # neighbors of a given world
     evaluations::Dict{T,LetterAlphabet} # list of prop. letters satisfied by a world
     logic::AbstractLogic                 # logic associated with this model
     L::Memo{T}                           # memoization collection associated with this model
 
-    function KripkeModel{T}() where {T<:AbstractWorld}
+    function KripkeStructure{T}() where {T<:AbstractWorld}
         worlds = Worlds{T}([])
         adjacents = Dict{T,Worlds{T}}([])
         evaluations = Dict{T,Vector{String}}()
@@ -68,7 +68,7 @@ struct KripkeModel{T<:AbstractWorld}
         return new{T}(worlds, adjacents, evaluations, L, logic)
     end
 
-    function KripkeModel{T}(
+    function KripkeStructure{T}(
         worlds::Worlds{T},
         adjacents::Adjacents{T},
         evaluations::Dict{T,Vector{String}},
@@ -78,48 +78,48 @@ struct KripkeModel{T<:AbstractWorld}
         return new{T}(worlds, adjacents, evaluations, logic, L)
     end
 end
-worlds(km::KripkeModel) = km.worlds
-worlds!(km::KripkeModel, ws::Worlds{T}) where {T<:AbstractWorld} = worlds(km) = ws
+worlds(km::KripkeStructure) = km.worlds
+worlds!(km::KripkeStructure, ws::Worlds{T}) where {T<:AbstractWorld} = worlds(km) = ws
 
-adjacents(km::KripkeModel) = km.adjacents
-adjacents(km::KripkeModel, w::AbstractWorld) = km.adjacents[w]
-adjacents!(km::KripkeModel, adjs::Adjacents{T}) where {T<:AbstractWorld} =
+adjacents(km::KripkeStructure) = km.adjacents
+adjacents(km::KripkeStructure, w::AbstractWorld) = km.adjacents[w]
+adjacents!(km::KripkeStructure, adjs::Adjacents{T}) where {T<:AbstractWorld} =
     adjacents(km) = adjs
 
-evaluations(km::KripkeModel) = km.evaluations
-evaluations(km::KripkeModel, w::AbstractWorld) = km.evaluations[w]
-evaluations!(km::KripkeModel, evals::Dict{T,LetterAlphabet}) where {T<:AbstractWorld} =
+evaluations(km::KripkeStructure) = km.evaluations
+evaluations(km::KripkeStructure, w::AbstractWorld) = km.evaluations[w]
+evaluations!(km::KripkeStructure, evals::Dict{T,LetterAlphabet}) where {T<:AbstractWorld} =
     evaluations(km) = evals
 
-logic(km::KripkeModel) = km.logic
+logic(km::KripkeStructure) = km.logic
 
-Base.eltype(::Type{KripkeModel{T}}) where {T} = T
+Base.eltype(::Type{KripkeStructure{T}}) where {T} = T
 
 ########################
 #     Memo structure   #
 #       utilities      #
 ########################
-memo(km::KripkeModel) = km.L
-memo(km::KripkeModel, key) = begin
+memo(km::KripkeStructure) = km.L
+memo(km::KripkeStructure, key) = begin
     if haskey(memo(km), key)
         memo(km)[key]
     else
         MemoValueType{eltype(km)}([])
     end
 end
-memo(km::KripkeModel, key::Formula) = memo(km, fhash(key.tree))
+memo(km::KripkeStructure, key::Formula) = memo(km, fhash(key.tree))
 
 # This setter is dangerous as it doesn't check if key exists in the memo structure
-# memo!(km::KripkeModel, key::Integer, val::MemoValueType) = km.L[key] = val # memo(km, key) = val
+# memo!(km::KripkeStructure, key::Integer, val::MemoValueType) = km.L[key] = val # memo(km, key) = val
 
 # Check if memoization structure does contain a certain value, considering a certain key
-contains(km::KripkeModel, key, value::AbstractWorld) = begin
+contains(km::KripkeStructure, key, value::AbstractWorld) = begin
     (!haskey(memo(km), key) || !(value in memo(km, key))) ? false : true
 end
 
 # If I try to insert in a non-allocated memory place,
 # i first reserve space to this new key.
-Base.push!(km::KripkeModel, key, val::AbstractWorld) = begin
+Base.push!(km::KripkeStructure, key, val::AbstractWorld) = begin
     if !haskey(memo(km), key)
         setindex!(memo(km), MemoValueType{eltype(km)}([]), key)
     end
@@ -129,7 +129,7 @@ end
 #################################
 #         Model Checking        #
 #################################
-function _check_alphabet(km::KripkeModel, ψ::FNode)
+function _check_alphabet(km::KripkeStructure, ψ::FNode)
     # As well as _check_unary and _check_binary, this could be done
     # @assert token(ψ) in SoleLogics.alphabet(logic(km)) "$(token(ψ)) is an invalid letter"
     key = fhash(ψ)
@@ -148,7 +148,7 @@ function _check_alphabet(km::KripkeModel, ψ::FNode)
     end
 end
 
-function _check_unary(km::KripkeModel, ψ::FNode)
+function _check_unary(km::KripkeStructure, ψ::FNode)
     @assert token(ψ) in SoleLogics.operators(logic(km)) "Error - $(token(ψ)) is an invalid token"
     key = fhash(ψ)
 
@@ -177,7 +177,7 @@ function _check_unary(km::KripkeModel, ψ::FNode)
     end
 end
 
-function _check_binary(km::KripkeModel, ψ::FNode)
+function _check_binary(km::KripkeStructure, ψ::FNode)
     @assert token(ψ) in SoleLogics.operators(logic(km)) "Error - $(token(ψ)) is an invalid token"
     key = fhash(ψ)
 
@@ -202,7 +202,7 @@ function _check_binary(km::KripkeModel, ψ::FNode)
     end
 end
 
-function _process_node(km::KripkeModel, ψ::FNode)
+function _process_node(km::KripkeStructure, ψ::FNode)
     if is_proposition(token(ψ))
         _check_alphabet(km, ψ)
     elseif is_unary_operator(token(ψ))
@@ -213,7 +213,7 @@ function _process_node(km::KripkeModel, ψ::FNode)
 end
 
 function check(
-    km::KripkeModel{T},
+    km::KripkeStructure{T},
     fx::SoleLogics.Formula{L};
     max_fheight_memo = Inf
 ) where {T<:AbstractWorld, L<:AbstractLogic}
@@ -247,7 +247,7 @@ function check(
 end
 
 function check(
-    𝑀::Vector{KripkeModel{T}},
+    𝑀::Vector{KripkeStructure{T}},
     Φ::Vector{SoleLogics.Formula{L}};
     max_fheight_memo = Inf,
 ) where {T<:AbstractWorld, L<:AbstractLogic}
@@ -262,7 +262,7 @@ end
 # a certain formula φᵢ is satisfied on 𝑚's initial world
 # considering a certain max-memoization threshold.
 function check(
-    𝑀::Vector{KripkeModel{T}},
+    𝑀::Vector{KripkeStructure{T}},
     Φ::Vector{SoleLogics.Formula{L}},
     iw::T;
     max_fheight_memo = Inf,

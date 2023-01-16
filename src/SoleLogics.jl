@@ -14,7 +14,7 @@ include("general.jl")
 include("base-logic.jl")
 include("propositional-logic.jl")
 include("modal-logic.jl")
-include("multimodal-logic.jl")
+# include("multimodal-logic.jl")
 
 # TODO: to see with Giovanni
 include("UsefulOldIdeas/Worlds/worlds.jl")

@@ -138,7 +138,7 @@ end
 # Generate and return a kripke model.
 # This utility uses `fanfan` and `dispense_alphabet` default methods
 # to define `adjacents` and `evaluations` but one could create its model
-# piece by piece and then calling KripkeModel constructor.
+# piece by piece and then calling KripkeStructure constructor.
 function gen_kmodel(
     n::Integer,
     in_degree::Integer,   # needed by fanfan
@@ -151,7 +151,7 @@ function gen_kmodel(
     ws = Worlds{PointWorld}(world_gen(n))
     adjs = fanfan(n, in_degree, out_degree, threshold = threshold, rng = rng)
     evs = dispense_alphabet(ws, P = P, rng = rng)
-    return KripkeModel{PointWorld}(ws, adjs, evs)
+    return KripkeStructure{PointWorld}(ws, adjs, evs)
 end
 
 # Generate and return a kripke model.
@@ -176,5 +176,5 @@ function gen_kmodel(n::Integer, P::LetterAlphabet, method::Symbol, kwargs...)
     ws = Worlds{PointWorld}(world_gen(n))
     adjs = fx(n, kwargs...)
     evs = dispense_alphabet(ws, P = P)
-    return KripkeModel{PointWorld}(ws, adjs, evs)
+    return KripkeStructure{PointWorld}(ws, adjs, evs)
 end

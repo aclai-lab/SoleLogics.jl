@@ -75,9 +75,9 @@ arity(t::SyntaxToken)::Integer = arity(typeof(t))
     end
 
 A `Proposition{A}` (also called a propositional letter, or simply *letter*) wraps a value
-`atom::A` representing a fact which truth can be assessed on a logical model.
+`atom::A` representing a fact which truth can be assessed on a logical interpretation.
 
-See also [`SyntaxToken`](@ref), [`AbstractLogicalModel`](@ref), [`check`](@ref).
+See also [`SyntaxToken`](@ref), [`AbstractInterpretation`](@ref), [`check`](@ref).
 """
 struct Proposition{A} <: SyntaxToken
     atom::A
@@ -771,13 +771,13 @@ end
 """
     abstract type AbstractAlgebra{T<:TruthValue} end
 
-Abstract type for representing algebras. Algebras are used for grounding the truth of
-propositions and the semantics of operators. They typically encode a
-[https://en.m.wikipedia.org/wiki/Lattice_(order)](lattice structure) where two elements
-(or nodes) *⊤* and *⊥* are referred to as *top* (or maximum) and *bottom* (or minimum).
-Each node in the lattice represents a truth value that a proposition or a formula can have
-on a model, and the semantics of operators is given in terms of operations between truth
-values.
+Abstract type for representing algebras. Algebras are used for grounding the
+truth of propositions and the semantics of operators. They typically encode a
+[https://en.m.wikipedia.org/wiki/Lattice_(order)](lattice structure) where two
+elements(or nodes) *⊤* and *⊥* are referred to as *top* (or maximum)
+and *bottom* (or minimum). Each node in the lattice represents a truth value
+that a proposition or a formula can have on an interpretation, and the
+semantics of operators is given in terms of operations between truth values.
 
 See also [`BooleanAlgebra`](@ref), [`AbstractOperator`](@ref), [`collate_truth`](@ref).
 """
@@ -927,7 +927,7 @@ iscrisp(l::AbstractLogic) = iscrisp(algebra(l))
     abstract type AbstractFormula{L<:AbstractLogic} end
 
 A formula encodes a statement, anchored to a certain logic,
-which truth can be evaluated on models of the logic.
+which truth can be evaluated on interpretations (or models) of the logic.
 
 It is canonically encoded via a syntax tree (see [`Formula`](@ref))
 
@@ -1066,7 +1066,7 @@ end
 In the most general case, a formula encodes a syntax tree that is anchored to
 a certain logic; that is: a) the tree encodes a formula belonging to the grammar
 of the logic; b) the truth of the formula can be evaluated
-on models of the logic. Note that, here, the logic is represented by a reference.
+on interpretations of the logic. Note that, here, the logic is represented by a reference.
 
 Upon construction, the logic can be passed either directly, or via a RefValue.
 Additionally, the following keyword arguments may be specified:
@@ -1144,44 +1144,41 @@ function (op::AbstractOperator)(children::NTuple{N,Formula}, args...) where {N}
 end
 
 """
-    abstract type AbstractLogicalModel{A, T<:TruthValue} end
+    abstract type AbstractInterpretation{A, T<:TruthValue} end
 
-Abstract type for representing a logical model that associates truth values of a type `T`
-to propositional letters of atom type `A`.
-Classically, a model is referred to as
+Abstract type for representing a propositional
 [interpretation](https://en.m.wikipedia.org/wiki/Interpretation_(logic))
-in the case of
+(or propositional model)
+that associates truth values of a type `T` to propositional letters of atom type `A`.
+In the case of
 [propositional logic](https://simple.m.wikipedia.org/wiki/Propositional_logic),
-and can be thought as a map *proposition → truth value*;
-more complex structures are used as logical models for the case
-of modal and first-order logics (e.g.,
-[Kripke models](https://en.m.wikipedia.org/wiki/Kripke_structure_(model_checking))'s)
+is essentially a map *proposition → truth value*.
 
-Properties, expressed via logical formulas, can be `check`ed on logical models.
+Properties expressed via logical formulas can be `check`ed on logical interpretations.
 
-See also [`check`](@ref), [`Interpretation`](@ref), [`KripkeStructure`](@ref).
+See also [`check`](@ref), [`PropositionalInterpretation`](@ref), [`KripkeStructure`](@ref).
 """
-abstract type AbstractLogicalModel{A,T<:TruthValue} end
+abstract type AbstractInterpretation{A,T<:TruthValue} end
 
-atomtype(::AbstractLogicalModel{A,T}) where {A,T} = A
-truthtype(::AbstractLogicalModel{A,T}) where {A,T} = T
+atomtype(::AbstractInterpretation{A,T}) where {A,T} = A
+truthtype(::AbstractInterpretation{A,T}) where {A,T} = T
 
 # TODO: docstring out of bounds. What do we do?
 """
-    check(f::AbstractFormula, m::AbstractLogicalModel{A, T}, args...)::T where {A, T<:TruthValue}
+    check(f::AbstractFormula, m::AbstractInterpretation{A, T}, args...)::T where {A, T<:TruthValue}
 
-Each logical model must provide a method `check` for checking formulas on it.
+Each logical interpretation must provide a method `check` for checking formulas on it.
 
-A formula can be checked on a logical model; this process is referred to as
+A formula can be checked on a logical interpretation (or model); this process is referred to as
 [model checking](https://en.m.wikipedia.org/wiki/Model_checking), and there are many
 algorithms for it, typically depending on the complexity of the logic.
 
-See also [`AbstractFormula`](@ref), [`AbstractLogicalModel`](@ref).
+See also [`AbstractFormula`](@ref), [`AbstractInterpretation`](@ref).
 
 """
 function check(
     f::AbstractFormula,
-    m::AbstractLogicalModel{A,T},
+    m::AbstractInterpretation{A,T},
     args...,
 )::T where {A,T<:TruthValue}
     return error("Please, provide method" *
@@ -1247,7 +1244,7 @@ function default_algebra(::Type{T})::AbstractAlgebra{<:T} where {T<:TruthValue}
         " default_algebra(::Type{$(T)})::AbstractAlgebra{<:$(T)}.")
 end
 
-# Helper: use default algebra when model checking a syntax tree.
-function check(tree::SyntaxTree, m::AbstractLogicalModel, args...)
+# Helper: use default algebra when checking a syntax tree.
+function check(tree::SyntaxTree, m::AbstractInterpretation, args...)
     return check(default_algebra(truthtype(m)), tree, m, args...)
 end

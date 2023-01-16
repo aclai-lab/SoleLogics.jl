@@ -4,7 +4,7 @@ using NamedArrays
 export ismodal
 export DIAMOND, BOX, ◊, □
 
-export KripkeModel
+export KripkeStructure
 export AbstractRelationalOperator, DiamondRelationalOperator, BoxRelationalOperator
 export relationtype
 
@@ -12,10 +12,10 @@ export relationtype
 """
     abstract type AbstractWorld end
 
-Abstract type for the nodes of an annotated accessibility graph (Kripke structure/model).
+Abstract type for the nodes of an annotated accessibility graph (Kripke structure).
 In modal logic, the truth of formulas is relativized to *worlds*, that is, nodes of a graph.
 
-See also [`AbstractKripkeModel`](@ref), [`AbstractFrame`](@ref).
+See also [`AbstractKripkeStructure`](@ref), [`AbstractFrame`](@ref).
 """
 abstract type AbstractWorld end
 
@@ -23,9 +23,9 @@ abstract type AbstractWorld end
     abstract type AbstractFrame{W<:AbstractWorld,T<:TruthValue} end
 
 Abstract type for an accessibility graph (Kripke frame), that gives the structure to
-    [Kripke models](https://en.m.wikipedia.org/wiki/Kripke_structure_(model_checking))'s).
+    [Kripke structures](https://en.m.wikipedia.org/wiki/Kripke_structure_(model_checking))'s).
 
-See also [`AbstractKripkeModel`](@ref), [`AbstractWorld`](@ref).
+See also [`AbstractKripkeStructure`](@ref), [`AbstractWorld`](@ref).
 """
 abstract type AbstractFrame{W<:AbstractWorld,T<:TruthValue} end
 
@@ -117,8 +117,8 @@ abstract type AbstractMultiModalFrame{
     W<:AbstractWorld,
     T<:TruthValue,
     NR,
-    Rs<:NTuple{NR,<:AbstractRelation}
-} <: AbstractFrame{W<:AbstractWorld,T<:TruthValue} end
+    Rs<:NTuple{NR,R where R<:AbstractRelation},
+} <: AbstractFrame{W,T} end
 
 """
 TODO
@@ -156,12 +156,12 @@ abstract type AbstractAssignment{W<:AbstractWorld,A,T<:TruthValue} end
 """
 TODO
 """
-function check(::AbstractAssignment{W,A,T}, ::W, ::Proposition{A})::T # TODO?: ::Formula
+function check(::AbstractAssignment{W,A,T}, ::W, ::Proposition{A})::T where {W<:AbstractWorld,A,T<:TruthValue} # TODO?: ::Formula
     error("Please, provide ...")
 end
 
 # struct GenericAssignment{W<:AbstractWorld,A,T<:TruthValue} <: AbstractAssignment{W,A,T}
-#     dict::Dict{W,Interpretation{A,T}}
+#     dict::Dict{W,PropositionalInterpretation{A,T}}
 # end
 
 ############################################################################################
@@ -170,65 +170,68 @@ end
 
 
 """
-    abstract type KripkeModel{A,T<:TruthValue} <: AbstractLogicalModel{A,T} end
+    abstract type KripkeStructure{A,T<:TruthValue} <: AbstractInterpretation{A,T} end
 
 Abstract type for representing
-[Kripke models](https://en.m.wikipedia.org/wiki/Kripke_structure_(model_checking))'s).
+[Kripke structures](https://en.m.wikipedia.org/wiki/Kripke_structure_(model_checking))'s).
 It comprehends a directed graph structure (Kripke frame), where nodes are referred to as
 *worlds*, and the binary relation between them is referred to as the
 *accessibility relation*. Additionally, each world is associated with a mapping from
 `Proposition`'s of atom type `A` to truth values of type `T`.
 
-See also [`AbstractLogicalModel`](@ref).
+See also [`AbstractInterpretation`](@ref).
 """
-abstract type AbstractKripkeModel{
+abstract type AbstractKripkeStructure{
     W<:AbstractWorld,
     A,
     T<:TruthValue,
     KF<:AbstractFrame{W,T},
-} <: AbstractLogicalModel{A,T} end
+} <: AbstractInterpretation{A,T} end
 
-function check(::AbstractKripkeModel{W,A,T,KF}, ::W, ::Proposition{A})::T
+function check(::AbstractKripkeStructure{W,A,T,KF}, ::W, ::Proposition{A})::T where {W<:AbstractWorld,A,T<:TruthValue,KF<:AbstractFrame{W,T}}
     error("Please, provide ...")
 end
 
-function check(::AbstractKripkeModel{W,A,T,KF}, ::W, ::Formula{A})::T
+function check(::AbstractKripkeStructure{W,A,T,KF}, ::W, ::Formula{A})::T where {W<:AbstractWorld,A,T<:TruthValue,KF<:AbstractFrame{W,T}}
     error("Please, provide ...")
 end
 
-function frame(m::AbstractKripkeModel{...,KF})::KF
+function frame(m::AbstractKripkeStructure{W,A,T,KF})::KF where {W<:AbstractWorld,A,T<:TruthValue,KF<:AbstractFrame{W,T}}
     return error("Please, provide method frame(m::$(typeof(m))).")
 end
 
-nworlds(m::AbstractKripkeModel) = nworlds(frame(m))
-initialworld(m::AbstractKripkeModel) = initialworld(frame(m))
-accessibles(m::AbstractKripkeModel, args...) = accessibles(frame(m), args...)
+nworlds(m::AbstractKripkeStructure) = nworlds(frame(m))
+initialworld(m::AbstractKripkeStructure) = initialworld(frame(m))
+accessibles(m::AbstractKripkeStructure, args...) = accessibles(frame(m), args...)
 
 """
-    struct KripkeModel{W<:AbstractWorld,A,T<:TruthValue,K<:AbstractFrame{W,T},D<:AbstractDict{W,V<:Interpretation{A,T}}} <: AbstractKripkeModel{W,A,T}
+    struct KripkeStructure{W<:AbstractWorld,A,T<:TruthValue,K<:AbstractFrame{W,T},D<:AbstractDict{W,V<:PropositionalInterpretation{A,T}}} <: AbstractKripkeStructure{W,A,T}
         frame::K
         interpretations::D
     end
 
 Structure for representing
-[Kripke models](https://en.m.wikipedia.org/wiki/Kripke_structure_(model_checking))'s).
+[Kripke structures](https://en.m.wikipedia.org/wiki/Kripke_structure_(model_checking))'s).
 explicitly; it wraps a `frame`, and an abstract dictionary that assigns an interpretation to
 each world.
 """
-struct KripkeModel{W<:AbstractWorld,A,T<:TruthValue,KF<:AbstractFrame{W,T}, AS<:AbstractAssignment{W,A,T}} <: AbstractKripkeModel{W,A,T,KF}
+struct KripkeStructure{W<:AbstractWorld,A,T<:TruthValue,KF<:AbstractFrame{W,T}, AS<:AbstractAssignment{W,A,T}} <: AbstractKripkeStructure{W,A,T,KF}
     frame::KF
     assignment::AS
 end
 
-function check(m::KripkeModel{W,A,T}, w::W, f::Formula)::T where {W<:AbstractWorld,A,T<:TruthValue}
+function check(m::KripkeStructure{W,A,T}, w::W, f::Formula)::T where {W<:AbstractWorld,A,T<:TruthValue} end
 
-function check(m::KripkeModel{W,A,T}, f::Formula)::T where {W<:AbstractWorld,A,T<:TruthValue}
+function check(m::KripkeStructure{W,A,T}, f::Formula)::T where {W<:AbstractWorld,A,T<:TruthValue}
     check(m, initial(m), f)
 end
-check(m::AbstractKripkeModel{W,A}, w::W, p::Proposition{A}) = check(m.assignment, w, p)
+
+function check(m::KripkeStructure{W,A}, w::W, p::Proposition{A}) where {W<:AbstractWorld,A}
+    check(m.assignment, w, p)
+end
 
 # TODO maybe this yields the worlds where a certain formula is true...?
-# function check(m::KripkeModel{W,A,T}, f::Formula)::AbstractVector{W} where {W<:AbstractWorld,A,T<:TruthValue}
+# function check(m::KripkeStructure{W,A,T}, f::Formula)::AbstractVector{W} where {W<:AbstractWorld,A,T<:TruthValue}
 
 ############################################################################################
 ############################################################################################

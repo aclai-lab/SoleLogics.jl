@@ -38,7 +38,7 @@ SoleLogics.IMPLICATION(universe::Worlds{T}, a::Set{T}, b::Set{T}) where {T<:Abst
 # use traits here (is_abstract_modop, is_existential_modop)
 function dispatch_modop(
     token::T,
-    km::KripkeModel{WT},
+    km::KripkeStructure{WT},
     w::WT,
     φ::UInt64,
 ) where {T<:AbstractModalOperator,WT<:AbstractWorld}

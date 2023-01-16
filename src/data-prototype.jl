@@ -1,16 +1,16 @@
 
 
-abstract type AbstractLogicalModelSet{M<:AbstractKripkeModel} where {M}
+abstract type AbstractInterpretationSet{M<:AbstractKripkeStructure} where {M}
 
-function Base.getindex(::AbstractLogicalModelSet{M}, i_instance::Int)::M where {M<:AbstractKripkeModel}
+function Base.getindex(::AbstractInterpretationSet{M}, i_instance::Int)::M where {M<:AbstractKripkeStructure}
     error("Please, provide ...")
 end
 
-struct LogicalModelSet{M<:AbstractKripkeModel} <: AbstractLogicalModelSet{M}
-    models::Vector{M}
+struct InterpretationSet{M<:AbstractKripkeStructure} <: AbstractInterpretationSet{M}
+    instances::Vector{M}
 end
 
-Base.getindex(ms::LogicalModelSet, i_instance::Int) = Base.getindex(ms.models, i_instance)
+Base.getindex(ms::InterpretationSet, i_instance::Int) = Base.getindex(ms.instances, i_instance)
 
 abstract type AbstractFrameSet{KF<:AbstractFrame}
 
