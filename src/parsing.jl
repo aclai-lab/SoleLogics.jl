@@ -77,6 +77,27 @@ function tokenizer(expression::String, operators::Vector{<:AbstractOperator})
         )
     )
 
+    #= Dirty (but working) idea on how to properly manage "¬p◊" cases
+    tokens = SoleLogics.AbstractSyntaxToken[]
+    for st in expression
+        # token is an operator
+        if (string(st) in keys(string_to_op))
+            op = string_to_op[string(st)]
+            # a unary operator is always preceeded by some other operator or a '('
+            if (arity(op) == 1 &&
+                !isempty(tokens) &&
+                (string(tokens[end]) != "(" && !(tokens[end] isa AbstractOperator))
+            )
+                throw(error("Malformed input"))
+            end
+            push!(tokens, op)
+        # token is something else
+        else
+            push!(tokens, Proposition{String}(string(st)))
+        end
+    end
+    =#
+
     # Trick: wrap chars like '(' and 'p' into Proposition{String}'s. shunting_yard will
     #  take care of this.
     return SoleLogics.AbstractSyntaxToken[string(st) in keys(string_to_op) ?
