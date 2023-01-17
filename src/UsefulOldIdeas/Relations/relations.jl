@@ -3,6 +3,17 @@ abstract type AbstractRelation end
 
 ############################################################################################
 
+"""
+Each relation (type) must provide a method yielding its `arity`:
+
+    arity(::Type{<:AbstractRelation})::Integer
+    arity(t::AbstractRelation)::Integer = arity(typeof(t))
+
+See also [`AbstractRelation`](@ref).
+"""
+arity(R::Type{<:AbstractRelation})::Integer = error("Please, provide method arity(::$(R)).")
+arity(r::AbstractRelation)::Integer = arity(typeof(r))
+
 # Relations must indicate their compatible world types via `goeswith`.
 #  For example, if world type W is compatible with relation R
 # goeswith(::Type{W}, ::R) = true
@@ -24,6 +35,8 @@ is_transitive(r::AbstractRelation) = false
 # Identity relation: any world -> itself
 struct _RelationId <: AbstractRelation end; const RelationId   = _RelationId();
 
+arity(::Type{_RelationId}) = 2
+
 Base.show(io::IO, ::_RelationId) = print(io, "=")
 
 is_symmetric(r::_RelationId) = true
@@ -34,6 +47,8 @@ is_transitive(r::_RelationId) = true
 
 # Global relation: any world -> all worlds
 struct _RelationGlob <: AbstractRelation end; const RelationGlob  = _RelationGlob();
+
+arity(::Type{_RelationGlob}) = 2
 
 Base.show(io::IO, ::_RelationGlob) = print(io, "G")
 

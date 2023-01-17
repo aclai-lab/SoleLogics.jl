@@ -286,7 +286,7 @@ Base.operator_precedence(::typeof(DIAMOND)) = HIGH_PRIORITY
 Base.operator_precedence(::typeof(BOX)) = HIGH_PRIORITY
 
 
-abstract type AbstractRelationalOperator{R<:AbstractRelation} end
+abstract type AbstractRelationalOperator{R<:AbstractRelation} <: AbstractOperator end
 # TODO: why the type parameter?
 # TODO-reply: We want to dispatch on it. In this case, because different relations
 #  carry different algorithmic behaviors (e.g., Later vs. After are computed in a
@@ -295,6 +295,8 @@ abstract type AbstractRelationalOperator{R<:AbstractRelation} end
 Base.operator_precedence(::AbstractRelationalOperator) = HIGH_PRIORITY
 
 relationtype(::AbstractRelationalOperator{R}) where {R<:AbstractRelation} = R
+
+arity(::Type{<:AbstractRelationalOperator{R}}) where {R<:AbstractRelation} = arity(R)-1
 
 struct DiamondRelationalOperator{R<:AbstractRelation} <: AbstractRelationalOperator{R} end
 

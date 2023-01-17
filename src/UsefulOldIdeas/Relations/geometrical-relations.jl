@@ -7,6 +7,7 @@ abstract type GeometricalRelation <: AbstractRelation end
 # By default, this does not hold:
 is_topological(r::GeometricalRelation) = false
 
+arity(::Type{<:GeometricalRelation}) = 2
 
 # TODO add pattern: combinazione cartesiana/prodotto di relazioni.
 
