@@ -161,7 +161,7 @@ function check(::AbstractAssignment{W,A,T}, ::W, ::Proposition{A})::T where {W<:
 end
 
 # struct GenericAssignment{W<:AbstractWorld,A,T<:TruthValue} <: AbstractAssignment{W,A,T}
-#     dict::Dict{W,PropositionalInterpretation{A,T}}
+#     dict::Dict{W,Valuation{A,T}}
 # end
 
 ############################################################################################
@@ -205,7 +205,7 @@ initialworld(m::AbstractKripkeStructure) = initialworld(frame(m))
 accessibles(m::AbstractKripkeStructure, args...) = accessibles(frame(m), args...)
 
 """
-    struct KripkeStructure{W<:AbstractWorld,A,T<:TruthValue,K<:AbstractFrame{W,T},D<:AbstractDict{W,V<:PropositionalInterpretation{A,T}}} <: AbstractKripkeStructure{W,A,T}
+    struct KripkeStructure{W<:AbstractWorld,A,T<:TruthValue,K<:AbstractFrame{W,T},D<:AbstractDict{W,V<:Valuation{A,T}}} <: AbstractKripkeStructure{W,A,T}
         frame::K
         interpretations::D
     end

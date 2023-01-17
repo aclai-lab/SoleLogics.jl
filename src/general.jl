@@ -1156,7 +1156,7 @@ is essentially a map *proposition → truth value*.
 
 Properties expressed via logical formulas can be `check`ed on logical interpretations.
 
-See also [`check`](@ref), [`PropositionalInterpretation`](@ref), [`KripkeStructure`](@ref).
+See also [`check`](@ref), [`Valuation`](@ref), [`KripkeStructure`](@ref).
 """
 abstract type AbstractInterpretation{A,T<:TruthValue} end
 
