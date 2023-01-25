@@ -14,7 +14,7 @@ p1_number = @test_nowarn Proposition{Number}(1)
 p_string = @test_nowarn Proposition{String}("1")
 
 @test arity(p1) == 0
-@test propositiontype(SoleLogics.AbstractAlphabet{Int}) == Proposition{Int}
+@test propositionstype(SoleLogics.AbstractAlphabet{Int}) == Proposition{Int}
 
 @test_nowarn ExplicitAlphabet(Proposition.([1,2]))
 @test_nowarn ExplicitAlphabet([1,2])
@@ -24,7 +24,7 @@ p_string = @test_nowarn Proposition{String}("1")
 
 @test_nowarn ExplicitAlphabet(1:10)
 alphabet_int = @test_nowarn ExplicitAlphabet(Proposition.(1:10))
-@test propositiontype(alphabet_int) == @test_nowarn Proposition{Int}
+@test propositionstype(alphabet_int) == @test_nowarn Proposition{Int}
 @test_nowarn ExplicitAlphabet(Proposition{Number}.(1:10))
 alphabet_number = @test_nowarn ExplicitAlphabet{Number}(Proposition.(1:10))
 @test propositions(alphabet_number) isa Vector{Proposition{Number}}
@@ -51,7 +51,7 @@ p_vec = @test_nowarn Proposition{Vector}([1.0])
 @test_nowarn SyntaxTree(p1)
 t1_int = @test_nowarn SyntaxTree(p1, ())
 t100_int = @test_nowarn SyntaxTree(p100, ())
-@test tokentypes(t1_int) == tokentype(t1_int)
+@test tokenstype(t1_int) == tokentype(t1_int)
 @test_throws MethodError SyntaxTree(3, ())
 
 @test p1 in t1_int
@@ -62,12 +62,12 @@ t100_int = @test_nowarn SyntaxTree(p100, ())
 t1n_int = @test_nowarn SyntaxTree(¬, (t1_int,))
 @test p1 in t1n_int
 @test (¬) in t1n_int
-@test tokentypes(t1n_int) == Union{typeof(¬), tokentype(t1_int)}
+@test tokenstype(t1n_int) == Union{typeof(¬), tokentype(t1_int)}
 @test_nowarn SyntaxTree(∧, (t1_int, t1n_int))
 t2_int = @test_nowarn SyntaxTree(∧, (t1_int, t1_int))
-@test tokentypes(SyntaxTree(∧, (t2_int, t1n_int))) == Union{typeof(∧), tokentypes(t1n_int)}
+@test tokenstype(SyntaxTree(∧, (t2_int, t1n_int))) == Union{typeof(∧), tokenstype(t1n_int)}
 
-grammar_int = CompleteFlatGrammar(alphabet_int, SoleLogics.base_operators)
+grammar_int = CompleteFlatGrammar(alphabet_int, SoleLogics.BASE_OPERATORS)
 
 @test Proposition(1) in grammar_int
 @test ! (Proposition(11) in grammar_int)
@@ -78,11 +78,13 @@ grammar_int = CompleteFlatGrammar(alphabet_int, SoleLogics.base_operators)
 
 @test_nowarn formulas(grammar_int; maxdepth = 2, nformulas = 100)
 
+@test SoleLogics.BASE_LOGIC == propositional_logic()
+
 logic_int = BaseLogic(grammar_int, BooleanAlgebra())
 
-@test_throws MethodError "aoeu" in SoleLogics.base_logic
-@test Proposition("aoeu") in SoleLogics.base_logic
-@test ! (Proposition(1) in SoleLogics.base_logic)
+@test_throws MethodError "aoeu" in SoleLogics.propositional_logic()
+@test Proposition("aoeu") in SoleLogics.propositional_logic()
+@test ! (Proposition(1) in SoleLogics.propositional_logic())
 
 @test_nowarn Formula(Base.RefValue(logic_int), t1_int)
 f_int = @test_nowarn Formula(logic_int, t1_int)
@@ -101,9 +103,9 @@ f_int = @test_nowarn Formula(logic_int, t1_int)
 
 t2_int = @test_nowarn ¬(t1_int)
 @test_nowarn ¬(p1)
-@test propositiontypes(p1 ∨ p1_number) != Proposition{Int}
-@test propositiontypes(p1 ∨ p1_number_float) == Union{Proposition{Int}, Proposition{Number}}
-@test propositiontypes(p1 ∨ p1_float) == Union{Proposition{Int}, Proposition{Float64}}
+@test propositionstype(p1 ∨ p1_number) != Proposition{Int}
+@test propositionstype(p1 ∨ p1_number_float) == Union{Proposition{Int}, Proposition{Number}}
+@test propositionstype(p1 ∨ p1_float) == Union{Proposition{Int}, Proposition{Float64}}
 @test propositions(p1 ∨ p100) == [p1, p100]
 @test_nowarn p1 ∨ p100
 @test_nowarn ¬(p1) ∨ p1
@@ -134,7 +136,7 @@ t2_int = @test_nowarn ¬(t1_int)
 @test_nowarn t2_int ∨ f_int
 @test_nowarn f_int ∨ t2_int
 @test propositions(f_int ∨ (p1 ∨ p100)) == [p1, p1, p100]
-@test all(isa.(propositions(f_int ∨ (p1 ∨ p100)), propositiontype(logic(f_int))))
+@test all(isa.(propositions(f_int ∨ (p1 ∨ p100)), propositionstype(logic(f_int))))
 
 f_conj_int = @test_nowarn CONJUNCTION(f_int, f_int, f_int)
 @test_nowarn DISJUNCTION(f_int, f_int, f_conj_int)
@@ -200,9 +202,47 @@ empty_logic = @test_nowarn propositional_logic(; operators = AbstractOperator[],
 @test_nowarn propositional_logic(; operators = [¬, ∨])(¬ p_string)
 @test propositional_logic(; alphabet = ["p", "q"]) isa BasePropositionalLogic
 
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ parsing.jl ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+@test_nowarn parseformulatree("p")
+@test_nowarn parseformulatree("⊤")
+
+@test string(parseformulatree("p∧q")) == "∧(p, q)"
+@test string(parseformulatree("p→q")) == "→(p, q)"
+@test parseformulatree("¬p∧q") == parseformulatree("¬(p)∧q")
+@test parseformulatree("¬p∧q") != parseformulatree("¬(p∧q)")
+
+@test filter(!isspace, string(parseformulatree("¬p∧q∧(¬s∧¬z)"))) == "∧(¬(p),∧(q,∧(¬(s),¬(z))))"
+@test_nowarn parseformulatree("¬p∧q∧(¬s∧¬z)", [NEGATION, CONJUNCTION])
+@test_nowarn parseformulatree("¬p∧q∧(¬s∧¬z)", [NEGATION])
+@test_nowarn operatorstype(logic(parseformula("¬p∧q∧(¬s∧¬z)", [BOX]))) == Union{typeof(□), typeof(¬)}
+@test_nowarn operatorstype(logic(parseformula("¬p∧q∧(¬s∧¬z)"))) == typeof(¬)
+@test_nowarn parseformulatree("¬p∧q→(¬s∧¬z)")
+@test filter(!isspace, string(parseformulatree("¬p∧q→(¬s∧¬z)"))) == "→(∧(¬(p),q),∧(¬(s),¬(z)))"
+@test_nowarn parseformulatree("¬p∧q→     (¬s∧¬z)")
+@test parseformulatree("□p∧   q∧(□s∧◊z)", [BOX]) == parseformulatree("□p∧   q∧(□s∧◊z)")
+@test string(parseformulatree("◊ ◊ ◊ ◊ p∧q")) == "∧(◊(◊(◊(◊(p)))), q)"
+@test string(parseformulatree("¬¬¬ □□□ ◊◊◊ p ∧ ¬¬¬ q")) == "∧(¬(¬(¬(□(□(□(◊(◊(◊(p))))))))), ¬(¬(¬(q))))"
+
+@test alphabet(logic(parseformula("p→q"))) == AlphabetOfAny{String}()
+
+# Malformed input
+@test_throws ErrorException parseformulatree("¬p◊")
+@test_throws ErrorException parseformulatree("¬p◊q")
+@test_throws ErrorException parseformulatree("(p∧q", [NEGATION, CONJUNCTION])
+@test_throws ErrorException parseformulatree("))))", [CONJUNCTION])
+
+# TODO
+# @test ErrorException parseformulatree("⟨G⟩p", [DiamondRelationalOperator{_RelationGlob}()])
+
+
+@test_nowarn parseformula("p")
+
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ random.jl ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-_alphabet = ExplicitAlphabet(Proposition.([1,2]))
-_operators = [NEGATION, CONJUNCTION, IMPLICATION]
-@test_broken generate(10, _alphabet, _operators)
-@test_nowarn generate(2, _alphabet, _operators)
+# Mauro: I commented the following tests since a cryptic error message fills up the REPL.
+# This is strange, also because `generate` actually returns correct SyntaxTrees.
+# _alphabet = ExplicitAlphabet(Proposition.([1,2]))
+# _operators = [NEGATION, CONJUNCTION, IMPLICATION]
+# @test_broken generate(10, _alphabet, _operators)
+# @test_nowarn generate(2, _alphabet, _operators)

@@ -31,8 +31,8 @@ const IA_OiId = RectangleRelation(IA_Oi        , RelationId); const IA_OiU  = Re
 Base.show(io::IO, ::RectangleRelation{_XR,_YR}) where {_XR<:_IABase,_YR<:_IABase} = print(io, "$(_XR()),$(_YR())")
 
 # Properties
-is_transitive(r::RectangleRelation{R1,R2})  where {R1<:_IABase,R2<:_IABase} = is_transitive(R1)  && is_transitive(R2)
-is_topological(r::RectangleRelation{R1,R2}) where {R1<:_IABase,R2<:_IABase} = is_topological(R1) && is_topological(R2)
+istransitive(r::RectangleRelation{R1,R2})  where {R1<:_IABase,R2<:_IABase} = istransitive(R1)  && istransitive(R2)
+istopological(r::RectangleRelation{R1,R2}) where {R1<:_IABase,R2<:_IABase} = istopological(R1) && istopological(R2)
 
 # (12+1)^2-1=168 2D Interval Algebra relations
 const IA2DRelations = [

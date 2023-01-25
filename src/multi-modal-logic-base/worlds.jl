@@ -18,7 +18,7 @@ const AbstractWorldSet{W} = Union{AbstractVector{W},AbstractSet{W}} where {W<:Ab
 const WorldSet{W} = Vector{W} where {W<:AbstractWorld}
 WorldSet{W}(S::WorldSet{W}) where {W<:AbstractWorld} = S
 
-include("geometrical-worlds.jl")
+include("worlds/geometrical-worlds.jl")
 
 export AbstractWorld
 export EmptyWorld, CenteredWorld

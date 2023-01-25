@@ -5,7 +5,7 @@
 abstract type RCCRelation <: GeometricalRelation end
 
 # Property: all RCC relations are topological
-is_topological(r::RCCRelation) = true
+istopological(r::RCCRelation) = true
 
 ############################################################################################
 # RCC8 topological relations (plus equality, i.e. RelationId):
@@ -62,11 +62,11 @@ Base.show(io::IO, ::_Topo_NTPP)  = print(io, "NTPP")
 Base.show(io::IO, ::_Topo_NTPPi) = print(io, "N̅T̅P̅P̅")
 
 # Properties
-is_symmetric(r::_Topo_DC) = true
-is_symmetric(r::_Topo_EC) = true
-is_symmetric(r::_Topo_PO) = true
-is_transitive(r::_Topo_NTPP) = true
-is_transitive(r::_Topo_NTPPi) = true
+issymmetric(r::_Topo_DC) = true
+issymmetric(r::_Topo_EC) = true
+issymmetric(r::_Topo_PO) = true
+istransitive(r::_Topo_NTPP) = true
+istransitive(r::_Topo_NTPPi) = true
 
 ############################################################################################
 
@@ -80,9 +80,9 @@ Base.show(io::IO, ::_Topo_PP)    = print(io, "PP")
 Base.show(io::IO, ::_Topo_PPi)   = print(io, "P̅P̅")
 
 # Properties
-is_symmetric(r::_Topo_DR) = true
-is_transitive(r::_Topo_PP) = true
-is_transitive(r::_Topo_PPi) = true
+issymmetric(r::_Topo_DR) = true
+istransitive(r::_Topo_PP) = true
+istransitive(r::_Topo_PPi) = true
 ############################################################################################
 
 # 7 RCC8 Relations
