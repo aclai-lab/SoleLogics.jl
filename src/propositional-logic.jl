@@ -61,35 +61,35 @@ See also [`AbstractInterpretation`](@ref).
 abstract type Valuation{A,T<:TruthValue} <: AbstractInterpretation{A,T} end
 
 """
-    Base.getindex(m::Valuation{AA,T}, p::Proposition{AA}, args...)::T where {AA,A<:AA,T<:TruthValue}
+    Base.getindex(i::Valuation{AA,T}, p::Proposition{AA}, args...)::T where {AA,A<:AA,T<:TruthValue}
 
 Each interpretation must provide a method for accessing the truth of a proposition.
 """
 function Base.getindex(
-    m::Valuation{AA,T},
+    i::Valuation{AA,T},
     ::Proposition{A},
     args...
 )::T where {AA,A<:AA,T<:TruthValue}
     return error("Please, provide method" *
-                 " Base.getindex(::$(typeof(m))," *
-                 " ::Proposition{$(atomtype(m))}, args...)::$(truthtype(m))" *
+                 " Base.getindex(::$(typeof(i))," *
+                 " ::Proposition{$(atomtype(i))}, args...)::$(truthtype(i))" *
                  " with args::$(typeof(args)).")
 end
 
 """
-    Base.in(::Proposition{A}, m::Valuation{A})::Bool where {A}
+    Base.in(::Proposition{A}, i::Valuation{A})::Bool where {A}
 
 Each interpretation must provide a method for expressing whether the interpretation
 has a truth value for a given proposition.
 """
-function Base.in(::Proposition{A}, m::Valuation{AA})::Bool where {AA,A<:AA}
+function Base.in(::Proposition{A}, i::Valuation{AA})::Bool where {AA,A<:AA}
     return error("Please, provide method" *
-                 " Base.in(::Proposition{$(atomtype(m))}," *
-                 " ::$(typeof(m)))::Bool.")
+                 " Base.in(::Proposition{$(atomtype(i))}," *
+                 " ::$(typeof(i)))::Bool.")
 end
 
 """
-    check(f::AbstractFormula, m::Valuation, args...)
+    check(f::AbstractFormula, i::Valuation, args...)
 
 Checks a formula, represented as a syntax tree, on an interpretation.
 It returns a `TruthValue`.
@@ -101,32 +101,32 @@ algebra.
     check(
         a::AbstractAlgebra,
         tree::SyntaxTree,
-        m::Valuation{A,T},
+        i::Valuation{A,T},
         args...
     )::T where {A,T<:TruthValue}
 
 """
-check(f::AbstractFormula, m::Valuation, args...) = check(algebra(f), tree(f), m, args...)
+check(f::AbstractFormula, i::Valuation, args...) = check(algebra(f), tree(f), i, args...)
 
 function check(
     a::AbstractAlgebra,
     tree::SyntaxTree,
-    m::Valuation{A,T},
+    i::Valuation{A,T},
     args...
 )::T where {A,T<:TruthValue}
     if token(tree) isa Proposition
-        return Base.getindex(m, token(tree), args...)
+        return Base.getindex(i, token(tree), args...)
     elseif token(tree) isa AbstractOperator
-        ts = Tuple([check(a, childtree, m, args...) for childtree in children(tree)])
+        ts = Tuple([check(a, childtree, i, args...) for childtree in children(tree)])
         return collate_truth(a, token(tree), ts)
     else
         return error("Unknown token type encountered when checking formula" *
-                     " on model of type $(typeof(m)): $(typeof(token(tree))).")
+                     " on interpretation of type $(typeof(i)): $(typeof(token(tree))).")
     end
 end
 
 # Helper: a proposition can be checked on an interpretation; a simple lookup is performed.
-check(p::Proposition{A}, m::Valuation{AA}, args...) where {AA,A<:AA} = Base.getindex(m, p, args...)
+check(p::Proposition{A}, i::Valuation{AA}, args...) where {AA,A<:AA} = Base.getindex(i, p, args...)
 
 """
     struct TruthDict{A,T<:TruthValue} <: Valuation{A,T}
@@ -161,8 +161,8 @@ struct TruthDict{A,T<:TruthValue} <: Valuation{A,T}
     end
 end
 
-Base.getindex(m::TruthDict{AA}, p::Proposition{A}) where {AA,A<:AA} = m.truth[p]
-Base.in(p::Proposition{A}, m::TruthDict{AA}) where {AA,A<:AA} = (p in keys(m.truth))
+Base.getindex(i::TruthDict{AA}, p::Proposition{A}) where {AA,A<:AA} = i.truth[p]
+Base.in(p::Proposition{A}, i::TruthDict{AA}) where {AA,A<:AA} = (p in keys(i.truth))
 
 """
     struct DefaultedTruthDict{A,T<:TruthValue} <: Valuation{A,T}
@@ -230,7 +230,7 @@ struct DefaultedTruthDict{A,T<:TruthValue} <: Valuation{A,T}
     end
 end
 
-function Base.getindex(m::DefaultedTruthDict{AA}, p::Proposition{A}) where {AA,A<:AA}
-    return (p in keys(m.truth)) ? m.truth[p] : m.default_truth
+function Base.getindex(i::DefaultedTruthDict{AA}, p::Proposition{A}) where {AA,A<:AA}
+    return (p in keys(i.truth)) ? i.truth[p] : i.default_truth
 end
-Base.in(p::Proposition{A}, m::DefaultedTruthDict{AA}) where {AA,A<:AA} = true
+Base.in(p::Proposition{A}, i::DefaultedTruthDict{AA}) where {AA,A<:AA} = true

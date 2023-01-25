@@ -84,8 +84,8 @@ abstract type AbstractModalFrame{W<:AbstractWorld,T<:TruthValue} <: AbstractFram
 """
 TODO
 """
-function accessibles(f::AbstractModalFrame{W}, w::W)::Vector{W} where {W<:AbstractWorld}
-    error("Please, provide method accessibles(f::$(typeof(f)), w::$(typeof(w)))::Vector{$(W)}.")
+function accessibles(fr::AbstractModalFrame{W}, w::W)::Vector{W} where {W<:AbstractWorld}
+    error("Please, provide method accessibles(fr::$(typeof(f)), w::$(typeof(w)))::Vector{$(W)}.")
 end
 
 
@@ -196,13 +196,13 @@ function check(::AbstractKripkeStructure{W,A,T,KF}, ::W, ::Formula{A})::T where 
     error("Please, provide ...")
 end
 
-function frame(m::AbstractKripkeStructure{W,A,T,KF})::KF where {W<:AbstractWorld,A,T<:TruthValue,KF<:AbstractFrame{W,T}}
-    return error("Please, provide method frame(m::$(typeof(m))).")
+function frame(i::AbstractKripkeStructure{W,A,T,KF})::KF where {W<:AbstractWorld,A,T<:TruthValue,KF<:AbstractFrame{W,T}}
+    return error("Please, provide method frame(i::$(typeof(i))).")
 end
 
-nworlds(m::AbstractKripkeStructure) = nworlds(frame(m))
-initialworld(m::AbstractKripkeStructure) = initialworld(frame(m))
-accessibles(m::AbstractKripkeStructure, args...) = accessibles(frame(m), args...)
+nworlds(i::AbstractKripkeStructure) = nworlds(frame(i))
+initialworld(i::AbstractKripkeStructure) = initialworld(frame(i))
+accessibles(i::AbstractKripkeStructure, args...) = accessibles(frame(i), args...)
 
 """
     struct KripkeStructure{W<:AbstractWorld,A,T<:TruthValue,K<:AbstractFrame{W,T},D<:AbstractDict{W,V<:Valuation{A,T}}} <: AbstractKripkeStructure{W,A,T}
@@ -220,18 +220,18 @@ struct KripkeStructure{W<:AbstractWorld,A,T<:TruthValue,KF<:AbstractFrame{W,T}, 
     assignment::AS
 end
 
-function check(m::KripkeStructure{W,A,T}, w::W, f::Formula)::T where {W<:AbstractWorld,A,T<:TruthValue} end
+function check(i::KripkeStructure{W,A,T}, w::W, f::Formula)::T where {W<:AbstractWorld,A,T<:TruthValue} end
 
-function check(m::KripkeStructure{W,A,T}, f::Formula)::T where {W<:AbstractWorld,A,T<:TruthValue}
-    check(m, initial(m), f)
+function check(i::KripkeStructure{W,A,T}, f::Formula)::T where {W<:AbstractWorld,A,T<:TruthValue}
+    check(i, initial(i), f)
 end
 
-function check(m::KripkeStructure{W,A}, w::W, p::Proposition{A}) where {W<:AbstractWorld,A}
-    check(m.assignment, w, p)
+function check(i::KripkeStructure{W,A}, w::W, p::Proposition{A}) where {W<:AbstractWorld,A}
+    check(i.assignment, w, p)
 end
 
 # TODO maybe this yields the worlds where a certain formula is true...?
-# function check(m::KripkeStructure{W,A,T}, f::Formula)::AbstractVector{W} where {W<:AbstractWorld,A,T<:TruthValue}
+# function check(i::KripkeStructure{W,A,T}, f::Formula)::AbstractVector{W} where {W<:AbstractWorld,A,T<:TruthValue}
 
 ############################################################################################
 ############################################################################################

@@ -64,7 +64,7 @@ isinverse(::_RelationGlob, ::_RelationGlob) = true
 # struct UnionOfRelations     <: AbstractRelation
 #     relations :: NTuple{N,AbstractRelation} where {N}
 # end;
-# _accessibles(w::AbstractWorld, r::UnionOfRelations, args...) = Iterators.flatten((_accessibles(w, sub_relation,  args...) for sub_relation in topo2IARelations(r)))
+# _accessibles(::AbstractMultiModalFrame, w::AbstractWorld, r::UnionOfRelations) = Iterators.flatten((_accessibles(fr, w, sub_relation) for sub_relation in topo2IARelations(r)))
 
 ############################################################################################
 
