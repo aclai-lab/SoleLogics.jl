@@ -14,12 +14,6 @@ See also [`AbstractRelation`](@ref).
 arity(R::Type{<:AbstractRelation})::Integer = error("Please, provide method arity(::$(R)).")
 arity(r::AbstractRelation)::Integer = arity(typeof(r))
 
-# Relations must indicate their compatible world types via `goeswith`.
-# For example, if world type W is compatible with relation R
-# goeswith(::Type{W}, ::R) = true
-# Here's the fallback:
-goeswith(::Type{W}, ::AbstractRelation) where {W<:AbstractWorld} = false
-
 # Relations can be symmetric, reflexive and/or transitive.
 # By default, none of this cases holds:
 issymmetric(::AbstractRelation) = false

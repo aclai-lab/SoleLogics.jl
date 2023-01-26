@@ -97,8 +97,8 @@ end
 # end
 # accessibles(...) = ...
 
-
-abstract type AbstractRelation end
+include("algebras/worlds.jl")
+include("algebras/relations.jl")
 
 """
     abstract type AbstractMultiModalFrame{
@@ -119,6 +119,15 @@ abstract type AbstractMultiModalFrame{
     NR,
     Rs<:NTuple{NR,R where R<:AbstractRelation},
 } <: AbstractFrame{W,T} end
+
+"""
+TODO
+A frame must indicate their compatible relations via `goeswith`.
+For example, if ... is compatible with relation R
+goeswith(::Type{W}, ::R) = true
+Here's the fallback:
+"""
+goeswith(::Type{FR}, ::AbstractRelation) where {FR<:AbstractModalFrame} = false
 
 """
 TODO
@@ -147,6 +156,10 @@ struct AdjMatMultiModalFrame{W<:AbstractWorld,T<:TruthValue,NR,Rs} <: AbstractMu
     adjacents::NamedArray{W,3}
 end
 # accessibles(...) = ...
+
+include("algebras/frames.jl")
+
+############################################################################################
 
 """
 TODO
@@ -185,18 +198,18 @@ abstract type AbstractKripkeStructure{
     W<:AbstractWorld,
     A,
     T<:TruthValue,
-    KF<:AbstractFrame{W,T},
+    FR<:AbstractFrame{W,T},
 } <: AbstractInterpretation{A,T} end
 
-function check(::AbstractKripkeStructure{W,A,T,KF}, ::W, ::Proposition{A})::T where {W<:AbstractWorld,A,T<:TruthValue,KF<:AbstractFrame{W,T}}
+function check(::AbstractKripkeStructure{W,A,T,FR}, ::W, ::Proposition{A})::T where {W<:AbstractWorld,A,T<:TruthValue,FR<:AbstractFrame{W,T}}
     error("Please, provide ...")
 end
 
-function check(::AbstractKripkeStructure{W,A,T,KF}, ::W, ::Formula{A})::T where {W<:AbstractWorld,A,T<:TruthValue,KF<:AbstractFrame{W,T}}
+function check(::AbstractKripkeStructure{W,A,T,FR}, ::W, ::Formula{A})::T where {W<:AbstractWorld,A,T<:TruthValue,FR<:AbstractFrame{W,T}}
     error("Please, provide ...")
 end
 
-function frame(i::AbstractKripkeStructure{W,A,T,KF})::KF where {W<:AbstractWorld,A,T<:TruthValue,KF<:AbstractFrame{W,T}}
+function frame(i::AbstractKripkeStructure{W,A,T,FR})::FR where {W<:AbstractWorld,A,T<:TruthValue,FR<:AbstractFrame{W,T}}
     return error("Please, provide method frame(i::$(typeof(i))).")
 end
 
@@ -215,8 +228,8 @@ Structure for representing
 explicitly; it wraps a `frame`, and an abstract dictionary that assigns an interpretation to
 each world.
 """
-struct KripkeStructure{W<:AbstractWorld,A,T<:TruthValue,KF<:AbstractFrame{W,T}, AS<:AbstractAssignment{W,A,T}} <: AbstractKripkeStructure{W,A,T,KF}
-    frame::KF
+struct KripkeStructure{W<:AbstractWorld,A,T<:TruthValue,FR<:AbstractFrame{W,T}, AS<:AbstractAssignment{W,A,T}} <: AbstractKripkeStructure{W,A,T,FR}
+    frame::FR
     assignment::AS
 end
 
