@@ -104,8 +104,6 @@ include("algebras/relations.jl")
     abstract type AbstractMultiModalFrame{
         W<:AbstractWorld,
         T<:TruthValue,
-        NR,
-        Rs<:NTuple{NR,<:AbstractRelation}
     } <: AbstractFrame{W<:AbstractWorld,T<:TruthValue} end
 
 Frame of a multi-modal logic, that is, a modal logic based on a set
@@ -116,8 +114,6 @@ See also [`AbstractFrame`](@ref), [`AbstractModalFrame`](@ref).
 abstract type AbstractMultiModalFrame{
     W<:AbstractWorld,
     T<:TruthValue,
-    NR,
-    Rs<:NTuple{NR,R where R<:AbstractRelation},
 } <: AbstractFrame{W,T} end
 
 """
@@ -144,15 +140,15 @@ each of them.
 
 See also [`AbstractRelation`](@ref), [`AbstractModalFrame`](@ref).
 """
-struct WrapperMultiModalFrame{W<:AbstractWorld,T<:TruthValue,NR,Rs} <: AbstractMultiModalFrame{W,T,NR,Rs}
-    frames::Dict{<:eltype(Rs),<:AbstractModalFrame{W,T}} # Could be done better?
+struct WrapperMultiModalFrame{W<:AbstractWorld,T<:TruthValue} <: AbstractMultiModalFrame{W,T}
+    frames::Dict{<:AbstractRelation,<:AbstractModalFrame{W,T}} # Could be done better?
 end
 # accessibles(...) = ...
 
 """
 TODO
 """
-struct AdjMatMultiModalFrame{W<:AbstractWorld,T<:TruthValue,NR,Rs} <: AbstractMultiModalFrame{W,T,NR,Rs}
+struct AdjMatMultiModalFrame{W<:AbstractWorld,T<:TruthValue} <: AbstractMultiModalFrame{W,T}
     adjacents::NamedArray{W,3}
 end
 # accessibles(...) = ...

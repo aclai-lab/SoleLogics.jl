@@ -15,6 +15,7 @@ struct CenteredWorld end;
 
 # World enumerators generate array/set-like structures
 const AbstractWorldSet{W} = Union{AbstractVector{W},AbstractSet{W}} where {W<:AbstractWorld}
+# const AbstractWorldOrWorldSet{W} = Union{W,AbstractWorldSet{W}} where {W<:AbstractWorld} # Note: can result in dispatch ambiguities sometimes.
 const WorldSet{W} = Vector{W} where {W<:AbstractWorld}
 WorldSet{W}(S::WorldSet{W}) where {W<:AbstractWorld} = S
 
