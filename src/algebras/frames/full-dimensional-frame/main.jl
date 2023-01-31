@@ -1,22 +1,23 @@
 using IterTools
 
-abstract type DimensionalFrame{N,W<:AbstractWorld,T<:TruthValue} <: AbstractMultiModalFrame{W,T} end
+abstract type AbstractDimensionalFrame{N,W<:AbstractWorld,T<:TruthValue} <: AbstractMultiModalFrame{W,T} end
 
-struct FullDimensionalFrame{N,W<:AbstractWorld,T<:TruthValue} <: DimensionalFrame{N,W,T}
+struct FullDimensionalFrame{N,W<:AbstractWorld,T<:TruthValue} <: AbstractDimensionalFrame{N,W,T}
     
-    dims::NTuple{N,Int}
+    channel_size::NTuple{N,Int}
     
-    function FullDimensionalFrame{N,W,T}(dims::NTuple{N,Int}) where
+    function FullDimensionalFrame{N,W,T}(channel_size::NTuple{N,Int}) where
             {N,W<:AbstractWorld,T<:TruthValue}
-        new{N,W,T}(dims)
+        new{N,W,T}(channel_size)
     end
     
-    FullDimensionalFrame(dims::Tuple{}) = FullDimensionalFrame{0,OneWorld,Bool}(dims)
-    FullDimensionalFrame(dims::Tuple{Int}) = FullDimensionalFrame{1,Interval,Bool}(dims)
-    FullDimensionalFrame(dims::Tuple{Int,Int}) = FullDimensionalFrame{2,Interval2D,Bool}(dims)
+    FullDimensionalFrame(channel_size::Tuple{}) = FullDimensionalFrame{0,OneWorld,Bool}(channel_size)
+    FullDimensionalFrame(channel_size::Tuple{Int}) = FullDimensionalFrame{1,Interval,Bool}(channel_size)
+    FullDimensionalFrame(channel_size::Tuple{Int,Int}) = FullDimensionalFrame{2,Interval2D,Bool}(channel_size)
 end
 
-Base.getindex(fr::FullDimensionalFrame, i::Int) = fr.dims[i]
+channel_size(fr::FullDimensionalFrame) = fr.channel_size
+Base.getindex(fr::FullDimensionalFrame, i::Int) = fr.channel_size[i]
 
 # Shorthands
 X(fr::FullDimensionalFrame) = fr[1]

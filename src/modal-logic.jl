@@ -197,17 +197,48 @@ abstract type AbstractKripkeStructure{
     FR<:AbstractFrame{W,T},
 } <: AbstractInterpretation{A,T} end
 
-function check(::AbstractKripkeStructure{W,A,T,FR}, ::W, ::Proposition{A})::T where {W<:AbstractWorld,A,T<:TruthValue,FR<:AbstractFrame{W,T}}
+function check(
+    ::AbstractKripkeStructure{W,A,T},
+    ::W,
+    ::Proposition{A},
+)::T where {W<:AbstractWorld,A,T<:TruthValue}
     error("Please, provide ...")
 end
 
-function check(::AbstractKripkeStructure{W,A,T,FR}, ::W, ::Formula{A})::T where {W<:AbstractWorld,A,T<:TruthValue,FR<:AbstractFrame{W,T}}
+function check(
+    ::AbstractKripkeStructure{W,A,T},
+    ::W,
+    ::Formula,
+)::T where {W<:AbstractWorld,A,T<:TruthValue}
     error("Please, provide ...")
 end
 
 function frame(i::AbstractKripkeStructure{W,A,T,FR})::FR where {W<:AbstractWorld,A,T<:TruthValue,FR<:AbstractFrame{W,T}}
     return error("Please, provide method frame(i::$(typeof(i))).")
 end
+
+"""
+    truthtype(::Type{<:AbstractKripkeStructure{W,A,T}}) where {W<:AbstractWorld,A,T<:TruthValue} = T
+    truthtype(a::AbstractKripkeStructure) = truthtype(typeof(a))
+
+The truth type for the model.
+
+See also [`AbstractKripkeStructure`](@ref).
+"""
+truthtype(::Type{<:AbstractKripkeStructure{W,A,T}}) where {W<:AbstractWorld,A,T<:TruthValue} = T
+truthtype(a::AbstractKripkeStructure) = truthtype(typeof(a))
+
+"""
+    worldtype(::Type{<:AbstractKripkeStructure{W,A,T}}) where {W<:AbstractWorld,A,T<:TruthValue} = W
+    worldtype(a::AbstractKripkeStructure) = worldtype(typeof(a))
+
+The world type of the medl.
+
+See also [`AbstractKripkeStructure`](@ref).
+"""
+worldtype(::Type{<:AbstractKripkeStructure{W,A,T}}) where {W<:AbstractWorld,A,T<:TruthValue} = W
+worldtype(a::AbstractKripkeStructure) = worldtype(typeof(a))
+
 
 nworlds(i::AbstractKripkeStructure) = nworlds(frame(i))
 initialworld(i::AbstractKripkeStructure) = initialworld(frame(i))
