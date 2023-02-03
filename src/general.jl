@@ -80,6 +80,11 @@ show(io::IO, t::Proposition) = print(io, atom(t))
 
 Base.convert(::Type{P1}, t::P2) where {P1<:Proposition,P2<:Proposition} = P1(atom(t))
 
+""" TODO document"""
+syntaxstring(p::Proposition) = syntaxstring(p.atom)
+""" TODO document"""
+inverse(p::P) where {P<:Proposition} = P(inverse(p.atom))
+
 """
     abstract type AbstractOperator <: AbstractSyntaxToken end
 
@@ -456,6 +461,22 @@ Base.promote_rule(::Type{S}, ::Type{<:AbstractSyntaxToken}) where {S<:SyntaxTree
 Base.convert(::Type{<:SyntaxTree}, t::AbstractSyntaxToken) = SyntaxTree(t)
 # Base.convert(::Type{SyntaxTree}, t::AbstractSyntaxToken) = SyntaxTree(t)
 # Base.convert(::Type{S}, t::T) where {FT<:AbstractSyntaxToken, T<:FT, S<:SyntaxTree{FT, T}} = SyntaxTree(t)
+
+"""
+TODO document syntaxstring
+"""
+function syntaxstring(t::SyntaxTree)
+    tok = token(t)
+    if arity(tok) == 0
+        syntaxstring(tok)
+    elseif arity(tok) == 1
+        "$(syntaxstring(tok))($(syntaxstring(t.children[1])))"
+    elseif arity(tok) == 2
+        "($(syntaxstring(t.children[1]))) $(syntaxstring(tok)) ($(syntaxstring(t.children[2])))"
+    else
+        "$(syntaxstring(tok))(" * join(map((c)->("($(syntaxstring(c)))"), t.children), ",") * ")"
+    end
+end
 
 """
     abstract type AbstractGrammar{A<:AbstractAlphabet, O<:AbstractOperator} end
@@ -1138,6 +1159,10 @@ function (op::AbstractOperator)(children::NTuple{N,Formula}, args...) where {N}
     @assert typeof(op) <: operatorstype(l) "TODO expand" *
                " logic's set of operators (op is not in it: $(typeof(op)) ∉ $(operatorstype(l)))."
     return Formula(l, op(map(tree, children)))
+end
+
+function syntaxstring(f::Formula)
+    syntaxstring(tree(f))
 end
 
 """
