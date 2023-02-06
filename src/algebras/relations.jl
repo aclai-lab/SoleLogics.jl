@@ -31,7 +31,8 @@ const RelationId   = _RelationId();
 
 arity(::Type{_RelationId}) = 2
 
-Base.show(io::IO, ::_RelationId) = print(io, "=")
+# _RelationId -> "="
+syntaxstring(::Type{_RelationId}) = "_RelationId"
 
 issymmetric(::_RelationId) = true
 isreflexive(::_RelationId) = true
@@ -45,7 +46,8 @@ struct _RelationGlob <: AbstractRelation end; const RelationGlob  = _RelationGlo
 
 arity(::Type{_RelationGlob}) = 2
 
-Base.show(io::IO, ::_RelationGlob) = print(io, "G")
+# _RelationGlob -> "G"
+syntaxstring(::Type{_RelationGlob}) = "_RelationGlob"
 
 issymmetric(::_RelationGlob) = true
 isreflexive(::_RelationGlob) = true
