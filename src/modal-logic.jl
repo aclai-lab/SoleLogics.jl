@@ -391,8 +391,8 @@ struct DiamondRelationalOperator{R<:AbstractRelation} <: AbstractRelationalOpera
 
 struct BoxRelationalOperator{R<:AbstractRelation} <: AbstractRelationalOperator{R} end
 
-syntaxstring(::DiamondRelationalOperator{R}) where {R<:AbstractRelation} = "⟨$(syntaxstring(R))⟩"
-syntaxstring(::BoxRelationalOperator{R}) where {R<:AbstractRelation}   = "[$(syntaxstring(R))]"
+syntaxstring(op::DiamondRelationalOperator; kwargs...) = "⟨$(syntaxstring(relationtype(op); kwargs...))⟩"
+syntaxstring(op::BoxRelationalOperator; kwargs...)     = "[$(syntaxstring(relationtype(op); kwargs...))]"
 
 ############################################################################################
 ######################################## BASE ##############################################

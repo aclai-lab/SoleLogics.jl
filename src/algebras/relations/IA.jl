@@ -50,18 +50,18 @@ struct _IA_Ei <: IntervalRelation end; const IA_Ei = _IA_Ei(); # Ends inverse
 struct _IA_Di <: IntervalRelation end; const IA_Di = _IA_Di(); # During inverse
 struct _IA_Oi <: IntervalRelation end; const IA_Oi = _IA_Oi(); # Overlaps inverse
 
-Base.show(io::IO, ::_IA_A)  = print(io, "A")
-Base.show(io::IO, ::_IA_L)  = print(io, "L")
-Base.show(io::IO, ::_IA_B)  = print(io, "B")
-Base.show(io::IO, ::_IA_E)  = print(io, "E")
-Base.show(io::IO, ::_IA_D)  = print(io, "D")
-Base.show(io::IO, ::_IA_O)  = print(io, "O")
-Base.show(io::IO, ::_IA_Ai) = print(io, "A̅")
-Base.show(io::IO, ::_IA_Li) = print(io, "L̅")
-Base.show(io::IO, ::_IA_Bi) = print(io, "B̅")
-Base.show(io::IO, ::_IA_Ei) = print(io, "E̅")
-Base.show(io::IO, ::_IA_Di) = print(io, "D̅")
-Base.show(io::IO, ::_IA_Oi) = print(io, "O̅")
+syntaxstring(::Type{_IA_A}; kwargs...)  = "A"
+syntaxstring(::Type{_IA_L}; kwargs...)  = "L"
+syntaxstring(::Type{_IA_B}; kwargs...)  = "B"
+syntaxstring(::Type{_IA_E}; kwargs...)  = "E"
+syntaxstring(::Type{_IA_D}; kwargs...)  = "D"
+syntaxstring(::Type{_IA_O}; kwargs...)  = "O"
+syntaxstring(::Type{_IA_Ai}; kwargs...) = "A̅"
+syntaxstring(::Type{_IA_Li}; kwargs...) = "L̅"
+syntaxstring(::Type{_IA_Bi}; kwargs...) = "B̅"
+syntaxstring(::Type{_IA_Ei}; kwargs...) = "E̅"
+syntaxstring(::Type{_IA_Di}; kwargs...) = "D̅"
+syntaxstring(::Type{_IA_Oi}; kwargs...) = "O̅"
 
 # Properties
 istransitive(r::_IA_L) = true
@@ -100,8 +100,8 @@ IA32IARelations(::_IA_I)          = [
     IA_Ai, IA_Oi, IA_Di, IA_Bi, IA_Ei
 ]
 
-Base.show(io::IO, r::Union{_IA_AorO,_IA_DorBorE,_IA_AiorOi,_IA_DiorBiorEi})       = print(io, join(IA72IARelations(r), "∨"))
-Base.show(io::IO, ::_IA_I)          = print(io, "I")
+syntaxstring(r::Union{_IA_AorO,_IA_DorBorE,_IA_AiorOi,_IA_DiorBiorEi}; kwargs...) = join(IA72IARelations(r), "∨")
+syntaxstring(::Type{_IA_I}; kwargs...)          = "I"
 
 ############################################################################################
 

@@ -1,7 +1,6 @@
 # Abstract types for relations
 abstract type AbstractRelation end
 
-############################################################################################
 
 """
 Each relation (type) must provide a method yielding its `arity`:
@@ -13,6 +12,9 @@ See also [`AbstractRelation`](@ref).
 """
 arity(R::Type{<:AbstractRelation})::Integer = error("Please, provide method arity(::$(R)).")
 arity(r::AbstractRelation)::Integer = arity(typeof(r))
+
+syntaxstring(R::Type{<:AbstractRelation}; kwargs...)::Integer = error("Please, provide method syntaxstring(::$(R); kwargs...).")
+syntaxstring(r::AbstractRelation; kwargs...)::Integer = syntaxstring(typeof(r); kwargs...)
 
 # Relations can be symmetric, reflexive and/or transitive.
 # By default, none of this cases holds:
@@ -32,7 +34,7 @@ const RelationId   = _RelationId();
 arity(::Type{_RelationId}) = 2
 
 # _RelationId -> "="
-syntaxstring(::Type{_RelationId}) = "_RelationId"
+syntaxstring(::Type{_RelationId}; kwargs...) = "="
 
 issymmetric(::_RelationId) = true
 isreflexive(::_RelationId) = true
@@ -47,7 +49,7 @@ struct _RelationGlob <: AbstractRelation end; const RelationGlob  = _RelationGlo
 arity(::Type{_RelationGlob}) = 2
 
 # _RelationGlob -> "G"
-syntaxstring(::Type{_RelationGlob}) = "_RelationGlob"
+syntaxstring(::Type{_RelationGlob}; kwargs...) = "G"
 
 issymmetric(::_RelationGlob) = true
 isreflexive(::_RelationGlob) = true

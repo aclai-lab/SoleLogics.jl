@@ -28,7 +28,9 @@ const IA_DiId = RectangleRelation(IA_Di        , RelationId); const IA_DiU  = Re
 const IA_OiId = RectangleRelation(IA_Oi        , RelationId); const IA_OiU  = RectangleRelation(IA_Oi       , RelationGlob); const IA_OiA  = RectangleRelation(IA_Oi        , IA_A); const IA_OiL  = RectangleRelation(IA_Oi        , IA_L); const IA_OiB  = RectangleRelation(IA_Oi        , IA_B); const IA_OiE  = RectangleRelation(IA_Oi        , IA_E); const IA_OiD  = RectangleRelation(IA_Oi        , IA_D); const IA_OiO  = RectangleRelation(IA_Oi        , IA_O); const IA_OiAi  = RectangleRelation(IA_Oi        , IA_Ai); const IA_OiLi  = RectangleRelation(IA_Oi        , IA_Li); const IA_OiBi  = RectangleRelation(IA_Oi        , IA_Bi); const IA_OiEi  = RectangleRelation(IA_Oi        , IA_Ei); const IA_OiDi  = RectangleRelation(IA_Oi        , IA_Di); const IA_OiOi  = RectangleRelation(IA_Oi        , IA_Oi);
 
 
-Base.show(io::IO, ::RectangleRelation{_XR,_YR}) where {_XR<:_IABase,_YR<:_IABase} = print(io, "$(_XR()),$(_YR())")
+function syntaxstring(::Type{R}; kwargs...) where {_XR<:_IABase,_YR<:_IABase,R<:RectangleRelation{_XR,_YR}}
+    "$(syntaxstring(_XR; kwargs...)),$(syntaxstring(_YR; kwargs...))"
+end
 
 # Properties
 istransitive(r::RectangleRelation{R1,R2})  where {R1<:_IABase,R2<:_IABase} = istransitive(R1)  && istransitive(R2)

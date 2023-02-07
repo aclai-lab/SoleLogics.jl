@@ -53,13 +53,13 @@ struct _Topo_TPPi   <: RCCRelation end; const Topo_TPPi   = _Topo_TPPi();   # Ta
 struct _Topo_NTPP   <: RCCRelation end; const Topo_NTPP   = _Topo_NTPP();   # Non-tangential proper part
 struct _Topo_NTPPi  <: RCCRelation end; const Topo_NTPPi  = _Topo_NTPPi();  # Non-tangential proper part inverse
 
-Base.show(io::IO, ::_Topo_DC)    = print(io, "DC")
-Base.show(io::IO, ::_Topo_EC)    = print(io, "EC")
-Base.show(io::IO, ::_Topo_PO)    = print(io, "PO")
-Base.show(io::IO, ::_Topo_TPP)   = print(io, "TPP")
-Base.show(io::IO, ::_Topo_TPPi)  = print(io, "T̅P̅P̅")
-Base.show(io::IO, ::_Topo_NTPP)  = print(io, "NTPP")
-Base.show(io::IO, ::_Topo_NTPPi) = print(io, "N̅T̅P̅P̅")
+syntaxstring(::Type{_Topo_DC}; kwargs...)    = "DC"
+syntaxstring(::Type{_Topo_EC}; kwargs...)    = "EC"
+syntaxstring(::Type{_Topo_PO}; kwargs...)    = "PO"
+syntaxstring(::Type{_Topo_TPP}; kwargs...)   = "TPP"
+syntaxstring(::Type{_Topo_TPPi}; kwargs...)  = "T̅P̅P̅"
+syntaxstring(::Type{_Topo_NTPP}; kwargs...)  = "NTPP"
+syntaxstring(::Type{_Topo_NTPPi}; kwargs...) = "N̅T̅P̅P̅"
 
 # Properties
 issymmetric(r::_Topo_DC) = true
@@ -75,9 +75,9 @@ struct _Topo_DR     <: RCCRelation end; const Topo_DR     = _Topo_DR();     # Di
 struct _Topo_PP     <: RCCRelation end; const Topo_PP     = _Topo_PP();     # Proper part
 struct _Topo_PPi    <: RCCRelation end; const Topo_PPi    = _Topo_PPi();    # Proper part inverse
 
-Base.show(io::IO, ::_Topo_DR)    = print(io, "DR")
-Base.show(io::IO, ::_Topo_PP)    = print(io, "PP")
-Base.show(io::IO, ::_Topo_PPi)   = print(io, "P̅P̅")
+syntaxstring(::Type{_Topo_DR}; kwargs...)    = "DR"
+syntaxstring(::Type{_Topo_PP}; kwargs...)    = "PP"
+syntaxstring(::Type{_Topo_PPi}; kwargs...)   = "P̅P̅"
 
 # Properties
 issymmetric(r::_Topo_DR) = true

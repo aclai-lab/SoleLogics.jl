@@ -81,7 +81,7 @@ show(io::IO, t::Proposition) = print(io, atom(t))
 Base.convert(::Type{P1}, t::P2) where {P1<:Proposition,P2<:Proposition} = P1(atom(t))
 
 """ TODO document"""
-syntaxstring(p::Proposition) = syntaxstring(p.atom)
+syntaxstring(p::Proposition; kwargs...) = syntaxstring(p.atom; kwargs...)
 """ TODO document"""
 inverse(p::P) where {P<:Proposition} = P(inverse(p.atom))
 
@@ -465,16 +465,16 @@ Base.convert(::Type{<:SyntaxTree}, t::AbstractSyntaxToken) = SyntaxTree(t)
 """
 TODO document syntaxstring
 """
-function syntaxstring(t::SyntaxTree)
+function syntaxstring(t::SyntaxTree; kwargs...)
     tok = token(t)
     if arity(tok) == 0
-        syntaxstring(tok)
+        syntaxstring(tok; kwargs...)
     elseif arity(tok) == 1
-        "$(syntaxstring(tok))($(syntaxstring(t.children[1])))"
+        "$(syntaxstring(tok; kwargs...))($(syntaxstring(t.children[1]; kwargs...)))"
     elseif arity(tok) == 2
-        "($(syntaxstring(t.children[1]))) $(syntaxstring(tok)) ($(syntaxstring(t.children[2])))"
+        "($(syntaxstring(t.children[1]; kwargs...))) $(syntaxstring(tok; kwargs...)) ($(syntaxstring(t.children[2]; kwargs...)))"
     else
-        "$(syntaxstring(tok))(" * join(map((c)->("($(syntaxstring(c)))"), t.children), ",") * ")"
+        "$(syntaxstring(tok; kwargs...))(" * join(map((c)->("($(syntaxstring(c; kwargs...)))"), t.children), ",") * ")"
     end
 end
 
@@ -1161,8 +1161,8 @@ function (op::AbstractOperator)(children::NTuple{N,Formula}, args...) where {N}
     return Formula(l, op(map(tree, children)))
 end
 
-function syntaxstring(f::Formula)
-    syntaxstring(tree(f))
+function syntaxstring(f::Formula; kwargs...)
+    syntaxstring(tree(f); kwargs...)
 end
 
 """
