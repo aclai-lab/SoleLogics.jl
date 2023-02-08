@@ -1,4 +1,4 @@
-
+import Base: getindex
 
 abstract type AbstractInterpretationSet{M<:AbstractInterpretation} end
 
