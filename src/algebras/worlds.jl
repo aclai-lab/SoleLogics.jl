@@ -26,5 +26,3 @@ export EmptyWorld, CenteredWorld
 export AbstractWorldSet, WorldSet
 
 export Interval, Interval2D, OneWorld
-export dimensionality
-export goeswith_dim

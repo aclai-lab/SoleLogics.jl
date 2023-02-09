@@ -320,10 +320,10 @@ struct SyntaxTree{FT<:AbstractSyntaxToken,T<:AbstractSyntaxToken} # T<:FT
     children::NTuple{N,SyntaxTree} where {N}
 
     function _boundchecks(FT, N, T, token, children)
-        @assert arity(token) == N "Cannot instantiate SyntaxTree{$(FT), $(T)} with token" *
+        @assert arity(token) == N "Cannot instantiate SyntaxTree{$(FT),$(T)} with token" *
                                   " $(token) of arity $(arity(token)) and $(N) children."
         @assert all([T, tokenstype.(children)...] .<: FT) "Cannot instantiate" *
-                                                          " SyntaxTree{$(FT), $(T)} with token::$(T) and children of" *
+                                                          " SyntaxTree{$(FT),$(T)} with token::$(T) and children of" *
                                                           " tokens::$(tokenstype.(children))."
         return nothing
     end

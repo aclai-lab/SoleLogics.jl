@@ -56,9 +56,9 @@ accessibles(fr::AbstractMultiModalFrame{W}, S::AbstractWorldSet{W}, ::_RelationI
 
 ############################################################################################
 
-# Note: these methods must be defined for any newly defined world type WT:
-# `accessibles(fr::AbstractMultiModalFrame{W}, w::WT,           ::_RelationGlob)`
-# `accessibles(fr::AbstractMultiModalFrame{W}, S::AbstractWorldSet{WT}, ::_RelationGlob)`
+# Note: these methods must be defined for any newly defined world type W:
+# `accessibles(fr::AbstractMultiModalFrame{W}, w::W,           ::_RelationGlob)`
+# `accessibles(fr::AbstractMultiModalFrame{W}, S::AbstractWorldSet{W}, ::_RelationGlob)`
 
 ############################################################################################
 

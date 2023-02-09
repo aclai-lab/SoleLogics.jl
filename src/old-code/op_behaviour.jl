@@ -38,10 +38,10 @@ SoleLogics.IMPLICATION(universe::Worlds{T}, a::Set{T}, b::Set{T}) where {T<:Abst
 # use traits here (is_abstract_modop, is_existential_modop)
 function dispatch_modop(
     token::T,
-    km::KripkeStructure{WT},
-    w::WT,
+    km::KripkeStructure{W},
+    w::W,
     φ::UInt64,
-) where {T<:AbstractModalOperator,WT<:AbstractWorld}
+) where {T<:AbstractModalOperator,W<:AbstractWorld}
     # Consider v as some neighbor of our w
     # In the existential case, if some km,v ⊨ φ (possibly one v) then return true
     # In the universal case, if all km,v ⊨ φ then return true
