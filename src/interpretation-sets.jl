@@ -14,21 +14,21 @@ function Base.getindex(
     ::AbstractInterpretationSet{M},
     i_sample,
 )::M where {M<:AbstractInterpretation}
-    error("Please, provide ...")
+    error("Please, provide ... TODO")
 end
 
 function check(
-    ::AbstractInterpretation{M},
-    i_sample,
     ::Proposition,
+    ::AbstractInterpretationSet{M},
+    i_sample,
 )::truthtype(M) where {M<:AbstractInterpretation}
     error("Please, provide ...")
 end
 
 function check(
-    ::AbstractInterpretation{M},
-    i_sample,
     ::AbstractFormula,
+    ::AbstractInterpretationSet{M},
+    i_sample,
 )::truthtype(M) where {M<:AbstractInterpretation}
     error("Please, provide ...")
 end
@@ -38,7 +38,7 @@ struct InterpretationSet{M<:AbstractInterpretation} <: AbstractInterpretationSet
 end
 
 Base.getindex(ms::InterpretationSet, i_sample) = Base.getindex(ms.instances, i_sample)
-check(is::InterpretationSet, i_sample, args...) = check(is[i_sample], args...)
+check(f::Union{AbstractSyntaxToken,SyntaxTree,AbstractFormula}, is::InterpretationSet, i_sample, args...) = check(f, is[i_sample], args...)
 
 
 ############################################################################################

@@ -186,20 +186,11 @@ function _check_binary(km::KripkeStructure, ψ::FNode)
         return
     end
 
-    left_key = fhash(leftchild(ψ))
-    right_key = fhash(rightchild(ψ))
+    ch = children(ψ)
 
     # Implication case is ad-hoc as it needs to know the
-    # universe were the two operands are placed
-    if typeof(token(ψ)) == SoleLogics.BinaryOperator{:→}
-        setindex!(
-            memo(km),
-            IMPLICATION(worlds(km), memo(km, left_key), memo(km, right_key)),
-            key,
-        )
-    else
-        setindex!(memo(km), token(ψ)(memo(km, left_key), memo(km, right_key)), key)
-    end
+    # allworlds were the two operands are placed
+    setindex!(memo(km), token(ψ)(worlds(km), memo(km, left_key), memo(km, right_key)), key)
 end
 
 function _process_node(km::KripkeStructure, ψ::FNode)
@@ -280,4 +271,30 @@ function check(
     end
 
     return outcomes
+end
+
+"""
+    subformulas(root::FNode, sorted=true)
+Return each `FNode` in a tree, sorting them by size.
+"""
+function subformulas(root::FNode{L}; sorted=true) where {L<:AbstractLogic}
+    
+    function _subformulas(v::FNode{L}, nodes::Vector{FNode{L}}) where {L<:AbstractLogic}
+        if isdefined(v, :leftchild)
+            _subformulas(v.leftchild, nodes)
+        end
+
+        push!(nodes, v)
+
+        if isdefined(v, :rightchild)
+            _subformulas(v.rightchild, nodes)
+        end
+    end
+
+    nodes = FNode{L}[]
+    _subformulas(root, nodes)
+    if sorted
+        sort!(nodes, by = n -> SoleLogics.size(n))
+    end
+    return nodes
 end

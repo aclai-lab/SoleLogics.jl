@@ -5,11 +5,11 @@
 # and then remove the where clauses here
 
 SoleLogics.NEGATION(a::Bool) = (!a)
-SoleLogics.NEGATION(universe::Worlds{T}, ws::Worlds{T}) where {T<:AbstractWorld} = begin
-    return Worlds{T}(setdiff(universe, ws))
+SoleLogics.NEGATION(allworlds::Worlds{T}, ws::Worlds{T}) where {T<:AbstractWorld} = begin
+    return Worlds{T}(setdiff(allworlds, ws))
 end
-SoleLogics.NEGATION(universe::Worlds{T}, ws::Set{T}) where {T<:AbstractWorld} = begin
-    return setdiff(Set(universe), ws)
+SoleLogics.NEGATION(allworlds::Worlds{T}, ws::Set{T}) where {T<:AbstractWorld} = begin
+    return setdiff(Set(allworlds), ws)
 end
 
 SoleLogics.CONJUNCTION(a::Bool, b::Bool) = (a && b)
@@ -24,15 +24,15 @@ SoleLogics.DISJUNCTION(a::Set{T}, b::Set{T}) where {T<:AbstractWorld} = union(a,
 
 SoleLogics.IMPLICATION(a::Bool, b::Bool) = ifelse(a == true && b == false, false, true)
 SoleLogics.IMPLICATION(
-    universe::Worlds{T},
+    allworlds::Worlds{T},
     a::Worlds{T},
     b::Worlds{T},
 ) where {T<:AbstractWorld} = begin
-    return Worlds{T}(setdiff(universe, setdiff(a, CONJUNCTION(a, b))))
+    return Worlds{T}(setdiff(allworlds, setdiff(a, CONJUNCTION(a, b))))
 end
-SoleLogics.IMPLICATION(universe::Worlds{T}, a::Set{T}, b::Set{T}) where {T<:AbstractWorld} =
+SoleLogics.IMPLICATION(allworlds::Worlds{T}, a::Set{T}, b::Set{T}) where {T<:AbstractWorld} =
     begin
-        return setdiff(Set(universe), setdiff(a, CONJUNCTION(a, b)))
+        return setdiff(Set(allworlds), setdiff(a, CONJUNCTION(a, b)))
     end
 
 # use traits here (is_abstract_modop, is_existential_modop)

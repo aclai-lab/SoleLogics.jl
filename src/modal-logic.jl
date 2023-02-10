@@ -54,7 +54,7 @@ worldtype(a::AbstractFrame) = worldtype(typeof(a))
 """
 TODO
 """
-function worlds(::AbstractFrame{W})::AbstractVector{<:W} where {W<:AbstractWorld}
+function allworlds(::AbstractFrame{W})::AbstractVector{<:W} where {W<:AbstractWorld}
     error("Please, provide ...")
 end
 function nworlds(::AbstractFrame)::Integer
@@ -63,7 +63,6 @@ end
 function initialworld(::AbstractFrame{W})::W where {W<:AbstractWorld}
     error("Please, provide ...")
 end
-
 
 ############################################################################################
 ############################################################################################
@@ -132,7 +131,6 @@ function accessibles(::AbstractModalFrame{W}, ::W, ::AbstractRelation)::Vector{W
     error("Please, provide ...")
 end
 
-
 """
     TODO
 Wrapper used to manage many `AbstractRelation`s using a specific `AbstractModalFrame` for
@@ -165,7 +163,7 @@ abstract type AbstractAssignment{W<:AbstractWorld,A,T<:TruthValue} end
 """
 TODO
 """
-function check(::AbstractAssignment{W,A,T}, ::W, ::Proposition{A})::T where {W<:AbstractWorld,A,T<:TruthValue} # TODO?: ::Formula
+function check(::Proposition{A}, ::AbstractAssignment{W,A,T}, ::W)::T where {W<:AbstractWorld,A,T<:TruthValue} # TODO?: ::Formula
     error("Please, provide ...")
 end
 
@@ -198,17 +196,17 @@ abstract type AbstractKripkeStructure{
 } <: AbstractInterpretation{A,T} end
 
 function check(
+    ::Proposition{A},
     ::AbstractKripkeStructure{W,A,T},
     ::W,
-    ::Proposition{A},
 )::T where {W<:AbstractWorld,A,T<:TruthValue}
     error("Please, provide ...")
 end
 
 function check(
+    ::Formula,
     ::AbstractKripkeStructure{W,A,T},
     ::W,
-    ::Formula,
 )::T where {W<:AbstractWorld,A,T<:TruthValue}
     error("Please, provide ...")
 end
@@ -241,8 +239,9 @@ worldtype(a::AbstractKripkeStructure) = worldtype(typeof(a))
 
 
 nworlds(i::AbstractKripkeStructure) = nworlds(frame(i))
-initialworld(i::AbstractKripkeStructure) = initialworld(frame(i))
+initialworld(i::AbstractKripkeStructure) = initialworld(frame(i)) # TODO understand
 accessibles(i::AbstractKripkeStructure, args...) = accessibles(frame(i), args...)
+allworlds(i::AbstractKripkeStructure, args...) = allworlds(frame(i), args...)
 
 """
     struct KripkeStructure{W<:AbstractWorld,A,T<:TruthValue,K<:AbstractFrame{W,T},D<:AbstractDict{W,V<:Valuation{A,T}}} <: AbstractKripkeStructure{W,A,T}
@@ -260,14 +259,14 @@ struct KripkeStructure{W<:AbstractWorld,A,T<:TruthValue,FR<:AbstractFrame{W,T}, 
     assignment::AS
 end
 
-function check(i::KripkeStructure{W,A,T}, w::W, f::Formula)::T where {W<:AbstractWorld,A,T<:TruthValue} end
+function check(f::Formula, i::KripkeStructure{W,A,T}, w::W)::T where {W<:AbstractWorld,A,T<:TruthValue} end
 
-function check(i::KripkeStructure{W,A,T}, f::Formula)::T where {W<:AbstractWorld,A,T<:TruthValue}
-    check(i, initial(i), f)
+function check(f::Formula, i::KripkeStructure{W,A,T})::T where {W<:AbstractWorld,A,T<:TruthValue}
+    check(f, i, initial(i))
 end
 
-function check(i::KripkeStructure{W,A}, w::W, p::Proposition{A}) where {W<:AbstractWorld,A}
-    check(i.assignment, w, p)
+function check(p::Proposition{A}, i::KripkeStructure{W,A}, w::W) where {W<:AbstractWorld,A}
+    check(p, i.assignment, w)
 end
 
 # TODO maybe this yields the worlds where a certain formula is true...?
