@@ -43,6 +43,9 @@ node holds a *token*, and has as many children as the `arity` of the token.
 """
 abstract type AbstractSyntaxToken end
 
+# TODO: check if correct
+syntaxstring(s::String; kwargs...) = "$(s)"
+
 """
 Each syntax token must provide a method yielding its `arity`:
 
@@ -744,6 +747,7 @@ const TOP = TopOperator()
 const ⊤ = TOP
 
 Base.show(io::IO, op::TopOperator) = print(io, "⊤")
+syntaxstring(o::TopOperator) = "⊤"
 
 doc_BOTTOM = """
     struct BottomOperator <: AbstractTruthOperator end
@@ -762,6 +766,7 @@ const BOTTOM = BottomOperator()
 const ⊥ = BOTTOM
 
 Base.show(io::IO, op::BottomOperator) = print(io, "⊥")
+syntaxstring(o::BottomOperator) = "⊥"
 
 """
     struct TruthOperator{T<:TruthValue} <: AbstractTruthOperator
