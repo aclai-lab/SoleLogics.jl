@@ -746,7 +746,6 @@ const TOP = TopOperator()
 """$(doc_TOP)"""
 const ⊤ = TOP
 
-Base.show(io::IO, op::TopOperator) = print(io, "⊤")
 syntaxstring(o::TopOperator) = "⊤"
 
 doc_BOTTOM = """
@@ -765,7 +764,6 @@ const BOTTOM = BottomOperator()
 """$(doc_BOTTOM)"""
 const ⊥ = BOTTOM
 
-Base.show(io::IO, op::BottomOperator) = print(io, "⊥")
 syntaxstring(o::BottomOperator) = "⊥"
 
 """
