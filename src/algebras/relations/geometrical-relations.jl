@@ -7,6 +7,9 @@ abstract type GeometricalRelation <: AbstractRelation end
 # By default, this does not hold:
 istopological(r::GeometricalRelation) = false
 
+# All geometrical relations must define their converse...?
+# hasconverse(::Type{<:GeometricalRelation}) = true
+
 arity(::Type{<:GeometricalRelation}) = 2
 
 # TODO add pattern: carthesian product of relations

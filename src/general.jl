@@ -1,5 +1,5 @@
 import Base: convert, promote_rule, _promote
-import Base: eltype, in, getindex, isiterable, iterate, IteratorSize, length
+import Base: eltype, in, getindex, isiterable, iterate, IteratorSize, length, isequal
 
 export iscrisp, isfuzzy, isfinite,
     isnullary, isunary, isbinary, iscommutative
@@ -23,12 +23,14 @@ export Proposition,
 export TOP, ⊤
 export BOTTOM, ⊥
 
+export syntaxstring
+
 export arity, atomtype, propositionstype, tokentype, tokenstype,
         propositionstype, operatorstype, truthtype, collate_truth
 export check
 export atom, propositions, token, children, alphabet, formulas, domain, top,
         bottom, grammar, algebra, logic, check, tree
-export tokens, operators, propositions
+export tokens, operators, propositions, inorder
 
 ############################################################################################
 ########################################## SYNTAX ##########################################
@@ -85,8 +87,9 @@ Base.convert(::Type{P1}, t::P2) where {P1<:Proposition,P2<:Proposition} = P1(ato
 
 """ TODO document"""
 syntaxstring(p::Proposition; kwargs...) = syntaxstring(p.atom; kwargs...)
+syntaxstring(x::Union{String,Number}; kwargs...) = string(x)
 """ TODO document"""
-inverse(p::P) where {P<:Proposition} = P(inverse(p.atom))
+inverse(p::Proposition) = Proposition(inverse(p.atom))
 
 """
     abstract type AbstractOperator <: AbstractSyntaxToken end
@@ -349,6 +352,12 @@ struct SyntaxTree{FT<:AbstractSyntaxToken,T<:AbstractSyntaxToken} # T<:FT
         return new{FT,T}(token, children)
     end
 
+    function SyntaxTree{FT}(
+        t::SyntaxTree{FT2,T},
+    ) where {FT<:AbstractSyntaxToken,T<:FT,FT2}
+        return SyntaxTree{FT,T}(t.token, t.children)
+    end
+
     function SyntaxTree(
         token::T,
         children::NTuple{N,Union{AbstractSyntaxToken,SyntaxTree}} = (),
@@ -371,18 +380,7 @@ function SyntaxTree(token::T, children...) where {T<:AbstractSyntaxToken}
     return SyntaxTree(token, children)
 end
 
-"""
-    inorder(t::SyntaxTree)::String
-
-Performs an in-order visit of `t`, returning it as a string.
-"""
-function inorder(t::SyntaxTree)
-    return length(children(t)) == 0 ?
-           string(token(t)) :
-           string(token(t)) * "(" * join([inorder(c) for c in children(t)], ", ") * ")"
-end
-
-show(io::IO, t::SyntaxTree) = print(io, inorder(t))
+show(io::IO, t::SyntaxTree) = print(io, "$(typeof(t))($(syntaxstring(t)))")
 
 # Getters
 token(t::SyntaxTree) = t.token
@@ -457,6 +455,17 @@ function npropositions(t::SyntaxTree)::Integer
     return length(children(t)) == 0 ? pr : pr + sum(npropositions(c) for c in children(t))
 end
 
+"""
+    height(t::SyntaxTree)::Integer
+
+Counts all tokens appearing in a tree
+
+See also [`tokens`](@ref), [`AbstractSyntaxToken`](@ref).
+"""
+function height(t::SyntaxTree)::Integer
+    length(children(t)) == 0 ? 0 : 1 + maximum(height(c) for c in children(t))
+end
+
 # We use standard promotion between syntax tokens and trees
 Base.promote_rule(::Type{<:AbstractSyntaxToken}, ::Type{S}) where {S<:SyntaxTree} = S
 Base.promote_rule(::Type{S}, ::Type{<:AbstractSyntaxToken}) where {S<:SyntaxTree} = S
@@ -464,6 +473,11 @@ Base.promote_rule(::Type{S}, ::Type{<:AbstractSyntaxToken}) where {S<:SyntaxTree
 Base.convert(::Type{<:SyntaxTree}, t::AbstractSyntaxToken) = SyntaxTree(t)
 # Base.convert(::Type{SyntaxTree}, t::AbstractSyntaxToken) = SyntaxTree(t)
 # Base.convert(::Type{S}, t::T) where {FT<:AbstractSyntaxToken, T<:FT, S<:SyntaxTree{FT, T}} = SyntaxTree(t)
+
+# # TODO explain? useful?
+function Base.isequal(t1::SyntaxTree, t2::SyntaxTree)
+    Base.isequal(token(t1), token(t2)) && all(((c1,c2),)->Base.isequal(c1,c2), zip(children(t1), children(t2)))
+end
 
 """
 TODO document syntaxstring
@@ -479,6 +493,17 @@ function syntaxstring(t::SyntaxTree; kwargs...)
     else
         "$(syntaxstring(tok; kwargs...))(" * join(map((c)->("($(syntaxstring(c; kwargs...)))"), t.children), ",") * ")"
     end
+end
+
+"""
+    inorder(t::SyntaxTree)::String
+
+Performs an in-order visit of `t`, returning it as a string.
+"""
+function inorder(t::SyntaxTree)
+    return length(children(t)) == 0 ?
+           syntaxstring(token(t)) :
+           syntaxstring(token(t)) * "(" * join([inorder(c) for c in children(t)], ", ") * ")"
 end
 
 """
@@ -1024,6 +1049,10 @@ end
 """$(doc_tokopprop)"""
 function npropositions(f::AbstractFormula)::Integer
     return npropositions(tree(f))
+end
+"""$(doc_tokopprop)"""
+function height(f::AbstractFormula)::Integer
+    return height(tree(f))
 end
 
 """

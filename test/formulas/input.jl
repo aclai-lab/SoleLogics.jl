@@ -5,7 +5,7 @@
     @testset "General suite" begin
         n1 = FNode(CONJUNCTION)
 
-        @test string(n1.token) == "∧"
+        @test syntaxstring(n1.token) == "∧"
         @test isdefined(n1, :parent) == false
         @test isdefined(n1, :leftchild) == false
         @test isdefined(n1, :rightchild) == false
@@ -113,7 +113,7 @@
             CONJUNCTION,
             DISJUNCTION,
         ]
-        @test inorder(tree(f1)) == "((¬((p)∧(q)))∨((□(r))∧(◊(s))))"
+        @test syntaxstring(tree(f1)) == "((¬((p)∧(q)))∨((□(r))∧(◊(s))))"
 
         #     ∧
         # ┌───┴────┐
@@ -130,7 +130,7 @@
         sh2 = shunting_yard(exp2)
         f2 = parseformula(sh2)
         @test sh2 == ["p", "q", "r", "s", "t", fill(CONJUNCTION, (1, 4))...]
-        @test inorder(tree(f2)) == "((p)∧((q)∧((r)∧((s)∧(t)))))"
+        @test syntaxstring(tree(f2)) == "((p)∧((q)∧((r)∧((s)∧(t)))))"
 
         #             ∧
         #     ┌───────┴─────────────┐
@@ -155,7 +155,7 @@
             CONJUNCTION,
             CONJUNCTION,
         ]
-        @test inorder(tree(f3)) == "(((p)∧(q))∧(((r)∧(s))∧(◊(t))))"
+        @test syntaxstring(tree(f3)) == "(((p)∧(q))∧(((r)∧(s))∧(◊(t))))"
     end
 
 end

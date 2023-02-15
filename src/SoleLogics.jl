@@ -34,6 +34,9 @@ include("base-logic.jl")
 include("propositional-logic.jl")
 include("modal-logic.jl")
 
+# TODO
+include("check.jl")
+
 include("interpretation-sets.jl")
 
 include("utils.jl")

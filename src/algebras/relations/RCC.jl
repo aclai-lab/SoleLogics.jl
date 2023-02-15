@@ -62,6 +62,15 @@ syntaxstring(::Type{_Topo_NTPP}; kwargs...)  = "NTPP"
 syntaxstring(::Type{_Topo_NTPPi}; kwargs...) = "N̅T̅P̅P̅"
 
 # Properties
+hasconverse(r::Type{<:RCCRelation}) = true
+converse(r::Type{_Topo_DC}) = _Topo_DC
+converse(r::Type{_Topo_EC}) = _Topo_EC
+converse(r::Type{_Topo_PO}) = _Topo_PO
+converse(r::Type{_Topo_TPP}) = _Topo_TPPi
+converse(r::Type{_Topo_TPPi}) = _Topo_TPP
+converse(r::Type{_Topo_NTPP}) = _Topo_NTPPi
+converse(r::Type{_Topo_NTPPi}) = _Topo_NTPP
+
 issymmetric(r::_Topo_DC) = true
 issymmetric(r::_Topo_EC) = true
 issymmetric(r::_Topo_PO) = true
@@ -80,6 +89,9 @@ syntaxstring(::Type{_Topo_PP}; kwargs...)    = "PP"
 syntaxstring(::Type{_Topo_PPi}; kwargs...)   = "P̅P̅"
 
 # Properties
+converse(r::Type{_Topo_DR}) = _Topo_DR
+converse(r::Type{_Topo_PP}) = _Topo_PPi
+converse(r::Type{_Topo_PPi}) = _Topo_PP
 issymmetric(r::_Topo_DR) = true
 istransitive(r::_Topo_PP) = true
 istransitive(r::_Topo_PPi) = true

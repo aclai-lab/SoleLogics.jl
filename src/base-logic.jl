@@ -28,6 +28,7 @@ struct NamedOperator{Symbol} <: AbstractOperator end
 
 name(::NamedOperator{S}) where {S} = S
 
+# Base.show(io::IO, op::NamedOperator) = print(io, "$(syntaxstring(op))")
 syntaxstring(op::NamedOperator; kwargs...) = string(name(op))
 
 doc_NEGATION = """

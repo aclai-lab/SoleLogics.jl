@@ -175,9 +175,9 @@ f3_int = f_int(⊥ ∨ (p1 ∧ p100 ∧ p2 ∧ ⊤))
 @test_nowarn TruthDict(Dict([p1 => true]))
 
 for i in 1:10
-    tdict = TruthDict(Dict([p => rand([true, false]) for p in propositions(f3_int)]))
-    check(f3_int, tdict) && @test all(collect(values(tdict.truth)))
-    !check(f3_int, tdict) && @test !all(collect(values(tdict.truth)))
+    _tdict = TruthDict(Dict([p => rand([true, false]) for p in propositions(f3_int)]))
+    check(f3_int, _tdict) && @test all(collect(values(_tdict.truth)))
+    !check(f3_int, _tdict) && @test !all(collect(values(_tdict.truth)))
 end
 
 tdict = TruthDict(Dict([p => true for p in propositions(f3_int)]))
@@ -207,22 +207,22 @@ empty_logic = @test_nowarn propositional_logic(; operators = AbstractOperator[],
 @test_nowarn parseformulatree("p")
 @test_nowarn parseformulatree("⊤")
 
-@test string(parseformulatree("p∧q")) == "∧(p, q)"
-@test string(parseformulatree("p→q")) == "→(p, q)"
+@test inorder(parseformulatree("p∧q")) == "∧(p, q)"
+@test inorder(parseformulatree("p→q")) == "→(p, q)"
 @test parseformulatree("¬p∧q") == parseformulatree("¬(p)∧q")
 @test parseformulatree("¬p∧q") != parseformulatree("¬(p∧q)")
 
-@test filter(!isspace, string(parseformulatree("¬p∧q∧(¬s∧¬z)"))) == "∧(¬(p),∧(q,∧(¬(s),¬(z))))"
+@test filter(!isspace, inorder(parseformulatree("¬p∧q∧(¬s∧¬z)"))) == "∧(¬(p),∧(q,∧(¬(s),¬(z))))"
 @test_nowarn parseformulatree("¬p∧q∧(¬s∧¬z)", [NEGATION, CONJUNCTION])
 @test_nowarn parseformulatree("¬p∧q∧(¬s∧¬z)", [NEGATION])
 @test_nowarn operatorstype(logic(parseformula("¬p∧q∧(¬s∧¬z)", [BOX]))) == Union{typeof(□), typeof(¬)}
 @test_nowarn operatorstype(logic(parseformula("¬p∧q∧(¬s∧¬z)"))) == typeof(¬)
 @test_nowarn parseformulatree("¬p∧q→(¬s∧¬z)")
-@test filter(!isspace, string(parseformulatree("¬p∧q→(¬s∧¬z)"))) == "→(∧(¬(p),q),∧(¬(s),¬(z)))"
+@test filter(!isspace, inorder(parseformulatree("¬p∧q→(¬s∧¬z)"))) == "→(∧(¬(p),q),∧(¬(s),¬(z)))"
 @test_nowarn parseformulatree("¬p∧q→     (¬s∧¬z)")
 @test parseformulatree("□p∧   q∧(□s∧◊z)", [BOX]) == parseformulatree("□p∧   q∧(□s∧◊z)")
-@test string(parseformulatree("◊ ◊ ◊ ◊ p∧q")) == "∧(◊(◊(◊(◊(p)))), q)"
-@test string(parseformulatree("¬¬¬ □□□ ◊◊◊ p ∧ ¬¬¬ q")) == "∧(¬(¬(¬(□(□(□(◊(◊(◊(p))))))))), ¬(¬(¬(q))))"
+@test inorder(parseformulatree("◊ ◊ ◊ ◊ p∧q")) == "∧(◊(◊(◊(◊(p)))), q)"
+@test inorder(parseformulatree("¬¬¬ □□□ ◊◊◊ p ∧ ¬¬¬ q")) == "∧(¬(¬(¬(□(□(□(◊(◊(◊(p))))))))), ¬(¬(¬(q))))"
 
 @test alphabet(logic(parseformula("p→q"))) == AlphabetOfAny{String}()
 

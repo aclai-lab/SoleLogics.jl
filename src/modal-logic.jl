@@ -383,6 +383,7 @@ abstract type AbstractRelationalOperator{R<:AbstractRelation} <: AbstractOperato
 Base.operator_precedence(::AbstractRelationalOperator) = HIGH_PRIORITY
 
 relationtype(::AbstractRelationalOperator{R}) where {R<:AbstractRelation} = R
+relation(op::AbstractRelationalOperator) = relationtype(op)()
 
 arity(::Type{<:AbstractRelationalOperator{R}}) where {R<:AbstractRelation} = arity(R)-1
 
@@ -392,6 +393,9 @@ struct BoxRelationalOperator{R<:AbstractRelation} <: AbstractRelationalOperator{
 
 syntaxstring(op::DiamondRelationalOperator; kwargs...) = "⟨$(syntaxstring(relationtype(op); kwargs...))⟩"
 syntaxstring(op::BoxRelationalOperator; kwargs...)     = "[$(syntaxstring(relationtype(op); kwargs...))]"
+
+dual(op::DiamondRelationalOperator) = BoxRelationalOperator{relationtype(op)}()
+dual(op::BoxRelationalOperator)     = DiamondRelationalOperator{relationtype(op)}()
 
 ############################################################################################
 ######################################## BASE ##############################################

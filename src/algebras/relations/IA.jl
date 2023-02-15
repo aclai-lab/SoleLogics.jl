@@ -5,6 +5,8 @@
 # Interval directional relations
 abstract type IntervalRelation <: GeometricalRelation end
 
+hasconverse(::Type{<:IntervalRelation}) = true
+
 ############################################################################################
 # Interval algebra comprehends 12 relations (plus equality, i.e. RelationId):
 #  - the 6 relations After, Later, Begins, Ends, During, Overlaps
@@ -75,6 +77,19 @@ istransitive(r::_IA_Ei) = true
 istopological(r::_IA_D) = true
 istopological(r::_IA_Di) = true
 
+converse(::Type{_IA_A}) = _IA_Ai
+converse(::Type{_IA_L}) = _IA_Li
+converse(::Type{_IA_B}) = _IA_Bi
+converse(::Type{_IA_E}) = _IA_Ei
+converse(::Type{_IA_D}) = _IA_Di
+converse(::Type{_IA_O}) = _IA_Oi
+converse(::Type{_IA_Ai}) = _IA_A
+converse(::Type{_IA_Li}) = _IA_L
+converse(::Type{_IA_Bi}) = _IA_B
+converse(::Type{_IA_Ei}) = _IA_E
+converse(::Type{_IA_Di}) = _IA_D
+converse(::Type{_IA_Oi}) = _IA_O
+
 ############################################################################################
 
 # Coarser relations: IA7
@@ -85,6 +100,10 @@ struct _IA_DiorBiorEi <: IntervalRelation end; const IA_DiorBiorEi = _IA_DiorBio
 
 # Even coarser relations: IA3
 struct _IA_I          <: IntervalRelation end; const IA_I          = _IA_I();   # Intersecting (ABEDO ∪ ABEDO inverse)
+
+converse(::Type{_IA_AorO}) = _IA_AiorOi
+converse(::Type{_IA_DorBorE}) = _IA_DiorBiorEi
+converse(::Type{_IA_I}) = _IA_I
 
 # Properties
 istransitive(r::_IA_DorBorE) = true

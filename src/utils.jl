@@ -33,3 +33,12 @@ iscommutative(::Type{typeof(∧)}) = true
 iscommutative(::Type{typeof(∨)}) = true
 iscommutative(::Type{typeof(◊)}) = true
 iscommutative(::Type{typeof(□)}) = true
+
+function intersects(u, v)
+    for x in u
+        if x in v
+            return true
+        end
+    end
+    false
+end

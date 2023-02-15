@@ -33,6 +33,8 @@ function syntaxstring(::Type{R}; kwargs...) where {_XR<:_IABase,_YR<:_IABase,R<:
 end
 
 # Properties
+hasconverse(::Type{<:RectangleRelation}) = true
+converse(r::Type{RectangleRelation{R1,R2}})  where {R1<:_IABase,R2<:_IABase} = RectangleRelation{converse(R1),converse(R2)}
 istransitive(r::RectangleRelation{R1,R2})  where {R1<:_IABase,R2<:_IABase} = istransitive(R1)  && istransitive(R2)
 istopological(r::RectangleRelation{R1,R2}) where {R1<:_IABase,R2<:_IABase} = istopological(R1) && istopological(R2)
 

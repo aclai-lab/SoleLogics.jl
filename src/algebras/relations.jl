@@ -16,9 +16,15 @@ arity(r::AbstractRelation)::Integer = arity(typeof(r))
 syntaxstring(R::Type{<:AbstractRelation}; kwargs...)::Integer = error("Please, provide method syntaxstring(::$(R); kwargs...).")
 syntaxstring(r::AbstractRelation; kwargs...)::Integer = syntaxstring(typeof(r); kwargs...)
 
+converse(R::Type{<:AbstractRelation})::Type{<:AbstractRelation} = error("Please, provide method converse(::$(R)).")
+converse(r::AbstractRelation)::AbstractRelation = converse(typeof(r))()
+
+hasconverse(R::Type{<:AbstractRelation})::Bool = false
+hasconverse(r::AbstractRelation)::Bool = hasconverse(typeof(r))
+
 # Relations can be symmetric, reflexive and/or transitive.
 # By default, none of this cases holds:
-issymmetric(::AbstractRelation) = false
+issymmetric(::AbstractRelation) = false # TODO this is actually converse(r) == r
 isreflexive(::AbstractRelation) = false
 istransitive(::AbstractRelation) = false
 isinverse(::AbstractRelation, ::AbstractRelation) = false
@@ -36,6 +42,8 @@ arity(::Type{_RelationId}) = 2
 # _RelationId -> "="
 syntaxstring(::Type{_RelationId}; kwargs...) = "="
 
+hasconverse(::Type{_RelationId}) = true
+converse(::Type{_RelationId}) = _RelationId
 issymmetric(::_RelationId) = true
 isreflexive(::_RelationId) = true
 istransitive(::_RelationId) = true
@@ -51,6 +59,8 @@ arity(::Type{_RelationGlob}) = 2
 # _RelationGlob -> "G"
 syntaxstring(::Type{_RelationGlob}; kwargs...) = "G"
 
+hasconverse(::Type{_RelationGlob}) = true
+converse(::Type{_RelationGlob}) = _RelationGlob
 issymmetric(::_RelationGlob) = true
 isreflexive(::_RelationGlob) = true
 istransitive(::_RelationGlob) = true
