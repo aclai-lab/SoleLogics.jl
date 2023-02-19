@@ -390,7 +390,7 @@ Base.isiterable(::Type{<:AlphabetOfAny}) = false
 """
     struct SyntaxTree{FT<:AbstractSyntaxToken,T<:FT}
         token::T
-        children::NTuple{N, SyntaxTree} where {N}
+        children::NTuple{N,SyntaxTree} where {N}
     end
 
 A syntax tree encoding a logical formula.
@@ -584,7 +584,7 @@ Base.promote_rule(::Type{S}, ::Type{<:AbstractSyntaxToken}) where {S<:SyntaxTree
 Base.convert(::Type{S}, t::AbstractSyntaxToken) where {S<:SyntaxTree} = S(t)
 # TODO remove
 # Base.convert(::Type{SyntaxTree}, t::AbstractSyntaxToken) = SyntaxTree(t)
-# Base.convert(::Type{S}, t::T) where {FT<:AbstractSyntaxToken, T<:FT, S<:SyntaxTree{FT, T}} = SyntaxTree(t)
+# Base.convert(::Type{S}, t::T) where {FT<:AbstractSyntaxToken, T<:FT, S<:SyntaxTree{FT,T}} = SyntaxTree(t)
 
 # Helpers that make SyntaxTree's map to the same dictionary key. Useful for checking formulas on interpretations.
 function Base.isequal(a::SyntaxTree, b::SyntaxTree)
@@ -620,7 +620,7 @@ end
 ############################################################################################
 
 """
-    abstract type AbstractGrammar{A<:AbstractAlphabet, O<:AbstractOperator} end
+    abstract type AbstractGrammar{A<:AbstractAlphabet,O<:AbstractOperator} end
 
 Abstract type for representing a
 [context-free grammar](https://en.m.wikipedia.org/wiki/Context-free_grammar)
@@ -688,7 +688,7 @@ end
 """
     formulas(g::AbstractGrammar;
         maxdepth::Integer,
-        nformulas::Union{Integer, Nothing} = nothing,
+        nformulas::Union{Integer,Nothing} = nothing,
         args...
     )::Vector{<:SyntaxTree{<:tokenstype(g)}}
 
@@ -724,7 +724,7 @@ function formulas(
 end
 
 """
-    struct CompleteFlatGrammar{A<:AbstractAlphabet, O<:AbstractOperator} <: AbstractGrammar{A, O}
+    struct CompleteFlatGrammar{A<:AbstractAlphabet,O<:AbstractOperator} <: AbstractGrammar{A,O}
         alphabet::A
         operators::Vector{<:O}
     end
@@ -1040,7 +1040,7 @@ iscrisp(a::AbstractAlgebra) = iscrisp(typeof(a))
 ############################################################################################
 
 """
-    abstract type AbstractLogic{G<:AbstractGrammar, A<:AbstractAlgebra} end
+    abstract type AbstractLogic{G<:AbstractGrammar,A<:AbstractAlgebra} end
 
 Abstract type of a logic, which comprehends a context-free grammar (syntax) and
 an algebra (semantics).
@@ -1241,7 +1241,7 @@ Base._promote(x::Union{SyntaxTree,AbstractSyntaxToken}, y::AbstractFormula) = re
 In order to use operators for composing formulas, along with syntax tokens (e.g.,
 propositions) and syntax trees, each formula should specify a composition method:
 
-    (op::AbstractOperator)(children::NTuple{N, F}, args...) where {N, F<:AbstractFormula}
+    (op::AbstractOperator)(children::NTuple{N,F}, args...) where {N,F<:AbstractFormula}
 
 Note that, since `op` might not be in the logic of the child formulas,
 the resulting formula may be of a different logic.
@@ -1250,7 +1250,7 @@ See also [`AbstractFormula`](@ref), [`SyntaxTree`](@ref), [`AbstractOperator`](@
 """
 function (op::AbstractOperator)(::NTuple{N,F}, args...)::F where {N,F<:AbstractFormula}
     return error("Please, provide method
-        (op::AbstractOperator)(children::NTuple{N, $(F)}, args...) where {N}.")
+        (op::AbstractOperator)(children::NTuple{N,$(F)}, args...) where {N}.")
 end
 
 """
@@ -1355,7 +1355,7 @@ Base.hash(a::Formula) = Base.hash(tree(a))
 ############################################################################################
 
 """
-    abstract type AbstractInterpretation{A, T<:TruthValue} end
+    abstract type AbstractInterpretation{A,T<:TruthValue} end
 
 Abstract type for representing a propositional
 [interpretation](https://en.m.wikipedia.org/wiki/Interpretation_(logic))
@@ -1379,7 +1379,7 @@ truthtype(::AbstractInterpretation{A,T}) where {A,T} = T
         f::AbstractFormula,
         m::AbstractInterpretation{A,T},
         args...
-    )::T where {A, T<:TruthValue}
+    )::T where {A,T<:TruthValue}
 
 Checks a formula on a logical interpretation (or model), returning a truth value.
 This process is referred to as

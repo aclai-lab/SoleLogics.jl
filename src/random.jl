@@ -5,14 +5,14 @@ doc_randformula = """
         height::Integer,
         alphabet::AbstractAlphabet,
         operators::Vector{<:AbstractOperator};
-        rng::Union{Integer, AbstractRNG}=Random.GLOBAL_RNG
+        rng::Union{Integer,AbstractRNG}=Random.GLOBAL_RNG
     )::SyntaxTree
 
     function randformula(
         height::Integer,
         alphabet::AbstractAlphabet,
         operators::Vector{<:AbstractOperator};
-        rng::Union{Integer, AbstractRNG} = Random.GLOBAL_RNG
+        rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG
     )::Formula
 
 Return a pseudo-randomic `SyntaxTree` or `Formula`.
@@ -30,7 +30,7 @@ function randformula(
     height::Integer,
     alphabet::AbstractAlphabet,
     operators::Vector{<:AbstractOperator};
-    rng::Union{Integer, AbstractRNG} = Random.GLOBAL_RNG
+    rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG
 )::Formula
     baseformula(
         randformulatree(height, alphabet, operators; rng = rng);
@@ -44,14 +44,14 @@ function randformulatree(
     height::Integer,
     alphabet::AbstractAlphabet,
     operators::Vector{<:AbstractOperator};
-    rng::Union{Integer, AbstractRNG} = Random.GLOBAL_RNG
+    rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG
 )::SyntaxTree
     
     function _randformulatree(
         height::Integer,
         alphabet::AbstractAlphabet,
         operators::Vector{<:AbstractOperator};
-        rng::Union{Integer, AbstractRNG} = Random.GLOBAL_RNG
+        rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG
     )::SyntaxTree
         if height == 0
             return SyntaxTree(rand(rng, propositions(alphabet)))

@@ -51,7 +51,7 @@ alphabet_mixed = AlphabetOfAny{Union{String,Number}}()
 
 @test_nowarn convert(SyntaxTree, p1)
 @test_nowarn SyntaxTree(p1)
-@test_nowarn SyntaxTree{typeof(p1), typeof(p1)}(p1)
+@test_nowarn SyntaxTree{typeof(p1),typeof(p1)}(p1)
 @test_nowarn SyntaxTree(p1)
 t1_int = @test_nowarn SyntaxTree(p1, ())
 t100_int = @test_nowarn SyntaxTree(p100, ())
@@ -66,10 +66,10 @@ t100_int = @test_nowarn SyntaxTree(p100, ())
 t1n_int = @test_nowarn SyntaxTree(¬, (t1_int,))
 @test p1 in t1n_int
 @test (¬) in t1n_int
-@test tokenstype(t1n_int) == Union{typeof(¬), tokentype(t1_int)}
+@test tokenstype(t1n_int) == Union{typeof(¬),tokentype(t1_int)}
 @test_nowarn SyntaxTree(∧, (t1_int, t1n_int))
 t2_int = @test_nowarn SyntaxTree(∧, (t1_int, t1_int))
-@test tokenstype(SyntaxTree(∧, (t2_int, t1n_int))) == Union{typeof(∧), tokenstype(t1n_int)}
+@test tokenstype(SyntaxTree(∧, (t2_int, t1n_int))) == Union{typeof(∧),tokenstype(t1n_int)}
 
 grammar_int = SoleLogics.CompleteFlatGrammar(alphabet_int, SoleLogics.BASE_OPERATORS)
 
@@ -222,9 +222,9 @@ emptylogic = @test_nowarn propositionallogic(; operators = SoleLogics.AbstractOp
 @test filter(!isspace, syntaxstring(parseformulatree("¬p∧q∧(¬s∧¬z)"); function_notation = true)) == "∧(¬(p),∧(q,∧(¬(s),¬(z))))"
 @test_nowarn parseformulatree("¬p∧q∧(¬s∧¬z)", [NEGATION, CONJUNCTION])
 @test_nowarn parseformulatree("¬p∧q∧(¬s∧¬z)", [NEGATION])
-# @test ((@test_logs (:warn,) operatorstype(logic(parseformula("¬p∧q∧(¬s∧¬z)", [BOX])))) == Union{typeof(□), typeof(¬), typeof(∧)})
-@test operatorstype(logic(parseformula("¬p∧q∧(¬s∧¬z)", [BOX]))) == Union{typeof(□), typeof(¬), typeof(∧)}
-@test (@test_nowarn operatorstype(logic(parseformula("¬p∧q∧(¬s∧¬z)"))) == Union{typeof(¬), typeof(∧)})
+# @test ((@test_logs (:warn,) operatorstype(logic(parseformula("¬p∧q∧(¬s∧¬z)", [BOX])))) == Union{typeof(□),typeof(¬),typeof(∧)})
+@test operatorstype(logic(parseformula("¬p∧q∧(¬s∧¬z)", [BOX]))) == Union{typeof(□),typeof(¬),typeof(∧)}
+@test (@test_nowarn operatorstype(logic(parseformula("¬p∧q∧(¬s∧¬z)"))) == Union{typeof(¬),typeof(∧)})
 @test_nowarn parseformulatree("¬p∧q→(¬s∧¬z)")
 @test filter(!isspace, syntaxstring(parseformulatree("¬p∧q→(¬s∧¬z)"); function_notation = true)) == "→(∧(¬(p),q),∧(¬(s),¬(z)))"
 @test_nowarn parseformulatree("¬p∧q→     (¬s∧¬z)")

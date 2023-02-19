@@ -6,7 +6,7 @@
 using SoleLogics.Worlds
 
 # Note: overwriting model name
-const Worlds = Array{AbstractWorld, 1}
+const Worlds = Array{AbstractWorld,1}
 
 # Adjacents is the simplest type of relation-collection
 struct Adjacents{T<:AbstractWorld} <: AbstractDict{T,Worlds}
@@ -207,7 +207,7 @@ function check(
     km::KripkeStructure{T},
     fx::SoleLogics.Formula{L};
     max_fheight_memo = Inf
-) where {T<:AbstractWorld, L<:AbstractLogic}
+) where {T<:AbstractWorld,L<:AbstractLogic}
     forget_list = Vector{SoleLogics.FNode}()
 
     if !haskey(memo(km), fhash(fx.tree))
@@ -241,7 +241,7 @@ function check(
     𝑀::Vector{KripkeStructure{T}},
     Φ::Vector{SoleLogics.Formula{L}};
     max_fheight_memo = Inf,
-) where {T<:AbstractWorld, L<:AbstractLogic}
+) where {T<:AbstractWorld,L<:AbstractLogic}
     for km in 𝑀
         for φ in Φ
             check(km, φ, max_fheight_memo = max_fheight_memo)
@@ -257,7 +257,7 @@ function check(
     Φ::Vector{SoleLogics.Formula{L}},
     iw::T;
     max_fheight_memo = Inf,
-) where {T<:AbstractWorld, L<:AbstractLogic}
+) where {T<:AbstractWorld,L<:AbstractLogic}
     outcomes = Matrix{Bool}(undef, length(𝑀), length(Φ))
 
     for 𝑚 in eachindex(𝑀)

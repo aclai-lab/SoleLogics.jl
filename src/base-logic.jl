@@ -2,8 +2,8 @@
     collatetruth(
         a::AbstractAlgebra,
         op::AbstractOperator,
-        t::NTuple{N, T},
-    )::T where {N, T<:TruthValue}
+        t::NTuple{N,T},
+    )::T where {N,T<:TruthValue}
 
 Returns the truth value of a composed formula op(φ1, ..., φN), given the `N`
 truth values of its immediate sub-formulas.
@@ -25,7 +25,7 @@ function collatetruth(
                      " operator $(typeof(op)) with arity $(arity(op))).")
     else
         return error("Please, provide method collatetruth(::$(typeof(a)), ::$(typeof(op))," *
-                     " ::NTuple{$(arity(op)), $(truthtype(a))}.")
+                     " ::NTuple{$(arity(op)),$(truthtype(a))}.")
     end
 end
 
@@ -218,7 +218,7 @@ default_algebra(::Type{Bool}) = BooleanAlgebra{Bool}()
 ############################################################################################
 
 """
-    struct BaseLogic{G<:AbstractGrammar, A<:AbstractAlgebra} <: AbstractLogic{G, A}
+    struct BaseLogic{G<:AbstractGrammar,A<:AbstractAlgebra} <: AbstractLogic{G,A}
         grammar::G
         algebra::A
     end
