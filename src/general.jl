@@ -1,36 +1,5 @@
 import Base: convert, promote_rule, _promote
-import Base: eltype, in, getindex, isiterable, iterate, IteratorSize, length, isequal
-
-export iscrisp, isfuzzy, isfinite,
-    isnullary, isunary, isbinary, iscommutative
-
-export Proposition,
-    #
-    AlphabetOfAny,
-    ExplicitAlphabet,
-    LazyAlphabet,
-    #
-    AbstractOperator,
-    #
-    SyntaxTree,
-    #
-    CompleteFlatGrammar,
-    #
-    TruthOperator,
-    #
-    Formula
-
-export TOP, ⊤
-export BOTTOM, ⊥
-
-export syntaxstring
-
-export arity, atomtype, propositionstype, tokentype, tokenstype,
-        propositionstype, operatorstype, truthtype, collate_truth
-export check
-export atom, propositions, token, children, alphabet, formulas, domain, top,
-        bottom, grammar, algebra, logic, check, tree
-export tokens, operators, propositions, inorder
+import Base: eltype, in, getindex, isiterable, iterate, IteratorSize, length, isequal, hash
 
 ############################################################################################
 ########################################## SYNTAX ##########################################
@@ -40,56 +9,136 @@ export tokens, operators, propositions, inorder
     abstract type AbstractSyntaxToken end
 
 A token in a syntax tree.
-A syntax tree is a tree-like structure representing a formula, where each
+A syntax tree is a tree-like structure representing a logical formula, where each
 node holds a *token*, and has as many children as the `arity` of the token.
+
+See also [`SyntaxTree`](@ref), [`arity`](@ref), [`syntaxstring`](@ref).
 """
 abstract type AbstractSyntaxToken end
 
-# TODO: check if correct
-syntaxstring(s::String; kwargs...) = "$(s)"
-
 """
-Each syntax token must provide a method yielding its `arity`:
-
     arity(::Type{<:AbstractSyntaxToken})::Integer
     arity(t::AbstractSyntaxToken)::Integer = arity(typeof(t))
 
-The arity of a token is the expected number of children of a node that
-wraps it in a syntax tree.
+Provides the `arity` of a syntax token. The arity of a syntax token is an integer
+representing the number of allowed children in a `SyntaxTree`. Tokens with `arity` equal
+to 0, 1 or 2 are called `nullary`, `unary` and `binary`, respectively.
 
 See also [`AbstractSyntaxToken`](@ref).
 """
-arity(T::Type{<:AbstractSyntaxToken})::Integer = error("Please, provide method arity(::$(T)).")
-arity(t::AbstractSyntaxToken)::Integer = arity(typeof(t))
+arity(TOK::Type{<:AbstractSyntaxToken})::Integer = error("Please, provide method arity(::$(typeof(TOK))).")
+arity(tok::AbstractSyntaxToken)::Integer = arity(typeof(tok))
+
+# Helpers: TODO move to SoleBase?
+isnullary(a) = arity(a) == 0
+isunary(a) = arity(a) == 1
+isbinary(a) = arity(a) == 2
+
+"""
+    syntaxstring(φ::AbstractFormula; kwargs...)::String
+    syntaxstring(t::SyntaxTree; kwargs...)::String
+    syntaxstring(tok::AbstractSyntaxToken; kwargs...)::String
+
+Produces the string representation of a formula, syntax token or syntax tree by performing
+a tree traversal. Note that this representation may introduce redundant parenthesis.
+`kwargs` can be used to specify how to display syntax tokens/trees under
+some specific conditions.
+
+The following `kwargs` are currently supported:
+- `function_notation = false::Bool`: when set to `true`, it forces the use of
+function notation for binary operators.
+See (here)[https://en.m.wikipedia.org/wiki/Infix_notation].
+
+See also [`parseformula`](@ref), [`parseformulatree`](@ref),
+[`SyntaxTree`](@ref), [`AbstractSyntaxToken`](@ref).
+
+# Examples
+```julia-repl
+julia> syntaxstring((parseformula("◊((p∧s)→q)")))
+"(◊(p ∧ s)) → q"
+
+julia> syntaxstring((parseformula("◊((p∧s)→q)")); function_notation = true)
+"→(◊(∧(p, s)), q)"
+```
+
+# Extended help
+
+In the case of a syntax tree or formula, `syntaxstring` is a recursive function that calls
+itself on the syntax children of each node. For a correct functioning, the `syntaxstring` 
+must be defined (including `kwargs...`) for every newly defined
+`AbstractSyntaxToken` (e.g., operators and `Proposition`s).
+In particular, for the case of `Proposition`s, the function calls itself on the atom:
+
+    syntaxstring(p::Proposition; kwargs...) = syntaxstring(atom(p); kwargs...)
+
+Then, the syntaxstring for a given atom can be defined. For example, with string atoms,
+the function can simply be:
+    
+    syntaxstring(atom::String; kwargs...) = atom
+
+"""
+function syntaxstring(tok::AbstractSyntaxToken; kwargs...)::String
+    error("Please, provide method syntaxstring(::$(typeof(tok)); kwargs...).")
+end
+
+# Helper
+syntaxstring(atom::Union{String,Number}; kwargs...) = string(atom)
+
+############################################################################################
 
 """
     struct Proposition{A} <: AbstractSyntaxToken
         atom::A
     end
 
-A `Proposition{A}` (also called a propositional letter, or simply *letter*) wraps a value
+A proposition, sometimes called a propositional letter (or simply *letter*), of type
+`Proposition{A}` wraps a value
 `atom::A` representing a fact which truth can be assessed on a logical interpretation.
+
+Propositions are nullary tokens (i.e, they are at the leaves of a syntax tree).
+Note that their atom cannot be a Proposition.
 
 See also [`AbstractSyntaxToken`](@ref), [`AbstractInterpretation`](@ref), [`check`](@ref).
 """
 struct Proposition{A} <: AbstractSyntaxToken
     atom::A
+
+    function Proposition{A}(atom::A) where {A}
+        @assert !(atom isa Proposition) "Illegal nesting." *
+            " Cannot instantiate Proposition with atom of type $(typeof(atom))"
+        new{A}(atom)
+    end
+    function Proposition(atom::A) where {A}
+        Proposition{A}(atom)
+    end
 end
+
+atom(p::Proposition) = p.atom
 
 arity(::Type{<:Proposition}) = 0
 atomtype(::Proposition{A}) where {A} = A
 atomtype(::Type{Proposition{A}}) where {A} = A
-atom(p::Proposition) = p.atom
 
-show(io::IO, t::Proposition) = print(io, atom(t))
+# TODO remove:
+# Base.show(io::IO, t::Proposition) = print(io, atom(t))
 
+# Helper
 Base.convert(::Type{P1}, t::P2) where {P1<:Proposition,P2<:Proposition} = P1(atom(t))
 
-""" TODO document"""
-syntaxstring(p::Proposition; kwargs...) = syntaxstring(p.atom; kwargs...)
-syntaxstring(x::Union{String,Number}; kwargs...) = string(x)
-""" TODO document"""
-inverse(p::Proposition) = Proposition(inverse(p.atom))
+syntaxstring(p::Proposition; kwargs...) = syntaxstring(atom(p); kwargs...)
+
+"""
+    inverse(p::Proposition) = Proposition(inverse(atom(p)))
+
+Returns the inverse of a proposition `p`, that is, a `Proposition` which inverted semantics
+with respect to `p`. In a crisp propositional logic, for example, the inverse proposition
+is the one which is true whenever `p` is false, and viceversa.
+
+See also [`Proposition`](@ref), [`check`](@ref).
+"""
+inverse(p::Proposition) = Proposition(inverse(atom(p)))
+
+############################################################################################
 
 """
     abstract type AbstractOperator <: AbstractSyntaxToken end
@@ -98,8 +147,6 @@ An operator is a [logical constant](https://en.m.wikipedia.org/wiki/Logical_conn
 which establishes a relation between propositions (i.e., facts).
 For example, the boolean operators AND, OR and IMPLIES (stylized as ∧, ∨ and →)
 are used to connect propositions and express derived concepts.
-TODO: Correct, but perhaps not enough.
-TODO-reply: What is now missing here?
 
 Since operators display very different algorithmic behaviors,
 all `struct`s that are subtypes of `AbstractOperator` must
@@ -109,15 +156,47 @@ See also [`AbstractSyntaxToken`](@ref), [`NamedOperator`](@ref), [`check`](@ref)
 """
 abstract type AbstractOperator <: AbstractSyntaxToken end
 
-isnullary(O::Type{<:AbstractOperator}) = arity(O) == 0
-isnullary(o::AbstractOperator) = isnullary(typeof(o))
-isunary(O::Type{<:AbstractOperator}) = arity(O) == 1
-isunary(o::AbstractOperator) = isunary(typeof(o))
-isbinary(O::Type{<:AbstractOperator}) = arity(O) == 2
-isbinary(o::AbstractOperator) = isbinary(typeof(o))
+# Since, in general, operators are singletons, we show them via their syntaxstring
+Base.show(io::IO, o::AbstractOperator) = print(io, syntaxstring(o))
 
-iscommutative(::Type{AbstractOperator}) = false
+doc_iscommutative = """
+    iscommutative(::Type{AbstractOperator}) = false
+    iscommutative(o::AbstractOperator) = iscommutative(typeof(o))
+
+Returns whether it is known that an `AbstractOperator` is commutative.
+
+# Examples
+```julia-repl
+julia> iscommutative(∧)
+true
+julia> iscommutative(→)
+false
+```
+
+# Extended help
+
+Since nullary and unary operators are always commutative,
+this function is actually implemented as:
+
+    iscommutative(O::Type{<:AbstractOperator}) = isnullary(O) || isunary(O) || _iscommutative(O)
+    iscommutative(o::AbstractOperator) = iscommutative(typeof(o))
+    _iscommutative(::Type{<:AbstractOperator}) = false
+
+When defining new operators `O`, provide a method `_iscommutative`, such as:
+    
+    _iscommutative(::Type{typeof(∧)}) = true
+    # TODO example with xor?
+
+See also [`isunary`](@ref), [`isnullary`](@ref).
+"""
+
+"""$(doc_iscommutative)"""
+iscommutative(O::Type{<:AbstractOperator}) = isnullary(O) || isunary(O) || _iscommutative(O)
 iscommutative(o::AbstractOperator) = iscommutative(typeof(o))
+"""$(doc_iscommutative)"""
+_iscommutative(::Type{<:AbstractOperator}) = false
+
+############################################################################################
 
 """
     abstract type AbstractAlphabet{A} end
@@ -126,7 +205,9 @@ Abstract type for representing an alphabet of propositions with atoms of type `A
 An alphabet (or propositional alphabet) is assumed to be a
 [countable](https://en.m.wikipedia.org/wiki/Countable_set) set of propositions.
 
-See also [`Proposition`](@ref), [`AbstractGrammar`](@ref).
+See also [`ExplicitAlphabet`](@ref), [`AlphabetOfAny`](@ref),
+[`propositionstype`](@ref), [`atomtype`](@ref),
+[`Proposition`](@ref), [`AbstractGrammar`](@ref).
 """
 abstract type AbstractAlphabet{A} end
 
@@ -153,7 +234,14 @@ function Base.in(p::Proposition, a::AbstractAlphabet)::Bool
     end
 end
 
-"""
+# Helper
+function Base.in(atom::Union{String,Number}, a::AbstractAlphabet)
+    @warn "Please, use Base.in(Proposition($(atom)), alphabet::$(typeof(a))) instead of" *
+        " Base.in($(atom), alphabet::$(typeof(a)))"
+    Base.in(Proposition(atom), a)
+end
+
+doc_iterable = """
 Each alphabet must specify whether it is *iterable* or not.
 An alphabet is iterable if it provides the (two) `iterate` methods required by the
 [iteration interface](https://docs.julialang.org/en/v1/manual/interfaces/#man-interface-iteration).
@@ -167,8 +255,11 @@ By default, an alphabet is considered iterable:
 
 See also [`AbstractAlphabet`](@ref), [`Proposition`](@ref).
 """
+
+"""$(doc_iterable)"""
 Base.isiterable(::Type{<:AbstractAlphabet}) = true
 Base.isiterable(a::AbstractAlphabet) = Base.isiterable(typeof(a))
+"""$(doc_iterable)"""
 function Base.iterate(a::AbstractAlphabet)
     if isiterable(a)
         return error("Please, provide method Base.iterate(::$(typeof(a)))," *
@@ -186,9 +277,9 @@ function Base.iterate(a::AbstractAlphabet, state)
     end
 end
 
-"""
+doc_finite = """
 Each alphabet must specify whether it is finite.
-An alphabet is finite if it provides the `length` method.
+An alphabet is finite iff it provides the `length` method.
 
 By default, an alphabet is considered finite:
 
@@ -198,8 +289,12 @@ By default, an alphabet is considered finite:
 
 See also [`AbstractAlphabet`](@ref), [`Proposition`](@ref).
 """
+
+"""$(doc_finite)"""
 Base.isfinite(::Type{<:AbstractAlphabet}) = true
 Base.isfinite(a::AbstractAlphabet) = Base.isfinite(typeof(a))
+
+"""$(doc_finite)"""
 function Base.length(a::AbstractAlphabet)
     if isfinite(a)
         return error("Please, provide method Base.length(::$(typeof(a)))," *
@@ -254,9 +349,9 @@ end
         propositions::Vector{Proposition{A}}
     end
 
-An alphabet wrapping propositions in a `Vector`.
+An alphabet wrapping propositions in a (finite) `Vector`.
 
-See also [`AbstractAlphabet`](@ref).
+See also [`propositions`](@ref), [`AbstractAlphabet`](@ref).
 """
 struct ExplicitAlphabet{A} <: AbstractAlphabet{A}
     propositions::Vector{Proposition{A}}
@@ -265,17 +360,6 @@ struct ExplicitAlphabet{A} <: AbstractAlphabet{A}
         return new{A}(collect(propositions))
     end
 
-    """
-    TODO: Why ExplicitAlphabet{A} and not new{A}? The same question holds for the other constructors
-    TODO2: Please reply or solve it
-
-    TODO: sorry, I missed this one. In this case I have three different
-      constructors. If at
-      some point I have to add, say, a safety check, I can add it three times
-      (one per each constructor); however, I prefer to "cascade" the three
-      constructors, so that I can cover the three constructors by writing a unique safety check in the first one.
-      This avoids code duplication.
-    """
     function ExplicitAlphabet(propositions::AbstractVector{Proposition{A}}) where {A}
         return ExplicitAlphabet{A}(collect(propositions))
     end
@@ -292,15 +376,15 @@ Base.length(a::ExplicitAlphabet) = length(a.propositions)
 """
     struct AlphabetOfAny{A} <: AbstractAlphabet{A} end
 
-An implicit infinite alphabet that includes all propositions with atoms of a subtype of A.
+An implicit, infinite alphabet that includes all propositions with atoms of a subtype of A.
+
+See also [`AbstractAlphabet`](@ref).
 """
 struct AlphabetOfAny{A} <: AbstractAlphabet{A} end
 Base.in(::Proposition{PA}, ::AlphabetOfAny{AA}) where {PA,AA} = (PA <: AA)
 Base.isfinite(::Type{<:AlphabetOfAny}) = false
 Base.isiterable(::Type{<:AlphabetOfAny}) = false
 
-############################################################################################
-############################################################################################
 ############################################################################################
 
 """
@@ -313,24 +397,34 @@ A syntax tree encoding a logical formula.
 Each node of the syntax tree holds a `token::T`, and
 has as many children as the `arity` of the token.
 
-This implementation is *safe*, in that, this arity check is performed upon construction.
+This implementation is *arity-compliant*, in that, upon construction, 
+the arity is checked against the number of children provided.
 An additional type parameter `FT` ensures that the token types of the sub-tree are
 constrained to a predefined set of types.
 When it is not specified, this parameter defaults to the `Union` between `T`, and the `FT`s
-of the child nodes.
+of the child nodes. Note: if not handled correctly, this can cause an abuse of Julia's
+[multiple dispatch engine](https://docs.julialang.org/en/v1/manual/performance-tips/#The-dangers-of-abusing-multiple-dispatch-(aka,-more-on-types-with-values-as-parameters)).
 
-See also [`AbstractSyntaxToken`](@ref), [`arity`](@ref), [`Proposition`](@ref), [`Operator`](@ref).
+See also [`token`](@ref), [`children`](@ref), [`tokentype`](@ref),
+[`tokens`](@ref), [`operators`](@ref), [`propositions`](@ref),
+[`ntokens`](@ref), [`npropositions`](@ref), [`height`](@ref),
+[`tokenstype`](@ref), [`operatorstype`](@ref), [`propositionstype`](@ref),
+[`AbstractSyntaxToken`](@ref), [`arity`](@ref), [`Proposition`](@ref), [`Operator`](@ref).
 """
 struct SyntaxTree{FT<:AbstractSyntaxToken,T<:AbstractSyntaxToken} # T<:FT
+
+    # The syntax token at the current node
     token::T
+    
+    # The child nodes of the current node
     children::NTuple{N,SyntaxTree} where {N}
 
     function _boundchecks(FT, N, T, token, children)
         @assert arity(token) == N "Cannot instantiate SyntaxTree{$(FT),$(T)} with token" *
                                   " $(token) of arity $(arity(token)) and $(N) children."
-        @assert all([T, tokenstype.(children)...] .<: FT) "Cannot instantiate" *
-                                                          " SyntaxTree{$(FT),$(T)} with token::$(T) and children of" *
-                                                          " tokens::$(tokenstype.(children))."
+        @assert all([T, tokenstype.(children)...] .<: FT) "" *
+                "Cannot instantiate SyntaxTree{$(FT),$(T)} with token::$(T) and" *
+                " tokenstype.(children)::$(tokenstype.(children))."
         return nothing
     end
 
@@ -355,7 +449,7 @@ struct SyntaxTree{FT<:AbstractSyntaxToken,T<:AbstractSyntaxToken} # T<:FT
     function SyntaxTree{FT}(
         t::SyntaxTree{FT2,T},
     ) where {FT<:AbstractSyntaxToken,T<:FT,FT2}
-        return SyntaxTree{FT,T}(t.token, t.children)
+        return SyntaxTree{FT,T}(token(t), children(t))
     end
 
     function SyntaxTree(
@@ -380,19 +474,30 @@ function SyntaxTree(token::T, children...) where {T<:AbstractSyntaxToken}
     return SyntaxTree(token, children)
 end
 
-show(io::IO, t::SyntaxTree) = print(io, "$(typeof(t))($(syntaxstring(t)))")
+# Shows the type of the syntax tree and its syntaxstring.
+# Base.show(io::IO, t::SyntaxTree) = print(io, "$(typeof(t))($(syntaxstring(t)))")
+function Base.show(io::IO, t::SyntaxTree)
+    println(io, "SyntaxTree: $(syntaxstring(t))")
+    print(io, "Allowed token types: $(tokenstype(t))")
+end
+
 
 # Getters
 token(t::SyntaxTree) = t.token
 children(t::SyntaxTree) = t.children
 
 tokentype(::SyntaxTree{FT,T}) where {FT,T} = T
-tokenstype(::SyntaxTree{FT}) where {FT} = FT
-# TODO2: are these intersections "fast"? because we use it in the return types of some functions -- I'm not sure how julia handles it
-# TODO2: I think so, because typeintersect can be computed at compile-time.
+tokenstype(::SyntaxTree{FT,T}) where {FT,T} = FT
 operatorstype(t::SyntaxTree) = typeintersect(AbstractOperator, tokenstype(t))
 propositionstype(t::SyntaxTree) = typeintersect(Proposition, tokenstype(t))
 
+"""
+    Base.in(t::AbstractSyntaxToken, tree::SyntaxTree)::Bool
+
+Returns whether a token appears in a tree or not.
+
+See also [`tokens`](@ref), [`SyntaxTree`](@ref).
+"""
 function Base.in(t::AbstractSyntaxToken, tree::SyntaxTree)
     return t == token(tree) || any([Base.in(t, c) for c in children(tree)])
 end
@@ -413,24 +518,30 @@ end
 
 Enumerates all operators appearing in a tree
 
-See also [`noperators`](@ref), [`propositions`](@ref), [`tokens`](@ref), [`AbstractSyntaxToken`](@ref).
-"""
+See also [`noperators`](@ref), [`propositions`](@ref), [`tokens`](@ref), [`AbstractOperator`](@ref).
+""" # TODO explain that when applied to formula/tree, it does this, but with a logic it shows the operators in the grammar.
 function operators(t::SyntaxTree)::AbstractVector{operatorstype(t)}
     ops = token(t) isa AbstractOperator ? [token(t)] : []
     return AbstractOperator[vcat(operators.(children(t))...)..., ops...]
 end
 
 """
-    propositions(t::SyntaxTree)::AbstractVector{propositionstype(t)}
+    propositions(t::SyntaxTree)::AbstractVector{Proposition}
 
 Enumerates all propositions appearing in a tree
 
-See also [`npropositions`](@ref), [`operators`](@ref), [`tokens`](@ref), [`AbstractSyntaxToken`](@ref).
+See also [`npropositions`](@ref), [`operators`](@ref), [`tokens`](@ref), [`Proposition`](@ref).
 """
-function propositions(t::SyntaxTree)::AbstractVector{propositionstype(t)}
-    ps = token(t) isa Proposition ? [token(t)] : []
+function propositions(t::SyntaxTree)::AbstractVector{Proposition}
+    ps = token(t) isa Proposition ? Proposition[token(t)] : Proposition[]
     return Proposition[vcat(propositions.(children(t))...)..., ps...]
 end
+
+# TODO why doesn't this work?
+# function propositions(t::SyntaxTree)::AbstractVector{propositionstype(t)}
+#     ps = token(t) isa Proposition ? propositionstype(t)[token(t)] : propositionstype(t)[]
+#     return propositionstype(t)[vcat(propositions.(children(t))...)..., ps...]
+# end
 
 """
     ntokens(t::SyntaxTree)::Integer
@@ -470,41 +581,43 @@ end
 Base.promote_rule(::Type{<:AbstractSyntaxToken}, ::Type{S}) where {S<:SyntaxTree} = S
 Base.promote_rule(::Type{S}, ::Type{<:AbstractSyntaxToken}) where {S<:SyntaxTree} = S
 
-Base.convert(::Type{<:SyntaxTree}, t::AbstractSyntaxToken) = SyntaxTree(t)
+Base.convert(::Type{S}, t::AbstractSyntaxToken) where {S<:SyntaxTree} = S(t)
+# TODO remove
 # Base.convert(::Type{SyntaxTree}, t::AbstractSyntaxToken) = SyntaxTree(t)
 # Base.convert(::Type{S}, t::T) where {FT<:AbstractSyntaxToken, T<:FT, S<:SyntaxTree{FT, T}} = SyntaxTree(t)
 
-# # TODO explain? useful?
-function Base.isequal(t1::SyntaxTree, t2::SyntaxTree)
-    Base.isequal(token(t1), token(t2)) && all(((c1,c2),)->Base.isequal(c1,c2), zip(children(t1), children(t2)))
+# Helpers that make SyntaxTree's map to the same dictionary key. Useful for checking formulas on interpretations.
+function Base.isequal(a::SyntaxTree, b::SyntaxTree)
+    Base.isequal(token(a), token(b)) && all(((c1,c2),)->Base.isequal(c1,c2), zip(children(a), children(b)))
 end
+Base.hash(a::SyntaxTree) = Base.hash(syntaxstring(a))
 
-"""
-TODO document syntaxstring
-"""
-function syntaxstring(t::SyntaxTree; kwargs...)
+# Refer to syntaxstring(tok::AbstractSyntaxToken; kwargs...) for documentation
+function syntaxstring(t::SyntaxTree; function_notation = false, kwargs...)
+    function syntaxstring_fun(t::SyntaxTree)
+        tok = token(t)
+        return length(children(t)) == 0 ?
+               syntaxstring(tok; function_notation = function_notation, kwargs...) :
+               syntaxstring(tok; function_notation = function_notation, kwargs...) * "(" *
+                    join([syntaxstring(c; function_notation = function_notation, kwargs...) for c in children(t)], ", ") *
+                ")"
+        # "$(syntaxstring(tok; kwargs...))(" * join(map((c)->("($(syntaxstring(c; kwargs...)))"), children(t)), ",") * ")"
+    end
+
     tok = token(t)
     if arity(tok) == 0
-        syntaxstring(tok; kwargs...)
-    elseif arity(tok) == 1
-        "$(syntaxstring(tok; kwargs...))($(syntaxstring(t.children[1]; kwargs...)))"
-    elseif arity(tok) == 2
-        "($(syntaxstring(t.children[1]; kwargs...))) $(syntaxstring(tok; kwargs...)) ($(syntaxstring(t.children[2]; kwargs...)))"
+        syntaxstring(tok; function_notation = function_notation, kwargs...)
+    elseif arity(tok) == 2 && !function_notation
+        f = ch->arity(token(ch)) == 0 ? "$(syntaxstring(ch; function_notation = function_notation, kwargs...))" : "($(syntaxstring(ch; function_notation = function_notation, kwargs...)))"
+        # Infix notation for binary operator
+        "$(f(children(t)[1])) $(syntaxstring(tok; function_notation = function_notation, kwargs...)) $(f(children(t)[2]))"
     else
-        "$(syntaxstring(tok; kwargs...))(" * join(map((c)->("($(syntaxstring(c; kwargs...)))"), t.children), ",") * ")"
+        # Function notation for higher arity operator
+        syntaxstring_fun(t)
     end
 end
 
-"""
-    inorder(t::SyntaxTree)::String
-
-Performs an in-order visit of `t`, returning it as a string.
-"""
-function inorder(t::SyntaxTree)
-    return length(children(t)) == 0 ?
-           syntaxstring(token(t)) :
-           syntaxstring(token(t)) * "(" * join([inorder(c) for c in children(t)], ", ") * ")"
-end
+############################################################################################
 
 """
     abstract type AbstractGrammar{A<:AbstractAlphabet, O<:AbstractOperator} end
@@ -515,7 +628,10 @@ based on a *single* alphabet of type `A`, and a set of operators
 that consists of all the (singleton) child types of `O`.
 A context-free grammar is a simple structure for defining formulas inductively.
 
-See also [`AbstractAlphabet`](@ref), [`AbstractOperator`](@ref).
+See also [`alphabet`](@ref),
+[`propositionstype`](@ref), [`tokenstype`](@ref), 
+[`operatorstype`](@ref), [`alphabettype`](@ref),
+[`AbstractAlphabet`](@ref), [`AbstractOperator`](@ref).
 """
 abstract type AbstractGrammar{A<:AbstractAlphabet,O<:AbstractOperator} end
 
@@ -525,9 +641,9 @@ alphabettype(::AbstractGrammar{A,O}) where {A,O} = A
 """
     alphabet(g::AbstractGrammar{A} where {A})::A
 
-Each grammar must provide a method for accessing its propositional alphabet.
+Returns the propositional alphabet of a grammar.
 
-See also [`AbstractGrammar`](@ref).
+See also [`AbstractAlphabet`](@ref), [`AbstractGrammar`](@ref).
 """
 function alphabet(g::AbstractGrammar{A} where {A})::A
     return error("Please, provide method alphabet(::$(typeof(g))).")
@@ -551,6 +667,7 @@ See also [`AbstractGrammar`](@ref).
 function Base.in(t::AbstractSyntaxToken, g::AbstractGrammar)
     return error("Please, provide method Base.in(::$(typeof(t)), ::$(typeof(g))).")
 end
+
 # Note: when using this file's syntax tokens, these methods suffice:
 Base.in(p::Proposition, g::AbstractGrammar) = Base.in(p, alphabet(g))
 Base.in(op::AbstractOperator, g::AbstractGrammar) = (op <: operatorstype(g))
@@ -578,9 +695,6 @@ end
 Each grammar with a finite and iterable alphabet must provide a method for
 enumerating its formulas, encoded as `SyntaxTree`s.
 
-TODO2: see the general TODOs at the beginning
-TODO3: which one?
-
 Additional `args` can be used to model the function's behavior.
 At least these two arguments should be covered:
 - a `nformulas` argument can be used to limit the size of the returned `Vector`;
@@ -589,11 +703,6 @@ maximum depth;
 
 See also [`AbstractGrammar`](@ref), [`SyntaxTree`](@ref).
 """
-# TODO: do we use space around "=" ? that is "something = else" or "something=else"?
-# make a choice and keep it, please (also in the documentation)
-# TODO-reply: contrary to BlueStyle, I would like to keep " = ".
-# TODO2: ok for me, but when I'm trying to save, it removes the spaces.. perhaps there is a (background) demon that fixes it, I don't know
-# TODO: I see; I think you should set your editor so that it does not automate this thing, at least for julia files.
 function formulas(
     g::AbstractGrammar{A,O} where {A,O};
     maxdepth::Integer,
@@ -621,17 +730,20 @@ end
     end
 
 Grammar that generates all well-formed formulas obtained by the arity-complying composition
-of propositions of an alphabet of type `A`, and all operators with type in `O`.
+of propositions of an alphabet of type `A`, and all operators in `operators`.
 With n operators, this grammar has exactly n+1 production rules, and
 m+1 terminal symbols, where m is the number of nullary operators.
-For example, with `O = Union{⊥,∧,∨}`, the grammar is:
+For example, with `operators = [⊥,∧,∨]`, the grammar is:
 
     T ::= p | ⊥ | T ∧ T | T ∨ T
 
 with p ∈ alphabet. Note: it is *flat* in the sense that all rules substitute the same
 (unique and starting) non-terminal symbol T.
 
-See also [`AbstractOperator`](@ref), [`AbstractGrammar`](@ref).
+See also [`alphabet`](@ref), [`operators`](@ref),
+[`nonterminals`](@ref), [`terminals`](@ref),
+[`formulas`](@ref),
+[`AbstractOperator`](@ref), [`AbstractGrammar`](@ref).
 """
 struct CompleteFlatGrammar{A<:AbstractAlphabet,O<:AbstractOperator} <: AbstractGrammar{A,O}
     alphabet::A
@@ -705,7 +817,7 @@ function formulas(
 )::Vector{SyntaxTree{<:tokenstype(g)}}
     @assert maxdepth > 0
     @assert isnothing(nformulas) || nformulas > 0
-    # For increasing `depth`, accumulate all formulas of length `depth` by combining all
+    # With increasing `depth`, accumulate all formulas of length `depth` by combining all
     # formulas of `depth-1` using all non-terminal symbols.
     # Stop as soon as `maxdepth` is reached or `nformulas` have been generated.
     depth = 1
@@ -737,10 +849,49 @@ end
 
 """
 Type alias for any Julia type that may instantiate truth values.
+In the crisp case, `Bool` values are used. In the fuzzy case, other values can be used.
+For example, `AbstractFloat`s can be used with chain algebras,
+and 0.0 and 1.0 are the `bottom` and `top`.
 
-See also [`Algebra`](@ref).
+See also [`top`](@ref), [`bottom`](@ref), [`tops`](@ref), [`bottoms`](@ref), [`Algebra`](@ref).
 """
 const TruthValue = Any
+
+"""
+    tops(::TruthValue)::Bool
+
+Returns true if the truth value is the top of its algebra.
+For example, in the crisp case, with `Bool` truth values, it is:
+
+    tops(t::Bool)::Bool = (t == true)
+
+See also [`bottoms`](@ref), [`TruthValue`](@ref).
+"""
+tops(t::TruthValue)::Bool = error("Please, provide method tops(truthvalue::$(typeof(t))).")
+
+"""
+    bottoms(::TruthValue)::Bool
+
+Returns true if the truth value is the bottom of its algebra.
+For example, in the crisp case, with `Bool` truth values, it is:
+
+    bottoms(t::Bool)::Bool = (t == false)
+
+"""
+bottoms(t::TruthValue)::Bool = error("Please, provide method bottoms(truthvalue::$(typeof(t))).")
+
+"""
+   default_algebra(::Type{T})::AbstractAlgebra{<:T} where {T<:TruthValue}
+
+In order to check syntax trees without algebras, each truth value should provide
+a default algebra it works with.
+"""
+function default_algebra(::Type{T})::AbstractAlgebra{<:T} where {T<:TruthValue}
+    return error("Please, provide method" *
+                 " default_algebra(::$(typeof(T)))::AbstractAlgebra{<:$(T)}.")
+end
+
+############################################################################################
 
 """
     abstract type AbstractTruthOperator <: AbstractOperator end
@@ -771,7 +922,7 @@ const TOP = TopOperator()
 """$(doc_TOP)"""
 const ⊤ = TOP
 
-syntaxstring(o::TopOperator) = "⊤"
+syntaxstring(o::TopOperator; kwargs...) = "⊤"
 
 doc_BOTTOM = """
     struct BottomOperator <: AbstractTruthOperator end
@@ -789,7 +940,7 @@ const BOTTOM = BottomOperator()
 """$(doc_BOTTOM)"""
 const ⊥ = BOTTOM
 
-syntaxstring(o::BottomOperator) = "⊥"
+syntaxstring(o::BottomOperator; kwargs...) = "⊥"
 
 """
     struct TruthOperator{T<:TruthValue} <: AbstractTruthOperator
@@ -804,6 +955,12 @@ struct TruthOperator{T<:TruthValue} <: AbstractTruthOperator
     value::T
 end
 
+value(op::TruthOperator) = op.value
+
+syntaxstring(o::TruthOperator; kwargs...) = syntaxstring(value(o))
+
+############################################################################################
+
 """
     abstract type AbstractAlgebra{T<:TruthValue} end
 
@@ -815,7 +972,9 @@ and *bottom* (or minimum). Each node in the lattice represents a truth value
 that a proposition or a formula can have on an interpretation, and the
 semantics of operators is given in terms of operations between truth values.
 
-See also [`BooleanAlgebra`](@ref), [`AbstractOperator`](@ref), [`collate_truth`](@ref).
+See also [`domain`](@ref), [`top`](@ref), [`bottom`](@ref),
+[`truthtype`](@ref), [`iscrisp`](@ref),
+[``BooleanAlgebra`](@ref), [`AbstractOperator`](@ref), [`collatetruth`](@ref).
 """
 abstract type AbstractAlgebra{T<:TruthValue} end
 
@@ -877,46 +1036,8 @@ See also [`AbstractAlgebra`](@ref).
 """
 iscrisp(::Type{<:AbstractAlgebra}) = (truthtype(a) == Bool)
 iscrisp(a::AbstractAlgebra) = iscrisp(typeof(a))
-isfuzzy = !iscrisp
 
-# TODO: Observe that the following docstring is out of bound (92 columns). The BlueStyle sheds light on this.
-# TODO-reply: What should we do?
-# TODO2: See general TODOs at the beginning
-# TODO: I think this should suffice. Remove these TODOs now?
-"""
-    collate_truth(
-        a::AbstractAlgebra,
-        op::AbstractOperator,
-        t::NTuple{N, T},
-    )::T where {N, T<:TruthValue}
-
-Returns the truth value of a composed formula op(φ1, ..., φN), given the `N`
-truth values of its immediate sub-formulas.
-An algebra must provide a `collate_truth` method for each operator that can be
-interpreted on it.
-
-See also [`AbstractAlgebra`](@ref) [`AbstractOperator`](@ref), [`TruthValue`](@ref).
-"""
-function collate_truth(
-    a::AbstractAlgebra{T},
-    op::AbstractOperator,
-    t::NTuple{N,T},
-)::T where {N,T<:TruthValue}
-    if truthtype(a) != T
-        return error("Cannot collate $(length(t)) truth values of type $(T)" *
-                     " with algebra $(typeof(a)) with truth type $(truthtype(a))).")
-    elseif arity(op) != length(t)
-        return error("Cannot collate $(length(t)) truth values for" *
-                     " operator $(typeof(op)) with arity $(arity(op))).")
-    else
-        return error("Please, provide method collate_truth(::$(typeof(a)), ::$(typeof(op))," *
-                     " ::NTuple{$(arity(op)), $(truthtype(a))}.")
-    end
-end
-
-# Note: `collate_truth` for TOP and BOTTOM relies on the `top` and `bottom` methods.
-collate_truth(a::AbstractAlgebra, ::typeof(⊤), t::NTuple{0}) = top(a)
-collate_truth(a::AbstractAlgebra, ::typeof(⊥), t::NTuple{0}) = bottom(a)
+############################################################################################
 
 """
     abstract type AbstractLogic{G<:AbstractGrammar, A<:AbstractAlgebra} end
@@ -933,7 +1054,11 @@ abstract type AbstractLogic{G<:AbstractGrammar,A<:AbstractAlgebra} end
 
 A logic must provide a method for accessing its grammar.
 
-See also [`AbstractGrammar`](@ref), [`AbstractLogic`](@ref).
+See also [`grammar`](@ref), [`algebra`](@ref),
+[`operators`](@ref), [`alphabet`](@ref),
+[`truthtype`](@ref),
+[`formulas`](@ref),
+[`AbstractGrammar`](@ref), [`AbstractLogic`](@ref).
 """
 function grammar(l::AbstractLogic{G})::G where {G}
     return error("Please, provide method grammar(::$(typeof(l))).")
@@ -962,10 +1087,13 @@ function algebra(l::AbstractLogic{G,A})::A where {G,A}
     return error("Please, provide method algebra(::$(typeof(l))).")
 end
 
+# TODO @Mauro, in cases like these, can we use @forward?
 truthtype(l::AbstractLogic) = truthtype(algebra(l))
 top(l::AbstractLogic) = top(algebra(l))
 bottom(l::AbstractLogic) = bottom(algebra(l))
 iscrisp(l::AbstractLogic) = iscrisp(algebra(l))
+
+############################################################################################
 
 """
     abstract type AbstractFormula{L<:AbstractLogic} end
@@ -1014,6 +1142,10 @@ function tree(f::AbstractFormula)::SyntaxTree{<:tokenstype(logic(f))}
                  " tree(::$(typeof(f)))::SyntaxTree{<:$(tokenstype(logic(f)))}.")
 end
 
+function syntaxstring(f::AbstractFormula; kwargs...)
+    syntaxstring(tree(f); kwargs...)
+end
+
 Base.convert(::Type{<:SyntaxTree}, f::AbstractFormula) = tree(f)
 
 doc_tokopprop = """
@@ -1056,6 +1188,8 @@ function height(f::AbstractFormula)::Integer
 end
 
 """
+*Cool feature!*
+
 A formula can be used for instating other formulas of the same logic.
 
 In order to use operators for composing formulas, along with syntax tokens (e.g.,
@@ -1067,12 +1201,22 @@ have the following signature:
 
 # Examples
 ```julia-repl
-julia> f = parseformula("◊(p→q)")
-julia> t = parseformulatree("p")
-julia> f2 = f(t)
+julia> f = parseformula("◊(p→q)");
+
+julia> f2 = f(parseformulatree("p"));
+
+julia> syntaxstring(f)
+"◊(→(p, q))"
+
+julia> syntaxstring(f2)
+"p"
+
 julia> @assert logic(f) == logic(f2)
+
 julia> @assert ◊ in operators(logic(f2))
+
 julia> @assert ◊ isa operatorstype(logic(f2))
+
 ```
 
 See also [`AbstractSyntaxToken`](@ref), [`SyntaxTree`](@ref), [`AbstractOperator`](@ref).
@@ -1177,8 +1321,16 @@ end
 _logic(f::Formula) = f._logic
 logic(f::Formula) = f._logic[]
 tree(f::Formula) = f.tree
+# Helper
+tree(f::SyntaxTree) = f
 
 Base.in(t::AbstractSyntaxToken, f::Formula) = Base.in(t, tree(f))
+
+function Base.show(io::IO, f::Formula)
+    println(io, "Formula: $(syntaxstring(f))")
+    print(io, "Anchored to ")
+    Base.show(io, logic(f))
+end
 
 # When constructing a new formula from a syntax tree, the logic is passed by reference.
 (f::Formula)(t::SyntaxTree) = Formula(_logic(f), t)
@@ -1193,9 +1345,14 @@ function (op::AbstractOperator)(children::NTuple{N,Formula}, args...) where {N}
     return Formula(l, op(map(tree, children)))
 end
 
-function syntaxstring(f::Formula; kwargs...)
-    syntaxstring(tree(f); kwargs...)
+# Helpers that make SyntaxTree's and Formula's map to the same
+#  dictionary key. Useful for checking formulas on interpretations.
+function Base.isequal(a::Union{Formula,SyntaxTree}, b::Union{Formula,SyntaxTree})
+    Base.isequal(tree(a), tree(b))
 end
+Base.hash(a::Formula) = Base.hash(tree(a))
+
+############################################################################################
 
 """
     abstract type AbstractInterpretation{A, T<:TruthValue} end
@@ -1210,7 +1367,7 @@ is essentially a map *proposition → truth value*.
 
 Properties expressed via logical formulas can be `check`ed on logical interpretations.
 
-See also [`check`](@ref), [`Valuation`](@ref), [`KripkeStructure`](@ref).
+See also [`check`](@ref), [`Assigment`](@ref), [`AbstractKripkeStructure`](@ref).
 """
 abstract type AbstractInterpretation{A,T<:TruthValue} end
 
@@ -1224,9 +1381,8 @@ truthtype(::AbstractInterpretation{A,T}) where {A,T} = T
         args...
     )::T where {A, T<:TruthValue}
 
-Each logical interpretation must provide a method `check` for checking formulas on it.
-
-A formula can be checked on a logical interpretation (or model); this process is referred to as
+Checks a formula on a logical interpretation (or model), returning a truth value.
+This process is referred to as
 [model checking](https://en.m.wikipedia.org/wiki/Model_checking), and there are many
 algorithms for it, typically depending on the complexity of the logic.
 
@@ -1290,18 +1446,9 @@ function (op::AbstractOperator)()
 end
 
 
-"""
-   default_algebra(::Type{T})::AbstractAlgebra{<:T} where {T<:TruthValue}
-
-In order to check syntax trees without algebras, each truth value should provide
-a default algebra it works with.
-"""
-function default_algebra(::Type{T})::AbstractAlgebra{<:T} where {T<:TruthValue}
-    return error("Please, provide method" *
-                 " default_algebra(::Type{$(T)})::AbstractAlgebra{<:$(T)}.")
-end
-
 # Helper: use default algebra when checking a syntax tree.
 function check(tree::SyntaxTree, m::AbstractInterpretation, args...)
+    @warn "Checking SyntaxTree on an $(typeof(m)). Please, consider wrapping" *
+        " the tree into a Formula before checking."
     return check(default_algebra(truthtype(m)), tree, m, args...)
 end

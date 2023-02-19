@@ -1,70 +1,132 @@
-# Abstract types for relations
-abstract type AbstractRelation end
+export AbstractRelation, GeometricalRelations, IntervalRelation, RCCRelation
 
+export GlobalRel, IdentityRel
+export globalrel, identityrel
+# export goeswith
 
-"""
-Each relation (type) must provide a method yielding its `arity`:
+# Interval algebra relations 1D
 
-    arity(::Type{<:AbstractRelation})::Integer
-    arity(t::AbstractRelation)::Integer = arity(typeof(t))
+# IA
+export IARelations
+export IA_A, IA_L, IA_B, IA_E, IA_D, IA_Ai, IA_Li, IA_Bi, IA_Ei, IA_Di, IA_Oi
+export IA_AorO, IA_DorBorE, IA_AiorOi, IA_DiorBiorEi
+export IA_I
 
-See also [`AbstractRelation`](@ref).
-"""
-arity(R::Type{<:AbstractRelation})::Integer = error("Please, provide method arity(::$(R)).")
-arity(r::AbstractRelation)::Integer = arity(typeof(r))
+# Interval algebra relations 2D
+export RectangleRelation
+export IA2DRelations
+# for relation in [IA2DRelations, IA2D_URelations]
+#     @eval export $(Symbol(relation))
+# end
 
-syntaxstring(R::Type{<:AbstractRelation}; kwargs...)::Integer = error("Please, provide method syntaxstring(::$(R); kwargs...).")
-syntaxstring(r::AbstractRelation; kwargs...)::Integer = syntaxstring(typeof(r); kwargs...)
-
-converse(R::Type{<:AbstractRelation})::Type{<:AbstractRelation} = error("Please, provide method converse(::$(R)).")
-converse(r::AbstractRelation)::AbstractRelation = converse(typeof(r))()
-
-hasconverse(R::Type{<:AbstractRelation})::Bool = false
-hasconverse(r::AbstractRelation)::Bool = hasconverse(typeof(r))
-
-# Relations can be symmetric, reflexive and/or transitive.
-# By default, none of this cases holds:
-issymmetric(::AbstractRelation) = false # TODO this is actually converse(r) == r
-isreflexive(::AbstractRelation) = false
-istransitive(::AbstractRelation) = false
-isinverse(::AbstractRelation, ::AbstractRelation) = false
+# RCC8 relations
+export RCC8Relations, RCC5Relations
+export Topo_DC, Topo_EC, Topo_PO, Topo_TPP, Topo_TPPi, Topo_NTPP, Topo_NTPPi
+export Topo_DR, Topo_PP, Topo_PPi
 
 ############################################################################################
 # Singletons representing natural relations
 ############################################################################################
 
-# Identity relation: any world -> itself
-struct _RelationId <: AbstractRelation end;
-const RelationId   = _RelationId();
+doc_id_rel = """
+    struct IdentityRel <: AbstractRelation end;
+    const identityrel   = IdentityRel();
 
-arity(::Type{_RelationId}) = 2
+Singleton type for the identity relation. This is a binary relation via which a world
+accesses itself. The relation is also symmetric, reflexive and transitive.
 
-# _RelationId -> "="
-syntaxstring(::Type{_RelationId}; kwargs...) = "="
+# Examples
+```
+julia> syntaxstring(SoleLogics.identityrel)
+"="
+julia> SoleLogics.converse(IdentityRel)
+IdentityRel
+```
 
-hasconverse(::Type{_RelationId}) = true
-converse(::Type{_RelationId}) = _RelationId
-issymmetric(::_RelationId) = true
-isreflexive(::_RelationId) = true
-istransitive(::_RelationId) = true
-isinverse(::_RelationId, ::_RelationId) = true
+See also
+[`GlobalRel`](@ref),
+[`AbstractRelation`](@ref),
+[`AbstractWorld`](@ref),
+[`AbstractFrame`](@ref).
+[`AbstractKripkeStructure`](@ref),
+"""
+
+"""$(doc_id_rel)"""
+struct IdentityRel <: AbstractRelation end;
+"""$(doc_id_rel)"""
+const identityrel   = IdentityRel();
+
+arity(::Type{IdentityRel}) = 2
+
+syntaxstring(::Type{IdentityRel}; kwargs...) = "="
+
+hasconverse(::Type{IdentityRel}) = true
+converse(::Type{IdentityRel}) = IdentityRel
+issymmetric(::IdentityRel) = true
+isreflexive(::IdentityRel) = true
+istransitive(::IdentityRel) = true
 
 ############################################################################################
 
-# Global relation: any world -> all worlds
-struct _RelationGlob <: AbstractRelation end; const RelationGlob  = _RelationGlob();
+doc_glob_rel = """
+    struct GlobalRel <: AbstractRelation end;
+    const globalrel  = GlobalRel();
 
-arity(::Type{_RelationGlob}) = 2
+Singleton type for the global relation. This is a binary relation via which a world
+accesses every other world within the frame.
+The relation is also symmetric, reflexive and transitive.
 
-# _RelationGlob -> "G"
-syntaxstring(::Type{_RelationGlob}; kwargs...) = "G"
+# Examples
+```
+julia> syntaxstring(SoleLogics.globalrel)
+"G"
+julia> SoleLogics.converse(GlobalRel)
+GlobalRel
+```
 
-hasconverse(::Type{_RelationGlob}) = true
-converse(::Type{_RelationGlob}) = _RelationGlob
-issymmetric(::_RelationGlob) = true
-isreflexive(::_RelationGlob) = true
-istransitive(::_RelationGlob) = true
-isinverse(::_RelationGlob, ::_RelationGlob) = true
+See also
+[`IdentityRel`](@ref),
+[`AbstractRelation`](@ref),
+[`AbstractWorld`](@ref),
+[`AbstractFrame`](@ref).
+[`AbstractKripkeStructure`](@ref),
+"""
+
+"""$(doc_glob_rel)"""
+struct GlobalRel <: AbstractRelation end;
+"""$(doc_glob_rel)"""
+const globalrel  = GlobalRel();
+
+arity(::Type{GlobalRel}) = 2
+
+syntaxstring(::Type{GlobalRel}; kwargs...) = "G"
+
+hasconverse(::Type{GlobalRel}) = true
+converse(::Type{GlobalRel}) = GlobalRel
+issymmetric(::GlobalRel) = true
+isreflexive(::GlobalRel) = true
+istransitive(::GlobalRel) = true
+
+############################################################################################
+
+doc_glob_rel = """
+    struct NamedRelation{T} <: AbstractRelation
+        name::T
+    end
+
+Type for relations that are solely defined by their name.
+
+See also
+[`AbstractRelation`](@ref),
+[`AbstractWorld`](@ref),
+[`AbstractFrame`](@ref).
+[`AbstractKripkeStructure`](@ref),
+"""
+struct NamedRelation{T} <: AbstractRelation
+    name::T
+end
+
+name(r::NamedRelation) = r.name
 
 ############################################################################################
 
@@ -78,53 +140,3 @@ isinverse(::_RelationGlob, ::_RelationGlob) = true
 
 
 include("relations/geometrical-relations.jl");
-
-export AbstractRelation, IntervalRelation, RCCRelation
-
-export _RelationGlob, _RelationId
-export RelationGlob, RelationId
-export goeswith
-
-# Interval algebra relations 1D
-
-# IA
-export _IA_A, _IA_L, _IA_B, _IA_E, _IA_D, _IA_O, _IA_Ai, _IA_Li, _IA_Bi, _IA_Ei, _IA_Di, _IA_Oi
-export IA_A, IA_L, IA_B, IA_E, IA_D, IA_Ai, IA_Li, IA_Bi, IA_Ei, IA_Di, IA_Oi
-
-# IA7
-export _IA7Rel
-export _IA_AorO, _IA_DorBorE, _IA_AiorOi, _IA_DiorBiorEi
-export IA_AorO, IA_DorBorE, IA_AiorOi, IA_DiorBiorEi
-
-# IA3
-export _IA3Rel
-export _IA_I
-export IA_I
-
-export IARelations, IA7Relations, IA3Relations
-export IA72IARelations # NOTE: read the comment about fixing IA32IARelations
-
-# Interval algebra relations 2D
-
-export _IABase
-export RectangleRelation
-
-# Export IA2DRelations and IA2D_URelations contents
-for relation in [IA2DRelations, IA2D_URelations]
-    @eval export $(Symbol(relation))
-end
-export IA2DRelations, IA2D_URelations, IA2DRelations_extended
-
-# RCC8 relations
-export RCC8Relation
-export _Topo_DC, _Topo_EC, _Topo_PO, _Topo_TPP, _Topo_TPPi, _Topo_NTPP, _Topo_NTPPi
-export Topo_DC, Topo_EC, Topo_PO, Topo_TPP, Topo_TPPi, Topo_NTPP, Topo_NTPPi
-
-# RCC5 relations
-export RCC5Relation
-export _Topo_DR, _Topo_PP, _Topo_PPi
-export Topo_DR, Topo_PP, Topo_PPi
-
-export RCC8Relations, RCC5Relations
-export RCC8RelationFromIA
-export topo2IARelations, RCC52RCC8Relations, RCC52IARelations

@@ -2,41 +2,125 @@
 # Allen's Interval Algebra relations
 ############################################################################################
 
-# Interval directional relations
+"""
+    abstract type IntervalRelation <: GeometricalRelation end
+
+Abstract type for interval binary relations.
+Originally defined by Allen in 1983,
+(interval algebra)[https://en.m.wikipedia.org/wiki/Allen%27s_interval_algebra]
+comprehends 12 directional relations between intervals,
+plus the identity (i.e., `identityrel`).
+
+The 12 relations are
+the 6 relations `after`, `later`, `begins`, `ends`, `during`, `overlaps`,
+and their inverses.
+
+If we consider a reference interval `(x,y)`, we can graphically represent the 6
+base relations by providing an example of a world `(z,t)` that is accessible via each
+of them:
+
+RELATION    ABBR.     x                   y                     PROPERTY                  
+                      |-------------------|                                               
+                      .                   .                                               
+                      .                   z        t            y = z                     
+After       (A)       .                   |--------|                                      
+                      .                   .                                               
+                      .                   .   z         t       y < z                     
+Later       (L)       .                   .   |---------|                                 
+                      .                   .                                               
+                      z     t             .                     x = z, t < y              
+Begins      (B)       |-----|             .                                               
+                      .                   .                                               
+                      .             z     t                     y = t, x < z              
+Ends        (E)       .             |-----|                                               
+                      .                   .                                               
+                      .   z        t      .                     x < z, t < y              
+During      (D)       .   |--------|      .                                               
+                      .                   .                                               
+                      .           z       .    t                x < z < y < t             
+Overlaps    (O)       .           |------------|                                          
+
+Coarser relations can be defined by union of these 12 relations.
+
+# Examples
+```julia-repl
+julia> IARelations
+12-element Vector{IntervalRelation}:
+ _IA_A()
+ _IA_L()
+ _IA_B()
+ _IA_E()
+ _IA_D()
+ _IA_O()
+ _IA_Ai()
+ _IA_Li()
+ _IA_Bi()
+ _IA_Ei()
+ _IA_Di()
+ _IA_Oi()
+
+julia> @assert SoleLogics._IA_L() == IA_L
+
+julia> fr = SoleLogics.FullDimensionalFrame((10,),);
+
+julia> collect(accessibles(fr, Interval(2,5), IA_L))
+15-element Vector{Interval{Int64}}:
+ (6−7)
+ (6−8)
+ (7−8)
+ (6−9)
+ (7−9)
+ (8−9)
+ (6−10)
+ (7−10)
+ (8−10)
+ (9−10)
+ (6−11)
+ (7−11)
+ (8−11)
+ (9−11)
+ (10−11)
+
+julia> syntaxstring.(IARelations)
+12-element Vector{String}:
+ "A"
+ "L"
+ "B"
+ "E"
+ "D"
+ "O"
+ "A̅"
+ "L̅"
+ "B̅"
+ "E̅"
+ "D̅"
+ "O̅"
+
+julia> syntaxstring.(IA7Relations)
+6-element Vector{String}:
+ "A∨O"
+ "L"
+ "D∨B∨E"
+ "A̅∨O̅"
+ "L̅"
+ "D̅∨B̅∨E̅"
+
+julia> syntaxstring.(SoleLogics.IA3Relations)
+3-element Vector{String}:
+ "I"
+ "L"
+ "L̅"
+
+```
+
+See also [`IARelations`](@ref),
+[`IA7Relations`](@ref), [`IA3Relations`](@ref),
+[`Interval`](@ref), [`GeometricalRelation`](@ref).
+"""
 abstract type IntervalRelation <: GeometricalRelation end
 
+arity(::Type{<:IntervalRelation}) = 2
 hasconverse(::Type{<:IntervalRelation}) = true
-
-############################################################################################
-# Interval algebra comprehends 12 relations (plus equality, i.e. RelationId):
-#  - the 6 relations After, Later, Begins, Ends, During, Overlaps
-#  - their inverses
-############################################################################################
-# Graphical representation of R((x,y),(z,t)) for R ∈ {After, Later, Begins, Ends, During, Overlaps}:
-# 
-#                       x                   y                                               
-#                       |-------------------|                                               
-#                       .                   .                                               
-#                       .                   z        t            y = z                     
-# After       (A)       .                   |--------|                                      
-#                       .                   .                                               
-#                       .                   .   z         t       y < z                     
-# Later       (L)       .                   .   |---------|                                 
-#                       .                   .                                               
-#                       z     t             .                     x = z, t < y              
-# Begins      (B)       |-----|             .                                               
-#                       .                   .                                               
-#                       .             z     t                     y = t, x < z              
-# Ends        (E)       .             |-----|                                               
-#                       .                   .                                               
-#                       .   z        t      .                     x < z, t < y              
-# During      (D)       .   |--------|      .                                               
-#                       .                   .                                               
-#                       .           z       .    t                x < z < y < t             
-# Overlaps    (O)       .           |------------|                                          
-# 
-############################################################################################
-
 
 struct _IA_A  <: IntervalRelation end; const IA_A  = _IA_A();  # After
 struct _IA_L  <: IntervalRelation end; const IA_L  = _IA_L();  # Later
@@ -103,6 +187,8 @@ struct _IA_I          <: IntervalRelation end; const IA_I          = _IA_I();   
 
 converse(::Type{_IA_AorO}) = _IA_AiorOi
 converse(::Type{_IA_DorBorE}) = _IA_DiorBiorEi
+converse(::Type{_IA_AiorOi}) = _IA_AorO
+converse(::Type{_IA_DiorBiorEi}) = _IA_DorBorE
 converse(::Type{_IA_I}) = _IA_I
 
 # Properties
@@ -119,26 +205,51 @@ IA32IARelations(::_IA_I)          = [
     IA_Ai, IA_Oi, IA_Di, IA_Bi, IA_Ei
 ]
 
-syntaxstring(r::Union{_IA_AorO,_IA_DorBorE,_IA_AiorOi,_IA_DiorBiorEi}; kwargs...) = join(IA72IARelations(r), "∨")
+syntaxstring(r::Union{_IA_AorO,_IA_DorBorE,_IA_AiorOi,_IA_DiorBiorEi}; kwargs...) = join(map(_r->syntaxstring(_r; kwargs...), IA72IARelations(r)), "∨")
 syntaxstring(::Type{_IA_I}; kwargs...)          = "I"
 
 ############################################################################################
 
-# 12 IA relations
+"""
+    const IARelations = [IA_A,  IA_L,  IA_B,  IA_E,  IA_D,  IA_O,
+                         IA_Ai, IA_Li, IA_Bi, IA_Ei, IA_Di, IA_Oi]
+
+Vector of the 12 interval relations from Allen's interval algebra.
+
+See also
+[`IA7Relations`](@ref), [`IA3Relations`](@ref), 
+[`IntervalRelation`](@ref), [`GeometricalRelation`](@ref).
+"""
 const IARelations = [IA_A,  IA_L,  IA_B,  IA_E,  IA_D,  IA_O,
                      IA_Ai, IA_Li, IA_Bi, IA_Ei, IA_Di, IA_Oi]
 IARelation = Union{typeof.(IARelations)...}
 
-# 7 IA7 relations
+"""
+    const IA7Relations = [IA_AorO,   IA_L,  IA_DorBorE,
+
+Vector of 7 interval relations from a coarser version of Allen's interval algebra.
+
+See also
+[`IARelations`](@ref), [`IA3Relations`](@ref), 
+[`IntervalRelation`](@ref), [`GeometricalRelation`](@ref).
+"""
 const IA7Relations = [IA_AorO,   IA_L,  IA_DorBorE,
                       IA_AiorOi, IA_Li, IA_DiorBiorEi]
 IA7Relation = Union{typeof.(IA7Relations)...}
 
-# 3 IA3 relations
+"""
+    const IA3Relations = [IA_I, IA_L, IA_Li]
+
+Vector of 3 interval relations from a coarser version of Allen's interval algebra.
+
+See also
+[`IARelations`](@ref), [`IA7Relations`](@ref), 
+[`IntervalRelation`](@ref), [`GeometricalRelation`](@ref).
+"""
 const IA3Relations = [IA_I, IA_L, IA_Li]
 IA3Relation = Union{typeof.(IA3Relations)...}
 
 # 13 Interval Algebra extended with universal
-const IARelations_extended = [RelationGlob, IARelations...]
+const IARelations_extended = [globalrel, IARelations...]
 IARelation_extended = Union{typeof.(IARelations_extended)...}
 

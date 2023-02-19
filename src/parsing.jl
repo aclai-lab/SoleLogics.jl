@@ -222,7 +222,7 @@ function parseformula(
 )
     operators = (isnothing(operators) ? AbstractOperator[] : operators)
     t = parseformulatree(expression, operators)
-    base_formula(t;
+    baseformula(t;
         operators = unique(AbstractOperator[operators..., SoleLogics.operators(t)...]),
         # alphabet = alphabet,
         alphabet = AlphabetOfAny{String}(),

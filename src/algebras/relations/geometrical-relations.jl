@@ -1,24 +1,35 @@
 
-# Abstract type for relations with a geometrical interpretation
+"""
+    abstract type GeometricalWorld <: AbstractRelation end
+
+Abstract type for relations with a geometrical interpretation.
+
+See also [`istopological`](@ref),
+[`IntervalRelation`](@ref), [`RectangleRelation`](@ref),
+[`RCCRelation`](@ref), [`AbstractRelation`](@ref).
+"""
 abstract type GeometricalRelation <: AbstractRelation end
 
-# Geometrical relations can have geometrical properties such as being topological (i.e.,
-#  invariant under homeomorphisms. # see https://en.m.wikipedia.org/wiki/Topological_property
-# By default, this does not hold:
+"""
+    istopological(r::GeometricalRelation)
+
+Returns whether it is known that a given geometrical relation is topological
+(i.e., invariant under homeomorphisms,
+ see (here)[https://en.m.wikipedia.org/wiki/Topological_property])
+
+See also [`GeometricalRelation`](@ref).
+"""
 istopological(r::GeometricalRelation) = false
 
-# All geometrical relations must define their converse...?
-# hasconverse(::Type{<:GeometricalRelation}) = true
+# TODO add type for carthesian product of geometrical relations
 
-arity(::Type{<:GeometricalRelation}) = 2
-
-# TODO add pattern: carthesian product of relations
+############################################################################################
 
 # 1D Allen relations
 include("IA.jl")
 
 # 2D Allen relations
-include("IA2.jl")
+include("IA2D.jl")
 
 # RCC relations
 include("RCC.jl")

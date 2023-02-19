@@ -1,98 +1,132 @@
-############################################################################################
-# Dimensonal Worlds
-############################################################################################
+"""
+    abstract type GeometricalWorld <: AbstractWorld end
 
-# Abstract type for worlds with a geometrical interpretation
+Abstract type for worlds with a geometrical interpretation.
+
+See also [`Point`](@ref), [`Interval`](@ref), [`Interval2D`](@ref), [`AbstractWorld`](@ref).
+"""
 abstract type GeometricalWorld <: AbstractWorld end
 
-# Some geometrical worlds (dimensional worlds) can be interpreted on dimensional data,
-#  that is, n-dimensional arrays.
-# The parameter n is referred to as `dimensionality`, and must be specified for each newly 
-#  defined dimensional world type via the following trait:
-goeswith_dim(W::Type{<:GeometricalWorld}, d::Integer) = goeswith_dim(W, Val(d))
-goeswith_dim(::Type{<:GeometricalWorld}, ::Val) = false
-
 ############################################################################################
-# One unique world (propositional case)
+# Point
 ############################################################################################
 
-struct OneWorld <: GeometricalWorld
-    OneWorld() = new()
+"""
+    struct Point{N,T} <: GeometricalWorld
+        xyz :: NTuple{N,T}
+    end
 
-    OneWorld(w::EmptyWorld) = new()
-    OneWorld(w::CenteredWorld, args...) = new()
-end;
+A point in an `N`-dimensional space, with integer coordinates.
 
-Base.show(io::IO, w::OneWorld) = begin
-    print(io, "−")
+# Examples
+```julia-repl
+julia> SoleLogics.goeswithdim(SoleLogics.Point(1,2,3),3)
+true
+
+julia> SoleLogics.goeswithdim(SoleLogics.Point(1,2,3),2)
+false
+
+```
+See also [`goeswithdim`](@ref), [`Interval`](@ref),
+[`Interval2D`](@ref), [`GeometricalWorld`](@ref), [`AbstractWorld`](@ref).
+"""
+struct Point{N,T} <: GeometricalWorld
+    xyz :: NTuple{N,T}
+    # TODO check x<=N but only in debug mode
+    # Point(x) = x<=N ... ? new(x) : throw_n_log("Can't instantiate Point(x={$x})")
+    
+    # TODO needed?
+    Point(w::Point) = Point(w.xyz)
+    
+    Point{N,T}(xyz::NTuple{N,T}) where {N,T} = new{N,T}(xyz)
+    Point(xyz::NTuple{N,T}) where {N,T} = Point{N,T}(xyz)
+    Point((xyz,)::Tuple{NTuple{N,T}}) where {N,T} = Point{N,T}(xyz)
+    Point(xyz::Vararg) = Point(xyz)
 end
 
-goeswith_dim(::Type{OneWorld}, ::Val{0}) = true
+show(io::IO, r::Point) = print(io, "($(join(xyz, ",")))")
 
-
-############################################################################################
-# Point 1D
-############################################################################################
-
-# struct PointWorld <: GeometricalWorld
-    # PointWorld(w::PointWorld) = new(w.x,w.y)
-#   x :: Integer
-#   # TODO check x<=N but only in debug mode
-#   # PointWorld(x) = x<=N ... ? new(x) : throw_n_log("Can't instantiate PointWorld(x={$x})")
-#   PointWorld(x::Integer) = new(x)
-# end
-
-# show(io::IO, r::PointWorld) = print(io, "($(x)×$(y))")
-
-# goeswith_dim(::Type{PointWorld}, ::Val{1}) = true
-
+goeswithdim(::Type{P}, ::Val{N}) where {N,P<:Point{N}} = true
 
 ############################################################################################
 # Interval 1D
 ############################################################################################
 
-# An interval is a pair of natural numbers (x,y) where: i) x > 0; ii) y > 0; iii) x < y.
-struct Interval <: GeometricalWorld
-    x :: Integer
-    y :: Integer
+"""
+    struct Interval{T} <: GeometricalWorld
+        x :: T
+        y :: T
+    end
 
-    Interval(x::Integer,y::Integer) = new(x,y)
+An interval in a 1-dimensional space, with coordinates of type `T`.
+
+# Examples
+```julia-repl
+julia> SoleLogics.goeswithdim(SoleLogics.Interval(1,2),1)
+true
+
+julia> SoleLogics.goeswithdim(SoleLogics.Interval(1,2),2)
+false
+
+```
+See also [`goeswithdim`](@ref), [`Point`](@ref),
+[`Interval2D`](@ref), [`GeometricalWorld`](@ref), [`AbstractWorld`](@ref).
+"""
+struct Interval{T} <: GeometricalWorld
+    x :: T
+    y :: T
+
+    # TODO needed?
     Interval(w::Interval) = Interval(w.x,w.y)
+
+    Interval{T}(x::T,y::T) where {T} = new{T}(x,y)
+    Interval(x::T,y::T) where {T} = Interval{T}(x,y)
     # TODO: perhaps check x<y (and  x<=N, y<=N ?), but only in debug mode.
     # Interval(x,y) = x>0 && y>0 && x < y ? new(x,y) : throw_n_log("Can't instantiate Interval(x={$x},y={$y})")
-
-    Interval(::EmptyWorld) = Interval(-1,0)
-    Interval(::CenteredWorld, X::Integer) = Interval(div(X,2)+1,div(X,2)+1+1+(isodd(X) ? 0 : 1))
 end
 
-Base.show(io::IO, w::Interval) = begin
-    print(io, "(")
-    print(io, w.x)
-    print(io, "−")
-    print(io, w.y)
-    print(io, ")")
-end
+Base.show(io::IO, w::Interval) = print(io, "($(w.x)−$(w.y))")
 
-goeswith_dim(::Type{Interval}, ::Val{1}) = true
+goeswithdim(::Type{Interval}, ::Val{1}) = true
 
 ############################################################################################
 # Interval 2D
 ############################################################################################
 
-# 2-dimensional Interval counterpart: combination of two orthogonal Intervals
-struct Interval2D <: GeometricalWorld
-    x :: Interval
-    y :: Interval
+"""
+    struct Interval2D{T} <: GeometricalWorld
+        x :: Interval{T}
+        y :: Interval{T}
+    end
 
-    Interval2D(x::Interval,y::Interval) = new(x,y)
-    Interval2D(w::Interval2D) = Interval2D(w.x,w.y)
-    Interval2D(x::Tuple{Integer,Integer}, y::Tuple{Integer,Integer}) = Interval2D(Interval(x),Interval(y))
+A orthogonal rectangle in a 2-dimensional space, with coordinates of type `T`.
+This is the 2-dimensional `Interval` counterpart, that is,
+the combination of two orthogonal `Interval`s.
 
-    Interval2D(w::EmptyWorld) = Interval2D(Interval(w),Interval(w))
-    Interval2D(w::CenteredWorld, X::Integer, Y::Integer) = Interval2D(Interval(w,X),Interval(w,Y))
+# Examples
+```julia-repl
+julia> SoleLogics.goeswithdim(SoleLogics.Interval2D((1,2),(3,4)),1)
+false
+
+julia> SoleLogics.goeswithdim(SoleLogics.Interval2D((1,2),(3,4)),2)
+true
+
+```
+See also [`goeswithdim`](@ref), [`Point`](@ref),
+[`Interval`](@ref), [`GeometricalWorld`](@ref), [`AbstractWorld`](@ref).
+"""
+struct Interval2D{T} <: GeometricalWorld
+    x :: Interval{T}
+    y :: Interval{T}
+
+    # TODO needed?
+    Interval2D(w::Interval2D) = Interval2D{T}(w.x,w.y)
+
+    Interval2D{T}(x::Interval{T},y::Interval{T}) where {T} = new{T}(x,y)
+    Interval2D(x::Tuple{T,T}, y::Tuple{T,T}) where {T} = Interval2D{T}(Interval(x),Interval(y))
 end
 
-Base.show(io::IO, w::Interval2D) = begin
+function Base.show(io::IO, w::Interval2D)
     print(io, "(")
     print(io, w.x)
     print(io, "×")
@@ -100,4 +134,4 @@ Base.show(io::IO, w::Interval2D) = begin
     print(io, ")")
 end
 
-goeswith_dim(::Type{Interval2D}, ::Val{2}) = true
+goeswithdim(::Type{Interval2D}, ::Val{2}) = true

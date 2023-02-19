@@ -1,25 +1,70 @@
 using Random
 
-export generate
-
-"""
-    generate(
+doc_randformula = """
+    randformulatree(
         height::Integer,
         alphabet::AbstractAlphabet,
         operators::Vector{<:AbstractOperator};
         rng::Union{Integer, AbstractRNG}=Random.GLOBAL_RNG
-    )
+    )::SyntaxTree
 
-Return a pseudo-randomic `SyntaxTree`.
+    function randformula(
+        height::Integer,
+        alphabet::AbstractAlphabet,
+        operators::Vector{<:AbstractOperator};
+        rng::Union{Integer, AbstractRNG} = Random.GLOBAL_RNG
+    )::Formula
 
-See also [`SyntaxTree`](@ref)
+Return a pseudo-randomic `SyntaxTree` or `Formula`.
+
+# Examples
+```julia-repl
+julia> syntaxstring(randformulatree(4, ExplicitAlphabet(Proposition.([1,2])), [NEGATION, CONJUNCTION, IMPLICATION]))
+"¬((¬(¬(2))) → ((1 → 2) → (1 → 2)))"
+```
+See also [`randformula`](@ref), [`SyntaxTree`](@ref).
 """
-function generate(
+
+"""$(doc_randformula)"""
+function randformula(
     height::Integer,
     alphabet::AbstractAlphabet,
     operators::Vector{<:AbstractOperator};
     rng::Union{Integer, AbstractRNG} = Random.GLOBAL_RNG
-)
+)::Formula
+    baseformula(
+        randformulatree(height, alphabet, operators; rng = rng);
+        alphabet = alphabet,
+        operators = operators,
+    )
+end
+
+"""$(doc_randformula)"""
+function randformulatree(
+    height::Integer,
+    alphabet::AbstractAlphabet,
+    operators::Vector{<:AbstractOperator};
+    rng::Union{Integer, AbstractRNG} = Random.GLOBAL_RNG
+)::SyntaxTree
+    
+    function _randformulatree(
+        height::Integer,
+        alphabet::AbstractAlphabet,
+        operators::Vector{<:AbstractOperator};
+        rng::Union{Integer, AbstractRNG} = Random.GLOBAL_RNG
+    )::SyntaxTree
+        if height == 0
+            return SyntaxTree(rand(rng, propositions(alphabet)))
+        end
+
+        op = rand(rng, operators)
+
+        return SyntaxTree(
+            op,
+            Tuple([_randformulatree(height-1, alphabet, operators; rng=rng) for _ in 1:arity(op)])
+        )
+    end
+
     # If the alphabet is not iterable, this function should not work.
     # NOTE: the error message here is the same as in general.jl.
     if !isiterable(alphabet)
@@ -29,23 +74,5 @@ function generate(
 
     rng = (typeof(rng) <: Integer) ? Random.MersenneTwister(rng) : rng
 
-    return _generate(height, alphabet, operators, rng=rng)
-end
-
-function _generate(
-    height::Integer,
-    alphabet::AbstractAlphabet,
-    operators::Vector{<:AbstractOperator};
-    rng::Union{Integer, AbstractRNG} = Random.GLOBAL_RNG
-)
-    if height == 0
-        return SyntaxTree(rand(rng, propositions(alphabet)))
-    end
-
-    op = rand(rng, operators)
-
-    return SyntaxTree(
-        op,
-        Tuple([_generate(height-1, alphabet, operators; rng=rng) for _ in 1:arity(op)])
-    )
+    return _randformulatree(height, alphabet, operators, rng=rng)
 end

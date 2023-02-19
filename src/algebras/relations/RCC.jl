@@ -2,47 +2,119 @@
 # RCC topological relations
 ############################################################################################
 
+"""
+    abstract type RCCRelation <: GeometricalRelation end
+
+Topological binary relations from
+[Region Connection Calculus](https://en.m.wikipedia.org/wiki/Region_connection_calculus).
+Region Connection Calculus (RCC) is most famous for RCC8, a set of 8 topological relations,
+which comprehends the identity relation (i.e., `identityrel'), and the following 7 relations:
+- Externally connected
+- Partially overlapping
+- Tangential proper part
+- Tangential proper part inverse
+- Non-tangential proper part
+- Non-tangential proper part inverse
+
+If we consider a reference interval `(x,y)`, we can graphically represent the 7
+ relations by providing an example of a world `(z,t)` that is accessible via each
+of them:
+
+                                                 x                   y
+RELATION                             ABBR.       |-------------------|
+                                                 .                   .
+                                                 .                   .  z        t
+Disconnected                         (DC)        .                   . |--------|
+                                                 .                   .
+                                                 .                   z         t
+Externally connected                 (EC)        .                   |---------|
+                                                 .                   .
+                                                 .                z     t
+Partially overlapping                (PO)        .                |-----|
+                                                 .                   .
+                                                 .             z     t
+Tangential proper part               (TPP)       .             |-----|
+                                                 .                   .
+                                                 z                   .     t
+Tangential proper part inverse       (T̅P̅P̅)       |-------------------------|
+                                                 .                   .
+                                                 .           z       .
+Non-tangential proper part           (NTPP)      .           |-----| .
+                                                 .                   .
+                                               z .                   . t
+Non-tangential proper part inverse   (N̅T̅P̅P̅)    |-----------------------|
+
+
+Methods for RCC8 relations and Interval2D's can be obtained by combining their 1D versions,
+according to the following composition rules:
+
+                 .-------------------------------------------------------.
+                 |         DC   EC   PO   TPP   T̅P̅P̅   NTPP   N̅T̅P̅P̅    Id  |
+                 |-------------------------------------------------------|
+                 | DC   |  DC | DC | DC | DC  | DC  |  DC  |  DC  |  DC  |
+                 | EC   |  DC | EC | EC | EC  | EC  |  EC  |  EC  |  EC  |
+                 | PO   |  DC | EC | PO | PO  | PO  |  PO  |  PO  |  PO  |
+                 | TPP  |  DC | EC | PO | TPP | PO  |  TPP |  PO  |  TPP |
+                 | T̅P̅P̅  |  DC | EC | PO | PO  | T̅P̅P̅ |  PO  |  T̅P̅P̅ |  T̅P̅P̅ |
+                 | NTPP |  DC | EC | PO | TPP | PO  | NTPP |  PO  |  TPP |
+                 | N̅T̅P̅P̅ |  DC | EC | PO | PO  | T̅P̅P̅ |  PO  | N̅T̅P̅P̅ |  T̅P̅P̅ |
+                 |  Id  |  DC | EC | PO | TPP | T̅P̅P̅ |  TPP |  T̅P̅P̅ |  Id  |
+                 '-------------------------------------------------------'
+
+# Examples
+```julia-repl
+julia> RCC8Relations
+7-element Vector{RCCRelation}:
+ _Topo_DC()
+ _Topo_EC()
+ _Topo_PO()
+ _Topo_TPP()
+ _Topo_TPPi()
+ _Topo_NTPP()
+ _Topo_NTPPi()
+
+julia> @assert SoleLogics._Topo_DC() == Topo_DC
+
+julia> fr = SoleLogics.FullDimensionalFrame((10,),);
+
+julia> collect(accessibles(fr, Interval(4,8), Topo_DC))
+6-element Vector{Interval{Int64}}:
+ (9−10)
+ (9−11)
+ (10−11)
+ (1−2)
+ (1−3)
+ (2−3)
+
+julia> syntaxstring.(RCC8Relations)
+7-element Vector{String}:
+ "DC"
+ "EC"
+ "PO"
+ "TPP"
+ "T̅P̅P̅"
+ "NTPP"
+ "N̅T̅P̅P̅"
+
+julia> RCC5Relations
+4-element Vector{RCCRelation}:
+ _Topo_DR()
+ _Topo_PO()
+ _Topo_PP()
+ _Topo_PPi()
+```
+
+See also 
+[`RCC8Relations`](@ref), [`RCC5Relations`](@ref),
+[`Interval`](@ref), [`IntervalRelation`](@ref), [`GeometricalRelation`](@ref).
+"""
 abstract type RCCRelation <: GeometricalRelation end
+
+arity(::Type{<:RCCRelation}) = 2
+hasconverse(::Type{<:RCCRelation}) = true
 
 # Property: all RCC relations are topological
 istopological(r::RCCRelation) = true
-
-############################################################################################
-# RCC8 topological relations (plus equality, i.e. RelationId):
-# - Externally connected
-# - Partially overlapping
-# - Tangential proper part
-# - Tangential proper part inverse
-# - Non-tangential proper part
-# - Non-tangential proper part inverse
-############################################################################################
-# Graphical representation of R((x,y),(z,t)) for R ∈ RCC8
-#
-#                                                  x                   y
-#                                                  |-------------------|
-#                                                  .                   .
-#                                                  .                   .  z        t
-# Disconnected                         (DC)        .                   . |--------|
-#                                                  .                   .
-#                                                  .                   z         t
-# Externally connected                 (EC)        .                   |---------|
-#                                                  .                   .
-#                                                  .                z     t
-# Partially overlapping                (PO)        .                |-----|
-#                                                  .                   .
-#                                                  .             z     t
-# Tangential proper part               (TPP)       .             |-----|
-#                                                  .                   .
-#                                                  z                   .     t
-# Tangential proper part inverse       (T̅P̅P̅)       |-------------------------|
-#                                                  .                   .
-#                                                  .           z       .
-# Non-tangential proper part           (NTPP)      .           |-----| .
-#                                                  .                   .
-#                                                z .                   . t
-# Non-tangential proper part inverse   (N̅T̅P̅P̅)    |-----------------------|
-#
-############################################################################################
 
 # Relations for RCC8
 struct _Topo_DC     <: RCCRelation end; const Topo_DC     = _Topo_DC();     # Disconnected
@@ -62,7 +134,6 @@ syntaxstring(::Type{_Topo_NTPP}; kwargs...)  = "NTPP"
 syntaxstring(::Type{_Topo_NTPPi}; kwargs...) = "N̅T̅P̅P̅"
 
 # Properties
-hasconverse(r::Type{<:RCCRelation}) = true
 converse(r::Type{_Topo_DC}) = _Topo_DC
 converse(r::Type{_Topo_EC}) = _Topo_EC
 converse(r::Type{_Topo_PO}) = _Topo_PO
@@ -97,11 +168,27 @@ istransitive(r::_Topo_PP) = true
 istransitive(r::_Topo_PPi) = true
 ############################################################################################
 
-# 7 RCC8 Relations
+"""
+    const RCC8Relations = [Topo_DC, Topo_EC, Topo_PO, Topo_TPP, Topo_TPPi, Topo_NTPP, Topo_NTPPi]
+
+Vector of the 7 relations from RCC8.
+
+See also
+[`RCC5Relations`](@ref), 
+[`GeometricalRelation`](@ref).
+"""
 const RCC8Relations = [Topo_DC, Topo_EC, Topo_PO, Topo_TPP, Topo_TPPi, Topo_NTPP, Topo_NTPPi]
 RCC8Relation = Union{typeof.(RCC8Relations)...}
 
-# 4 RCC5 Relations
+"""
+    const RCC5Relations = [Topo_DR, Topo_PO, Topo_PP, Topo_PPi]
+
+Vector of the 4 relations from RCC5.
+
+See also
+[`RCC5Relations`](@ref), 
+[`GeometricalRelation`](@ref).
+"""
 const RCC5Relations = [Topo_DR, Topo_PO, Topo_PP, Topo_PPi]
 RCC5Relation = Union{typeof.(RCC5Relations)...}
 
