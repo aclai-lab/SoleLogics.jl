@@ -48,12 +48,15 @@ const BASE_PARSABLE_OPERATORS = [BASE_MODAL_OPERATORS...]
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Input and construction ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+# TODO _parsing_special_chars = []
+
 # A simple lexer capable of distinguish operators in a string,
 # returning a Vector{SoleLogics.SyntaxTree}.
 function tokenizer(expression::String, operators::Vector{<:AbstractOperator})
     # Symbolic represention of given OPERATORS
     expression = filter(x -> !isspace(x), expression)
     string_to_op = Dict([syntaxstring(op) => op for op in operators])
+    # TODO @assert that no keys(string_to_op) has a char in _parsing_special_chars
 
     # Collection responsible for split `expression` in the correct points.
     splitter = ["(", ")", keys(string_to_op)...]
@@ -87,7 +90,7 @@ function tokenizer(expression::String, operators::Vector{<:AbstractOperator})
                 !isempty(tokens) &&
                 (syntaxstring(tokens[end]) != "(" && !(tokens[end] isa AbstractOperator))
             )
-                error("Malformed input.") # TODO inform user about error.
+                error("Malformed input. TODO") # TODO inform user about error.
             end
             push!(tokens, op)
         # token is something else
