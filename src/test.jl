@@ -236,10 +236,10 @@ emptylogic = @test_nowarn propositionallogic(; operators = SoleLogics.AbstractOp
 
 # Malformed input
 # TODO fix @Mauro
-# @test_throws ErrorException parseformulatree("¬p◊")
-# @test_throws ErrorException parseformulatree("¬p◊q")
-# @test_throws ErrorException parseformulatree("(p∧q", [NEGATION, CONJUNCTION])
-# @test_throws ErrorException parseformulatree("))))", [CONJUNCTION])
+@test_throws ErrorException parseformulatree("¬p◊")
+@test_throws ErrorException parseformulatree("¬p◊q")
+@test_throws ErrorException parseformulatree("(p∧q", [NEGATION, CONJUNCTION])
+@test_throws ErrorException parseformulatree("))))", [CONJUNCTION])
 
 # TODO
 # @test ErrorException parseformulatree("⟨G⟩p", [DiamondRelationalOperator{GlobalRel}()])
@@ -247,12 +247,29 @@ emptylogic = @test_nowarn propositionallogic(; operators = SoleLogics.AbstractOp
 
 @test_nowarn parseformula("p")
 
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ random.jl ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # Mauro: I commented the following tests since a cryptic error message fills up the REPL.
 # This is strange, also because `randformulatree` actually returns correct SyntaxTrees.
 # TODO bring back
-# _alphabet = ExplicitAlphabet(Proposition.([1,2]))
-# _operators = [NEGATION, CONJUNCTION, IMPLICATION]
+_alphabet = ExplicitAlphabet(Proposition.(["pr", "qt_aoeu"]))
+_operators = [NEGATION, CONJUNCTION, IMPLICATION]
 # @test_broken randformulatree(10, _alphabet, _operators)
 # @test_nowarn randformulatree(2, _alphabet, _operators)
+
+const TERN = NamedOperator{:TERN}()
+arity(::Type{typeof(TERN)}) = 3
+
+_operators = [_operators..., DiamondRelationalOperator(globalrel), BoxRelationalOperator(globalrel), TERN]
+@test all([begin
+    f = randformula(4, _alphabet, _operators; 1)
+    s = syntaxstring(f)
+    s == syntaxstring(parseformulatree(s))
+end
+ for i in 1:1000])
+
+@test all([begin
+    f = randformula(4, _alphabet, _operators; 1)
+    s = syntaxstring(f)
+    s == syntaxstring(parseformulatree(s; function_notation = true); function_notation = true)
+end for i in 1:1000])

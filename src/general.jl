@@ -594,15 +594,6 @@ Base.hash(a::SyntaxTree) = Base.hash(syntaxstring(a))
 
 # Refer to syntaxstring(tok::AbstractSyntaxToken; kwargs...) for documentation
 function syntaxstring(t::SyntaxTree; function_notation = false, kwargs...)
-    function syntaxstring_fun(t::SyntaxTree)
-        tok = token(t)
-        return length(children(t)) == 0 ?
-               syntaxstring(tok; function_notation = function_notation, kwargs...) :
-               syntaxstring(tok; function_notation = function_notation, kwargs...) * "(" *
-                    join([syntaxstring(c; function_notation = function_notation, kwargs...) for c in children(t)], ", ") *
-                ")"
-        # "$(syntaxstring(tok; kwargs...))(" * join(map((c)->("($(syntaxstring(c; kwargs...)))"), children(t)), ",") * ")"
-    end
 
     tok = token(t)
     if arity(tok) == 0
@@ -613,7 +604,12 @@ function syntaxstring(t::SyntaxTree; function_notation = false, kwargs...)
         "$(f(children(t)[1])) $(syntaxstring(tok; function_notation = function_notation, kwargs...)) $(f(children(t)[2]))"
     else
         # Function notation for higher arity operator
-        syntaxstring_fun(t)
+        length(children(t)) == 0 ?
+               syntaxstring(tok; function_notation = function_notation, kwargs...) :
+               syntaxstring(tok; function_notation = function_notation, kwargs...) * "(" *
+                    join([syntaxstring(c; function_notation = function_notation, kwargs...) for c in children(t)], ", ") *
+                ")"
+        # "$(syntaxstring(tok; kwargs...))(" * join(map((c)->("($(syntaxstring(c; kwargs...)))"), children(t)), ",") * ")"
     end
 end
 

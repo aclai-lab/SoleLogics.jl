@@ -77,7 +77,6 @@ function tokenizer(expression::String, operators::Vector{<:AbstractOperator})
         )
     )
 
-    #= Dirty (but working) idea on how to properly manage "¬p◊" cases
     tokens = SoleLogics.AbstractSyntaxToken[]
     for st in expression
         # token is an operator
@@ -86,9 +85,9 @@ function tokenizer(expression::String, operators::Vector{<:AbstractOperator})
             # a unary operator is always preceeded by some other operator or a '('
             if (arity(op) == 1 &&
                 !isempty(tokens) &&
-                (string(tokens[end]) != "(" && !(tokens[end] isa AbstractOperator))
+                (syntaxstring(tokens[end]) != "(" && !(tokens[end] isa AbstractOperator))
             )
-                error("Malformed input")
+                error("Malformed input.") # TODO inform user about error.
             end
             push!(tokens, op)
         # token is something else
@@ -96,7 +95,6 @@ function tokenizer(expression::String, operators::Vector{<:AbstractOperator})
             push!(tokens, Proposition{String}(string(st)))
         end
     end
-    =#
 
     # Trick: wrap chars like '(' and 'p' into Proposition{String}'s. shunting_yard will
     #  take care of this.
@@ -156,8 +154,8 @@ At the moment, the propositional letters in `expression` must be represented wit
 
 # Examples
 ```julia-repl
-julia> parseformulatree("¬p∧q∧(¬s∧¬z)")
-∧(∧(∧(¬(z), ¬(s)), q), ¬(p))
+julia> syntaxstring(parseformulatree("¬p∧q∧(¬s∧¬z)"))
+"(¬(p)) ∧ (q ∧ ((¬(s)) ∧ (¬(z))))"
 ```
 
 See also [`SyntaxTree`](@ref)
@@ -212,6 +210,11 @@ function parseformulatree(
     return _buildformulatree(postfix)
 end
 
+# TODOs:
+# - Parametro function_notation = false,
+# - Parse modal operators and modal relational operators
+# - Parse propositions that are \w
+# - Aggiustare problema parsing ¬p◊
 function parseformula(
     expression::String;
     # TODO add alphabet parameter add custom parser for propositions
