@@ -5,11 +5,11 @@
 # and then remove the where clauses here
 
 SoleLogics.NEGATION(a::Bool) = (!a)
-SoleLogics.NEGATION(universe::Worlds{T}, ws::Worlds{T}) where {T<:AbstractWorld} = begin
-    return Worlds{T}(setdiff(universe, ws))
+SoleLogics.NEGATION(allworlds::Worlds{T}, ws::Worlds{T}) where {T<:AbstractWorld} = begin
+    return Worlds{T}(setdiff(allworlds, ws))
 end
-SoleLogics.NEGATION(universe::Worlds{T}, ws::Set{T}) where {T<:AbstractWorld} = begin
-    return setdiff(Set(universe), ws)
+SoleLogics.NEGATION(allworlds::Worlds{T}, ws::Set{T}) where {T<:AbstractWorld} = begin
+    return setdiff(Set(allworlds), ws)
 end
 
 SoleLogics.CONJUNCTION(a::Bool, b::Bool) = (a && b)
@@ -24,24 +24,24 @@ SoleLogics.DISJUNCTION(a::Set{T}, b::Set{T}) where {T<:AbstractWorld} = union(a,
 
 SoleLogics.IMPLICATION(a::Bool, b::Bool) = ifelse(a == true && b == false, false, true)
 SoleLogics.IMPLICATION(
-    universe::Worlds{T},
+    allworlds::Worlds{T},
     a::Worlds{T},
     b::Worlds{T},
 ) where {T<:AbstractWorld} = begin
-    return Worlds{T}(setdiff(universe, setdiff(a, CONJUNCTION(a, b))))
+    return Worlds{T}(setdiff(allworlds, setdiff(a, CONJUNCTION(a, b))))
 end
-SoleLogics.IMPLICATION(universe::Worlds{T}, a::Set{T}, b::Set{T}) where {T<:AbstractWorld} =
+SoleLogics.IMPLICATION(allworlds::Worlds{T}, a::Set{T}, b::Set{T}) where {T<:AbstractWorld} =
     begin
-        return setdiff(Set(universe), setdiff(a, CONJUNCTION(a, b)))
+        return setdiff(Set(allworlds), setdiff(a, CONJUNCTION(a, b)))
     end
 
 # use traits here (is_abstract_modop, is_existential_modop)
 function dispatch_modop(
     token::T,
-    km::KripkeModel{WT},
-    w::WT,
+    km::KripkeStructure{W},
+    w::W,
     φ::UInt64,
-) where {T<:AbstractModalOperator,WT<:AbstractWorld}
+) where {T<:AbstractModalOperator,W<:AbstractWorld}
     # Consider v as some neighbor of our w
     # In the existential case, if some km,v ⊨ φ (possibly one v) then return true
     # In the universal case, if all km,v ⊨ φ then return true
@@ -65,7 +65,7 @@ function dispatch_modop(
     # intuitively this should be good in fact, by iterating neighbors one by one,
     # sometime short-circuit happens
     s = start_cond
-    for neighbor in adjacents(km, w)
+    for neighbor in adjacents(km, w) # TODO Note (Gio) I believe this is actually wrong: you should use the adjacents of the "inverse directed graph".
         s = op(s, contains(km, φ, neighbor))
         if s == !start_cond
             break

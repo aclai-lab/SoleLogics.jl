@@ -12,12 +12,12 @@
 function gnp(n::Integer, p::Float64; rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG)
     M = _gnp(n, p, rng)
 
-    worlds = Worlds([PointWorld(i) for i = 1:n])
-    adjs = Adjacents{PointWorld}()
+    worlds = Worlds([Point(i) for i = 1:n])
+    adjs = Adjacents{Point}()
 
     # Left triangular matrix is used to generate an adjacency list
     for i = 1:n
-        neighbors = Worlds{PointWorld}([])
+        neighbors = Worlds{Point}([])
         for j = 1:i
             if M[i, j] == 1
                 push!(neighbors.worlds, worlds[j])
@@ -56,10 +56,10 @@ function fanfan(
     rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG,
 )
     rng = (typeof(rng) <: Integer) ? Random.MersenneTwister(rng) : rng
-    adjs = Adjacents{PointWorld}()
-    setindex!(adjs, Worlds{PointWorld}([]), PointWorld(0))  # Ecco qua ad esempio metti un GenericWorld
+    adjs = Adjacents{Point}()
+    setindex!(adjs, Worlds{Point}([]), Point(0))  # Ecco qua ad esempio metti un GenericWorld
 
-    od_queue = PriorityQueue{PointWorld,Int64}(PointWorld(0) => 0)
+    od_queue = PriorityQueue{Point,Int64}(Point(0) => 0)
 
     while length(adjs.adjacents) <= n
         if rand(rng) <= threshold
@@ -73,8 +73,8 @@ function fanfan(
 end
 
 function _fanout(
-    adjs::Adjacents{PointWorld},
-    od_queue::PriorityQueue{PointWorld,Int},
+    adjs::Adjacents{Point},
+    od_queue::PriorityQueue{Point,Int},
     od::Integer,
     rng::AbstractRNG,
 )
@@ -86,8 +86,8 @@ function _fanout(
     v, m = peek(od_queue)
 
     for i in rand(rng, 1:(od-m))
-        new_node = PointWorld(length(adjs))
-        setindex!(adjs, Worlds{PointWorld}([]), new_node)
+        new_node = Point(length(adjs))
+        setindex!(adjs, Worlds{Point}([]), new_node)
         push!(adjs, v, new_node)
 
         od_queue[new_node] = 0
@@ -96,8 +96,8 @@ function _fanout(
 end
 
 function _fanin(
-    adjs::Adjacents{PointWorld},
-    od_queue::PriorityQueue{PointWorld,Int},
+    adjs::Adjacents{Point},
+    od_queue::PriorityQueue{Point,Int},
     id::Integer,
     od::Integer,
     rng::AbstractRNG,
@@ -110,9 +110,9 @@ function _fanin(
     S = filter(x -> x[2] < od, od_queue)
     T = Set(sample(collect(S), rand(rng, 1:min(id, length(S))), replace = false))
 
-    v = PointWorld(length(adjs))
+    v = Point(length(adjs))
     for t in T
-        setindex!(adjs, Worlds{PointWorld}([]), v)
+        setindex!(adjs, Worlds{Point}([]), v)
         push!(adjs, t[1], v)
 
         od_queue[t[1]] = od_queue[t[1]] + 1
@@ -138,7 +138,7 @@ end
 # Generate and return a kripke model.
 # This utility uses `fanfan` and `dispense_alphabet` default methods
 # to define `adjacents` and `evaluations` but one could create its model
-# piece by piece and then calling KripkeModel constructor.
+# piece by piece and then calling KripkeStructure constructor.
 function gen_kmodel(
     n::Integer,
     in_degree::Integer,   # needed by fanfan
@@ -148,10 +148,10 @@ function gen_kmodel(
     rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG,
 )
     rng = (typeof(rng) <: Integer) ? Random.MersenneTwister(rng) : rng
-    ws = Worlds{PointWorld}(world_gen(n))
+    ws = Worlds{Point}(world_gen(n))
     adjs = fanfan(n, in_degree, out_degree, threshold = threshold, rng = rng)
     evs = dispense_alphabet(ws, P = P, rng = rng)
-    return KripkeModel{PointWorld}(ws, adjs, evs)
+    return KripkeStructure{Point}(ws, adjs, evs)
 end
 
 # Generate and return a kripke model.
@@ -173,8 +173,8 @@ function gen_kmodel(n::Integer, P::LetterAlphabet, method::Symbol, kwargs...)
         error("Invalid method provided: $method. Refer to the docs <add link here>")
     end
 
-    ws = Worlds{PointWorld}(world_gen(n))
+    ws = Worlds{Point}(world_gen(n))
     adjs = fx(n, kwargs...)
     evs = dispense_alphabet(ws, P = P)
-    return KripkeModel{PointWorld}(ws, adjs, evs)
+    return KripkeStructure{Point}(ws, adjs, evs)
 end

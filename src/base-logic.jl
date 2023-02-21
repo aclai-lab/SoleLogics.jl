@@ -1,9 +1,37 @@
-export NamedOperator
+"""
+    collatetruth(
+        a::AbstractAlgebra,
+        op::AbstractOperator,
+        t::NTuple{N,T},
+    )::T where {N,T<:TruthValue}
 
-export ∧, ¬, ∨, →
-export CONJUNCTION, NEGATION, DISJUNCTION, IMPLICATION
+Returns the truth value of a composed formula op(φ1, ..., φN), given the `N`
+truth values of its immediate sub-formulas.
+An algebra must provide a `collatetruth` method for each operator that can be
+interpreted on it.
 
-export BooleanAlgebra, BaseLogic
+See also [`AbstractAlgebra`](@ref) [`AbstractOperator`](@ref), [`TruthValue`](@ref).
+"""
+function collatetruth(
+    a::AbstractAlgebra{T},
+    op::AbstractOperator,
+    t::NTuple{N,T},
+)::T where {N,T<:TruthValue}
+    if truthtype(a) != T
+        return error("Cannot collate $(length(t)) truth values of type $(T)" *
+                     " with algebra $(typeof(a)) with truth type $(truthtype(a))).")
+    elseif arity(op) != length(t)
+        return error("Cannot collate $(length(t)) truth values for" *
+                     " operator $(typeof(op)) with arity $(arity(op))).")
+    else
+        return error("Please, provide method collatetruth(::$(typeof(a)), ::$(typeof(op))," *
+                     " ::NTuple{$(arity(op)),$(truthtype(a))}.")
+    end
+end
+
+# Note: `collatetruth` for TOP and BOTTOM relies on the `top` and `bottom` methods.
+collatetruth(a::AbstractAlgebra, ::typeof(⊤), t::NTuple{0}) = top(a)
+collatetruth(a::AbstractAlgebra, ::typeof(⊥), t::NTuple{0}) = bottom(a)
 
 ############################################################################################
 ####################################### BASE OPERATORS #####################################
@@ -28,7 +56,8 @@ struct NamedOperator{Symbol} <: AbstractOperator end
 
 name(::NamedOperator{S}) where {S} = S
 
-Base.show(io::IO, op::NamedOperator) = print(io, "$(name(op))")
+# Base.show(io::IO, op::NamedOperator) = print(io, "$(syntaxstring(op))")
+syntaxstring(op::NamedOperator; kwargs...) = string(name(op))
 
 doc_NEGATION = """
     const NEGATION = NamedOperator{:¬}()
@@ -39,13 +68,9 @@ Logical negation.
 
 See also [`NamedOperator`](@ref), [`AbstractOperator`](@ref).
 """
-"""
-$(doc_NEGATION)
-"""
+"""$(doc_NEGATION)"""
 const NEGATION = NamedOperator{:¬}()
-"""
-$(doc_NEGATION)
-"""
+"""$(doc_NEGATION)"""
 const ¬ = NEGATION
 arity(::Type{typeof(¬)}) = 1
 
@@ -58,13 +83,9 @@ Logical conjunction.
 
 See also [`NamedOperator`](@ref), [`AbstractOperator`](@ref).
 """
-"""
-$(doc_CONJUNCTION)
-"""
+"""$(doc_CONJUNCTION)"""
 const CONJUNCTION = NamedOperator{:∧}()
-"""
-$(doc_CONJUNCTION)
-"""
+"""$(doc_CONJUNCTION)"""
 const ∧ = CONJUNCTION
 arity(::Type{typeof(∧)}) = 2
 
@@ -77,13 +98,9 @@ Logical disjunction.
 
 See also [`NamedOperator`](@ref), [`AbstractOperator`](@ref).
 """
-"""
-$(doc_DISJUNCTION)
-"""
+"""$(doc_DISJUNCTION)"""
 const DISJUNCTION = NamedOperator{:∨}()
-"""
-$(doc_DISJUNCTION)
-"""
+"""$(doc_DISJUNCTION)"""
 const ∨ = DISJUNCTION
 arity(::Type{typeof(∨)}) = 2
 
@@ -96,20 +113,13 @@ Logical implication.
 
 See also [`NamedOperator`](@ref), [`AbstractOperator`](@ref).
 """
-"""
-$(doc_IMPLICATION)
-"""
+"""$(doc_IMPLICATION)"""
 const IMPLICATION = NamedOperator{:→}()
-"""
-$(doc_IMPLICATION)
-"""
+"""$(doc_IMPLICATION)"""
 const → = IMPLICATION
 arity(::Type{typeof(→)}) = 2
 
-# Helpers
-# TODO2: I am not a great fan of this.. it is really the best way to do it?
-# TODO I could find a way that is more elegant that would not introduce ambiguity in dispatching.
-# Note that these are only helpers, so it's not really problem if they are hard to understand.
+# Helpers that allow the conjuction/disjuction of more than two tokens/trees/formulas.
 function CONJUNCTION(
     c1::Union{AbstractSyntaxToken,SyntaxTree,AbstractFormula},
     c2::Union{AbstractSyntaxToken,SyntaxTree,AbstractFormula},
@@ -142,6 +152,10 @@ function DISJUNCTION(
 )
     return DISJUNCTION(c1, DISJUNCTION(c2, c3, cs...))
 end
+
+# TODO example _iscommutative(::Type{typeof(xor)}) = true
+_iscommutative(::Type{typeof(∧)}) = true
+_iscommutative(::Type{typeof(∨)}) = true
 
 ############################################################################################
 ########################################## ALGEBRA #########################################
@@ -164,17 +178,30 @@ top(a::BooleanAlgebra) = true
 bottom(a::BooleanAlgebra) = false
 
 # Standard semantics for NOT, AND, OR, IMPLIES
-collate_truth(::BooleanAlgebra, ::typeof(¬), (t,)::NTuple{1}) = (!t)
-collate_truth(::BooleanAlgebra, ::typeof(∧), (t1, t2)::NTuple{2}) = min(t1, t2)
-collate_truth(::BooleanAlgebra, ::typeof(∨), (t1, t2)::NTuple{2}) = max(t1, t2)
+collatetruth(::BooleanAlgebra, ::typeof(¬), (t,)::NTuple{1}) = (!t)
+collatetruth(::BooleanAlgebra, ::typeof(∧), (t1, t2)::NTuple{2}) = min(t1, t2)
+collatetruth(::BooleanAlgebra, ::typeof(∨), (t1, t2)::NTuple{2}) = max(t1, t2)
 
 # The IMPLIES operator, →, falls back to ¬
-function collate_truth(a::BooleanAlgebra, ::typeof(→), (t1, t2)::NTuple{2})
-    return collate_truth(a, ∨, (collate_truth(a, ¬, t1), t2))
+function collatetruth(a::BooleanAlgebra, ::typeof(→), (t1, t2)::NTuple{2})
+    return collatetruth(a, ∨, (collatetruth(a, ¬, t1), t2))
 end
 
+
+# Bool values -> Boolean algebra
+tops(t::Bool)::Bool = (t == true)
+bottoms(t::Bool)::Bool = (t == false)
 default_algebra(::Type{Bool}) = BooleanAlgebra{Bool}()
 
+# # With dense, discrete algebras, floats can be used.
+# tops(t::AbstractFloat)::Bool = isone(t)
+# bottoms(t::AbstractFloat)::Bool = iszero(t)
+
+# # TODO idea: use full range for numbers!
+# # tops(t::AbstractFloat)::Bool = t == typemax(typeof(t))
+# # bottoms(t::AbstractFloat)::Bool = t == typemin(typeof(t))
+# tops(t::Integer)::Bool = t == typemax(typeof(t))
+# bottoms(t::Integer)::Bool = t == typemin(typeof(t))
 
 # TODO:
 # struct DiscreteChainAlgebra{T} <: AbstractAlgebra{T} domain::Vector{T} end
@@ -191,7 +218,7 @@ default_algebra(::Type{Bool}) = BooleanAlgebra{Bool}()
 ############################################################################################
 
 """
-    struct BaseLogic{G<:AbstractGrammar, A<:AbstractAlgebra} <: AbstractLogic{G, A}
+    struct BaseLogic{G<:AbstractGrammar,A<:AbstractAlgebra} <: AbstractLogic{G,A}
         grammar::G
         algebra::A
     end
@@ -199,7 +226,8 @@ default_algebra(::Type{Bool}) = BooleanAlgebra{Bool}()
 Basic logic type based on a grammar and an algebra, where both the grammar and the algebra
 are instantiated.
 
-See also [`AbstractGrammar`](@ref), [`AbstractAlgebra`](@ref), [`AbstractLogic`](@ref).
+See also [`grammar`](@ref), [`algebra`](@ref),
+[`AbstractGrammar`](@ref), [`AbstractAlgebra`](@ref), [`AbstractLogic`](@ref).
 """
 struct BaseLogic{G<:AbstractGrammar,A<:AbstractAlgebra} <: AbstractLogic{G,A}
     grammar::G
@@ -209,7 +237,7 @@ struct BaseLogic{G<:AbstractGrammar,A<:AbstractAlgebra} <: AbstractLogic{G,A}
         grammar::G = BASE_GRAMMAR,
         algebra::A = BooleanAlgebra(),
     ) where {G<:AbstractGrammar,A<:AbstractAlgebra}
-        # @assert all([goeswith(op, algebra) for op in operators(grammar)]) "Cannot instantiate BaseLogic{$(G), $(A)}: operators $(operators(grammar)[[goeswith(op, algebra) for op in operators(grammar)]]) cannot be interpreted on $(algebra)." # requires `goeswith` trait
+        # @assert all([goeswith(op, algebra) for op in operators(grammar)]) "Cannot instantiate BaseLogic{$(G),$(A)}: operators $(operators(grammar)[[goeswith(op, algebra) for op in operators(grammar)]]) cannot be interpreted on $(algebra)." # requires `goeswith` trait
         return new{G,A}(grammar, algebra)
     end
 
@@ -230,6 +258,14 @@ end
 
 grammar(l::BaseLogic) = l.grammar
 algebra(l::BaseLogic) = l.algebra
+
+function Base.show(io::IO, l::BaseLogic{G,A}) where {G<:AbstractGrammar,A<:AbstractAlgebra}
+    if G <: CompleteFlatGrammar
+        print(io, "BaseLogic with:\n\t- operators = [$(join(syntaxstring.(operators(l)), ", "))];\n\t- alphabet: $(alphabet(l));\n\t- algebra: $(algebra(l)).")
+    else
+        print(io, "BaseLogic{$(G),$(A)}(\n\t- grammar: $(grammar(l));\n\t- algebra: $(algebra(l))\n)")
+    end
+end
 
 """
 A base logic can be used to instantiate `Formula`s out of syntax trees.
@@ -261,7 +297,7 @@ const BASE_ALGEBRA = BooleanAlgebra()
 
 const BASE_LOGIC = BaseLogic(BASE_GRAMMAR, BASE_ALGEBRA)
 
-function _base_logic(;
+function _baselogic(;
     alphabet::Union{Nothing,Vector,AbstractAlphabet} = nothing,
     operators::Union{Nothing,Vector{<:AbstractOperator}} = nothing,
     grammar::Union{Nothing,AbstractGrammar} = nothing,
@@ -276,12 +312,14 @@ function _base_logic(;
                 (!isnothing(operators) ? ["operators"] : [])...,
                 (!isnothing(grammar) ? ["grammar"] : [])...,
                 ], ", "))."
-
     grammar = begin
         if isnothing(grammar)
-            if isnothing(alphabet) && isnothing(operators)
-                BASE_GRAMMAR
-            else
+            # @show alphabet
+            # @show operators
+            # @show BASE_GRAMMAR
+            # if isnothing(alphabet) && isnothing(operators)
+                # BASE_GRAMMAR
+            # else
                 alphabet = isnothing(alphabet) ? BASE_ALPHABET : alphabet
                 operators = begin
                     if isnothing(operators)
@@ -299,7 +337,7 @@ function _base_logic(;
                     alphabet = ExplicitAlphabet(map(Proposition, alphabet))
                 end
                 CompleteFlatGrammar(alphabet, operators)
-            end
+            # end
         else
             @assert isnothing(alphabet) && isnothing(operators)
             grammar
@@ -309,4 +347,65 @@ function _base_logic(;
     algebra = isnothing(algebra) ? BASE_ALGEBRA : algebra
 
     return BaseLogic(grammar, algebra)
+end
+
+"""
+    function baseformula(
+        ttf::Union{AbstractSyntaxToken,SyntaxTree,AbstractFormula};
+        operators::Union{Nothing,Vector{<:AbstractOperator}} = nothing,
+        kwargs...,
+    )
+    
+Attempts at instantiating a `Formula` from a syntax tree/token/formula,
+by inferring the logic it belongs to.
+
+# Examples
+```julia-repl
+julia> t = parseformulatree("◊((p∧q)→r)");
+
+julia> operators(logic(SoleLogics.baseformula(t)))
+3-element Vector{Union{SoleLogics.NamedOperator{:→}, SoleLogics.NamedOperator{:◊}, SoleLogics.NamedOperator{:∧}}}:
+ ∧
+ ◊
+ →
+
+julia> operators(logic(SoleLogics.baseformula(t; operators = SoleLogics.BASE_MODAL_OPERATORS)))
+8-element Vector{Union{SoleLogics.BottomOperator, SoleLogics.NamedOperator{:¬}, SoleLogics.NamedOperator{:∧}, SoleLogics.NamedOperator{:∨}, SoleLogics.NamedOperator{:→}, SoleLogics.NamedOperator{:◊}, SoleLogics.NamedOperator{:□}, SoleLogics.TopOperator}}:
+ ⊤
+ ⊥
+ ¬
+ ∧
+ ∨
+ →
+ ◊
+ □
+```
+"""
+function baseformula(
+    ttf::Union{AbstractSyntaxToken,SyntaxTree,AbstractFormula};
+    operators::Union{Nothing,Vector{<:AbstractOperator}} = nothing,
+    # additional_operators::Vector{<:AbstractOperator} = AbstractOperator[],
+    kwargs...,
+)
+    tree = convert(SyntaxTree, ttf)
+    ops = isnothing(operators) ? SoleLogics.operators(tree) : operators
+    # operators = unique([additional_operators..., ops...])
+    # props = propositions(tree)
+
+    logic = begin
+        if issubset(ops, BASE_PROPOSITIONAL_OPERATORS)
+            propositionallogic(;
+                operators = ops,
+                kwargs...,
+            )
+        elseif issubset(ops, BASE_MODAL_OPERATORS)
+            modallogic(;
+                operators = ops,
+                kwargs...,
+            )
+        else
+            error("Could not infer logic from SyntaxTree object: $(tree). Operators = $(ops).")
+        end
+    end
+    Formula(logic, tree)
 end

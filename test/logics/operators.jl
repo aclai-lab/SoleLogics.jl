@@ -14,10 +14,10 @@
     @test isbinary(BOX) == false
 
 
-    @test iscommutative(NEGATION) == false
-    @test iscommutative(IMPLICATION) == false
-    @test iscommutative(CONJUNCTION) == true
-    @test iscommutative(DISJUNCTION) == true
-    @test iscommutative(DIAMOND) == false
-    @test iscommutative(BOX) == false
+    @test SoleLogics.iscommutative(NEGATION) == false
+    @test SoleLogics.iscommutative(IMPLICATION) == false
+    @test SoleLogics.iscommutative(CONJUNCTION) == true
+    @test SoleLogics.iscommutative(DISJUNCTION) == true
+    @test SoleLogics.iscommutative(DIAMOND) == false
+    @test SoleLogics.iscommutative(BOX) == false
 end

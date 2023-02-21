@@ -53,7 +53,7 @@ const BASE_PARSABLE_OPERATORS = [BASE_MODAL_OPERATORS...]
 function tokenizer(expression::String, operators::Vector{<:AbstractOperator})
     # Symbolic represention of given OPERATORS
     expression = filter(x -> !isspace(x), expression)
-    string_to_op = Dict([string(op) => op for op in operators])
+    string_to_op = Dict([syntaxstring(op) => op for op in operators])
 
     # Collection responsible for split `expression` in the correct points.
     splitter = ["(", ")", keys(string_to_op)...]
@@ -88,7 +88,7 @@ function tokenizer(expression::String, operators::Vector{<:AbstractOperator})
                 !isempty(tokens) &&
                 (string(tokens[end]) != "(" && !(tokens[end] isa AbstractOperator))
             )
-                throw(error("Malformed input"))
+                error("Malformed input")
             end
             push!(tokens, op)
         # token is something else
@@ -147,28 +147,6 @@ function shunting_yard!(
     end
 end
 
-# Build a formula starting from a Vector{AbstractSyntaxToken} representing its postfix notation
-function buildformulatree(postfix::Vector{AbstractSyntaxToken})
-    stack = SyntaxTree[]
-
-    # Each tok might be a Proposition or a AbstractOperator
-    for tok in postfix
-        # Stack collapses, composing a new part of the syntax tree
-        if tok isa AbstractOperator
-            children = [pop!(stack) for _ in 1:arity(tok)]
-            push!(stack, SyntaxTree(tok, Tuple(reverse(children))))
-        else
-            push!(stack, SyntaxTree(tok))
-        end
-    end
-
-    if length(stack) != 1
-        throw(error("Malformed input"))
-    end
-
-    return stack[1]
-end
-
 """
     parseformulatree(expression::String, operators::Vector{<:AbstractOperator})
 
@@ -188,6 +166,28 @@ function parseformulatree(
     expression::String,
     operators::Vector{<:AbstractOperator} = AbstractOperator[],
 )
+    # Build a formula starting from a Vector{AbstractSyntaxToken} representing its postfix notation
+    function _buildformulatree(postfix::Vector{AbstractSyntaxToken})
+        stack = SyntaxTree[]
+
+        # Each tok might be a Proposition or a AbstractOperator
+        for tok in postfix
+            # Stack collapses, composing a new part of the syntax tree
+            if tok isa AbstractOperator
+                children = [pop!(stack) for _ in 1:arity(tok)]
+                push!(stack, SyntaxTree(tok, Tuple(reverse(children))))
+            else
+                push!(stack, SyntaxTree(tok))
+            end
+        end
+
+        if length(stack) != 1
+            error("Malformed input: $(expression) (postfix: $(postfix))")
+        end
+
+        return stack[1]
+    end
+
     operators = unique(AbstractOperator[BASE_PARSABLE_OPERATORS..., operators...])
     tokens = tokenizer(expression, operators) # Still a Vector{SoleLogics.AbstractSyntaxToken}
 
@@ -204,12 +204,12 @@ function parseformulatree(
 
         # Starting expression is not well formatted, or a "(" is found
         if !(op isa AbstractOperator)
-            throw(error("Mismatching brackets"))
+            error("Mismatching brackets")
         end
         push!(postfix, op)
     end
 
-    return buildformulatree(postfix)
+    return _buildformulatree(postfix)
 end
 
 function parseformula(
@@ -222,7 +222,7 @@ function parseformula(
 )
     operators = (isnothing(operators) ? AbstractOperator[] : operators)
     t = parseformulatree(expression, operators)
-    base_formula(t;
+    baseformula(t;
         operators = unique(AbstractOperator[operators..., SoleLogics.operators(t)...]),
         # alphabet = alphabet,
         alphabet = AlphabetOfAny{String}(),

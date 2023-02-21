@@ -1,12 +1,9 @@
-export propositional_logic
-
-export Interpretation, TruthDict, DefaultedTruthDict
 
 const BASE_PROPOSITIONAL_OPERATORS = BASE_OPERATORS
 const BasePropositionalOperators = Union{typeof.(BASE_PROPOSITIONAL_OPERATORS)...}
 
 """
-    propositional_logic(;
+    propositionallogic(;
         alphabet = AlphabetOfAny{String}(),
         operators = [⊤, ⊥, ¬, ∧, ∨, →],
         grammar = CompleteFlatGrammar(AlphabetOfAny{String}(), [⊤, ⊥, ¬, ∧, ∨, →]),
@@ -20,21 +17,27 @@ can be specified instead of the grammar.
 
 # Examples
 ```julia-repl
-julia> propositional_logic()
-julia> propositional_logic(; operators = [¬, ∨])
-julia> propositional_logic(; alphabet = ["p", "q"])
-julia> propositional_logic(; alphabet = ExplicitAlphabet([Proposition("p"), Proposition("q")]))
+julia> (¬) isa operatorstype(propositionallogic())
+true
+
+julia> (¬) isa operatorstype(propositionallogic(; operators = [∨]))
+false
+
+julia> propositionallogic(; alphabet = ["p", "q"]);
+
+julia> propositionallogic(; alphabet = ExplicitAlphabet([Proposition("p"), Proposition("q")]));
+
 ```
 
-See also [`AbstractAlphabet`](@ref), [`AbstractAlgebra`](@ref).
+See also [`modallogic`](@ref), [`AbstractAlphabet`](@ref), [`AbstractAlgebra`](@ref).
 """
-function propositional_logic(;
+function propositionallogic(;
     alphabet::Union{Nothing,Vector,AbstractAlphabet} = nothing,
     operators::Union{Nothing,Vector{<:AbstractOperator}} = nothing,
     grammar::Union{Nothing,AbstractGrammar} = nothing,
-    algebra::Union{Nothing,AbstractAlgebra} = nothing
+    algebra::Union{Nothing,AbstractAlgebra} = nothing,
 )
-    _base_logic(
+    _baselogic(
         alphabet = alphabet,
         operators = operators,
         grammar = grammar,
@@ -50,47 +53,56 @@ const BasePropositionalLogic = AbstractLogic{G,A} where {ALP,G<:AbstractGrammar{
 ############################################################################################
 
 """
-    abstract type Interpretation{A,T<:TruthValue} <: AbstractLogicalModel{A,T} end
+    abstract type AbstractAssignment{A,T<:TruthValue} <: AbstractInterpretation{A,T} end
 
-A propositional interpretation, encoding a mapping from `Proposition`s of atom type `A`
+A propositional assigment (or, simply, an *assigment*) is a propositional interpretation,
+encoding a mapping from `Proposition`s of atom type `A`
 to truth values of type `T`.
 
-See also [`AbstractLogicalModel`](@ref).
+See also [`AbstractInterpretation`](@ref).
 """
-abstract type Interpretation{A,T<:TruthValue} <: AbstractLogicalModel{A,T} end
+abstract type AbstractAssignment{A,T<:TruthValue} <: AbstractInterpretation{A,T} end
 
 """
-    Base.getindex(m::Interpretation{AA,T}, p::Proposition{AA}, args...)::T where {AA,A<:AA,T<:TruthValue}
+    Base.getindex(i::AbstractAssignment{AA,T}, p::Proposition{AA}, args...)::T where {AA,A<:AA,T<:TruthValue}
 
-Each interpretation must provide a method for accessing the truth of a proposition.
+Returns the truth value of a proposition, given an assignment.
+
+See also [`AbstractInterpretation`](@ref).
 """
 function Base.getindex(
-    m::Interpretation{AA,T},
+    i::AbstractAssignment{AA,T},
     ::Proposition{A},
     args...
 )::T where {AA,A<:AA,T<:TruthValue}
     return error("Please, provide method" *
-                 " Base.getindex(::$(typeof(m))," *
-                 " ::Proposition{$(atomtype(m))}, args...)::$(truthtype(m))" *
+                 " Base.getindex(::$(typeof(i))," *
+                 " ::Proposition{$(atomtype(i))}, args...)::$(truthtype(i))" *
                  " with args::$(typeof(args)).")
 end
 
 """
-    Base.in(::Proposition{A}, m::Interpretation{A})::Bool where {A}
+    Base.in(::Proposition{A}, i::AbstractAssignment{A})::Bool where {A}
 
-Each interpretation must provide a method for expressing whether the model has a truth value
-for a given proposition.
+Returns whether an assigment has a truth value for a given proposition.
+
+See also [`AbstractInterpretation`](@ref).
 """
-function Base.in(::Proposition{A}, m::Interpretation{AA})::Bool where {AA,A<:AA}
+function Base.in(::Proposition{A}, i::AbstractAssignment{AA})::Bool where {AA,A<:AA}
     return error("Please, provide method" *
-                 " Base.in(::Proposition{$(atomtype(m))}," *
-                 " ::$(typeof(m)))::Bool.")
+                 " Base.in(::Proposition{$(atomtype(i))}," *
+                 " ::$(typeof(i)))::Bool.")
 end
 
 """
-    check(f::AbstractFormula, m::Interpretation, args...)
+    check(
+        f::AbstractFormula,
+        i::AbstractAssignment::{A,T},
+        args...
+    )::T where {A,T<:TruthValue}
 
-Checks a formula, represented as a syntax tree, on a model. It returns a `TruthValue`.
+Checks a logical formula on an assigment.
+It returns a truth value of the assigment.
 
 # Extended help
 The fallback method extracts the formula's syntax tree and checks it using the logic's
@@ -99,44 +111,49 @@ algebra.
     check(
         a::AbstractAlgebra,
         tree::SyntaxTree,
-        m::Interpretation{A,T},
+        i::AbstractAssignment{A,T},
         args...
     )::T where {A,T<:TruthValue}
 
+See also [`SyntaxTree`](@ref), [`AbstractFormula`](@ref),
+[`AbstractAlgebra`](@ref), [`AbstractInterpretation`](@ref).
 """
-check(f::AbstractFormula, m::Interpretation, args...) = check(algebra(f), tree(f), m, args...)
+check(f::AbstractFormula, i::AbstractAssignment, args...) = check(algebra(f), tree(f), i, args...)
 
 function check(
     a::AbstractAlgebra,
     tree::SyntaxTree,
-    m::Interpretation{A,T},
+    i::AbstractAssignment{A,T},
     args...
 )::T where {A,T<:TruthValue}
     if token(tree) isa Proposition
-        return Base.getindex(m, token(tree), args...)
+        return Base.getindex(i, token(tree), args...)
     elseif token(tree) isa AbstractOperator
-        ts = Tuple([check(a, childtree, m, args...) for childtree in children(tree)])
-        return collate_truth(a, token(tree), ts)
+        ts = Tuple([check(a, childtree, i, args...) for childtree in children(tree)])
+        return collatetruth(a, token(tree), ts)
     else
         return error("Unknown token type encountered when checking formula" *
-                     " on model of type $(typeof(m)): $(typeof(token(tree))).")
+                     " on interpretation of type $(typeof(i)): $(typeof(token(tree))).")
     end
 end
 
 # Helper: a proposition can be checked on an interpretation; a simple lookup is performed.
-check(p::Proposition{A}, m::Interpretation{AA}, args...) where {AA,A<:AA} = Base.getindex(m, p, args...)
+check(p::Proposition{A}, i::AbstractAssignment{AA}, args...) where {AA,A<:AA} = Base.getindex(i, p, args...)
+
+############################################################################################
 
 """
-    struct TruthDict{A,T<:TruthValue} <: Interpretation{A,T}
+    struct TruthDict{A,T<:TruthValue} <: AbstractAssignment{A,T}
         truth::Dict{Proposition{A},T}
     end
 
-A truth table instantiated as a dictionary, assigning truth values to a set of propositions.
+A truth table instantiated as a dictionary,
+explicitly assigning truth values to a set of propositions.
 If prompted for the value of an unknown proposition, it throws an error.
 
-See also [`Interpretation`](@ref), [`AbstractLogicalModel`](@ref).
+See also [`AbstractAssignment`](@ref), [`AbstractInterpretation`](@ref).
 """
-struct TruthDict{A,T<:TruthValue} <: Interpretation{A,T}
+struct TruthDict{A,T<:TruthValue} <: AbstractAssignment{A,T}
     truth::Dict{Proposition{A},T}
 
     function TruthDict{A,T}(d::Dict{Proposition{A},T}) where {A,T<:TruthValue}
@@ -159,11 +176,13 @@ struct TruthDict{A,T<:TruthValue} <: Interpretation{A,T}
     end
 end
 
-Base.getindex(m::TruthDict{AA}, p::Proposition{A}) where {AA,A<:AA} = m.truth[p]
-Base.in(p::Proposition{A}, m::TruthDict{AA}) where {AA,A<:AA} = (p in keys(m.truth))
+Base.getindex(i::TruthDict{AA}, p::Proposition{A}) where {AA,A<:AA} = i.truth[p]
+Base.in(p::Proposition{A}, i::TruthDict{AA}) where {AA,A<:AA} = (p in keys(i.truth))
+
+############################################################################################
 
 """
-    struct DefaultedTruthDict{A,T<:TruthValue} <: Interpretation{A,T}
+    struct DefaultedTruthDict{A,T<:TruthValue} <: AbstractAssignment{A,T}
         truth::Dict{Proposition{A},T}
         default_truth::T
     end
@@ -173,9 +192,9 @@ This structure assigns truth values to a set of propositions and,
 when prompted for the value of a proposition that is not in the dictionary,
 it returns `default_truth`.
 
-See also [`TruthDict`](@ref), [`Interpretation`](@ref), [`AbstractLogicalModel`](@ref).
+See also [`TruthDict`](@ref), [`AbstractAssignment`](@ref), [`AbstractInterpretation`](@ref).
 """
-struct DefaultedTruthDict{A,T<:TruthValue} <: Interpretation{A,T}
+struct DefaultedTruthDict{A,T<:TruthValue} <: AbstractAssignment{A,T}
     truth::Dict{Proposition{A},T}
     default_truth::T
 
@@ -228,7 +247,7 @@ struct DefaultedTruthDict{A,T<:TruthValue} <: Interpretation{A,T}
     end
 end
 
-function Base.getindex(m::DefaultedTruthDict{AA}, p::Proposition{A}) where {AA,A<:AA}
-    return (p in keys(m.truth)) ? m.truth[p] : m.default_truth
+function Base.getindex(i::DefaultedTruthDict{AA}, p::Proposition{A}) where {AA,A<:AA}
+    return (p in keys(i.truth)) ? i.truth[p] : i.default_truth
 end
-Base.in(p::Proposition{A}, m::DefaultedTruthDict{AA}) where {AA,A<:AA} = true
+Base.in(p::Proposition{A}, i::DefaultedTruthDict{AA}) where {AA,A<:AA} = true
