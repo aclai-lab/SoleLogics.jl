@@ -162,6 +162,7 @@ See also [`SyntaxTree`](@ref)
 """
 function parseformulatree(
     expression::String,
+    # TODO operators->additional_operators?
     operators::Vector{<:AbstractOperator} = AbstractOperator[],
 )
     # Build a formula starting from a Vector{AbstractSyntaxToken} representing its postfix notation
