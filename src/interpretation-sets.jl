@@ -27,16 +27,16 @@ truthtype(::Type{AbstractInterpretationSet{M}}) where {M} = atomtype(M)
 truthtype(s::AbstractInterpretationSet) = atomtype(M)
 
 function check(
-    p::Proposition,
+    tok::AbstractSyntaxToken,
     X::AbstractInterpretationSet{M},
     i_sample::Integer,
     args...,
 )::truthtype(M) where {M<:AbstractInterpretation}
-    error("Please, provide method check(::$(typeof(p)), ::$(typeof(X)), ::Integer, ::$(typeof(args))...).")
+    error("Please, provide method check(::$(typeof(tok)), ::$(typeof(X)), ::Integer, ::$(typeof(args))...).")
 end
 
 function check(
-    φ::Union{AbstractSyntaxToken,SyntaxTree,AbstractFormula},
+    φ::Union{SyntaxTree,AbstractFormula},
     X::AbstractInterpretationSet{M},
     i_sample::Integer,
     args...,

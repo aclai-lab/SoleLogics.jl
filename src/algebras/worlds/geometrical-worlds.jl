@@ -87,7 +87,7 @@ end
 
 Base.show(io::IO, w::Interval) = print(io, "($(w.x)−$(w.y))")
 
-goeswithdim(::Type{Interval}, ::Val{1}) = true
+goeswithdim(::Type{<:Interval}, ::Val{1}) = true
 
 ############################################################################################
 # Interval 2D
@@ -134,4 +134,4 @@ function Base.show(io::IO, w::Interval2D)
     print(io, ")")
 end
 
-goeswithdim(::Type{Interval2D}, ::Val{2}) = true
+goeswithdim(::Type{<:Interval2D}, ::Val{2}) = true

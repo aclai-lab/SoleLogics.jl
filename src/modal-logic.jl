@@ -169,13 +169,13 @@ abstract type AbstractRelation end
 
 Returns the `arity` of the relation.
 
+See also [`AbstractRelation`](@ref).
+
 # Extended help
 
 When defining a new relation type `R` with arity `2`, please provide the method:
 
     arity(::Type{R}) = 2
-
-See also [`AbstractRelation`](@ref).
 """
 arity(R::Type{<:AbstractRelation})::Integer = error("Please, provide method arity(::$(typeof(R))).")
 arity(r::AbstractRelation)::Integer = arity(typeof(r))
@@ -188,6 +188,8 @@ doc_conv_rel = """
     converse(r::AbstractRelation)::AbstractRelation = converse(typeof(r))()
     
 If it exists, returns the converse relation (type) of a given relation (type)
+
+See also [`issymmetric`](@ref), [`isreflexive`](@ref), [`istransitive`](@ref), [`AbstractRelation`](@ref).
 
 # Extended help
 
@@ -203,8 +205,6 @@ When defining a new symmetric relation `R` with converse `CR`, please define the
 
     hasconverse(R::Type{R}) = true
     converse(R::Type{R}) = CR
-
-See also [`issymmetric`](@ref), [`isreflexive`](@ref), [`istransitive`](@ref), [`AbstractRelation`](@ref).
 """
 
 """$(doc_conv_rel)"""
@@ -295,6 +295,10 @@ Vector{Interval{Int64}}
 julia> Interval(8,11) in collect(accessibles(fr, Interval(2,5), IA_L))
 true
 ```
+
+See also [`AbstractWorld`](@ref),
+[`AbstractRelation`](@ref), [`AbstractMultiModalFrame`](@ref).
+
 # Extended help
 
 Since `accessibles` always returns an iterator of worlds of the same type `W`,
@@ -350,9 +354,6 @@ a custom `accessibles` method by providing these three methods:
 
 In general, it should be true that
 `collect(accessibles(fr, w, r)) isa AbstractVector{W}`.
-
-See also [`AbstractWorld`](@ref),
-[`AbstractRelation`](@ref), [`AbstractMultiModalFrame`](@ref).
 """
 function accessibles(
     fr::AbstractMultiModalFrame{W},

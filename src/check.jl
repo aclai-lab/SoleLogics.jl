@@ -198,8 +198,8 @@ See also [`check`](@ref), [`iscrisp`](@ref),
 function collateworlds(
     fr::AbstractFrame{W,Bool},
     op::AbstractOperator,
-    t::NTuple{N,WorldSetType},
-)::AbstractWorldSet{<:W} where {N,W<:AbstractWorld,WorldSetType<:AbstractWorldSet}
+    t::NTuple{N,<:AbstractWorldSet},
+)::AbstractWorldSet{<:W} where {N,W<:AbstractWorld}
     if arity(op) != length(t)
         return error("Cannot collate $(length(t)) truth values for" *
                      " operator $(typeof(op)) with arity $(arity(op))).")
@@ -210,18 +210,18 @@ function collateworlds(
 end
 
 # I know, these exceed 92 characters. But they look nicer like this!! :D
-collateworlds(fr::AbstractFrame{W,Bool}, ::typeof(⊤), ::NTuple{0}) where {W<:AbstractWorld} = allworlds(fr)
-collateworlds(::AbstractFrame{W,Bool}, ::typeof(⊥), ::NTuple{0}) where {W<:AbstractWorld} = W[]
+collateworlds(fr::AbstractFrame{W,Bool}, ::typeof(⊤), ::NTuple{0,<:AbstractWorldSet}) where {W<:AbstractWorld} = allworlds(fr)
+collateworlds(::AbstractFrame{W,Bool}, ::typeof(⊥), ::NTuple{0,<:AbstractWorldSet}) where {W<:AbstractWorld} = W[]
 
-collateworlds(fr::AbstractFrame{W,Bool}, ::typeof(¬), (ws,)::NTuple{1}) where {W<:AbstractWorld} = setdiff(allworlds(fr), ws)
-collateworlds(::AbstractFrame{W,Bool}, ::typeof(∧), (ws1, ws2)::NTuple{2}) where {W<:AbstractWorld} = intersect(ws1, ws2)
-collateworlds(::AbstractFrame{W,Bool}, ::typeof(∨), (ws1, ws2)::NTuple{2}) where {W<:AbstractWorld} = union(ws1, ws2)
-collateworlds(fr::AbstractFrame{W,Bool}, ::typeof(→), (ws1, ws2)::NTuple{2}) where {W<:AbstractWorld} = union(setdiff(allworlds(fr), ws1), ws2)
+collateworlds(fr::AbstractFrame{W,Bool}, ::typeof(¬), (ws,)::NTuple{1,<:AbstractWorldSet}) where {W<:AbstractWorld} = setdiff(allworlds(fr), ws)
+collateworlds(::AbstractFrame{W,Bool}, ::typeof(∧), (ws1, ws2)::NTuple{2,<:AbstractWorldSet}) where {W<:AbstractWorld} = intersect(ws1, ws2)
+collateworlds(::AbstractFrame{W,Bool}, ::typeof(∨), (ws1, ws2)::NTuple{2,<:AbstractWorldSet}) where {W<:AbstractWorld} = union(ws1, ws2)
+collateworlds(fr::AbstractFrame{W,Bool}, ::typeof(→), (ws1, ws2)::NTuple{2,<:AbstractWorldSet}) where {W<:AbstractWorld} = union(setdiff(allworlds(fr), ws1), ws2)
 
 function collateworlds(
     fr::AbstractMultiModalFrame{W,Bool},
     op::DiamondRelationalOperator,
-    (ws,)::NTuple{1},
+    (ws,)::NTuple{1,<:AbstractWorldSet},
 ) where {W<:AbstractWorld}
     r = relation(op)
     if r == globalrel
@@ -244,7 +244,7 @@ end
 function collateworlds(
     fr::AbstractMultiModalFrame{W,Bool},
     op::BoxRelationalOperator,
-    (ws,)::NTuple{1},
+    (ws,)::NTuple{1,<:AbstractWorldSet},
 ) where {W<:AbstractWorld}
     r = relation(op)
     if r == globalrel
