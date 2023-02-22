@@ -23,7 +23,7 @@ function install(package::String, url::String, rev::String)
     end
 end
 
-install("SoleBase", "https://github.com/aclai-lab/SoleBase.jl", "dev")
+install("SoleBase", "https://github.com/aclai-lab/SoleBase.jl", "dev-v0.9")
 install("SoleLogics", "https://github.com/aclai-lab/SoleLogics.jl", "algebras/giopaglia")
 
 Pkg.instantiate()
