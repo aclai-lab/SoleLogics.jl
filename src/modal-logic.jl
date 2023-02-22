@@ -17,7 +17,7 @@ include("algebras/worlds.jl")
 """
     abstract type AbstractFrame{W<:AbstractWorld,T<:TruthValue} end
 
-Abstract type for an accessibility graph (Kripke frame), that gives the structure to 
+Abstract type for an accessibility graph (Kripke frame), that gives the structure to
 [Kripke structures](https://en.m.wikipedia.org/wiki/Kripke_structure_(model_checking))'s).
 
 See also [`truthtype`](@ref), [`worldtype`](@ref),
@@ -136,7 +136,7 @@ end
 
 Abstract type for the relations of a multi-modal
 annotated accessibility graph (Kripke structure).
-Two noteworthy relations are `identityrel` and `globalrel`, which 
+Two noteworthy relations are `identityrel` and `globalrel`, which
 access the current world and all worlds, respectively.
 
 # Examples
@@ -180,13 +180,18 @@ See also [`AbstractRelation`](@ref).
 arity(R::Type{<:AbstractRelation})::Integer = error("Please, provide method arity(::$(typeof(R))).")
 arity(r::AbstractRelation)::Integer = arity(typeof(r))
 
+doc_syntaxstring = """
+    syntaxstring(r::AbstractRelation; kwargs...)::String
+
+    Return corrisponding relation as a string
+"""
 syntaxstring(R::Type{<:AbstractRelation}; kwargs...)::String = error("Please, provide method syntaxstring(::$(typeof(R)); kwargs...).")
 syntaxstring(r::AbstractRelation; kwargs...)::String = syntaxstring(typeof(r); kwargs...)
 
 doc_conv_rel = """
     converse(R::Type{<:AbstractRelation})::Type{<:AbstractRelation}
     converse(r::AbstractRelation)::AbstractRelation = converse(typeof(r))()
-    
+
 If it exists, returns the converse relation (type) of a given relation (type)
 
 # Extended help
@@ -198,7 +203,7 @@ This trait is implemented as:
 
     converse(R::Type{<:AbstractRelation})::Type{<:AbstractRelation} = error("Please, provide method converse(::\$(typeof(R))).")
     converse(r::AbstractRelation)::AbstractRelation = converse(typeof(r))()
-    
+
 When defining a new symmetric relation `R` with converse `CR`, please define the two methods:
 
     hasconverse(R::Type{R}) = true
@@ -218,7 +223,7 @@ converse(r::AbstractRelation)::AbstractRelation = converse(typeof(r))()
 
 """
     issymmetric(::AbstractRelation) = hasconverse(r) ? converse(r) == r : false
-    
+
 Returns whether it is known that a relation is symmetric.
 
 See also [`hasconverse`](@ref), [`converse`](@ref),
@@ -228,20 +233,20 @@ issymmetric(::AbstractRelation) = hasconverse(r) ? converse(r) == r : false
 
 """
     isreflexive(::AbstractRelation)
-    
+
 Returns whether it is known that a relation is reflexive.
 
-See also 
+See also
 [`issymmetric`](@ref), [`istransitive`](@ref), [`AbstractRelation`](@ref).
 """
 isreflexive(::AbstractRelation) = false
 
 """
     istransitive(::AbstractRelation)
-    
+
 Returns whether it is known that a relation is transitive.
 
-See also 
+See also
 [`isreflexive`](@ref), [`issymmetric`](@ref), [`AbstractRelation`](@ref).
 """
 istransitive(::AbstractRelation) = false
@@ -338,7 +343,7 @@ a custom `accessibles` method by providing these three methods:
     ) where {W<:AbstractWorld}
         [w]
     end
-    
+
     # access all worlds
     function accessibles(
         fr::FR{W},
@@ -370,7 +375,7 @@ end
 #     goeswith(::Type{<:AbstractMultiModalFrame}, ::AbstractRelation) = false
 
 # For example, if frame of type `FR` is compatible with relation `R`, specify:
-    
+
 #     goeswith(::Type{FR}, ::R) = true
 # """
 # goeswith(::Type{<:AbstractMultiModalFrame}, ::AbstractRelation) = false
@@ -739,7 +744,7 @@ const BaseModalLogic = AbstractLogic{G,A} where {ALP,G<:AbstractGrammar{ALP,<:Ba
 """
     abstract type AbstractRelationalOperator{R<:AbstractRelation} <: AbstractOperator end
 
-Abstract type for relational logical operators. A relational operator 
+Abstract type for relational logical operators. A relational operator
 allows for semantic quantification across relational structures (e.g., Krikpe structures).
 It has arity equal to the arity of its underlying relation minus one.
 
@@ -806,6 +811,12 @@ ismodal(::Type{<:BoxRelationalOperator}) = true
 isbox(::Type{<:DiamondRelationalOperator}) = false
 isbox(::Type{<:BoxRelationalOperator}) = true
 
+doc_syntaxstring = """
+    syntaxstring(op::DiamondRelationalOperator; kwargs...)::String
+    syntaxstring(op::BoxRelationalOperator; kwargs...)::String
+
+    Returns the modal operator as a string
+"""
 syntaxstring(op::DiamondRelationalOperator; kwargs...) = "⟨$(syntaxstring(relationtype(op); kwargs...))⟩"
 syntaxstring(op::BoxRelationalOperator; kwargs...)     = "[$(syntaxstring(relationtype(op); kwargs...))]"
 
@@ -820,4 +831,3 @@ See also
 """
 dual(op::DiamondRelationalOperator) = BoxRelationalOperator{relationtype(op)}()
 dual(op::BoxRelationalOperator)     = DiamondRelationalOperator{relationtype(op)}()
-

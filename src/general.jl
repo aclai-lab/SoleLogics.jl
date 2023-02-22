@@ -64,7 +64,7 @@ julia> syntaxstring((parseformula("◊((p∧s)→q)")); function_notation = true
 # Extended help
 
 In the case of a syntax tree or formula, `syntaxstring` is a recursive function that calls
-itself on the syntax children of each node. For a correct functioning, the `syntaxstring` 
+itself on the syntax children of each node. For a correct functioning, the `syntaxstring`
 must be defined (including `kwargs...`) for every newly defined
 `AbstractSyntaxToken` (e.g., operators and `Proposition`s).
 In particular, for the case of `Proposition`s, the function calls itself on the atom:
@@ -73,7 +73,7 @@ In particular, for the case of `Proposition`s, the function calls itself on the 
 
 Then, the syntaxstring for a given atom can be defined. For example, with string atoms,
 the function can simply be:
-    
+
     syntaxstring(atom::String; kwargs...) = atom
 
 """
@@ -183,7 +183,7 @@ this function is actually implemented as:
     _iscommutative(::Type{<:AbstractOperator}) = false
 
 When defining new operators `O`, provide a method `_iscommutative`, such as:
-    
+
     _iscommutative(::Type{typeof(∧)}) = true
     # TODO example with xor?
 
@@ -397,7 +397,7 @@ A syntax tree encoding a logical formula.
 Each node of the syntax tree holds a `token::T`, and
 has as many children as the `arity` of the token.
 
-This implementation is *arity-compliant*, in that, upon construction, 
+This implementation is *arity-compliant*, in that, upon construction,
 the arity is checked against the number of children provided.
 An additional type parameter `FT` ensures that the token types of the sub-tree are
 constrained to a predefined set of types.
@@ -415,7 +415,7 @@ struct SyntaxTree{FT<:AbstractSyntaxToken,T<:AbstractSyntaxToken} # T<:FT
 
     # The syntax token at the current node
     token::T
-    
+
     # The child nodes of the current node
     children::NTuple{N,SyntaxTree} where {N}
 
@@ -629,7 +629,7 @@ that consists of all the (singleton) child types of `O`.
 A context-free grammar is a simple structure for defining formulas inductively.
 
 See also [`alphabet`](@ref),
-[`propositionstype`](@ref), [`tokenstype`](@ref), 
+[`propositionstype`](@ref), [`tokenstype`](@ref),
 [`operatorstype`](@ref), [`alphabettype`](@ref),
 [`AbstractAlphabet`](@ref), [`AbstractOperator`](@ref).
 """
@@ -922,6 +922,11 @@ const TOP = TopOperator()
 """$(doc_TOP)"""
 const ⊤ = TOP
 
+doc_syntaxstring = """
+    syntaxstring(o::TopOperator; kwargs...)::String
+
+    Returns top operator as a string
+"""
 syntaxstring(o::TopOperator; kwargs...) = "⊤"
 
 doc_BOTTOM = """
@@ -940,6 +945,11 @@ const BOTTOM = BottomOperator()
 """$(doc_BOTTOM)"""
 const ⊥ = BOTTOM
 
+doc_syntaxstring = """
+    syntaxstring(o::BottomOperator; kwargs...)::String
+
+    Returns bottom operator as a string
+"""
 syntaxstring(o::BottomOperator; kwargs...) = "⊥"
 
 """
@@ -957,6 +967,11 @@ end
 
 value(op::TruthOperator) = op.value
 
+doc_syntaxstring = """
+    syntaxstring(o::TruthOperator; kwargs...)::String
+
+    Return truth operator as a string
+"""
 syntaxstring(o::TruthOperator; kwargs...) = syntaxstring(value(o))
 
 ############################################################################################
@@ -1142,6 +1157,11 @@ function tree(f::AbstractFormula)::SyntaxTree{<:tokenstype(logic(f))}
                  " tree(::$(typeof(f)))::SyntaxTree{<:$(tokenstype(logic(f)))}.")
 end
 
+doc_syntaxstring = """
+    syntaxstring(f::AbstractFormula; kwargs...)::String
+
+    Returns a formula as a string
+"""
 function syntaxstring(f::AbstractFormula; kwargs...)
     syntaxstring(tree(f); kwargs...)
 end
