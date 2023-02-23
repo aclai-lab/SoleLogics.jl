@@ -104,6 +104,9 @@ end
 Checks a logical formula on an assigment.
 It returns a truth value of the assigment.
 
+See also [`SyntaxTree`](@ref), [`AbstractFormula`](@ref),
+[`AbstractAlgebra`](@ref), [`AbstractInterpretation`](@ref).
+
 # Extended help
 The fallback method extracts the formula's syntax tree and checks it using the logic's
 algebra.
@@ -114,9 +117,6 @@ algebra.
         i::AbstractAssignment{A,T},
         args...
     )::T where {A,T<:TruthValue}
-
-See also [`SyntaxTree`](@ref), [`AbstractFormula`](@ref),
-[`AbstractAlgebra`](@ref), [`AbstractInterpretation`](@ref).
 """
 check(f::AbstractFormula, i::AbstractAssignment, args...) = check(algebra(f), tree(f), i, args...)
 

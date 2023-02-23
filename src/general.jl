@@ -49,9 +49,6 @@ The following `kwargs` are currently supported:
 function notation for binary operators.
 See (here)[https://en.m.wikipedia.org/wiki/Infix_notation].
 
-See also [`parseformula`](@ref), [`parseformulatree`](@ref),
-[`SyntaxTree`](@ref), [`AbstractSyntaxToken`](@ref).
-
 # Examples
 ```julia-repl
 julia> syntaxstring((parseformula("◊((p∧s)→q)")))
@@ -60,6 +57,8 @@ julia> syntaxstring((parseformula("◊((p∧s)→q)")))
 julia> syntaxstring((parseformula("◊((p∧s)→q)")); function_notation = true)
 "→(◊(∧(p, s)), q)"
 ```
+See also [`parseformula`](@ref), [`parseformulatree`](@ref),
+[`SyntaxTree`](@ref), [`AbstractSyntaxToken`](@ref).
 
 # Extended help
 
@@ -173,6 +172,8 @@ julia> iscommutative(→)
 false
 ```
 
+See also [`isunary`](@ref), [`isnullary`](@ref).
+
 # Extended help
 
 Since nullary and unary operators are always commutative,
@@ -187,7 +188,6 @@ When defining new operators `O`, provide a method `_iscommutative`, such as:
     _iscommutative(::Type{typeof(∧)}) = true
     # TODO example with xor?
 
-See also [`isunary`](@ref), [`isnullary`](@ref).
 """
 
 """$(doc_iscommutative)"""
@@ -877,6 +877,7 @@ For example, in the crisp case, with `Bool` truth values, it is:
 
     bottoms(t::Bool)::Bool = (t == false)
 
+See also [`tops`](@ref), [`TruthValue`](@ref).
 """
 bottoms(t::TruthValue)::Bool = error("Please, provide method bottoms(truthvalue::$(typeof(t))).")
 
