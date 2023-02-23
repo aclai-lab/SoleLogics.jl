@@ -923,11 +923,6 @@ const TOP = TopOperator()
 """$(doc_TOP)"""
 const ⊤ = TOP
 
-doc_syntaxstring = """
-    syntaxstring(o::TopOperator; kwargs...)::String
-
-    Returns top operator as a string
-"""
 syntaxstring(o::TopOperator; kwargs...) = "⊤"
 
 doc_BOTTOM = """
@@ -946,11 +941,6 @@ const BOTTOM = BottomOperator()
 """$(doc_BOTTOM)"""
 const ⊥ = BOTTOM
 
-doc_syntaxstring = """
-    syntaxstring(o::BottomOperator; kwargs...)::String
-
-    Returns bottom operator as a string
-"""
 syntaxstring(o::BottomOperator; kwargs...) = "⊥"
 
 """
@@ -968,11 +958,6 @@ end
 
 value(op::TruthOperator) = op.value
 
-doc_syntaxstring = """
-    syntaxstring(o::TruthOperator; kwargs...)::String
-
-    Return truth operator as a string
-"""
 syntaxstring(o::TruthOperator; kwargs...) = syntaxstring(value(o))
 
 ############################################################################################
@@ -1158,11 +1143,6 @@ function tree(f::AbstractFormula)::SyntaxTree{<:tokenstype(logic(f))}
                  " tree(::$(typeof(f)))::SyntaxTree{<:$(tokenstype(logic(f)))}.")
 end
 
-doc_syntaxstring = """
-    syntaxstring(f::AbstractFormula; kwargs...)::String
-
-    Returns a formula as a string
-"""
 function syntaxstring(f::AbstractFormula; kwargs...)
     syntaxstring(tree(f); kwargs...)
 end

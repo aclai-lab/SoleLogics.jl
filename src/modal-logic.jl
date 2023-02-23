@@ -180,11 +180,6 @@ When defining a new relation type `R` with arity `2`, please provide the method:
 arity(R::Type{<:AbstractRelation})::Integer = error("Please, provide method arity(::$(typeof(R))).")
 arity(r::AbstractRelation)::Integer = arity(typeof(r))
 
-doc_syntaxstring = """
-    syntaxstring(r::AbstractRelation; kwargs...)::String
-
-    Return corrisponding relation as a string
-"""
 syntaxstring(R::Type{<:AbstractRelation}; kwargs...)::String = error("Please, provide method syntaxstring(::$(typeof(R)); kwargs...).")
 syntaxstring(r::AbstractRelation; kwargs...)::String = syntaxstring(typeof(r); kwargs...)
 
@@ -812,12 +807,6 @@ ismodal(::Type{<:BoxRelationalOperator}) = true
 isbox(::Type{<:DiamondRelationalOperator}) = false
 isbox(::Type{<:BoxRelationalOperator}) = true
 
-doc_syntaxstring = """
-    syntaxstring(op::DiamondRelationalOperator; kwargs...)::String
-    syntaxstring(op::BoxRelationalOperator; kwargs...)::String
-
-    Returns the modal operator as a string
-"""
 syntaxstring(op::DiamondRelationalOperator; kwargs...) = "⟨$(syntaxstring(relationtype(op); kwargs...))⟩"
 syntaxstring(op::BoxRelationalOperator; kwargs...)     = "[$(syntaxstring(relationtype(op); kwargs...))]"
 
