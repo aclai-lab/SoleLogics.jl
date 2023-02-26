@@ -22,6 +22,10 @@ true
 
 julia> SoleLogics.goeswithdim(Interval, 2)
 false
+
+julia> all([SoleLogics.goeswithdim.(SoleLogics.Point{N}, N) for N in 1:10])
+true
+
 ```
 
 See also [`OneWorld`](@ref), [`NamedWorld`](@ref), [`Interval`](@ref), [`Interval2D`](@ref),

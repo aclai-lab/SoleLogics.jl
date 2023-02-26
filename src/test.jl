@@ -169,9 +169,9 @@ f_conj_int = @test_nowarn CONJUNCTION(f_int, f_int, f_int)
 @test_throws AssertionError f_int(p1 ∧ p100 ∧ p1_float)
 f3_int = f_int(⊥ ∨ (p1 ∧ p100 ∧ p2 ∧ ⊤))
 
-@test_throws MethodError TruthDict()
-@test_throws MethodError TruthDict([])
-@test_throws MethodError TruthDict((2,3),)
+@test_nowarn TruthDict()
+@test_nowarn TruthDict([])
+@test_nowarn TruthDict((2,3),)
 @test_nowarn TruthDict((p1,true),)
 @test_nowarn TruthDict([(p1,true),])
 @test_nowarn TruthDict(p1 => true)
@@ -256,3 +256,6 @@ emptylogic = @test_nowarn propositionallogic(; operators = SoleLogics.AbstractOp
 # _operators = [NEGATION, CONJUNCTION, IMPLICATION]
 # @test_broken randformulatree(10, _alphabet, _operators)
 # @test_nowarn randformulatree(2, _alphabet, _operators)
+
+include("src/test-checking.jl")
+include("src/test-worlds.jl")

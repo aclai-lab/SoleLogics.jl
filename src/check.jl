@@ -41,6 +41,7 @@ function subformulas(t::SyntaxTree; sorted=true)
     ts
 end
 
+# TODO move to utils and rename "normalize" -> "transform"/"reshape"/"simplify"
 """
     normalize(
         f::Union{AbstractFormula,SyntaxTree};

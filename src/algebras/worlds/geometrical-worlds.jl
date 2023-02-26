@@ -39,12 +39,14 @@ struct Point{N,T} <: GeometricalWorld
     Point(w::Point) = Point(w.xyz)
     
     Point{N,T}(xyz::NTuple{N,T}) where {N,T} = new{N,T}(xyz)
+    Point() = error("Cannot instantiate Point in a 0-dimensional space." *
+        " Please, consider using `OneWorld` instead.")
     Point(xyz::NTuple{N,T}) where {N,T} = Point{N,T}(xyz)
     Point((xyz,)::Tuple{NTuple{N,T}}) where {N,T} = Point{N,T}(xyz)
     Point(xyz::Vararg) = Point(xyz)
 end
 
-show(io::IO, r::Point) = print(io, "($(join(xyz, ",")))")
+show(io::IO, r::Point) = print(io, "($(join(r.xyz, ",")))")
 
 goeswithdim(::Type{P}, ::Val{N}) where {N,P<:Point{N}} = true
 
@@ -68,8 +70,22 @@ true
 julia> SoleLogics.goeswithdim(SoleLogics.Interval(1,2),2)
 false
 
+julia> collect(accessibles(SoleLogics.FullDimensionalFrame(5), Interval(1,2), SoleLogics.IA_L))
+6-element Vector{Interval{Int64}}:
+ (3−4)
+ (3−5)
+ (4−5)
+ (3−6)
+ (4−6)
+ (5−6)
+
+
 ```
-See also [`goeswithdim`](@ref), [`Point`](@ref),
+See also
+[`goeswithdim`](@ref),
+[`accessibles`](@ref),
+[`FullDimensionalFrame`](@ref),
+[`Point`](@ref),
 [`Interval2D`](@ref), [`GeometricalWorld`](@ref), [`AbstractWorld`](@ref).
 """
 struct Interval{T} <: GeometricalWorld
@@ -111,8 +127,18 @@ false
 julia> SoleLogics.goeswithdim(SoleLogics.Interval2D((1,2),(3,4)),2)
 true
 
+julia> collect(accessibles(SoleLogics.FullDimensionalFrame(5,5), Interval2D((2,3),(2,4)), SoleLogics.IA_LL))
+3-element Vector{Interval2D{Int64}}:
+ ((4−5)×(5−6))
+ ((4−6)×(5−6))
+ ((5−6)×(5−6))
+
 ```
-See also [`goeswithdim`](@ref), [`Point`](@ref),
+See also
+[`goeswithdim`](@ref),
+[`accessibles`](@ref),
+[`FullDimensionalFrame`](@ref),
+[`Point`](@ref),
 [`Interval`](@ref), [`GeometricalWorld`](@ref), [`AbstractWorld`](@ref).
 """
 struct Interval2D{T} <: GeometricalWorld
@@ -123,7 +149,9 @@ struct Interval2D{T} <: GeometricalWorld
     Interval2D(w::Interval2D) = Interval2D{T}(w.x,w.y)
 
     Interval2D{T}(x::Interval{T},y::Interval{T}) where {T} = new{T}(x,y)
-    Interval2D(x::Tuple{T,T}, y::Tuple{T,T}) where {T} = Interval2D{T}(Interval(x),Interval(y))
+    Interval2D(x::Interval{T},y::Interval{T}) where {T} = Interval2D{T}(x,y)
+    Interval2D{T}(x::Tuple{T,T}, y::Tuple{T,T}) where {T} = Interval2D{T}(Interval(x),Interval(y))
+    Interval2D(x::Tuple{T,T}, y::Tuple{T,T}) where {T} = Interval2D{T}(x,y)
 end
 
 function Base.show(io::IO, w::Interval2D)

@@ -30,8 +30,8 @@ function collatetruth(
 end
 
 # Note: `collatetruth` for TOP and BOTTOM relies on the `top` and `bottom` methods.
-collatetruth(a::AbstractAlgebra, ::typeof(⊤), t::NTuple{0}) = top(a)
-collatetruth(a::AbstractAlgebra, ::typeof(⊥), t::NTuple{0}) = bottom(a)
+collatetruth(a::AbstractAlgebra{T}, ::typeof(⊤), t::NTuple{0,T}) where {T<:TruthValue} = top(a)
+collatetruth(a::AbstractAlgebra{T}, ::typeof(⊥), t::NTuple{0,T}) where {T<:TruthValue} = bottom(a)
 
 ############################################################################################
 ####################################### BASE OPERATORS #####################################
@@ -178,12 +178,12 @@ top(a::BooleanAlgebra) = true
 bottom(a::BooleanAlgebra) = false
 
 # Standard semantics for NOT, AND, OR, IMPLIES
-collatetruth(::BooleanAlgebra, ::typeof(¬), (t,)::NTuple{1}) = (!t)
-collatetruth(::BooleanAlgebra, ::typeof(∧), (t1, t2)::NTuple{2}) = min(t1, t2)
-collatetruth(::BooleanAlgebra, ::typeof(∨), (t1, t2)::NTuple{2}) = max(t1, t2)
+collatetruth(::BooleanAlgebra, ::typeof(¬), (t,)::NTuple{1,Bool}) = (!t)
+collatetruth(::BooleanAlgebra, ::typeof(∧), (t1, t2)::NTuple{2,Bool}) = min(t1, t2)
+collatetruth(::BooleanAlgebra, ::typeof(∨), (t1, t2)::NTuple{2,Bool}) = max(t1, t2)
 
 # The IMPLIES operator, →, falls back to ¬
-function collatetruth(a::BooleanAlgebra, ::typeof(→), (t1, t2)::NTuple{2})
+function collatetruth(a::BooleanAlgebra, ::typeof(→), (t1, t2)::NTuple{2,Bool})
     return collatetruth(a, ∨, (collatetruth(a, ¬, t1), t2))
 end
 
