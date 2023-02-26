@@ -72,6 +72,10 @@ struct FullDimensionalFrame{N,W<:AbstractWorld,T<:TruthValue} <: AbstractDimensi
             {N,W<:AbstractWorld,T<:TruthValue}
         new{N,W,T}(channel_size)
     end
+    function FullDimensionalFrame{N,W,T}(channel_size::Vararg{Int,N}) where
+            {N,W<:AbstractWorld,T<:TruthValue}
+        FullDimensionalFrame{N,W,T}(channel_size)
+    end
     
     function FullDimensionalFrame(channel_size::Tuple{})
         FullDimensionalFrame{0,OneWorld,Bool}(channel_size)
