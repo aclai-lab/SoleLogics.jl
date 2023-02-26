@@ -1,5 +1,7 @@
 # goeswith(::Type{<:Full2DFrame}, ::RCCRelation) = true
 
+_accessibles(::AbstractMultiModalFrame, w::AbstractWorld,    ::IdentityRel) = [w] # TODO try IterTools.imap(identity, [w])
+
 # Refer to [`RCCRelation`](@ref).
 
 _accessibles(fr::Full2DFrame, w::Interval2D, ::_Topo_DC) =

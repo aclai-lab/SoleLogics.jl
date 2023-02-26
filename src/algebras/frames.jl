@@ -17,7 +17,7 @@ function initialworldset() end
 # Note keep separate to avoid ambiguity
 accessibles(fr::AbstractMultiModalFrame, ::AbstractWorld, r::GlobalRel) = accessibles(fr, r)
 accessibles(fr::AbstractMultiModalFrame, ::AbstractWorldSet, r::GlobalRel) = accessibles(fr, r)
-accessibles(fr::AbstractMultiModalFrame, w::AbstractWorld,                   ::IdentityRel) = [w] # TODO try IterTools.imap(identity, [w])
+accessibles(fr::AbstractMultiModalFrame, w::AbstractWorld,    ::IdentityRel) = [w] # TODO try IterTools.imap(identity, [w])
 accessibles(fr::AbstractMultiModalFrame, S::AbstractWorldSet, ::IdentityRel) = S # TODO try IterTools.imap(identity, S)
 
 # Shortcut: when enumerating accessibles through global relation, delegate to `allworlds`
