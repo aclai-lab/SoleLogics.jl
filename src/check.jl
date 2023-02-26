@@ -180,10 +180,9 @@ See also
 isglobal(f::AbstractFormula)::Bool = isglobal(tree(f))
 isglobal(t::SyntaxTree)::Bool =
     # (println(token(t)); println(children(t)); true) && 
-    (token(t) isa Proposition) ||
     (token(t) isa SoleLogics.AbstractRelationalOperator && relation(token(t)) == globalrel) ||
     # (token(t) in [◊,□]) ||
-    (token(t) isa Union{typeof(∧),typeof(∨),typeof(¬),typeof(→)} && all(isglobal, children(t)))
+    (token(t) isa AbstractOperator && all(c->isglobal(c), children(t)))
 
 """
     function collateworlds(
