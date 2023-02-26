@@ -103,7 +103,7 @@ struct Proposition{A} <: AbstractSyntaxToken
     atom::A
 
     function Proposition{A}(atom::A) where {A}
-        @assert !(atom isa Proposition) "Illegal nesting." *
+        @assert !(atom isa Union{AbstractSyntaxToken,SyntaxTree,AbstractFormula}) "Illegal nesting." *
             " Cannot instantiate Proposition with atom of type $(typeof(atom))"
         new{A}(atom)
     end
