@@ -1,9 +1,5 @@
 # Notes about SoleLogics structure.
 
-##########################
-#        syntax.jl       #
-##########################
-
 	# This alphabet is not complete and its dispatches requires more arguments to work
 	struct NonCompleteDimensionalAlphabet{A} <: AbstractAlphabet{A}
 	    #
@@ -19,37 +15,17 @@
                             #but A is infinite (thresholds are needed to enumerate things)
 
 
-    # When real data is involved (see SoleData, SoleModels etc...)
-    # then a proposition is said to be a DimensionalProposition (a1 ⋈ f(A) ⋈ a2).
-    struct DimensionalProposition{A} <: Proposition{A}
-        # Here the following knowledge is required:
-        # - what a threshold is
-        # - what an operator is
-        # - what a feature is
-    end
-
-
 # rand(Grammar, rng) dispatch to generate a new valid formula
 # rand(Logic, rng) dispatch to generate a new valid formula
 
 Example: XOR in the docs.
 
 
-##########################
-#       Still TODO       #
-##########################
-Kripke Model (single/multi)
-Ontologies (Geometry, Dimensional)
-Model checking
-
 
 ##########################
 #      To keep from      #
 #    previous version    #
 ##########################
-
-# Done
-* `generate()` to generate pseudo random formulas
 
 # To see with Giovanni. Is it possible to leverage an external package?
 # Also it could be cool to implement `priority` and `associativity` since this could
@@ -67,7 +43,6 @@ Model checking
 * `generate()` to generate pseudo random Kripke Frames
 
 # Todo relations
-* model checking
 
 # TODO:
 # print

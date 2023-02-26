@@ -47,11 +47,12 @@ julia> nworlds(SoleLogics.FullDimensionalFrame((10,),))
 julia> nworlds(SoleLogics.FullDimensionalFrame((10,10),))
 3025
 
-julia> collect(accessibles(SoleLogics.FullDimensionalFrame((5,5),), Interval2D((2,3),(2,4)), SoleLogics.IA_LL))
+julia> collect(accessibles(SoleLogics.FullDimensionalFrame(5,5), Interval2D((2,3),(2,4)), SoleLogics.IA_LL))
 3-element Vector{Interval2D{Int64}}:
  ((4−5)×(5−6))
  ((4−6)×(5−6))
  ((5−6)×(5−6))
+
 ```
 
 See also 
@@ -80,6 +81,9 @@ struct FullDimensionalFrame{N,W<:AbstractWorld,T<:TruthValue} <: AbstractDimensi
     end
     function FullDimensionalFrame(channel_size::Tuple{Int,Int})
         FullDimensionalFrame{2,Interval2D{Int},Bool}(channel_size)
+    end
+    function FullDimensionalFrame(channel_size...)
+        FullDimensionalFrame(channel_size)
     end
 end
 

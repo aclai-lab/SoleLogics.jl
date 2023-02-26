@@ -110,6 +110,12 @@ struct Proposition{A} <: AbstractSyntaxToken
     function Proposition(atom::A) where {A}
         Proposition{A}(atom)
     end
+    function Proposition{A}(p::Proposition) where {A}
+        Proposition{A}(atom(p))
+    end
+    function Proposition(p::Proposition)
+        p
+    end
 end
 
 atom(p::Proposition) = p.atom
@@ -118,13 +124,16 @@ arity(::Type{<:Proposition}) = 0
 atomtype(::Proposition{A}) where {A} = A
 atomtype(::Type{Proposition{A}}) where {A} = A
 
-# TODO remove:
-# Base.show(io::IO, t::Proposition) = print(io, atom(t))
-
-# Helper
-Base.convert(::Type{P1}, t::P2) where {P1<:Proposition,P2<:Proposition} = P1(atom(t))
+# Helpers
+Base.convert(::Type{P1}, p::P2) where {P1<:Proposition,P2<:Proposition} = P1(p)
+Base.convert(::Type{P}, a) where {P<:Proposition} = P(a)
 
 syntaxstring(p::Proposition; kwargs...) = syntaxstring(atom(p); kwargs...)
+
+Base.isequal(a::Proposition, b::Proposition) = Base.isequal(atom(a), atom(b))
+Base.isequal(a::Proposition, b) = Base.isequal(atom(a), b)
+Base.isequal(a, b::Proposition) = Base.isequal(a, atom(b))
+Base.hash(a::Proposition) = Base.hash(atom(a))
 
 """
     inverse(p::Proposition) = Proposition(inverse(atom(p)))
