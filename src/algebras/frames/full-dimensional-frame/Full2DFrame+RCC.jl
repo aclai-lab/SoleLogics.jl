@@ -94,7 +94,7 @@ _accessibles(fr::Full2DFrame, w::Interval2D, ::_Topo_NTPPi) =
 
 ############################################################################################
 
-_accessibles(fr::Full2DFrame, w::Interval2D, r::RCC5Relation) =
+_accessibles(fr::Full2DFrame, w::Interval2D, r::RCC5RelationFromRCC8) =
     Iterators.flatten((_accessibles(fr, w, IA_r) for IA_r in RCC52IARelations(r)))
     # Iterators.flatten((_accessibles(fr, w, RCC8_r) for RCC8_r in RCC52RCC8Relations(r)))
     # Iterators.flatten((_accessibles(fr, w, IA_r) for RCC8_r in RCC52RCC8Relations(r) for IA_r in topo2IARelations(RCC8_r)))

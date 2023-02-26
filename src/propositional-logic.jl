@@ -81,15 +81,15 @@ function Base.getindex(
 end
 
 """
-    Base.in(::Proposition{A}, i::AbstractAssignment{A})::Bool where {A}
+    Base.haskey(::Proposition{A}, i::AbstractAssignment{A})::Bool where {A}
 
 Returns whether an assigment has a truth value for a given proposition.
 
 See also [`AbstractInterpretation`](@ref).
 """
-function Base.in(::Proposition{A}, i::AbstractAssignment{AA})::Bool where {AA,A<:AA}
+function Base.haskey(::Proposition{A}, i::AbstractAssignment{AA})::Bool where {AA,A<:AA}
     return error("Please, provide method" *
-                 " Base.in(::Proposition{$(atomtype(i))}," *
+                 " Base.haskey(::Proposition{$(atomtype(i))}," *
                  " ::$(typeof(i)))::Bool.")
 end
 
@@ -254,12 +254,8 @@ struct TruthDict{
     end
 end
 
-Base.getindex(i::TruthDict{AA}, p::Proposition{A}) where {AA,A<:AA} = i.truth[p]
-Base.in(p::Proposition{A}, i::TruthDict{AA}) where {AA,A<:AA} = Base.in(p, keys(i.truth))
-
-# Helpers (note: don't merge with above in order to avoid ambiguity)
-Base.getindex(i::TruthDict, a) = i.truth[a]
-Base.in(a, i::TruthDict) = Base.in(a, keys(i.truth))
+Base.getindex(i::TruthDict{AA}, p::Proposition{A}) where {AA,A<:AA} = Base.getindex(i.truth, p)
+Base.haskey(p::Proposition{A}, i::TruthDict{AA}) where {AA,A<:AA} = Base.haskey(i.truth, p)
 
 function Base.show(
     io::IO,
@@ -276,7 +272,6 @@ end
     Base.IteratorSize, Base.IteratorEltype,
     Base.firstindex, Base.lastindex,
     Base.keys, Base.values,
-    Base.haskey,
 )
 
 
@@ -380,9 +375,9 @@ struct DefaultedTruthDict{
 end
 
 function Base.getindex(i::DefaultedTruthDict{AA}, p::Proposition{A}) where {AA,A<:AA}
-    return (p in keys(i.truth)) ? i.truth[p] : i.default_truth
+    return Base.haskey(i.truth, p) ? Base.getindex(i.truth, p) : i.default_truth
 end
-Base.in(p::Proposition{A}, i::DefaultedTruthDict{AA}) where {AA,A<:AA} = true
+Base.haskey(p::Proposition{A}, i::DefaultedTruthDict{AA}) where {AA,A<:AA} = true
 
 function Base.show(
     io::IO,
@@ -399,7 +394,6 @@ end
     Base.firstindex, Base.lastindex,
     Base.keys,
     Base.values,
-    Base.haskey,
 )
 
 ############################################################################################
@@ -428,3 +422,7 @@ convert(::Type{AbstractInterpretation}, i::AbstractVector) = DefaultedTruthDict(
 # Base.getindex(i::AbstractVector, p::Proposition) = (atom(p) in i)
 # Base.in(p::Proposition, i::AbstractVector) = true
 check(p::Proposition, i::AbstractVector) = (p in i)
+
+# Helpers
+Base.getindex(i::AbstractAssignment, a) = Base.getindex(i, Proposition(a))
+Base.haskey(a, i::AbstractAssignment) = Base.haskey(i, Proposition(a))

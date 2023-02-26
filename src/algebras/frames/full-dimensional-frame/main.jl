@@ -96,7 +96,7 @@ end
 ############################################################################################
 
 channel_size(fr::FullDimensionalFrame) = fr.channel_size
-Base.getindex(fr::FullDimensionalFrame, i::Int) = fr.channel_size[i]
+Base.getindex(fr::FullDimensionalFrame, i::Int) = channel_size(fr)[i]
 
 # Shorthands
 X(fr::FullDimensionalFrame) = fr[1]
