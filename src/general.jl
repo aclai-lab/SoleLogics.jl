@@ -48,7 +48,7 @@ some specific conditions.
 The following `kwargs` are currently supported:
 - `function_notation = false::Bool`: when set to `true`, it forces the use of
 function notation for binary operators.
-See (here)[https://en.m.wikipedia.org/wiki/Infix_notation].
+See [here](https://en.m.wikipedia.org/wiki/Infix_notation).
 
 # Examples
 ```julia-repl

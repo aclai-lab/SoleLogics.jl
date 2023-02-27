@@ -64,7 +64,7 @@ BEWARE: it currently assumes the underlying algebra is Boolean!
 - `reduce_negations::Bool`: when set to `true`,
     attempts at reducing the number of negations by appling
     some transformation rules
-    (e.g., (De Morgan's laws)[https://en.m.wikipedia.org/wiki/De_Morgan%27s_laws]).
+    (e.g., [De Morgan's laws](https://en.m.wikipedia.org/wiki/De_Morgan%27s_laws)).
     Note: this assumes an underlying Boolean algebra.
 - `allow_inverse_propositions::Bool`: when set to `true`,
     together with `reduce_negations=true`, this may cause the negation of a proposition

@@ -631,7 +631,7 @@ doc_DIAMOND = """
     arity(::Type{typeof(◊)}) = 1
 
 Logical diamond operator, typically interpreted as the modal existential quantifier.
-See (here)[https://en.m.wikipedia.org/wiki/Modal_operator].
+See [here](https://en.m.wikipedia.org/wiki/Modal_operator).
 
 See also [`BOX`](@ref), [`NamedOperator`](@ref), [`AbstractOperator`](@ref).
 """
@@ -650,7 +650,7 @@ doc_BOX = """
     arity(::Type{typeof(□)}) = 1
 
 Logical box operator, typically interpreted as the modal universal quantifier.
-See (here)[https://en.m.wikipedia.org/wiki/Modal_operator].
+See [here](https://en.m.wikipedia.org/wiki/Modal_operator).
 
 See also [`DIAMOND`](@ref), [`NamedOperator`](@ref), [`AbstractOperator`](@ref).
 """
@@ -745,7 +745,7 @@ Abstract type for relational logical operators. A relational operator
 allows for semantic quantification across relational structures (e.g., Krikpe structures).
 It has arity equal to the arity of its underlying relation minus one.
 
-See, for example (temporal modal logic)[https://en.m.wikipedia.org/wiki/Temporal_logic].
+See, for example [temporal modal logic](https://en.m.wikipedia.org/wiki/Temporal_logic).
 
 See also [`DiamondRelationalOperator`](@ref), [`BoxRelationalOperator`](@ref),
 [`AbstractKripkeStructure`](@ref), [`AbstractFrame`](@ref).
