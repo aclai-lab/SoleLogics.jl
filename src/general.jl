@@ -229,20 +229,22 @@ See also
 """
 abstract type AbstractFormula end
 
+# TODO Talk about promote/promote_rule! They must be provided!
+# And rename this function to joinformulas(op, NTuple...)
 """
 In order to use operators for composing formulas from other formulas and syntax tokens (e.g.,
 propositions), each formula should specify a composition method:
 
-    (op::AbstractOperator)(children::NTuple{N,F}, args...) where {N,F<:AbstractFormula}
+    (op::AbstractOperator)(children::NTuple{N,F}) where {N,F<:AbstractFormula}
 
 Note that, since `op` might not be in the logic of the child formulas,
 the resulting formula may be of a different logic.
 
 See also [`AbstractFormula`](@ref), [`AbstractSyntaxStructure`](@ref), [`AbstractOperator`](@ref).
 """
-function (op::AbstractOperator)(::NTuple{N,F}, args...)::F where {N,F<:AbstractFormula}
+function (op::AbstractOperator)(::NTuple{N,F})::F where {N,F<:AbstractFormula}
     return error("Please, provide method
-        (op::AbstractOperator)(children::NTuple{N,$(F)}, args...) where {N}.")
+        (op::AbstractOperator)(children::NTuple{N,$(F)}) where {N}.")
 end
 
 """
@@ -562,6 +564,11 @@ Base.convert(::Type{S}, tok::AbstractSyntaxToken) where {S<:SyntaxTree} = S(tok)
 # TODO remove
 # Base.convert(::Type{SyntaxTree}, tok::AbstractSyntaxToken) = SyntaxTree(tok)
 # Base.convert(::Type{S}, tok::T) where {FT<:AbstractSyntaxToken, T<:FT, S<:SyntaxTree{FT,T}} = SyntaxTree(tok)
+
+function (op::AbstractOperator)(children::NTuple{N,SyntaxTree}) where {N}
+    return SyntaxTree(op, children)
+end
+
 
 """
     tree(f::AbstractFormula)::SyntaxTree
@@ -1312,7 +1319,7 @@ struct Formula{L<:AbstractLogic} <: AbstractFormula
         check_tree::Bool = false,
     ) where {L<:AbstractLogic}
         _logic = _l(l)
-        synstruct = convert(SyntaxTree, tokt)
+        synstruct = convert(SyntaxTree, tokt) # TODO: lift this conversion!
         
         if check_tree
             return error("TODO implement check_tree parameter when constructing Formula's!")
@@ -1363,7 +1370,7 @@ function Base.show(io::IO, f::Formula)
     Base.show(io, logic(f))
 end
 
-function (op::AbstractOperator)(children::NTuple{N,Formula}, args...) where {N}
+function (op::AbstractOperator)(children::NTuple{N,Formula}) where {N}
     ls = unique(logic.(children))
     @assert length(ls) == 1 "Cannot" *
                 " build formula by combination of formulas with different logics: $(ls)."
@@ -1374,13 +1381,13 @@ function (op::AbstractOperator)(children::NTuple{N,Formula}, args...) where {N}
 end
 
 # When constructing a new formula from a syntax tree, the logic is passed by reference.
-(f::Formula)(t::SyntaxTree, args...) = Formula(_logic(f), t, args...)
+(f::Formula)(t::AbstractSyntaxStructure, args...) = Formula(_logic(f), t, args...)
 
 # A logic can be used to instantiate `Formula`s out of syntax trees.
-(l::AbstractLogic)(t::SyntaxTree, args...) = Formula(Base.RefValue(l), t; args...)
+(l::AbstractLogic)(t::AbstractSyntaxStructure, args...) = Formula(Base.RefValue(l), t; args...)
 
 # Adapted from https://github.com/JuliaLang/julia/blob/master/base/promotion.jl
-function Base._promote(x::Formula, y::SyntaxTree)
+function Base._promote(x::Formula, y::AbstractSyntaxStructure)
     @inline
     return (x, x(y))
 end
@@ -1388,7 +1395,7 @@ end
 function Base._promote(x::Formula, y::AbstractSyntaxToken)
     Base._promote(x, Base.convert(SyntaxTree, y))
 end
-Base._promote(x::Union{SyntaxTree,AbstractSyntaxToken}, y::Formula) = reverse(Base._promote(y, x))
+Base._promote(x::Union{AbstractSyntaxToken,AbstractSyntaxStructure}, y::Formula) = reverse(Base._promote(y, x))
 
 iscrisp(f::Formula) = iscrisp(logic(f))
 grammar(f::Formula) = grammar(logic(f))
@@ -1467,28 +1474,27 @@ An operator can be used to compose syntax tokens (e.g., propositions),
 syntax trees and/or formulas. This is quite handy, try it:
 
     ¬(Proposition(1)) ∨ Proposition(1) ∧ ⊤
+    ∧(⊤,⊤)
+    ⊤()
 """
 function (op::AbstractOperator)(o::Any)
     return error("Cannot apply operator $(op)::$(typeof(op)) to object $(o)::$(typeof(o))")
 end
-(op::AbstractOperator)(children::Union{AbstractSyntaxToken,AbstractSyntaxStructure}...) = op(children)
-function (op::AbstractOperator)(
-    children::NTuple{N,Union{AbstractSyntaxToken,AbstractSyntaxStructure}}
-) where {N}
-    return SyntaxTree(op, children...)
+
+# Resolve ambiguity with nullary operators
+function (op::AbstractOperator)()
+    return SyntaxTree(op)
 end
+
 function (op::AbstractOperator)(children::Union{AbstractSyntaxToken,AbstractFormula}...)
     return op(children)
 end
 function (op::AbstractOperator)(
-    children::NTuple{N,Union{AbstractSyntaxToken,AbstractFormula}}
+    children::NTuple{N,Union{AbstractSyntaxToken,AbstractFormula}},
 ) where {N}
-    _children = map((c) -> begin
-            isa(c, AbstractSyntaxToken) ? SyntaxTree(c) : c
-        end, children)
-    return op(Base.promote(_children...))
-end
-# Resolve ambiguity with nullary operators
-function (op::AbstractOperator)()
-    return SyntaxTree(op)
+    if Base.promote_type((typeof.(children))...) <: Union{AbstractSyntaxToken,AbstractSyntaxStructure}
+        return SyntaxTree(op, children)
+    else
+        return op(Base.promote(children...))
+    end
 end

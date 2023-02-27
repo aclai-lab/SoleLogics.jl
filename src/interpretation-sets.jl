@@ -50,7 +50,7 @@ function check(
     X::AbstractInterpretationSet{M},
     args...
 )::Vector{truthtype(M)} where {M<:AbstractInterpretation}
-    # TODO normalize before checking?
+    # TODO normalize before checking, if it is faster!
     [check(φ, X, i, args...) for i in 1:nsamples(X)]
 end
 

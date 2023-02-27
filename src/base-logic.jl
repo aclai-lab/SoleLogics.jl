@@ -128,22 +128,6 @@ function CONJUNCTION(
 )
     return CONJUNCTION(c1, CONJUNCTION(c2, c3, cs...))
 end
-function CONJUNCTION(
-    c1::Union{AbstractSyntaxToken,AbstractSyntaxStructure},
-    c2::Union{AbstractSyntaxToken,AbstractSyntaxStructure},
-    c3::Union{AbstractSyntaxToken,AbstractSyntaxStructure},
-    cs::Union{AbstractSyntaxToken,AbstractSyntaxStructure}...
-)
-    return CONJUNCTION(c1, CONJUNCTION(c2, c3, cs...))
-end
-function DISJUNCTION(
-    c1::Union{AbstractSyntaxToken,AbstractSyntaxStructure},
-    c2::Union{AbstractSyntaxToken,AbstractSyntaxStructure},
-    c3::Union{AbstractSyntaxToken,AbstractSyntaxStructure},
-    cs::Union{AbstractSyntaxToken,AbstractSyntaxStructure}...
-)
-    return DISJUNCTION(c1, DISJUNCTION(c2, c3, cs...))
-end
 function DISJUNCTION(
     c1::Union{AbstractSyntaxToken,AbstractFormula},
     c2::Union{AbstractSyntaxToken,AbstractFormula},
