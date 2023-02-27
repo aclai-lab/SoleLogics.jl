@@ -500,7 +500,7 @@ function check(
 end
 
 function check(
-    ::Formula,
+    ::AbstractFormula,
     ::AbstractKripkeStructure{W,A,T},
     ::W,
 )::T where {W<:AbstractWorld,A,T<:TruthValue}
@@ -569,9 +569,9 @@ struct KripkeStructure{
     assignment::AS
 end
 
-function check(f::Formula, i::KripkeStructure{W,A,T}, w::W)::T where {W<:AbstractWorld,A,T<:TruthValue} end
+function check(f::AbstractFormula, i::KripkeStructure{W,A,T}, w::W)::T where {W<:AbstractWorld,A,T<:TruthValue} end
 
-function check(f::Formula, i::KripkeStructure{W,A,T})::T where {W<:AbstractWorld,A,T<:TruthValue}
+function check(f::AbstractFormula, i::KripkeStructure{W,A,T})::T where {W<:AbstractWorld,A,T<:TruthValue}
     check(f, i, initial(i))
 end
 
@@ -580,7 +580,7 @@ function check(p::Proposition{A}, i::KripkeStructure{W,A}, w::W) where {W<:Abstr
 end
 
 # TODO maybe this yields the worlds where a certain formula is true...?
-# function check(i::KripkeStructure{W,A,T}, f::Formula)::AbstractVector{W} where {W<:AbstractWorld,A,T<:TruthValue}
+# function check(i::KripkeStructure{W,A,T}, f::AbstractFormula)::AbstractVector{W} where {W<:AbstractWorld,A,T<:TruthValue}
 
 ############################################################################################
 ############################################################################################

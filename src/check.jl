@@ -1,9 +1,9 @@
 
 """
-    subformulas(f::Union{AbstractFormula,SyntaxTree}; sorted=true)
+    subformulas(f::AbstractFormula; sorted=true)
 
-Returns all sub-formulas/sub-trees (sorted by size when `sorted=true`)
-of a given formula/syntax tree.
+Returns all sub-formulas (sorted by size when `sorted=true`)
+of a given formula.
 
 # Examples
 ```julia-repl
@@ -20,7 +20,7 @@ julia> syntaxstring.(SoleLogics.subformulas(parseformula("◊((p∧q)→r)")))
 See also
 [`SyntaxTree`](@ref), [`Formula`](@ref), [`AbstractFormula`](@ref).
 """
-subformulas(f::AbstractFormula; kwargs...) = f.(subformulas(tree(f); kwargs...))
+subformulas(f::Formula; kwargs...) = f.(subformulas(tree(f); kwargs...))
 function subformulas(t::SyntaxTree; sorted=true)
     # function _subformulas(_t::SyntaxTree)
     #     SyntaxTree{tokenstype(t)}[
@@ -44,21 +44,21 @@ end
 # TODO move to utils and rename "normalize" -> "transform"/"reshape"/"simplify"
 """
     normalize(
-        f::Union{AbstractFormula,SyntaxTree};
+        f::AbstractFormula;
         remove_boxes = true,
         reduce_negations = true,
         allow_inverse_propositions = true,
     )
 
-Returns a modified version of a given formula/syntax tree, that has the same semantics
+Returns a modified version of a given formula, that has the same semantics
 but different syntax. This is useful when dealing with the truth of many
 (possibly similar) formulas; for example, when performing
 [model checking](https://en.m.wikipedia.org/wiki/Model_checking).
 BEWARE: it currently assumes the underlying algebra is Boolean!
 
 # Arguments
-- `f::Union{AbstractFormula,SyntaxTree}`: when set to `true`,
-    the formula/syntax tree;
+- `f::AbstractFormula`: when set to `true`,
+    the formula;
 - `remove_boxes::Bool`: converts all uni-modal and multi-modal box operators by using the 
     equivalence ◊φ ≡ ¬□¬φ. Note: this assumes an underlying Boolean algebra.
 - `reduce_negations::Bool`: when set to `true`,
@@ -84,7 +84,7 @@ julia> syntaxstring(SoleLogics.normalize(f; allow_inverse_propositions = false))
 See also
 [`SyntaxTree`](@ref), [`Formula`](@ref), [`AbstractFormula`](@ref).
 """
-normalize(f::AbstractFormula; kwargs...) = f(normalize(tree(f); kwargs...))
+normalize(f::Formula; kwargs...) = f(normalize(tree(f); kwargs...))
 function normalize(
     t::SyntaxTree;
     remove_boxes = true,
@@ -156,7 +156,7 @@ function normalize(
 end
 
 """
-    isglobal(f::Union{AbstractFormula,SyntaxTree})::Bool
+    isglobal(f::AbstractFormula)::Bool
 
 Returns `true` if the formula is global, that is, if it can be inferred from its syntactic
 structure that, given any frame-based model, the truth value of the formula is the same

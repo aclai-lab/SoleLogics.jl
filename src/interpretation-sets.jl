@@ -36,7 +36,7 @@ function check(
 end
 
 function check(
-    φ::Union{SyntaxTree,AbstractFormula},
+    φ::AbstractFormula,
     X::AbstractInterpretationSet{M},
     i_sample::Integer,
     args...,
@@ -46,10 +46,11 @@ end
 
 # Check on a dataset = map check on the instances
 function check(
-    φ::Union{AbstractSyntaxToken,SyntaxTree,AbstractFormula},
+    φ::Union{AbstractSyntaxToken,AbstractFormula},
     X::AbstractInterpretationSet{M},
     args...
 )::Vector{truthtype(M)} where {M<:AbstractInterpretation}
+    # TODO normalize before checking?
     [check(φ, X, i, args...) for i in 1:nsamples(X)]
 end
 
@@ -70,7 +71,7 @@ end
 
 Base.getindex(ms::InterpretationSet, i_sample) = Base.getindex(ms.instances, i_sample)
 function check(
-    f::Union{AbstractSyntaxToken,SyntaxTree,AbstractFormula},
+    f::Union{AbstractSyntaxToken,AbstractFormula},
     is::InterpretationSet,
     i_sample::Integer,
     args...

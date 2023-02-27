@@ -107,7 +107,7 @@ memo(km::KripkeStructure, key) = begin
         MemoValueType{eltype(km)}([])
     end
 end
-memo(km::KripkeStructure, key::Formula) = memo(km, fhash(key.tree))
+memo(km::KripkeStructure, key::AbstractFormula) = memo(km, fhash(key.tree))
 
 # This setter is dangerous as it doesn't check if key exists in the memo structure
 # memo!(km::KripkeStructure, key::Integer, val::MemoValueType) = km.L[key] = val # memo(km, key) = val

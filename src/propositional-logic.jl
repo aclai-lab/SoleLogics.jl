@@ -63,7 +63,7 @@ See also [`AbstractInterpretation`](@ref).
 abstract type AbstractAssignment{A,T<:TruthValue} <: AbstractInterpretation{A,T} end
 
 """
-    Base.getindex(i::AbstractAssignment{AA,T}, p::Proposition{AA}, args...)::T where {AA,A<:AA,T<:TruthValue}
+    Base.getindex(i::AbstractAssignment{AA,T}, p::Proposition, args...)::T where {AA,T<:TruthValue}
 
 Returns the truth value of a proposition, given an assignment.
 
@@ -71,13 +71,13 @@ See also [`AbstractInterpretation`](@ref).
 """
 function Base.getindex(
     i::AbstractAssignment{AA,T},
-    ::Proposition{A},
+    ::Proposition,
     args...
-)::T where {AA,A<:AA,T<:TruthValue}
+)::T where {AA,T<:TruthValue}
     return error("Please, provide method" *
                  " Base.getindex(::$(typeof(i))," *
-                 " ::Proposition{$(atomtype(i))}, args...)::$(truthtype(i))" *
-                 " with args::$(typeof(args)).")
+                 " ::Proposition," *
+                 " args::$(typeof(args))::$(truthtype(i)).")
 end
 
 """
@@ -87,10 +87,35 @@ Returns whether an assigment has a truth value for a given proposition.
 
 See also [`AbstractInterpretation`](@ref).
 """
-function Base.haskey(::Proposition{A}, i::AbstractAssignment{AA})::Bool where {AA,A<:AA}
+function Base.haskey(i::AbstractAssignment{AA}, ::Proposition)::Bool where {AA}
     return error("Please, provide method" *
-                 " Base.haskey(::Proposition{$(atomtype(i))}," *
-                 " ::$(typeof(i)))::Bool.")
+                 " Base.haskey(::$(typeof(i))," *
+                 " ::Proposition)::Bool.")
+end
+
+# Helpers
+function Base.getindex(
+    i::AbstractAssignment{AA,T},
+    a,
+    args...
+)::T where {AA,T<:TruthValue}
+    # if !(a isa Proposition)
+        Base.getindex(i, Proposition(a))
+    # else
+    #     return error("Please, provide method" *
+    #                  " Base.getindex(::$(typeof(i))," *
+    #                  " a," *
+    #                  " args::$(typeof(args))::$(truthtype(i)).")
+    # end
+end
+function Base.haskey(i::AbstractAssignment, a)::Bool
+    # if !(a isa Proposition)
+        Base.haskey(i, Proposition(a))
+    # else
+    #     return error("Please, provide method" *
+    #                  " Base.haskey(::$(typeof(i))," *
+    #                  " a)::Bool.")
+    # end
 end
 
 """
@@ -119,7 +144,7 @@ algebra.
         args...
     )::T where {A,T<:TruthValue}
 """
-check(f::AbstractFormula, i::AbstractAssignment, args...) = check(algebra(f), tree(f), i, args...)
+check(f::Formula, i::AbstractAssignment, args...) = check(algebra(f), tree(f), i, args...)
 
 function check(
     a::AbstractAlgebra,
@@ -139,7 +164,7 @@ function check(
 end
 
 # Helper: a proposition can be checked on an interpretation; a simple lookup is performed.
-check(p::Proposition{A}, i::AbstractAssignment{AA}, args...) where {AA,A<:AA} = Base.getindex(i, p, args...)
+check(p::Proposition, i::AbstractAssignment{AA}, args...) where {AA} = Base.getindex(i, p, args...)
 
 ############################################################################################
 
@@ -254,8 +279,8 @@ struct TruthDict{
     end
 end
 
-Base.getindex(i::TruthDict{AA}, p::Proposition{A}) where {AA,A<:AA} = Base.getindex(i.truth, p)
-Base.haskey(p::Proposition{A}, i::TruthDict{AA}) where {AA,A<:AA} = Base.haskey(i.truth, p)
+Base.getindex(i::TruthDict{AA}, p::Proposition) where {AA} = Base.getindex(i.truth, p)
+Base.haskey(i::TruthDict{AA}, p::Proposition) where {AA} = Base.haskey(i.truth, p)
 
 function Base.show(
     io::IO,
@@ -374,10 +399,10 @@ struct DefaultedTruthDict{
     end
 end
 
-function Base.getindex(i::DefaultedTruthDict{AA}, p::Proposition{A}) where {AA,A<:AA}
+function Base.getindex(i::DefaultedTruthDict{AA}, p::Proposition) where {AA}
     return Base.haskey(i.truth, p) ? Base.getindex(i.truth, p) : i.default_truth
 end
-Base.haskey(p::Proposition{A}, i::DefaultedTruthDict{AA}) where {AA,A<:AA} = true
+Base.haskey(i::DefaultedTruthDict{AA}, p::Proposition) where {AA} = true
 
 function Base.show(
     io::IO,
@@ -401,7 +426,7 @@ end
 # Helpers:
 #  we let any AbstractDict and AbstractVector be used as an interpretation when model checking.
 
-check(f::AbstractFormula, i::Union{AbstractDict,AbstractVector}, args...) = check(algebra(f), tree(f), i, args...)
+check(f::Formula, i::Union{AbstractDict,AbstractVector}, args...) = check(algebra(f), tree(f), i, args...)
 function check(
     a::AbstractAlgebra,
     tree::SyntaxTree,
@@ -414,7 +439,7 @@ end
 # A dictionary is interpreted as the map from propositions to truth values
 convert(::Type{AbstractInterpretation}, i::AbstractDict) = TruthDict(i)
 # Base.getindex(i::AbstractDict, p::Proposition) = i[atom(p)]
-Base.in(p::Proposition, i::AbstractDict) = (atom(p) in keys(i))
+Base.haskey(p::Proposition, i::AbstractDict) = (atom(p) in keys(i))
 check(p::Proposition, i::AbstractDict) = Base.getindex(i, p)
 
 # A vector is interpreted as the set of true propositions
@@ -422,7 +447,3 @@ convert(::Type{AbstractInterpretation}, i::AbstractVector) = DefaultedTruthDict(
 # Base.getindex(i::AbstractVector, p::Proposition) = (atom(p) in i)
 # Base.in(p::Proposition, i::AbstractVector) = true
 check(p::Proposition, i::AbstractVector) = (p in i)
-
-# Helpers
-Base.getindex(i::AbstractAssignment, a) = Base.getindex(i, Proposition(a))
-Base.haskey(a, i::AbstractAssignment) = Base.haskey(i, Proposition(a))

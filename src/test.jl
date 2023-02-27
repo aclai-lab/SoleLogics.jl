@@ -262,5 +262,5 @@ emptylogic = @test_nowarn propositionallogic(; operators = SoleLogics.AbstractOp
 # @test_broken randformulatree(10, _alphabet, _operators)
 # @test_nowarn randformulatree(2, _alphabet, _operators)
 
-include("src/test-checking.jl")
-include("src/test-worlds.jl")
+include("test-checking.jl")
+include("test-worlds.jl")

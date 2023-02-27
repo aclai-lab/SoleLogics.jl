@@ -4,7 +4,8 @@ using Revise; using SoleLogics; using Test
 
 d0 = Dict(["a" => true, "b" => false, "c" => true])
 @test_throws ErrorException "a" in d0
-@test Proposition("a") in d0
+@test haskey(d0, "a")
+@test haskey(d0, Proposition("a"))
 @test d0["a"]
 @test !d0["b"]
 @test check(parseformula("a ∧ ¬b"), d0)
@@ -25,10 +26,10 @@ v0 = ["a", "c"]
 @test_nowarn TruthDict(1:4, false)
 
 t0 = @test_nowarn TruthDict(["a" => true, "b" => false, "c" => true])
-@test Proposition("a") in t0
-@test Proposition("b") in t0
-@test "a" in t0
-@test "b" in t0
+@test haskey(t0, Proposition("a"))
+@test haskey(t0, Proposition("b"))
+@test haskey(t0, "a")
+@test haskey(t0, "b")
 @test check(Proposition("a"), t0)
 @test !check(Proposition("b"), t0)
 @test check(parseformula("a ∨ b"), t0)
@@ -47,14 +48,14 @@ t1 = @test_nowarn TruthDict([1 => true, 2 => false, 3 => true])
 @test_throws MethodError t1[10.0] = false
 
 t2 = @test_nowarn TruthDict(Pair{Real,Bool}[1.0 => true, 2 => true, 3 => true])
-@test Proposition(1) in t2
-@test !xor(Proposition(1) in t2, isequal(1,1.0)) # Weird, but is consistent with the behavior: isequal(1,1.0)
+@test haskey(t2, Proposition(1))
+@test !xor(haskey(t2, Proposition(1)), isequal(1,1.0)) # Weird, but is consistent with the behavior: isequal(1,1.0)
 # [isequal(Proposition(1.0),k) for k in keys(t2)]
-@test Proposition(1.0) in t2
-@test Proposition(2) in t2
-@test 1.0 in t2
-@test 1 in t2
-@test 2 in t2
+@test haskey(t2, Proposition(1.0))
+@test haskey(t2, Proposition(2))
+@test haskey(t2, 1.0)
+@test haskey(t2, 1)
+@test haskey(t2, 2)
 
 @test_nowarn t2[1]
 @test_nowarn t2[Proposition(1)]

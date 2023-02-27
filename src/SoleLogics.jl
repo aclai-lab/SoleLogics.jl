@@ -20,6 +20,7 @@ export Proposition,
     #
     SyntaxTree,
     #
+    AbstractFormula,
     Formula
 
 export syntaxstring
