@@ -113,10 +113,10 @@ f_int = @test_nowarn Formula(logic_int, t1_int)
 t2_int = @test_nowarn ¬(t1_int)
 @test_nowarn ⊥()
 @test_nowarn ¬(p1)
-@test propositionstype(p1 ∨ p1_number) != Proposition{Int}
-@test propositionstype(p1 ∨ p1_number_float) == Union{Proposition{Int}, Proposition{Number}}
-@test propositionstype(p1 ∨ p1_float) == Union{Proposition{Int}, Proposition{Float64}}
-@test propositions(p1 ∨ p100) == [p1, p100]
+@test_nowarn ∨(p1, p1)
+@test_nowarn p1 ∨ p1_number
+@test_nowarn ∨(p1, p1, p1_number)
+@test_nowarn ¬(∨(p1, p1, p1_number))
 @test_nowarn p1 ∨ p100
 @test_nowarn ¬(p1) ∨ p1
 @test_nowarn ¬(p1) ∨ ¬(p1)
@@ -124,6 +124,11 @@ t2_int = @test_nowarn ¬(t1_int)
 @test_nowarn ⊤ ∨ ⊤
 @test_nowarn p1 ∨ ⊤
 @test_nowarn ⊥ ∨ p1 ∨ ⊤
+
+@test propositionstype(p1 ∨ p1_number) != Proposition{Int}
+@test propositionstype(p1 ∨ p1_number_float) == Union{Proposition{Int}, Proposition{Number}}
+@test propositionstype(p1 ∨ p1_float) == Union{Proposition{Int}, Proposition{Float64}}
+@test propositions(p1 ∨ p100) == [p1, p100]
 
 @test_nowarn p1 ∨ t2_int
 @test_nowarn t2_int ∨ p1
@@ -134,6 +139,7 @@ t2_int = @test_nowarn ¬(t1_int)
 @test_nowarn ¬(¬(t2_int) ∧ t2_int)
 @test_nowarn ∧(¬(t2_int), t2_int)
 @test_nowarn ∧((¬(t2_int), t2_int),)
+@test_nowarn ∧(¬(t2_int), t2_int, ¬(t2_int) ∧ t2_int)
 @test_nowarn ¬(¬(p1))
 
 @test_nowarn f_int ∨ ⊤
