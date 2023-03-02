@@ -76,7 +76,7 @@ function nworlds(fr::AbstractFrame)::Integer
 end
 
 """
-    initialworld(fr::AbstractFrame)::Integer
+    initialworld(fr::AbstractFrame{W})::W
 
 Returns the initial world of the frame. Note that not all frame types
 can provide an initial world.
@@ -158,8 +158,8 @@ See also
 [`IdentityRel`](@ref),
 [`GlobalRel`](@ref),
 [`AbstractKripkeStructure`](@ref),
-[`AbstractFrame`](@ref).
-[`AbstractWorld`](@ref),
+[`AbstractFrame`](@ref),
+[`AbstractWorld`](@ref).
 """
 abstract type AbstractRelation end
 
@@ -183,6 +183,7 @@ arity(r::AbstractRelation)::Integer = arity(typeof(r))
 syntaxstring(R::Type{<:AbstractRelation}; kwargs...)::String = error("Please, provide method syntaxstring(::$(typeof(R)); kwargs...).")
 syntaxstring(r::AbstractRelation; kwargs...)::String = syntaxstring(typeof(r); kwargs...)
 
+# TODO3: This *should be* inverse (not converse??)
 doc_conv_rel = """
     converse(R::Type{<:AbstractRelation})::Type{<:AbstractRelation}
     converse(r::AbstractRelation)::AbstractRelation = converse(typeof(r))()
@@ -224,6 +225,7 @@ Returns whether it is known that a relation is symmetric.
 See also [`hasconverse`](@ref), [`converse`](@ref),
 [`isreflexive`](@ref), [`istransitive`](@ref), [`AbstractRelation`](@ref).
 """
+# TODO3: r is not defined
 issymmetric(::AbstractRelation) = hasconverse(r) ? converse(r) == r : false
 
 """

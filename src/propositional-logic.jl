@@ -1,5 +1,6 @@
 
 const BASE_PROPOSITIONAL_OPERATORS = BASE_OPERATORS
+# TODO3: BasePropositionalOperators is needed?
 const BasePropositionalOperators = Union{typeof.(BASE_PROPOSITIONAL_OPERATORS)...}
 
 """

@@ -26,8 +26,8 @@ to 0, 1 or 2 are called `nullary`, `unary` and `binary`, respectively.
 
 See also [`AbstractSyntaxToken`](@ref).
 """
-arity(TOK::Type{<:AbstractSyntaxToken})::Integer = error("Please, provide method arity(::$(typeof(TOK))).")
-arity(tok::AbstractSyntaxToken)::Integer = arity(typeof(tok))
+arity(T::Type{<:AbstractSyntaxToken})::Integer = error("Please, provide method arity(::$(typeof(T))).")
+arity(t::AbstractSyntaxToken)::Integer = arity(typeof(t))
 
 # Helpers: TODO move to SoleBase?
 isnullary(a) = arity(a) == 0
@@ -92,8 +92,8 @@ syntaxstring(atom::Union{String,Number}; kwargs...) = string(atom)
     end
 
 A proposition, sometimes called a propositional letter (or simply *letter*), of type
-`Proposition{A}` wraps a value
-`atom::A` representing a fact which truth can be assessed on a logical interpretation.
+`Proposition{A}` wraps a value `atom::A` representing a fact which truth can be assessed on 
+a logical interpretation.
 
 Propositions are nullary tokens (i.e, they are at the leaves of a syntax tree).
 Note that their atom cannot be a Proposition.
@@ -135,6 +135,10 @@ with respect to `p`. In a crisp propositional logic, for example, the inverse pr
 is the one which is true whenever `p` is false, and viceversa.
 
 See also [`Proposition`](@ref), [`check`](@ref).
+
+TODO3: Perhaps this should be called "negation" instead of "inverse? 
+    Also, the documentation is not clear (i.e., what does it mean "which inverted semantics
+    with respect to p"?)
 """
 inverse(p::Proposition) = Proposition(inverse(atom(p)))
 
@@ -146,7 +150,7 @@ inverse(p::Proposition) = Proposition(inverse(atom(p)))
 An operator is a [logical constant](https://en.m.wikipedia.org/wiki/Logical_connective)
 which establishes a relation between propositions (i.e., facts).
 For example, the boolean operators AND, OR and IMPLIES (stylized as ∧, ∨ and →)
-are used to connect propositions and express derived concepts.
+are used to connect propositions and/or formulas to express derived concepts.
 
 Since operators display very different algorithmic behaviors,
 all `struct`s that are subtypes of `AbstractOperator` must
@@ -217,6 +221,8 @@ propositionstype(a::AbstractAlphabet) = propositionstype(typeof(a))
 atomtype(a::Type{<:AbstractAlphabet}) = atomtype(propositionstype(a))
 atomtype(a::AbstractAlphabet) = atomtype(propositionstype(a))
 
+# TODO3: Perhaps add a method "propositions(a::AbstractAlphabet)? To use it in Base.in ?
+
 """
 Each alphabet must provide a method for establishing whether
 a proposition belongs or not to it:
@@ -279,7 +285,7 @@ end
 
 doc_finite = """
 Each alphabet must specify whether it is finite.
-An alphabet is finite iff it provides the `length` method.
+An alphabet is finite if and only if it provides the `length` method.
 
 By default, an alphabet is considered finite:
 
@@ -388,6 +394,8 @@ Base.isiterable(::Type{<:AlphabetOfAny}) = false
 ############################################################################################
 
 """
+TODO3: The documentation does not reflect the definition of SyntaxTree
+
     struct SyntaxTree{FT<:AbstractSyntaxToken,T<:FT}
         token::T
         children::NTuple{N,SyntaxTree} where {N}
@@ -411,7 +419,7 @@ See also [`token`](@ref), [`children`](@ref), [`tokentype`](@ref),
 [`tokenstype`](@ref), [`operatorstype`](@ref), [`propositionstype`](@ref),
 [`AbstractSyntaxToken`](@ref), [`arity`](@ref), [`Proposition`](@ref), [`Operator`](@ref).
 """
-struct SyntaxTree{FT<:AbstractSyntaxToken,T<:AbstractSyntaxToken} # T<:FT
+struct SyntaxTree{FT<:AbstractSyntaxToken,T<:AbstractSyntaxToken} # T<:FT <-- TODO3: what is this?
 
     # The syntax token at the current node
     token::T
@@ -516,10 +524,11 @@ end
 """
     operators(t::SyntaxTree)::AbstractVector{operatorstype(t)}
 
-Enumerates all operators appearing in a tree
+Enumerates all operators appearing in a tree.
 
 See also [`noperators`](@ref), [`propositions`](@ref), [`tokens`](@ref), [`AbstractOperator`](@ref).
-""" # TODO explain that when applied to formula/tree, it does this, but with a logic it shows the operators in the grammar.
+""" 
+# TODO explain that when applied to formula/tree, it does this, but with a logic it shows the operators in the grammar.
 function operators(t::SyntaxTree)::AbstractVector{operatorstype(t)}
     ops = token(t) isa AbstractOperator ? [token(t)] : []
     return AbstractOperator[vcat(operators.(children(t))...)..., ops...]
@@ -528,7 +537,7 @@ end
 """
     propositions(t::SyntaxTree)::AbstractVector{Proposition}
 
-Enumerates all propositions appearing in a tree
+Enumerates all propositions appearing in a tree.
 
 See also [`npropositions`](@ref), [`operators`](@ref), [`tokens`](@ref), [`Proposition`](@ref).
 """
@@ -546,7 +555,7 @@ end
 """
     ntokens(t::SyntaxTree)::Integer
 
-Counts all tokens appearing in a tree
+Counts all tokens appearing in a tree.
 
 See also [`tokens`](@ref), [`AbstractSyntaxToken`](@ref).
 """
@@ -557,7 +566,7 @@ end
 """
     npropositions(t::SyntaxTree)::Integer
 
-Counts all propositions appearing in a tree
+Counts all propositions appearing in a tree.
 
 See also [`propositions`](@ref), [`AbstractSyntaxToken`](@ref).
 """
@@ -569,7 +578,7 @@ end
 """
     height(t::SyntaxTree)::Integer
 
-Counts all tokens appearing in a tree
+Computes the height of a tree.
 
 See also [`tokens`](@ref), [`AbstractSyntaxToken`](@ref).
 """
@@ -586,9 +595,11 @@ Base.convert(::Type{S}, t::AbstractSyntaxToken) where {S<:SyntaxTree} = S(t)
 # Base.convert(::Type{SyntaxTree}, t::AbstractSyntaxToken) = SyntaxTree(t)
 # Base.convert(::Type{S}, t::T) where {FT<:AbstractSyntaxToken, T<:FT, S<:SyntaxTree{FT,T}} = SyntaxTree(t)
 
-# Helpers that make SyntaxTree's map to the same dictionary key. Useful for checking formulas on interpretations.
+# Helpers that make SyntaxTree's map to the same dictionary key. 
+# Useful for checking formulas on interpretations.
 function Base.isequal(a::SyntaxTree, b::SyntaxTree)
-    Base.isequal(token(a), token(b)) && all(((c1,c2),)->Base.isequal(c1,c2), zip(children(a), children(b)))
+    return Base.isequal(token(a), token(b)) && 
+        all(((c1,c2),)->Base.isequal(c1,c2), zip(children(a), children(b)))
 end
 Base.hash(a::SyntaxTree) = Base.hash(syntaxstring(a))
 
@@ -654,7 +665,7 @@ tokenstype(g::AbstractGrammar) = Union{operatorstype(g),propositionstype(g)}
 """
     Base.in(t::AbstractSyntaxToken, g::AbstractGrammar)::Bool
 
-Each grammar must provide some methods for establishing whether a syntax token belongs to
+Each grammar must provide methods for establishing whether a syntax token belongs to
 it, that is, whether it is a legal token in the grammar's formulas.
 
 These two fallbacks are defined:
@@ -709,7 +720,7 @@ function formulas(
     nformulas::Union{Integer,Nothing} = nothing,
     args...
 )::Vector{<:SyntaxTree{<:tokenstype(g)}}
-    @assert maxdepth > 0
+    @assert maxdepth > 0 # TODO3: this could also be equal to 0 (i.e., only propositions)
     @assert nformulas > 0
     fin = isfinite(alphabet(g))
     ite = isiterable(alphabet(g))
@@ -728,6 +739,8 @@ end
         alphabet::A
         operators::Vector{<:O}
     end
+
+TODO3: I am not sure about the following description.. please explain it better
 
 Grammar that generates all well-formed formulas obtained by the arity-complying composition
 of propositions of an alphabet of type `A`, and all operators in `operators`.
@@ -857,6 +870,7 @@ See also [`top`](@ref), [`bottom`](@ref), [`tops`](@ref), [`bottoms`](@ref), [`A
 """
 const TruthValue = Any
 
+# TODO3: I do not understand the difference between tops and top (similarly for bottoms and bot)...
 """
     tops(::TruthValue)::Bool
 
@@ -1026,7 +1040,7 @@ function bottom(a::AbstractAlgebra{T} where {T})::T
 end
 
 """
-    iscrisp(::Type{<:AbstractAlgebra}) = (truthtype(a) == Bool)
+    iscrisp(A::Type{<:AbstractAlgebra}) = (truthtype(A) == Bool)
     iscrisp(a::AbstractAlgebra) = iscrisp(typeof(a))
 
 An algebra is crisp (or *boolean*) when its domain type is... `Bool`, quite literally!
@@ -1034,7 +1048,7 @@ The antonym of crisp is *fuzzy*.
 
 See also [`AbstractAlgebra`](@ref).
 """
-iscrisp(::Type{<:AbstractAlgebra}) = (truthtype(a) == Bool)
+iscrisp(A::Type{<:AbstractAlgebra}) = (truthtype(A) == Bool)
 iscrisp(a::AbstractAlgebra) = iscrisp(typeof(a))
 
 ############################################################################################
@@ -1073,6 +1087,7 @@ tokenstype(l::AbstractLogic) = tokenstype(grammar(l))
 formulas(l::AbstractLogic; args...) = formulas(grammar(l); args...)
 
 Base.in(op::AbstractOperator, l::AbstractLogic) = Base.in(op, grammar(l))
+# TODO3: The following is not correct, that is, a tree t represents a generic formula, whereas the alphabet represents the propositions.
 Base.in(t::SyntaxTree, l::AbstractLogic) = Base.in(t, alphabet(l))
 Base.in(p::Proposition, l::AbstractLogic) = Base.in(p, alphabet(l))
 
@@ -1366,6 +1381,8 @@ In the case of
 is essentially a map *proposition → truth value*.
 
 Properties expressed via logical formulas can be `check`ed on logical interpretations.
+
+TODO3: Assigment? 
 
 See also [`check`](@ref), [`Assigment`](@ref), [`AbstractKripkeStructure`](@ref).
 """
