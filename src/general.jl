@@ -132,7 +132,7 @@ atomtype(::Proposition{A}) where {A} = A
 atomtype(::Type{Proposition{A}}) where {A} = A
 
 # Helpers
-Base.convert(::Type{P1}, p::P2) where {P1<:Proposition,P2<:Proposition} = P1(p)
+Base.convert(::Type{P}, p::Proposition) where {P<:Proposition} = P(p)
 Base.convert(::Type{P}, a) where {P<:Proposition} = P(a)
 
 syntaxstring(p::Proposition; kwargs...) = syntaxstring(atom(p); kwargs...)
@@ -229,22 +229,100 @@ See also
 """
 abstract type AbstractFormula end
 
-# TODO Talk about promote/promote_rule! They must be provided!
-# And rename this function to joinformulas(op, NTuple...)
 """
-In order to use operators for composing formulas from other formulas and syntax tokens (e.g.,
-propositions), each formula should specify a composition method:
+    joinformulas(
+        op::AbstractOperator,
+        ::NTuple{N,F}
+    )::F where {N,F<:AbstractFormula}
 
-    (op::AbstractOperator)(children::NTuple{N,F}) where {N,F<:AbstractFormula}
+Returns a new formula of type `F` by composing `N` formulas of the same type
+via an operator `op`. This function provides a limited way for composing formulas,
+but it allows to use operators for a more flexible composition; see the examples
+(and more in the extended help).
 
-Note that, since `op` might not be in the logic of the child formulas,
-the resulting formula may be of a different logic.
+# Examples
+```
+julia> f = parseformulatree("◊(p→q)");
 
-See also [`AbstractFormula`](@ref), [`AbstractSyntaxStructure`](@ref), [`AbstractOperator`](@ref).
+julia> p = Proposition("p");
+
+julia> syntaxstring(∧(f, p))
+"(◊(p → q)) ∧ p"
+
+julia> syntaxstring(f ∧ ¬p)
+"(◊(p → q)) ∧ (¬(p))"
+
+julia> syntaxstring(∧(f, p, ¬p))
+"(◊(p → q)) ∧ (p ∧ (¬(p)))"
+```
+
+# Extended help
+
+Upon `joinformulas` lies a more flexible way of using operators for composing
+formulas and syntax tokens (e.g., propositions), given by following definitions:
+
+    function (op::AbstractOperator)(
+        children::NTuple{N,Union{AbstractSyntaxToken,AbstractFormula}},
+    ) where {N}
+        ...
+    end
+    function (op::AbstractOperator)(children::Union{AbstractSyntaxToken,AbstractFormula}...)
+        return op(children)
+    end
+
+These allow composing formulas as in `∧(f, ¬p)`, and in order to access this composition
+with any newly defined subtype of `AbstractFormula`,
+a new method for `joinformulas` should be defined, together with
+promotion from/to other `AbstractFormula`s should be taken care of (see
+[here](https://docs.julialang.org/en/v1/manual/conversion-and-promotion/)
+and [here](https://github.com/JuliaLang/julia/blob/master/base/promotion.jl)).
+
+Similarly,
+for allowing a (possibly newly defined) operator to be applied on a number of
+syntax tokens/formulas that differs from its arity,
+for any newly defined operator `op`, new methods
+similar to the two above should be defined.
+For example, although ∧ and ∨ are binary, (i.e., have arity equal to 2),
+compositions such as `∧(f, f2, f3, ...)` and `∨(f, f2, f3, ...)` can be done
+thanks to the following two methods that were defined in SoleLogics:
+
+    function ∧(
+        c1::Union{AbstractSyntaxToken,AbstractFormula},
+        c2::Union{AbstractSyntaxToken,AbstractFormula},
+        c3::Union{AbstractSyntaxToken,AbstractFormula},
+        cs::Union{AbstractSyntaxToken,AbstractFormula}...
+    )
+        return ∧(c1, ∧(c2, c3, cs...))
+    end
+    function ∨(
+        c1::Union{AbstractSyntaxToken,AbstractFormula},
+        c2::Union{AbstractSyntaxToken,AbstractFormula},
+        c3::Union{AbstractSyntaxToken,AbstractFormula},
+        cs::Union{AbstractSyntaxToken,AbstractFormula}...
+    )
+        return ∨(c1, ∨(c2, c3, cs...))
+    end
+
+See also
+[`AbstractFormula`](@ref),
+[`AbstractOperator`](@ref).
 """
-function (op::AbstractOperator)(::NTuple{N,F})::F where {N,F<:AbstractFormula}
-    return error("Please, provide method
-        (op::AbstractOperator)(children::NTuple{N,$(F)}) where {N}.")
+function joinformulas(op::AbstractOperator, ::NTuple{N,F})::F where {N,F<:AbstractFormula}
+    return error("Please, provide method" *
+        " joinformulas(op::AbstractOperator, children::NTuple{N,$(F)}) where {N}.")
+end
+
+function joinformulas(op::AbstractOperator, children::Vararg{F,N})::F where {N,F<:AbstractFormula}
+    joinformulas(op, children)
+end
+
+# Resolve ambiguity with nullary operators
+function joinformulas(op::AbstractOperator, children::NTuple{0})
+    return SyntaxTree(op, children)
+end
+
+function joinformulas(op::AbstractOperator, children::NTuple{N,AbstractSyntaxToken}) where {N}
+    return SyntaxTree(op, children)
 end
 
 """
@@ -325,6 +403,9 @@ function Base.isequal(a::AbstractFormula, b::AbstractFormula)
     Base.isequal(tree(a), tree(b))
 end
 Base.hash(a::AbstractFormula) = Base.hash(tree(a))
+
+Base.promote_rule(::Type{SS}, ::Type{<:AbstractSyntaxToken}) where {SS<:AbstractSyntaxStructure} = SS
+Base.promote_rule(::Type{<:AbstractSyntaxToken}, ::Type{SS}) where {SS<:AbstractSyntaxStructure} = SS
 
 ############################################################################################
 
@@ -450,24 +531,24 @@ function Base.in(tok::AbstractSyntaxToken, tree::SyntaxTree)
 end
 
 """
-    tokens(t::SyntaxTree)::AbstractVector{tokenstype(t)}
+    tokens(t::SyntaxTree)::AbstractVector{AbstractSyntaxToken}
 
 Enumerates all tokens appearing in a tree.
 
 See also [`ntokens`](@ref), [`operators`](@ref), [`propositions`](@ref), [`AbstractSyntaxToken`](@ref).
 """
-function tokens(t::SyntaxTree)::AbstractVector{tokenstype(t)}
+function tokens(t::SyntaxTree)::AbstractVector{AbstractSyntaxToken}
     return AbstractSyntaxToken[vcat(tokens.(children(t))...)..., token(t)]
 end
 
 """
-    operators(t::SyntaxTree)::AbstractVector{operatorstype(t)}
+    operators(t::SyntaxTree)::AbstractVector{AbstractOperator}
 
 Enumerates all operators appearing in a tree.
 
 See also [`noperators`](@ref), [`propositions`](@ref), [`tokens`](@ref), [`AbstractOperator`](@ref).
 """
-function operators(t::SyntaxTree)::AbstractVector{operatorstype(t)}
+function operators(t::SyntaxTree)::AbstractVector{AbstractOperator}
     ops = token(t) isa AbstractOperator ? [token(t)] : []
     return AbstractOperator[vcat(operators.(children(t))...)..., ops...]
 end
@@ -483,12 +564,6 @@ function propositions(t::SyntaxTree)::AbstractVector{Proposition}
     ps = token(t) isa Proposition ? Proposition[token(t)] : Proposition[]
     return Proposition[vcat(propositions.(children(t))...)..., ps...]
 end
-
-# TODO why doesn't this work?
-# function propositions(t::SyntaxTree)::AbstractVector{propositionstype(t)}
-#     ps = token(t) isa Proposition ? propositionstype(t)[token(t)] : propositionstype(t)[]
-#     return propositionstype(t)[vcat(propositions.(children(t))...)..., ps...]
-# end
 
 """
     ntokens(t::SyntaxTree)::Integer
@@ -555,17 +630,17 @@ function syntaxstring(t::SyntaxTree; function_notation = false, kwargs...)
     end
 end
 
+# Syntax tree, the universal syntax structure representation,
+#  wins when promoted with syntax structures/tokens and syntax trees
+Base.promote_rule(::Type{<:SyntaxTree}, ::Type{<:SyntaxTree}) = SyntaxTree
+Base.promote_rule(::Type{<:AbstractSyntaxStructure}, ::Type{S}) where {S<:SyntaxTree} = S
+Base.promote_rule(::Type{S}, ::Type{<:AbstractSyntaxStructure}) where {S<:SyntaxTree} = S
 
-# We use standard promotion between syntax tokens and trees
-Base.promote_rule(::Type{<:AbstractSyntaxToken}, ::Type{S}) where {S<:SyntaxTree} = S
-Base.promote_rule(::Type{S}, ::Type{<:AbstractSyntaxToken}) where {S<:SyntaxTree} = S
-
+# Helper
 Base.convert(::Type{S}, tok::AbstractSyntaxToken) where {S<:SyntaxTree} = S(tok)
-# TODO remove
-# Base.convert(::Type{SyntaxTree}, tok::AbstractSyntaxToken) = SyntaxTree(tok)
-# Base.convert(::Type{S}, tok::T) where {FT<:AbstractSyntaxToken, T<:FT, S<:SyntaxTree{FT,T}} = SyntaxTree(tok)
+Base.convert(::Type{AbstractSyntaxStructure}, tok::AbstractSyntaxToken) = SyntaxTree(tok)
 
-function (op::AbstractOperator)(children::NTuple{N,SyntaxTree}) where {N}
+function joinformulas(op::AbstractOperator, children::NTuple{N,SyntaxTree}) where {N}
     return SyntaxTree(op, children)
 end
 
@@ -1249,7 +1324,6 @@ function algebra(l::AbstractLogic{G,A})::A where {G,A}
     return error("Please, provide method algebra(::$(typeof(l))).")
 end
 
-# TODO @Mauro, in cases like these, can we use @forward?
 truthtype(l::AbstractLogic) = truthtype(algebra(l))
 top(l::AbstractLogic) = top(algebra(l))
 bottom(l::AbstractLogic) = bottom(algebra(l))
@@ -1319,8 +1393,8 @@ struct Formula{L<:AbstractLogic} <: AbstractFormula
         check_tree::Bool = false,
     ) where {L<:AbstractLogic}
         _logic = _l(l)
-        synstruct = convert(SyntaxTree, tokt) # TODO: lift this conversion!
-        
+        synstruct = convert(AbstractSyntaxStructure, tokt)
+
         if check_tree
             return error("TODO implement check_tree parameter when constructing Formula's!")
         end
@@ -1370,14 +1444,17 @@ function Base.show(io::IO, f::Formula)
     Base.show(io, logic(f))
 end
 
-function (op::AbstractOperator)(children::NTuple{N,Formula}) where {N}
+# Note that, since `op` might not be in the logic of the child formulas,
+#  the resulting formula may be of a different logic.
+function joinformulas(op::AbstractOperator, children::NTuple{N,Formula}) where {N}
     ls = unique(logic.(children))
     @assert length(ls) == 1 "Cannot" *
                 " build formula by combination of formulas with different logics: $(ls)."
     l = first(ls)
-    @assert typeof(op) <: operatorstype(l) "TODO expand" *
-               " logic's set of operators (op is not in it: $(typeof(op)) ∉ $(operatorstype(l)))."
-    return Formula(l, op(map(synstruct, children)))
+    # "TODO expand logic's set of operators (op is not in it: $(typeof(op)) ∉ $(operatorstype(l)))."
+    @assert typeof(op) <: operatorstype(l) "Can't join $(N) formulas via operator $(op):" *
+        " this operator doesNot belong to the logic. $(typeof(op)) <: $(operatorstype(l)) should hold!"
+    return Formula(l, joinformulas(op, map(synstruct, children)))
 end
 
 # When constructing a new formula from a syntax tree, the logic is passed by reference.
@@ -1481,20 +1558,22 @@ function (op::AbstractOperator)(o::Any)
     return error("Cannot apply operator $(op)::$(typeof(op)) to object $(o)::$(typeof(o))")
 end
 
-# Resolve ambiguity with nullary operators
-function (op::AbstractOperator)()
-    return SyntaxTree(op)
-end
-
 function (op::AbstractOperator)(children::Union{AbstractSyntaxToken,AbstractFormula}...)
     return op(children)
 end
 function (op::AbstractOperator)(
     children::NTuple{N,Union{AbstractSyntaxToken,AbstractFormula}},
 ) where {N}
-    if Base.promote_type((typeof.(children))...) <: Union{AbstractSyntaxToken,AbstractSyntaxStructure}
-        return SyntaxTree(op, children)
+    if Base.promote_type((typeof.(children))...) <: AbstractSyntaxToken
+        return joinformulas(op, children)
+    elseif Base.promote_type((typeof.(children))...) <: Union{AbstractSyntaxStructure}
+        return SyntaxTree(op, children) # Force SyntaxTree: TODO actually use joinformulas
+        # return joinformulas(op, Base.promote(children...))
+        # println(typeof.(children))
+        # println(typeof.(Base.promote(children...)))
+        # return joinformulas(op, children)
     else
-        return op(Base.promote(children...))
+        # println(typeof.(children))
+        return joinformulas(op, Base.promote(children...))
     end
 end

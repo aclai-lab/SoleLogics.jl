@@ -111,6 +111,7 @@ f_int = @test_nowarn Formula(logic_int, t1_int)
 
 
 t2_int = @test_nowarn ¬(t1_int)
+@test_nowarn ⊥()
 @test_nowarn ¬(p1)
 @test propositionstype(p1 ∨ p1_number) != Proposition{Int}
 @test propositionstype(p1 ∨ p1_number_float) == Union{Proposition{Int}, Proposition{Number}}
