@@ -11,8 +11,8 @@ _accessibles__(fr::Full1DFrame, w::Interval{Int}, r::GlobalRel) = _intervals_in(
 # Accessibles are easily coded using methods for one-dimensional interval logic
 _accessibles(fr::Full2DFrame, w::Interval2D, r::RectangleRelation) =
     Iterators.product(
-        _accessibles__(FullDimensionalFrame((X(fr),)), w.x, r.x),
-        _accessibles__(FullDimensionalFrame((Y(fr),)), w.y, r.y)
+        _accessibles__(Full1DFrame(X(fr)), w.x, r.x),
+        _accessibles__(Full1DFrame(Y(fr)), w.y, r.y)
     )
 
 # TODO write More efficient implementations for edge cases

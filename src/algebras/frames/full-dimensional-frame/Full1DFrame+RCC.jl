@@ -15,5 +15,4 @@ _accessibles(fr::Full1DFrame, w::Interval, ::_Topo_NTPPi) = _accessibles(fr, w, 
 
 # RCC5 computed as a combination
 _accessibles(fr::Full1DFrame, w::Interval, r::RCC5RelationFromRCC8) =
-    # Iterators.flatten((_accessibles(Full1DFrame(fr), w, IA_r, ) for RCC8_r in RCC52RCC8Relations(r) for IA_r in topo2IARelations(RCC8_r)))
-    Iterators.flatten((_accessibles(Full1DFrame(fr), w, IA_r, ) for IA_r in RCC52IARelations(r)))
+    Iterators.flatten((_accessibles(Full1DFrame(fr), w, RCC8_r, ) for RCC8_r in RCC52RCC8Relations(r)))

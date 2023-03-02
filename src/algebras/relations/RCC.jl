@@ -210,7 +210,3 @@ const RCC5RelationFromRCC8 = Union{_Topo_DR,_Topo_PP,_Topo_PPi}
 RCC52RCC8Relations(::_Topo_DR)   = [Topo_DC,    Topo_EC]
 RCC52RCC8Relations(::_Topo_PP)   = [Topo_TPP,   Topo_NTPP]
 RCC52RCC8Relations(::_Topo_PPi)  = [Topo_TPPi,  Topo_NTPPi]
-
-RCC52IARelations(::_Topo_DR)   = [IA_L,  IA_Li,  IA_A,  IA_Ai]
-RCC52IARelations(::_Topo_PP)   = [IA_B,  IA_E,   IA_D]
-RCC52IARelations(::_Topo_PPi)  = [IA_Bi, IA_Ei,  IA_Di]
