@@ -68,7 +68,7 @@ BEWARE: it currently assumes the underlying algebra is Boolean!
     Note: this assumes an underlying Boolean algebra.
 - `allow_inverse_propositions::Bool`: when set to `true`,
     together with `reduce_negations=true`, this may cause the negation of a proposition
-    to be replaced with the proposition with inverted semantics. See [`inverse`](@ref).
+    to be replaced with the proposition with its [`negation`](@ref).
 
 # Examples
 ```julia-repl
@@ -129,7 +129,7 @@ function normalize(
             _normalize(grandchildren[1])
         elseif token(childtok) isa Proposition
             if allow_inverse_propositions
-                SyntaxTree(inverse(token(childtok)))
+                SyntaxTree(negation(token(childtok)))
             else
                 ¬(_normalize(childtok))
             end

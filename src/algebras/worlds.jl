@@ -1,9 +1,8 @@
 
 """
 Some worlds (dimensional worlds) can be interpreted on dimensional data,
- that is, n-dimensional arrays. The compatibility
-of a given world with respect of a structure of a given dimensionality must be specified
-via the following trait:
+that is, n-dimensional arrays. The compatibility of a given world with respect of a 
+structure of a given dimensionality must be specified via the following trait:
 
     goeswithdim(w::AbstractWorld, d) = goeswithdim(typeof(w), d)
     goeswithdim(W::Type{<:AbstractWorld}, d::Integer) = goeswithdim(W, Val(d))
