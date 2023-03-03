@@ -137,12 +137,12 @@ end
 ############################################################################################
 #            Traits
 ############################################################################################
-SoleTraits.is_unary_operator(op::AbstractOperator) = return (ariety(op) == 1)
-SoleTraits.is_binary_operator(op::AbstractOperator) = return (ariety(op) == 2)
+is_unary_operator(op::AbstractOperator) = return (ariety(op) == 1)
+is_binary_operator(op::AbstractOperator) = return (ariety(op) == 2)
 
-SoleTraits.is_modal_operator(::AbstractModalOperator) = true
-SoleTraits.is_existential_modal_operator(::AbstractExistentialModalOperator) = true
-SoleTraits.is_universal_modal_operator(::AbstractUniversalModalOperator) = true
+is_modal_operator(::AbstractModalOperator) = true
+is_existential_modal_operator(::AbstractExistentialModalOperator) = true
+is_universal_modal_operator(::AbstractUniversalModalOperator) = true
 
 ############################################################################################
 #      `Operators` wrapper
@@ -292,6 +292,6 @@ const LOWER_EQUAL = OP("≤")
 SoleLogics.ariety(::typeof(LOWER_EQUAL)) = 2
 precedence(::typeof(LOWER_EQUAL)) = 10
 
-SoleTraits.is_commutative(::typeof(CONJUNCTION)) = true
-SoleTraits.is_commutative(::typeof(DISJUNCTION)) = true
-SoleTraits.is_commutative(::typeof(EQUAL)) = true
+is_commutative(::typeof(CONJUNCTION)) = true
+is_commutative(::typeof(DISJUNCTION)) = true
+is_commutative(::typeof(EQUAL)) = true

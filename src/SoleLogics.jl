@@ -4,7 +4,7 @@ import Base: show
 using DataStructures
 using Dictionaries
 using Reexport
-@reexport using SoleTraits
+@reexport using SoleBase
 
 # Abstract types
 export AbstractLogic, CrispLogic, FuzzyLogic

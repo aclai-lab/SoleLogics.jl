@@ -536,7 +536,6 @@ SoleLogics.IMPLICATION(p::FNode{L}, q::FNode{L}) where {L<:AbstractLogic} = begi
     return _compose_fnode!(FNode(IMPLICATION, logic(p)), p, q)
 end
 
-# This has to be shifted somewhere in SoleLogics or SoleAlphabets
 import SoleLogics: precedence
 SoleLogics.precedence(letter::AbstractPropositionalLetter) = hash(letter)
 
