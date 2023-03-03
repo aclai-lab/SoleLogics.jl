@@ -1,3 +1,4 @@
+@testset "Worlds" begin
 
 @test_throws ErrorException SoleLogics.Point()
 @test_nowarn SoleLogics.Point(1,2)
@@ -26,4 +27,6 @@
 
 @test Base.isconcretetype(Base.return_types(accessibles, typeof.((SoleLogics.FullDimensionalFrame((5,),), [Interval(2,3),Interval(2,4)], SoleLogics.IA_L)))[1])
 @test_broken Base.isconcretetype(eltype(Base.return_types(accessibles, typeof.((SoleLogics.FullDimensionalFrame((5,),), [Interval(2,3),Interval(2,4)], SoleLogics.IA_L)))[1]))
-@test_broken @inferred eltype(accessibles(SoleLogics.FullDimensionalFrame((5,),), [Interval(2,3),Interval(2,4)], SoleLogics.IA_L)) == Interval{Int}
+@test_broken ((@inferred eltype(accessibles(SoleLogics.FullDimensionalFrame((5,),), [Interval(2,3),Interval(2,4)], SoleLogics.IA_L))) == Interval{Int})
+
+end

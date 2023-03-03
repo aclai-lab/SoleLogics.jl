@@ -1,8 +1,9 @@
 # julia
-using Revise
-using Test
-using SoleLogics
-using SoleLogics: BasePropositionalLogic
+# using Revise
+# using Test
+# using SoleLogics
+
+@testset "General" begin
 
 p1 = @test_nowarn Proposition(1)
 p2 = @test_nowarn Proposition(2)
@@ -181,6 +182,9 @@ f_conj_int = @test_nowarn CONJUNCTION(f_int, f_int, f_int)
 @test_throws AssertionError f_int(p1 ∧ p100 ∧ p1_float)
 f3_int = f_int(⊥ ∨ (p1 ∧ p100 ∧ p2 ∧ ⊤))
 
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ checking ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+# TODO remove from here
 @test_nowarn TruthDict()
 @test_nowarn TruthDict([])
 @test_nowarn TruthDict((2,3),)
@@ -211,63 +215,14 @@ emptylogic = @test_nowarn propositionallogic(; operators = SoleLogics.AbstractOp
 @test length(formulas(emptylogic, maxdepth = 2, nformulas = 2)) == 0
 
 
-@test propositionallogic() isa BasePropositionalLogic
-@test propositionallogic(; operators = [¬, ∨]) isa BasePropositionalLogic
+@test propositionallogic() isa SoleLogics.BasePropositionalLogic
+@test propositionallogic(; operators = [¬, ∨]) isa SoleLogics.BasePropositionalLogic
 
 @test_throws AssertionError propositionallogic(; operators = [¬, ∨])(¬ p1)
 @test_nowarn propositionallogic(; operators = [¬, ∨])(¬ p_string)
-@test propositionallogic(; alphabet = ["p", "q"]) isa BasePropositionalLogic
+@test propositionallogic(; alphabet = ["p", "q"]) isa SoleLogics.BasePropositionalLogic
 
 @test modallogic() isa SoleLogics.BaseModalLogic
 @test (@test_logs (:warn,) modallogic(; operators = [¬, ∨]) isa SoleLogics.BasePropositionalLogic)
 
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ parsing.jl ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-@test_nowarn parseformulatree("p")
-@test_nowarn parseformulatree("⊤")
-
-@test syntaxstring(parseformulatree("p∧q"); function_notation = true) == "∧(p, q)"
-@test syntaxstring(parseformulatree("p→q"); function_notation = true) == "→(p, q)"
-@test parseformulatree("¬p∧q") == parseformulatree("¬(p)∧q")
-@test parseformulatree("¬p∧q") != parseformulatree("¬(p∧q)")
-
-@test filter(!isspace, syntaxstring(parseformulatree("¬p∧q∧(¬s∧¬z)"); function_notation = true)) == "∧(¬(p),∧(q,∧(¬(s),¬(z))))"
-@test_nowarn parseformulatree("¬p∧q∧(¬s∧¬z)", [NEGATION, CONJUNCTION])
-@test_nowarn parseformulatree("¬p∧q∧(¬s∧¬z)", [NEGATION])
-# @test ((@test_logs (:warn,) operatorstype(logic(parseformula("¬p∧q∧(¬s∧¬z)", [BOX])))) == Union{typeof(□),typeof(¬),typeof(∧)})
-@test operatorstype(logic(parseformula("¬p∧q∧(¬s∧¬z)", [BOX]))) == Union{typeof(□),typeof(¬),typeof(∧)}
-@test (@test_nowarn operatorstype(logic(parseformula("¬p∧q∧(¬s∧¬z)"))) == Union{typeof(¬),typeof(∧)})
-@test_nowarn parseformulatree("¬p∧q→(¬s∧¬z)")
-@test filter(!isspace, syntaxstring(parseformulatree("¬p∧q→(¬s∧¬z)"); function_notation = true)) == "→(∧(¬(p),q),∧(¬(s),¬(z)))"
-@test_nowarn parseformulatree("¬p∧q→     (¬s∧¬z)")
-@test parseformulatree("□p∧   q∧(□s∧◊z)", [BOX]) == parseformulatree("□p∧   q∧(□s∧◊z)")
-@test syntaxstring(parseformulatree("◊ ◊ ◊ ◊ p∧q"); function_notation = true) == "∧(◊(◊(◊(◊(p)))), q)"
-@test syntaxstring(parseformulatree("¬¬¬ □□□ ◊◊◊ p ∧ ¬¬¬ q"); function_notation = true) == "∧(¬(¬(¬(□(□(□(◊(◊(◊(p))))))))), ¬(¬(¬(q))))"
-
-@test alphabet(logic(parseformula("p→q"))) == AlphabetOfAny{String}()
-
-# Malformed input
-# TODO fix @Mauro
-# @test_throws ErrorException parseformulatree("¬p◊")
-# @test_throws ErrorException parseformulatree("¬p◊q")
-# @test_throws ErrorException parseformulatree("(p∧q", [NEGATION, CONJUNCTION])
-# @test_throws ErrorException parseformulatree("))))", [CONJUNCTION])
-
-# TODO
-# @test ErrorException parseformulatree("⟨G⟩p", [DiamondRelationalOperator{GlobalRel}()])
-
-
-@test_nowarn parseformula("p")
-
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ random.jl ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-# Mauro: I commented the following tests since a cryptic error message fills up the REPL.
-# This is strange, also because `randformulatree` actually returns correct SyntaxTrees.
-# TODO bring back
-# _alphabet = ExplicitAlphabet(Proposition.([1,2]))
-# _operators = [NEGATION, CONJUNCTION, IMPLICATION]
-# @test_broken randformulatree(10, _alphabet, _operators)
-# @test_nowarn randformulatree(2, _alphabet, _operators)
-
-include("test-checking.jl")
-include("test-worlds.jl")
+end

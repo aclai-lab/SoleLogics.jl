@@ -13,8 +13,22 @@ end
 println("Julia version: ", VERSION)
 
 test_suites = [
-    ("Formulas", ["formulas/generation.jl", "formulas/input.jl"]),
-    ("Logics", ["logics/operators.jl", "logics/logics.jl"]),
+    ("Base", [
+        "general.jl",
+        "parse.jl",
+        "random.jl",
+    ]),
+
+    ("Formulas", [
+        "formulas/generation.jl",
+        "formulas/input.jl"
+    ]),
+
+   ("Logics", ["logics/operators.jl", "logics/logics.jl"]),
+
+    ("Algebras", [
+        "algebras/worlds.jl",
+    ]),
 ]
 
 @testset "Test Suites" begin

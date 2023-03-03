@@ -1,6 +1,8 @@
-using Revise; using SoleLogics; using Test
+# using Revise; using SoleLogics; using Test
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ checking.jl ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+@testset "Propositional" begin
 
 d0 = Dict(["a" => true, "b" => false, "c" => true])
 @test_throws ErrorException "a" in d0
@@ -82,3 +84,5 @@ t2 = @test_nowarn TruthDict(Pair{Real,Bool}[1.0 => true, 2 => true, 3 => true])
 @test !check(parseformula("a ∧ b"), DefaultedTruthDict(["a"]))
 @test !check(parseformula("a ∧ ¬b"), DefaultedTruthDict(["a", "b"]))
 @test check(parseformula("a ∧ ¬b"), DefaultedTruthDict(["a"]))
+
+end
