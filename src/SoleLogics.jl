@@ -10,6 +10,7 @@ using Lazy
 # TODO are we sure?
 @reexport using SoleBase
 
+include("utils.jl")
 
 export iscrisp, isfinite, isnullary, isunary, isbinary
 
@@ -76,7 +77,7 @@ include("check.jl")
 
 include("interpretation-sets.jl")
 
-include("utils.jl")
+export parseformula, parseformulatree
 
 include("parse.jl")
 

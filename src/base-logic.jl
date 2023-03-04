@@ -331,12 +331,16 @@ end
 """
     function baseformula(
         tokf::Union{AbstractSyntaxToken,AbstractFormula};
-        operators::Union{Nothing,Vector{<:AbstractOperator}} = nothing,
+        infer_logic = true,
+        additional_operators::Union{Nothing,Vector{<:AbstractOperator}} = nothing,
         kwargs...,
     )
 
 Attempts at instantiating a `Formula` from a syntax token/formula,
-by inferring the logic it belongs to.
+by inferring the logic it belongs to. If `infer_logic` is true, then 
+a canonical logic (e.g., propositional logic with all the `BASE_PROPOSITIONAL_OPERATORS`) is
+inferred; if it's false, then a logic with exactly the operators appearing in the syntax tree,
+plus the `additional_operators` is instantiated.
 
 # Examples
 ```julia-repl
@@ -348,7 +352,7 @@ julia> operators(logic(SoleLogics.baseformula(t)))
  ◊
  →
 
-julia> operators(logic(SoleLogics.baseformula(t; operators = SoleLogics.BASE_MODAL_OPERATORS)))
+julia> operators(logic(SoleLogics.baseformula(t; additional_operators = SoleLogics.BASE_MODAL_OPERATORS)))
 8-element Vector{Union{SoleLogics.BottomOperator, SoleLogics.NamedOperator{:¬}, SoleLogics.NamedOperator{:∧}, SoleLogics.NamedOperator{:∨}, SoleLogics.NamedOperator{:→}, SoleLogics.NamedOperator{:◊}, SoleLogics.NamedOperator{:□}, SoleLogics.TopOperator}}:
  ⊤
  ⊥
@@ -362,24 +366,25 @@ julia> operators(logic(SoleLogics.baseformula(t; operators = SoleLogics.BASE_MOD
 """
 function baseformula(
     tokf::Union{AbstractSyntaxToken,AbstractFormula};
-    operators::Union{Nothing,Vector{<:AbstractOperator}} = nothing,
-    # additional_operators::Vector{<:AbstractOperator} = AbstractOperator[],
+    infer_logic = true,
+    additional_operators::Union{Nothing,Vector{<:AbstractOperator}} = nothing,
     kwargs...,
 )
     t = convert(SyntaxTree, tokf)
-    ops = isnothing(operators) ? SoleLogics.operators(t) : operators
+
+    ops = isnothing(additional_operators) ? SoleLogics.operators(t) : additional_operators
     # operators = unique([additional_operators..., ops...])
     # props = propositions(t)
 
     logic = begin
         if issubset(ops, BASE_PROPOSITIONAL_OPERATORS)
             propositionallogic(;
-                operators = ops,
+                operators = (infer_logic ? BASE_PROPOSITIONAL_OPERATORS : ops),
                 kwargs...,
             )
         elseif issubset(ops, BASE_MODAL_OPERATORS)
             modallogic(;
-                operators = ops,
+                operators = (infer_logic ? BASE_MODAL_OPERATORS : ops),
                 kwargs...,
             )
         else

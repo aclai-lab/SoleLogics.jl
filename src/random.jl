@@ -35,7 +35,7 @@ function randformula(
     baseformula(
         randformulatree(height, alphabet, operators; rng = rng);
         alphabet = alphabet,
-        operators = operators,
+        additional_operators = operators,
     )
 end
 

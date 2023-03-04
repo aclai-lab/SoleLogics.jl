@@ -31,7 +31,7 @@ test_suites = [
     ]),
 ]
 
-@testset "Test Suites" begin
+@testset "SoleLogics.jl" begin
     for ts in eachindex(test_suites)
         name = test_suites[ts][1]
         list = test_suites[ts][2]

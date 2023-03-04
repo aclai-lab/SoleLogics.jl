@@ -1477,7 +1477,7 @@ function joinformulas(op::AbstractOperator, children::NTuple{N,Formula}) where {
     l = first(ls)
     # "TODO expand logic's set of operators (op is not in it: $(typeof(op)) ∉ $(operatorstype(l)))."
     @assert typeof(op) <: operatorstype(l) "Can't join $(N) formulas via operator $(op):" *
-        " this operator doesNot belong to the logic. $(typeof(op)) <: $(operatorstype(l)) should hold!"
+        " this operator does not belong to the logic. $(typeof(op)) <: $(operatorstype(l)) should hold!"
     return Formula(l, joinformulas(op, map(synstruct, children)))
 end
 

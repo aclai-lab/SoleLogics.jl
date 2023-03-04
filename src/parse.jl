@@ -1,7 +1,3 @@
-export parseformula, parseformulatree
-
-export tokenizer
-
 using ReadableRegex
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Precedence ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -50,7 +46,14 @@ const BASE_PARSABLE_OPERATORS = [BASE_MODAL_OPERATORS...]
 
 # A simple lexer capable of distinguish operators in a string,
 # returning a Vector{SoleLogics.SyntaxTree}.
-function tokenizer(expression::String, operators::Vector{<:AbstractOperator})
+function tokenizer(
+    expression::String,
+    additional_operators::Union{Nothing,Vector{<:AbstractOperator}} = nothing,
+)
+    additional_operators = (isnothing(additional_operators) ? AbstractOperator[] : additional_operators)
+    
+    operators = unique(AbstractOperator[BASE_PARSABLE_OPERATORS..., additional_operators...])
+    
     # Symbolic represention of given OPERATORS
     expression = filter(x -> !isspace(x), expression)
     string_to_op = Dict([syntaxstring(op) => op for op in operators])
@@ -148,9 +151,14 @@ function shunting_yard!(
 end
 
 """
-    parseformulatree(expression::String, operators::Vector{<:AbstractOperator})
+    parseformulatree(
+        expression::String,
+        additional_operators::Union{Nothing,Vector{<:AbstractOperator}} = nothing,
+    )
 
 Returns a `SyntaxTree` which is the result from parsing `expression`.
+This function is only able to parse operators from `SoleLogics.BASE_PARSABLE_OPERATORS`;
+additional operators may be provided as parameter `additional_operators`.
 At the moment, the propositional letters in `expression` must be represented with
  a single character (e.g., "p", "q", etc...).
 
@@ -164,7 +172,7 @@ See also [`SyntaxTree`](@ref)
 """
 function parseformulatree(
     expression::String,
-    operators::Vector{<:AbstractOperator} = AbstractOperator[],
+    additional_operators::Union{Nothing,Vector{<:AbstractOperator}} = nothing,
 )
     # Build a formula starting from a Vector{AbstractSyntaxToken} representing its postfix notation
     function _buildformulatree(postfix::Vector{AbstractSyntaxToken})
@@ -188,8 +196,7 @@ function parseformulatree(
         return stack[1]
     end
 
-    operators = unique(AbstractOperator[BASE_PARSABLE_OPERATORS..., operators...])
-    tokens = tokenizer(expression, operators) # Still a Vector{SoleLogics.AbstractSyntaxToken}
+    tokens = tokenizer(expression, additional_operators) # Still a Vector{SoleLogics.AbstractSyntaxToken}
 
     # Stack containing operators. Needed to transform the expression in postfix notation;
     # opstack may contain Proposition("("), Proposition(")") and operators
@@ -212,18 +219,34 @@ function parseformulatree(
     return _buildformulatree(postfix)
 end
 
+function parseformulatree(
+    expression::String,
+    logic::AbstractLogic,
+)
+    parseformulatree(expression, operators(logic))
+end
+
+function parseformula(
+    expression::String,
+    additional_operators::Union{Nothing,Vector{<:AbstractOperator}};
+    args...,
+)
+    parseformula(expression; additional_operators = additional_operators, args...)
+end
+
 function parseformula(
     expression::String;
     # TODO add alphabet parameter add custom parser for propositions
     # alphabet::Union{Nothing,Vector,AbstractAlphabet} = nothing,
-    operators::Union{Nothing,Vector{<:AbstractOperator}} = nothing,
+    additional_operators::Union{Nothing,Vector{<:AbstractOperator}} = nothing,
     grammar::Union{Nothing,AbstractGrammar} = nothing,
     algebra::Union{Nothing,AbstractAlgebra} = nothing,
 )
-    operators = (isnothing(operators) ? AbstractOperator[] : operators)
-    t = parseformulatree(expression, operators)
+    additional_operators = (isnothing(additional_operators) ? AbstractOperator[] : additional_operators)
+    t = parseformulatree(expression, additional_operators)
     baseformula(t;
-        operators = unique(AbstractOperator[operators..., SoleLogics.operators(t)...]),
+        # additional_operators = unique(AbstractOperator[operators..., SoleLogics.operators(t)...]),
+        additional_operators = length(additional_operators) == 0 ? nothing : unique(AbstractOperator[additional_operators..., SoleLogics.operators(t)...]),
         # alphabet = alphabet,
         alphabet = AlphabetOfAny{String}(),
         grammar = grammar,
@@ -235,13 +258,5 @@ function parseformula(
     expression::String,
     logic::AbstractLogic,
 )
-    Formula(parseformulatree(expression, operatorstype(logic)), logic)
-end
-
-function parseformula(
-    expression::String,
-    operators::Union{Nothing,Vector{<:AbstractOperator}};
-    args...,
-)
-    parseformula(expression; operators = operators, args...)
+    Formula(logic, parseformulatree(expression, operators(logic)))
 end
