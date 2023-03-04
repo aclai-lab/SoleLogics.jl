@@ -7,9 +7,6 @@ using Random
 using Reexport
 using Lazy
 
-# TODO are we sure?
-@reexport using SoleBase
-
 include("utils.jl")
 
 export iscrisp, isfinite, isnullary, isunary, isbinary

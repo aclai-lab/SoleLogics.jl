@@ -975,6 +975,13 @@ function formulas(
     end
 end
 
+function Base.isequal(a::AbstractGrammar, b::AbstractGrammar)
+    Base.isequal(alphabet(a), alphabet(b)) &&
+    Base.isequal(operatorstype(a), operatorstype(b))
+end
+Base.hash(a::AbstractGrammar) = Base.hash(alphabet(a)) + Base.hash(operatorstype(a))
+
+
 """
     struct CompleteFlatGrammar{A<:AbstractAlphabet,O<:AbstractOperator} <: AbstractGrammar{A,O}
         alphabet::A
@@ -1348,6 +1355,12 @@ top(l::AbstractLogic) = top(algebra(l))
 bottom(l::AbstractLogic) = bottom(algebra(l))
 iscrisp(l::AbstractLogic) = iscrisp(algebra(l))
 
+function Base.isequal(a::AbstractLogic, b::AbstractLogic)
+    Base.isequal(grammar(a), grammar(b)) &&
+    Base.isequal(algebra(a), algebra(b))
+end
+Base.hash(a::AbstractLogic) = Base.hash(grammar(a)) + Base.hash(algebra(a))
+
 ############################################################################################
 
 """
@@ -1466,7 +1479,7 @@ end
 # Note that, since `op` might not be in the logic of the child formulas,
 #  the resulting formula may be of a different logic.
 function joinformulas(op::AbstractOperator, children::NTuple{N,Formula}) where {N}
-    ls = unique(logic.(children))
+    ls = unique(logic.(children)) # Uses Base.isequal
     @assert length(ls) == 1 "Cannot" *
                 " build formula by combination of formulas with different logics: $(ls)."
     l = first(ls)
