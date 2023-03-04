@@ -3,7 +3,7 @@
 # using Test
 # using SoleLogics
 
-@testset "General" begin
+# @testset "General" begin
 
 p1 = @test_nowarn Proposition(1)
 p2 = @test_nowarn Proposition(2)
@@ -225,4 +225,4 @@ emptylogic = @test_nowarn propositionallogic(; operators = SoleLogics.AbstractOp
 @test modallogic() isa SoleLogics.BaseModalLogic
 @test (@test_logs (:warn,) modallogic(; operators = [¬, ∨]) isa SoleLogics.BasePropositionalLogic)
 
-end
+# end

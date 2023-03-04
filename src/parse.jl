@@ -44,6 +44,8 @@ const BASE_PARSABLE_OPERATORS = [BASE_MODAL_OPERATORS...]
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Input and construction ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+# TODO _parsing_special_chars = []
+
 # A simple lexer capable of distinguish operators in a string,
 # returning a Vector{SoleLogics.SyntaxTree}.
 function tokenizer(
@@ -57,6 +59,7 @@ function tokenizer(
     # Symbolic represention of given OPERATORS
     expression = filter(x -> !isspace(x), expression)
     string_to_op = Dict([syntaxstring(op) => op for op in operators])
+    # TODO @assert that no keys(string_to_op) has a char in _parsing_special_chars
 
     # Collection responsible for split `expression` in the correct points.
     splitter = ["(", ")", keys(string_to_op)...]
@@ -80,7 +83,6 @@ function tokenizer(
         )
     )
 
-    #= Dirty (but working) idea on how to properly manage "¬p◊" cases
     tokens = SoleLogics.AbstractSyntaxToken[]
     for st in expression
         # token is an operator
@@ -89,9 +91,9 @@ function tokenizer(
             # a unary operator is always preceeded by some other operator or a '('
             if (arity(op) == 1 &&
                 !isempty(tokens) &&
-                (string(tokens[end]) != "(" && !(tokens[end] isa AbstractOperator))
+                (syntaxstring(tokens[end]) != "(" && !(tokens[end] isa AbstractOperator))
             )
-                error("Malformed input")
+                error("Malformed input. TODO") # TODO inform user about error.
             end
             push!(tokens, op)
         # token is something else
@@ -99,7 +101,6 @@ function tokenizer(
             push!(tokens, Proposition{String}(string(st)))
         end
     end
-    =#
 
     # Trick: wrap chars like '(' and 'p' into Proposition{String}'s. shunting_yard will
     #  take care of this.
@@ -164,8 +165,8 @@ At the moment, the propositional letters in `expression` must be represented wit
 
 # Examples
 ```julia-repl
-julia> parseformulatree("¬p∧q∧(¬s∧¬z)")
-∧(∧(∧(¬(z), ¬(s)), q), ¬(p))
+julia> syntaxstring(parseformulatree("¬p∧q∧(¬s∧¬z)"))
+"(¬(p)) ∧ (q ∧ ((¬(s)) ∧ (¬(z))))"
 ```
 
 See also [`SyntaxTree`](@ref)
@@ -234,6 +235,11 @@ function parseformula(
     parseformula(expression; additional_operators = additional_operators, args...)
 end
 
+# TODOs:
+# - Parameter function_notation = false,
+# - Parse modal operators and modal relational operators
+# - Parse propositions that are \w
+# - Fix parsing problem with ¬p◊
 function parseformula(
     expression::String;
     # TODO add alphabet parameter add custom parser for propositions

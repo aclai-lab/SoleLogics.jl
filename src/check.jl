@@ -99,7 +99,7 @@ function normalize(
         allow_inverse_propositions = allow_inverse_propositions,
     )
 
-    # TODO introduce rotate_commutatives parameter and use rotate_commutatives && iscommutative for normalizing the structure of commutative operators.
+    # TODO @Mauro introduce rotate_commutatives parameter and use rotate_commutatives && iscommutative for normalizing the structure of commutative operators.
     tok, ch = token(t), children(t)
     if remove_boxes && tok isa BoxRelationalOperator && arity(tok) == 1
         # remove_boxes -> substitute every [X]φ with ¬⟨X⟩¬φ

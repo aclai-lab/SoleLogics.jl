@@ -157,6 +157,7 @@ See also
 [`hasconverse`](@ref),
 [`IdentityRel`](@ref),
 [`GlobalRel`](@ref),
+[`accessibles`](@ref),
 [`AbstractKripkeStructure`](@ref),
 [`AbstractFrame`](@ref),
 [`AbstractWorld`](@ref).
