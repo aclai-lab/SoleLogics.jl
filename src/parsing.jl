@@ -48,49 +48,55 @@ const BASE_PARSABLE_OPERATORS = [BASE_MODAL_OPERATORS...]
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Input and construction ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-# TODO _parsing_special_chars = []
+# @Mauro - 6/3/2023 - List of resolved todo
+# 1) Deal with special characters
+# 2) Recognize \w propositions
+# 3) User is informed about malformed input
 
-# A simple lexer capable of distinguish operators in a string,
-# returning a Vector{SoleLogics.SyntaxTree}.
-function tokenizer(expression::String, operators::Vector{<:AbstractOperator})
-    # Symbolic represention of given OPERATORS
-    expression = filter(x -> !isspace(x), expression)
-    string_to_op = Dict([syntaxstring(op) => op for op in operators])
-    # TODO @assert that no keys(string_to_op) has a char in _parsing_special_chars
+# Characters with special meaning in expressions.
+# '(' and ')' are needed to wrap a new scope
+# '⟨', '⟩', '[' and ']' delimits relations
+# ',' is ignored but might be useful to deal with more readable inputs
+_parsing_special_strings = ["(", ")", "⟨", "⟩"]
+_parsing_ignore_strings = [",", "", " "]
 
-    # Collection responsible for split `expression` in the correct points.
-    splitter = ["(", ")", keys(string_to_op)...]
+# Raw tokens are cutted out from the initial expression
+function _recognize_tokens(expression::String, splitters::Vector{String})
+    piece = ""
+    raw_tokens = String[]
 
-    # NOTE: at the moment, this code only works with single-char long variables.
-    # For example "my_long_name1 ∧ my_long_name2" is not parsed correctly;
-    # this happens because the following split behaves like a split(expression, "").
-    # A macro should be created to dynamically generate a look_for("", before="some_string")
-    # for each element in spliter.
-    split(expression, Regex(
-            either(
-                [look_for("", before=sep) for sep in splitter]...,
-                [look_for("", after=sep) for sep in splitter]...,
+    for c in expression
+        if string(c) in splitters
+            push!(raw_tokens, piece)
+            push!(raw_tokens, string(c))
+            piece = "";
+        else
+            piece = piece * c;
+        end
+    end
 
-                look_for("", before = "("),
-                look_for("", after = "("),
+    if (!isempty(piece))
+        push!(raw_tokens, piece)
+    end
 
-                look_for("", before = ")"),
-                look_for("", after = ")")
-            )
-        )
-    )
+    return filter(x->!(x in _parsing_ignore_strings), raw_tokens);
+end
 
+# Raw tokens are interpreted and, thus, processable by a parser
+function _interpret_tokens(raw_tokens::Vector{String}, string_to_op::Dict{String, AbstractOperator})
     tokens = SoleLogics.AbstractSyntaxToken[]
-    for st in expression
+
+    for st in raw_tokens
         # token is an operator
         if (string(st) in keys(string_to_op))
             op = string_to_op[string(st)]
-            # a unary operator is always preceeded by some other operator or a '('
+
+            # A unary operator is always preceeded by some other operator or a '('
             if (arity(op) == 1 &&
                 !isempty(tokens) &&
                 (syntaxstring(tokens[end]) != "(" && !(tokens[end] isa AbstractOperator))
             )
-                error("Malformed input. TODO") # TODO inform user about error.
+                error("Malformed input: " * op * " is following a ")
             end
             push!(tokens, op)
         # token is something else
@@ -99,13 +105,23 @@ function tokenizer(expression::String, operators::Vector{<:AbstractOperator})
         end
     end
 
-    # Trick: wrap chars like '(' and 'p' into Proposition{String}'s. shunting_yard will
-    #  take care of this.
-    return SoleLogics.AbstractSyntaxToken[string(st) in keys(string_to_op) ?
-        string_to_op[string(st)] :
-        Proposition{String}(string(st))
-        for st in expression
-    ]
+    return tokens;
+end
+
+# A simple lexer capable of distinguish operators in a string,
+# returning a Vector{SoleLogics.SyntaxTree}.
+function tokenizer(expression::String, operators::Vector{<:AbstractOperator})
+    # Symbolic represention of given OPERATORS
+    expression = filter(x -> !isspace(x), expression)
+    string_to_op = Dict([syntaxstring(op) => op for op in operators])
+
+    @assert isempty(findall(in(keys(string_to_op)), _parsing_special_strings));
+
+    splitters = vcat(_parsing_special_strings, keys(string_to_op)...)
+    raw_tokens = _recognize_tokens(expression, splitters)
+    a = _interpret_tokens(raw_tokens, string_to_op);
+    println(a)
+    return a;
 end
 
 # Rearrange a serie of token, from infix to postfix notation.

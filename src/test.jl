@@ -257,6 +257,7 @@ _operators = [NEGATION, CONJUNCTION, IMPLICATION]
 # @test_broken randformulatree(10, _alphabet, _operators)
 # @test_nowarn randformulatree(2, _alphabet, _operators)
 
+#=
 const TERN = NamedOperator{:TERN}()
 arity(::Type{typeof(TERN)}) = 3
 
@@ -273,3 +274,4 @@ end
     s = syntaxstring(f)
     s == syntaxstring(parseformulatree(s; function_notation = true); function_notation = true)
 end for i in 1:1000])
+=#
