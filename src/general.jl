@@ -98,8 +98,8 @@ syntaxstring(atom::Union{String,Number}; kwargs...) = string(atom)
     end
 
 A proposition, sometimes called a propositional letter (or simply *letter*), of type
-`Proposition{A}` wraps a value
-`atom::A` representing a fact which truth can be assessed on a logical interpretation.
+`Proposition{A}` wraps a value `atom::A` representing a fact which truth can be assessed on
+a logical interpretation.
 
 Propositions are nullary tokens (i.e, they are at the leaves of a syntax tree).
 Note that their atom cannot be a Proposition.
@@ -157,6 +157,10 @@ Note that, for a correct functioning,
 `SoleLogics.negation` must be defined for the wrapped atom.
 
 See also [`Proposition`](@ref), [`check`](@ref).
+
+TODO3: Perhaps this should be called "negation" instead of "inverse?
+    Also, the documentation is not clear (i.e., what does it mean "which inverted semantics
+    with respect to p"?) Agree on "negation", and made a fix to the sentence.
 """
 negation(p::Proposition) = Proposition(negation(atom(p)))
 
@@ -872,229 +876,7 @@ Base.isiterable(::Type{<:AlphabetOfAny}) = false
 ############################################################################################
 
 """
-A syntax tree encoding a logical formula.
-Each node of the syntax tree holds a `token::T`, and
-has as many children as the `arity` of the token.
 
-This implementation is *arity-compliant*, in that, upon construction,
-the arity is checked against the number of children provided.
-An additional type parameter `FT` ensures that the token types of the sub-tree are
-constrained to a predefined set of types.
-When it is not specified, this parameter defaults to the `Union` between `T`, and the `FT`s
-of the child nodes. Note: if not handled correctly, this can cause an abuse of Julia's
-[multiple dispatch engine](https://docs.julialang.org/en/v1/manual/performance-tips/#The-dangers-of-abusing-multiple-dispatch-(aka,-more-on-types-with-values-as-parameters)).
-
-See also [`token`](@ref), [`children`](@ref), [`tokentype`](@ref),
-[`tokens`](@ref), [`operators`](@ref), [`propositions`](@ref),
-[`ntokens`](@ref), [`npropositions`](@ref), [`height`](@ref),
-[`tokenstype`](@ref), [`operatorstype`](@ref), [`propositionstype`](@ref),
-[`AbstractSyntaxToken`](@ref), [`arity`](@ref), [`Proposition`](@ref), [`Operator`](@ref).
-"""
-struct SyntaxTree{FT<:AbstractSyntaxToken,T<:AbstractSyntaxToken} # T<:FT
-
-    # The syntax token at the current node
-    token::T
-
-    # The child nodes of the current node
-    children::NTuple{N,SyntaxTree} where {N}
-
-    function _boundchecks(FT, N, T, token, children)
-        @assert arity(token) == N "Cannot instantiate SyntaxTree{$(FT),$(T)} with token" *
-                                  " $(token) of arity $(arity(token)) and $(N) children."
-        @assert all([T, tokenstype.(children)...] .<: FT) "" *
-                "Cannot instantiate SyntaxTree{$(FT),$(T)} with token::$(T) and" *
-                " tokenstype.(children)::$(tokenstype.(children))."
-        return nothing
-    end
-
-    function SyntaxTree{FT,T}(
-        token::T,
-        children::NTuple{N,Union{AbstractSyntaxToken,SyntaxTree}} = (),
-    ) where {FT<:AbstractSyntaxToken,T<:FT,N}
-        children = convert.(SyntaxTree, children)
-        _boundchecks(FT, N, T, token, children)
-        return new{FT,T}(token, children)
-    end
-
-    function SyntaxTree{FT}(
-        token::T,
-        children::NTuple{N,Union{AbstractSyntaxToken,SyntaxTree}} = (),
-    ) where {FT<:AbstractSyntaxToken,T<:FT,N}
-        children = convert.(SyntaxTree, children)
-        _boundchecks(FT, N, T, token, children)
-        return new{FT,T}(token, children)
-    end
-
-    function SyntaxTree{FT}(
-        t::SyntaxTree{FT2,T},
-    ) where {FT<:AbstractSyntaxToken,T<:FT,FT2}
-        return SyntaxTree{FT,T}(token(t), children(t))
-    end
-
-    function SyntaxTree(
-        token::T,
-        children::NTuple{N,Union{AbstractSyntaxToken,SyntaxTree}} = (),
-    ) where {T<:AbstractSyntaxToken,N}
-        children = convert.(SyntaxTree, children)
-        FT = Union{T,tokenstype.(children)...}
-        _boundchecks(FT, N, T, token, children)
-        return new{FT,T}(token, children)
-    end
-end
-
-# Helpers
-function SyntaxTree{FT,T}(token::T, children...) where {FT,T<:AbstractSyntaxToken}
-    return SyntaxTree{FT,T}(token, children)
-end
-function SyntaxTree{FT}(token::T, children...) where {FT,T<:AbstractSyntaxToken}
-    return SyntaxTree{FT}(token, children)
-end
-function SyntaxTree(token::T, children...) where {T<:AbstractSyntaxToken}
-    return SyntaxTree(token, children)
-end
-
-# Shows the type of the syntax tree and its syntaxstring.
-# Base.show(io::IO, t::SyntaxTree) = print(io, "$(typeof(t))($(syntaxstring(t)))")
-function Base.show(io::IO, t::SyntaxTree)
-    println(io, "SyntaxTree: $(syntaxstring(t))")
-    print(io, "Allowed token types: $(tokenstype(t))")
-end
-
-
-# Getters
-token(t::SyntaxTree) = t.token
-children(t::SyntaxTree) = t.children
-
-tokentype(::SyntaxTree{FT,T}) where {FT,T} = T
-tokenstype(::SyntaxTree{FT,T}) where {FT,T} = FT
-operatorstype(t::SyntaxTree) = typeintersect(AbstractOperator, tokenstype(t))
-propositionstype(t::SyntaxTree) = typeintersect(Proposition, tokenstype(t))
-
-"""
-    Base.in(t::AbstractSyntaxToken, tree::SyntaxTree)::Bool
-
-Returns whether a token appears in a tree or not.
-
-See also [`tokens`](@ref), [`SyntaxTree`](@ref).
-"""
-function Base.in(t::AbstractSyntaxToken, tree::SyntaxTree)
-    return t == token(tree) || any([Base.in(t, c) for c in children(tree)])
-end
-
-"""
-    tokens(t::SyntaxTree)::AbstractVector{tokenstype(t)}
-
-Enumerates all tokens appearing in a tree.
-
-See also [`ntokens`](@ref), [`operators`](@ref), [`propositions`](@ref), [`AbstractSyntaxToken`](@ref).
-"""
-function tokens(t::SyntaxTree)::AbstractVector{tokenstype(t)}
-    return AbstractSyntaxToken[vcat(tokens.(children(t))...)..., token(t)]
-end
-
-"""
-    operators(t::SyntaxTree)::AbstractVector{operatorstype(t)}
-
-Enumerates all operators appearing in a tree
-
-See also [`noperators`](@ref), [`propositions`](@ref), [`tokens`](@ref), [`AbstractOperator`](@ref).
-""" # TODO explain that when applied to formula/tree, it does this, but with a logic it shows the operators in the grammar.
-function operators(t::SyntaxTree)::AbstractVector{operatorstype(t)}
-    ops = token(t) isa AbstractOperator ? [token(t)] : []
-    return AbstractOperator[vcat(operators.(children(t))...)..., ops...]
-end
-
-"""
-    propositions(t::SyntaxTree)::AbstractVector{Proposition}
-
-Enumerates all propositions appearing in a tree
-
-See also [`npropositions`](@ref), [`operators`](@ref), [`tokens`](@ref), [`Proposition`](@ref).
-"""
-function propositions(t::SyntaxTree)::AbstractVector{Proposition}
-    ps = token(t) isa Proposition ? Proposition[token(t)] : Proposition[]
-    return Proposition[vcat(propositions.(children(t))...)..., ps...]
-end
-
-# TODO why doesn't this work?
-# function propositions(t::SyntaxTree)::AbstractVector{propositionstype(t)}
-#     ps = token(t) isa Proposition ? propositionstype(t)[token(t)] : propositionstype(t)[]
-#     return propositionstype(t)[vcat(propositions.(children(t))...)..., ps...]
-# end
-
-"""
-    ntokens(t::SyntaxTree)::Integer
-
-Counts all tokens appearing in a tree
-
-See also [`tokens`](@ref), [`AbstractSyntaxToken`](@ref).
-"""
-function ntokens(t::SyntaxTree)::Integer
-    length(children(t)) == 0 ? 1 : 1 + sum(ntoken(c) for c in children(t))
-end
-
-"""
-    npropositions(t::SyntaxTree)::Integer
-
-Counts all propositions appearing in a tree
-
-See also [`propositions`](@ref), [`AbstractSyntaxToken`](@ref).
-"""
-function npropositions(t::SyntaxTree)::Integer
-    pr = token(t) isa Proposition ? 1 : 0
-    return length(children(t)) == 0 ? pr : pr + sum(npropositions(c) for c in children(t))
-end
-
-"""
-    height(t::SyntaxTree)::Integer
-
-Counts all tokens appearing in a tree
-
-See also [`tokens`](@ref), [`AbstractSyntaxToken`](@ref).
-"""
-function height(t::SyntaxTree)::Integer
-    length(children(t)) == 0 ? 0 : 1 + maximum(height(c) for c in children(t))
-end
-
-# We use standard promotion between syntax tokens and trees
-Base.promote_rule(::Type{<:AbstractSyntaxToken}, ::Type{S}) where {S<:SyntaxTree} = S
-Base.promote_rule(::Type{S}, ::Type{<:AbstractSyntaxToken}) where {S<:SyntaxTree} = S
-
-Base.convert(::Type{S}, t::AbstractSyntaxToken) where {S<:SyntaxTree} = S(t)
-# TODO remove
-# Base.convert(::Type{SyntaxTree}, t::AbstractSyntaxToken) = SyntaxTree(t)
-# Base.convert(::Type{S}, t::T) where {FT<:AbstractSyntaxToken, T<:FT, S<:SyntaxTree{FT,T}} = SyntaxTree(t)
-
-# Helpers that make SyntaxTree's map to the same dictionary key. Useful for checking formulas on interpretations.
-function Base.isequal(a::SyntaxTree, b::SyntaxTree)
-    Base.isequal(token(a), token(b)) && all(((c1,c2),)->Base.isequal(c1,c2), zip(children(a), children(b)))
-end
-Base.hash(a::SyntaxTree) = Base.hash(syntaxstring(a))
-
-# Refer to syntaxstring(tok::AbstractSyntaxToken; kwargs...) for documentation
-function syntaxstring(t::SyntaxTree; function_notation = false, kwargs...)
-
-    tok = token(t)
-    if arity(tok) == 0
-        syntaxstring(tok; function_notation = function_notation, kwargs...)
-    elseif arity(tok) == 2 && !function_notation
-        f = ch->arity(token(ch)) == 0 ? "$(syntaxstring(ch; function_notation = function_notation, kwargs...))" : "($(syntaxstring(ch; function_notation = function_notation, kwargs...)))"
-        # Infix notation for binary operator
-        "$(f(children(t)[1])) $(syntaxstring(tok; function_notation = function_notation, kwargs...)) $(f(children(t)[2]))"
-    else
-        # Function notation for higher arity operator
-        length(children(t)) == 0 ?
-               syntaxstring(tok; function_notation = function_notation, kwargs...) :
-               syntaxstring(tok; function_notation = function_notation, kwargs...) * "(" *
-                    join([syntaxstring(c; function_notation = function_notation, kwargs...) for c in children(t)], ", ") *
-                ")"
-        # "$(syntaxstring(tok; kwargs...))(" * join(map((c)->("($(syntaxstring(c; kwargs...)))"), children(t)), ",") * ")"
-    end
-end
-
-############################################################################################
-
-"""
     abstract type AbstractGrammar{A<:AbstractAlphabet,O<:AbstractOperator} end
 
 Abstract type for representing a
