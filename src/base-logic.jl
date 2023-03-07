@@ -30,8 +30,8 @@ function collatetruth(
 end
 
 # Note: `collatetruth` for TOP and BOTTOM relies on the `top` and `bottom` methods.
-collatetruth(a::AbstractAlgebra, ::typeof(⊤), t::NTuple{0}) = top(a)
-collatetruth(a::AbstractAlgebra, ::typeof(⊥), t::NTuple{0}) = bottom(a)
+collatetruth(a::AbstractAlgebra{T}, ::typeof(⊤), t::NTuple{0,T}) where {T<:TruthValue} = top(a)
+collatetruth(a::AbstractAlgebra{T}, ::typeof(⊥), t::NTuple{0,T}) where {T<:TruthValue} = bottom(a)
 
 ############################################################################################
 ####################################### BASE OPERATORS #####################################
@@ -119,36 +119,20 @@ const IMPLICATION = NamedOperator{:→}()
 const → = IMPLICATION
 arity(::Type{typeof(→)}) = 2
 
-# Helpers that allow the conjuction/disjuction of more than two tokens/trees/formulas.
+# Helpers that allow the conjuction/disjuction of more than two tokens/formulas.
 function CONJUNCTION(
-    c1::Union{AbstractSyntaxToken,SyntaxTree,AbstractFormula},
-    c2::Union{AbstractSyntaxToken,SyntaxTree,AbstractFormula},
-    c3::Union{AbstractSyntaxToken,SyntaxTree,AbstractFormula},
-    cs::Union{AbstractSyntaxToken,SyntaxTree,AbstractFormula}...
-)
-    return CONJUNCTION(c1, CONJUNCTION(c2, c3, cs...))
-end
-function CONJUNCTION(
-    c1::Union{AbstractSyntaxToken,SyntaxTree},
-    c2::Union{AbstractSyntaxToken,SyntaxTree},
-    c3::Union{AbstractSyntaxToken,SyntaxTree},
-    cs::Union{AbstractSyntaxToken,SyntaxTree}...
+    c1::Union{AbstractSyntaxToken,AbstractFormula},
+    c2::Union{AbstractSyntaxToken,AbstractFormula},
+    c3::Union{AbstractSyntaxToken,AbstractFormula},
+    cs::Union{AbstractSyntaxToken,AbstractFormula}...
 )
     return CONJUNCTION(c1, CONJUNCTION(c2, c3, cs...))
 end
 function DISJUNCTION(
-    c1::Union{AbstractSyntaxToken,SyntaxTree,AbstractFormula},
-    c2::Union{AbstractSyntaxToken,SyntaxTree,AbstractFormula},
-    c3::Union{AbstractSyntaxToken,SyntaxTree,AbstractFormula},
-    cs::Union{AbstractSyntaxToken,SyntaxTree,AbstractFormula}...
-)
-    return DISJUNCTION(c1, DISJUNCTION(c2, c3, cs...))
-end
-function DISJUNCTION(
-    c1::Union{AbstractSyntaxToken,SyntaxTree},
-    c2::Union{AbstractSyntaxToken,SyntaxTree},
-    c3::Union{AbstractSyntaxToken,SyntaxTree},
-    cs::Union{AbstractSyntaxToken,SyntaxTree}...
+    c1::Union{AbstractSyntaxToken,AbstractFormula},
+    c2::Union{AbstractSyntaxToken,AbstractFormula},
+    c3::Union{AbstractSyntaxToken,AbstractFormula},
+    cs::Union{AbstractSyntaxToken,AbstractFormula}...
 )
     return DISJUNCTION(c1, DISJUNCTION(c2, c3, cs...))
 end
@@ -178,12 +162,12 @@ top(a::BooleanAlgebra) = true
 bottom(a::BooleanAlgebra) = false
 
 # Standard semantics for NOT, AND, OR, IMPLIES
-collatetruth(::BooleanAlgebra, ::typeof(¬), (t,)::NTuple{1}) = (!t)
-collatetruth(::BooleanAlgebra, ::typeof(∧), (t1, t2)::NTuple{2}) = min(t1, t2)
-collatetruth(::BooleanAlgebra, ::typeof(∨), (t1, t2)::NTuple{2}) = max(t1, t2)
+collatetruth(::BooleanAlgebra, ::typeof(¬), (t,)::NTuple{1,Bool}) = (!t)
+collatetruth(::BooleanAlgebra, ::typeof(∧), (t1, t2)::NTuple{2,Bool}) = min(t1, t2)
+collatetruth(::BooleanAlgebra, ::typeof(∨), (t1, t2)::NTuple{2,Bool}) = max(t1, t2)
 
 # The IMPLIES operator, →, falls back to ¬
-function collatetruth(a::BooleanAlgebra, ::typeof(→), (t1, t2)::NTuple{2})
+function collatetruth(a::BooleanAlgebra, ::typeof(→), (t1, t2)::NTuple{2,Bool})
     return collatetruth(a, ∨, (collatetruth(a, ¬, t1), t2))
 end
 
@@ -267,11 +251,6 @@ function Base.show(io::IO, l::BaseLogic{G,A}) where {G<:AbstractGrammar,A<:Abstr
     end
 end
 
-"""
-A base logic can be used to instantiate `Formula`s out of syntax trees.
-"""
-(l::BaseLogic)(t::SyntaxTree, args...) = Formula(Base.RefValue(l), t; args...)
-
 ############################################################################################
 ########################################### BASE ###########################################
 ############################################################################################
@@ -351,12 +330,12 @@ end
 
 """
     function baseformula(
-        ttf::Union{AbstractSyntaxToken,SyntaxTree,AbstractFormula};
+        tokf::Union{AbstractSyntaxToken,AbstractFormula};
         operators::Union{Nothing,Vector{<:AbstractOperator}} = nothing,
         kwargs...,
     )
-    
-Attempts at instantiating a `Formula` from a syntax tree/token/formula,
+
+Attempts at instantiating a `Formula` from a syntax token/formula,
 by inferring the logic it belongs to.
 
 # Examples
@@ -382,15 +361,15 @@ julia> operators(logic(SoleLogics.baseformula(t; operators = SoleLogics.BASE_MOD
 ```
 """
 function baseformula(
-    ttf::Union{AbstractSyntaxToken,SyntaxTree,AbstractFormula};
+    tokf::Union{AbstractSyntaxToken,AbstractFormula};
     operators::Union{Nothing,Vector{<:AbstractOperator}} = nothing,
     # additional_operators::Vector{<:AbstractOperator} = AbstractOperator[],
     kwargs...,
 )
-    tree = convert(SyntaxTree, ttf)
-    ops = isnothing(operators) ? SoleLogics.operators(tree) : operators
+    t = convert(SyntaxTree, tokf)
+    ops = isnothing(operators) ? SoleLogics.operators(t) : operators
     # operators = unique([additional_operators..., ops...])
-    # props = propositions(tree)
+    # props = propositions(t)
 
     logic = begin
         if issubset(ops, BASE_PROPOSITIONAL_OPERATORS)
@@ -404,8 +383,8 @@ function baseformula(
                 kwargs...,
             )
         else
-            error("Could not infer logic from SyntaxTree object: $(tree). Operators = $(ops).")
+            error("Could not infer logic from object of type $(typeof(tokf)): $(t). operators = $(ops).")
         end
     end
-    Formula(logic, tree)
+    Formula(logic, t)
 end

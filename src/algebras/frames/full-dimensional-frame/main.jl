@@ -47,11 +47,12 @@ julia> nworlds(SoleLogics.FullDimensionalFrame((10,),))
 julia> nworlds(SoleLogics.FullDimensionalFrame((10,10),))
 3025
 
-julia> collect(accessibles(SoleLogics.FullDimensionalFrame((5,5),), Interval2D((2,3),(2,4)), SoleLogics.IA_LL))
+julia> collect(accessibles(SoleLogics.FullDimensionalFrame(5,5), Interval2D((2,3),(2,4)), SoleLogics.IA_LL))
 3-element Vector{Interval2D{Int64}}:
  ((4−5)×(5−6))
  ((4−6)×(5−6))
  ((5−6)×(5−6))
+
 ```
 
 See also 
@@ -71,6 +72,10 @@ struct FullDimensionalFrame{N,W<:AbstractWorld,T<:TruthValue} <: AbstractDimensi
             {N,W<:AbstractWorld,T<:TruthValue}
         new{N,W,T}(channel_size)
     end
+    function FullDimensionalFrame{N,W,T}(channel_size::Vararg{Int,N}) where
+            {N,W<:AbstractWorld,T<:TruthValue}
+        FullDimensionalFrame{N,W,T}(channel_size)
+    end
     
     function FullDimensionalFrame(channel_size::Tuple{})
         FullDimensionalFrame{0,OneWorld,Bool}(channel_size)
@@ -81,6 +86,9 @@ struct FullDimensionalFrame{N,W<:AbstractWorld,T<:TruthValue} <: AbstractDimensi
     function FullDimensionalFrame(channel_size::Tuple{Int,Int})
         FullDimensionalFrame{2,Interval2D{Int},Bool}(channel_size)
     end
+    function FullDimensionalFrame(channel_size...)
+        FullDimensionalFrame(channel_size)
+    end
 end
 
 ############################################################################################
@@ -88,7 +96,7 @@ end
 ############################################################################################
 
 channel_size(fr::FullDimensionalFrame) = fr.channel_size
-Base.getindex(fr::FullDimensionalFrame, i::Int) = fr.channel_size[i]
+Base.getindex(fr::FullDimensionalFrame, i::Int) = channel_size(fr)[i]
 
 # Shorthands
 X(fr::FullDimensionalFrame) = fr[1]

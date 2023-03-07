@@ -15,7 +15,7 @@ abstract type GeometricalRelation <: AbstractRelation end
 
 Returns whether it is known that a given geometrical relation is topological
 (i.e., invariant under homeomorphisms,
- see (here)[https://en.m.wikipedia.org/wiki/Topological_property])
+ see [here](https://en.m.wikipedia.org/wiki/Topological_property))
 
 See also [`GeometricalRelation`](@ref).
 """

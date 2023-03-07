@@ -5,6 +5,7 @@ using DataStructures
 using Dictionaries
 using Random
 using Reexport
+using Lazy
 
 # TODO are we sure?
 @reexport using SoleBase
@@ -19,6 +20,7 @@ export Proposition,
     #
     SyntaxTree,
     #
+    AbstractFormula,
     Formula
 
 export syntaxstring

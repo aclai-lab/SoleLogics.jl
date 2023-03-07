@@ -206,6 +206,7 @@ topo2IARelations(::_Topo_NTPP)   = [IA_D]
 topo2IARelations(::_Topo_NTPPi)  = [IA_Di]
 
 # TODO RCC5 can be better written as a combination of IA7 relations!
+const RCC5RelationFromRCC8 = Union{_Topo_DR,_Topo_PP,_Topo_PPi}
 RCC52RCC8Relations(::_Topo_DR)   = [Topo_DC,    Topo_EC]
 RCC52RCC8Relations(::_Topo_PP)   = [Topo_TPP,   Topo_NTPP]
 RCC52RCC8Relations(::_Topo_PPi)  = [Topo_TPPi,  Topo_NTPPi]

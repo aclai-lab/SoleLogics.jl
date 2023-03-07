@@ -17,7 +17,7 @@ include("algebras/worlds.jl")
 """
     abstract type AbstractFrame{W<:AbstractWorld,T<:TruthValue} end
 
-Abstract type for an accessibility graph (Kripke frame), that gives the structure to 
+Abstract type for an accessibility graph (Kripke frame), that gives the structure to
 [Kripke structures](https://en.m.wikipedia.org/wiki/Kripke_structure_(model_checking))'s).
 
 See also [`truthtype`](@ref), [`worldtype`](@ref),
@@ -76,7 +76,7 @@ function nworlds(fr::AbstractFrame)::Integer
 end
 
 """
-    initialworld(fr::AbstractFrame)::Integer
+    initialworld(fr::AbstractFrame{W})::W
 
 Returns the initial world of the frame. Note that not all frame types
 can provide an initial world.
@@ -136,7 +136,7 @@ end
 
 Abstract type for the relations of a multi-modal
 annotated accessibility graph (Kripke structure).
-Two noteworthy relations are `identityrel` and `globalrel`, which 
+Two noteworthy relations are `identityrel` and `globalrel`, which
 access the current world and all worlds, respectively.
 
 # Examples
@@ -159,8 +159,8 @@ See also
 [`GlobalRel`](@ref),
 [`accessibles`](@ref),
 [`AbstractKripkeStructure`](@ref),
-[`AbstractFrame`](@ref).
-[`AbstractWorld`](@ref),
+[`AbstractFrame`](@ref),
+[`AbstractWorld`](@ref).
 """
 abstract type AbstractRelation end
 
@@ -170,13 +170,13 @@ abstract type AbstractRelation end
 
 Returns the `arity` of the relation.
 
+See also [`AbstractRelation`](@ref).
+
 # Extended help
 
 When defining a new relation type `R` with arity `2`, please provide the method:
 
     arity(::Type{R}) = 2
-
-See also [`AbstractRelation`](@ref).
 """
 arity(R::Type{<:AbstractRelation})::Integer = error("Please, provide method arity(::$(typeof(R))).")
 arity(r::AbstractRelation)::Integer = arity(typeof(r))
@@ -184,11 +184,14 @@ arity(r::AbstractRelation)::Integer = arity(typeof(r))
 syntaxstring(R::Type{<:AbstractRelation}; kwargs...)::String = error("Please, provide method syntaxstring(::$(typeof(R)); kwargs...).")
 syntaxstring(r::AbstractRelation; kwargs...)::String = syntaxstring(typeof(r); kwargs...)
 
+# TODO3: This *should be* inverse (not converse??) actually no, read up: https://en.m.wikipedia.org/wiki/Converse_relation
 doc_conv_rel = """
     converse(R::Type{<:AbstractRelation})::Type{<:AbstractRelation}
     converse(r::AbstractRelation)::AbstractRelation = converse(typeof(r))()
-    
+
 If it exists, returns the converse relation (type) of a given relation (type)
+
+See also [`issymmetric`](@ref), [`isreflexive`](@ref), [`istransitive`](@ref), [`AbstractRelation`](@ref).
 
 # Extended help
 
@@ -199,13 +202,11 @@ This trait is implemented as:
 
     converse(R::Type{<:AbstractRelation})::Type{<:AbstractRelation} = error("Please, provide method converse(::\$(typeof(R))).")
     converse(r::AbstractRelation)::AbstractRelation = converse(typeof(r))()
-    
+
 When defining a new symmetric relation `R` with converse `CR`, please define the two methods:
 
     hasconverse(R::Type{R}) = true
     converse(R::Type{R}) = CR
-
-See also [`issymmetric`](@ref), [`isreflexive`](@ref), [`istransitive`](@ref), [`AbstractRelation`](@ref).
 """
 
 """$(doc_conv_rel)"""
@@ -219,30 +220,31 @@ converse(r::AbstractRelation)::AbstractRelation = converse(typeof(r))()
 
 """
     issymmetric(::AbstractRelation) = hasconverse(r) ? converse(r) == r : false
-    
+
 Returns whether it is known that a relation is symmetric.
 
 See also [`hasconverse`](@ref), [`converse`](@ref),
 [`isreflexive`](@ref), [`istransitive`](@ref), [`AbstractRelation`](@ref).
 """
-issymmetric(::AbstractRelation) = hasconverse(r) ? converse(r) == r : false
+# TODO3: r is not defined. nice catch :D
+issymmetric(r::AbstractRelation) = hasconverse(r) ? converse(r) == r : false
 
 """
     isreflexive(::AbstractRelation)
-    
+
 Returns whether it is known that a relation is reflexive.
 
-See also 
+See also
 [`issymmetric`](@ref), [`istransitive`](@ref), [`AbstractRelation`](@ref).
 """
 isreflexive(::AbstractRelation) = false
 
 """
     istransitive(::AbstractRelation)
-    
+
 Returns whether it is known that a relation is transitive.
 
-See also 
+See also
 [`isreflexive`](@ref), [`issymmetric`](@ref), [`AbstractRelation`](@ref).
 """
 istransitive(::AbstractRelation) = false
@@ -296,6 +298,10 @@ Vector{Interval{Int64}}
 julia> Interval(8,11) in collect(accessibles(fr, Interval(2,5), IA_L))
 true
 ```
+
+See also [`AbstractWorld`](@ref),
+[`AbstractRelation`](@ref), [`AbstractMultiModalFrame`](@ref).
+
 # Extended help
 
 Since `accessibles` always returns an iterator of worlds of the same type `W`,
@@ -339,7 +345,7 @@ a custom `accessibles` method by providing these three methods:
     ) where {W<:AbstractWorld}
         [w]
     end
-    
+
     # access all worlds
     function accessibles(
         fr::FR{W},
@@ -351,9 +357,6 @@ a custom `accessibles` method by providing these three methods:
 
 In general, it should be true that
 `collect(accessibles(fr, w, r)) isa AbstractVector{W}`.
-
-See also [`AbstractWorld`](@ref),
-[`AbstractRelation`](@ref), [`AbstractMultiModalFrame`](@ref).
 """
 function accessibles(
     fr::AbstractMultiModalFrame{W},
@@ -371,7 +374,7 @@ end
 #     goeswith(::Type{<:AbstractMultiModalFrame}, ::AbstractRelation) = false
 
 # For example, if frame of type `FR` is compatible with relation `R`, specify:
-    
+
 #     goeswith(::Type{FR}, ::R) = true
 # """
 # goeswith(::Type{<:AbstractMultiModalFrame}, ::AbstractRelation) = false
@@ -383,6 +386,7 @@ end
 
 ############################################################################################
 
+# TODO test
 """
     struct WrapperMultiModalFrame{
         W<:AbstractWorld,
@@ -499,7 +503,7 @@ function check(
 end
 
 function check(
-    ::Formula,
+    ::AbstractFormula,
     ::AbstractKripkeStructure{W,A,T},
     ::W,
 )::T where {W<:AbstractWorld,A,T<:TruthValue}
@@ -568,9 +572,9 @@ struct KripkeStructure{
     assignment::AS
 end
 
-function check(f::Formula, i::KripkeStructure{W,A,T}, w::W)::T where {W<:AbstractWorld,A,T<:TruthValue} end
+function check(f::AbstractFormula, i::KripkeStructure{W,A,T}, w::W)::T where {W<:AbstractWorld,A,T<:TruthValue} end
 
-function check(f::Formula, i::KripkeStructure{W,A,T})::T where {W<:AbstractWorld,A,T<:TruthValue}
+function check(f::AbstractFormula, i::KripkeStructure{W,A,T})::T where {W<:AbstractWorld,A,T<:TruthValue}
     check(f, i, initial(i))
 end
 
@@ -579,7 +583,7 @@ function check(p::Proposition{A}, i::KripkeStructure{W,A}, w::W) where {W<:Abstr
 end
 
 # TODO maybe this yields the worlds where a certain formula is true...?
-# function check(i::KripkeStructure{W,A,T}, f::Formula)::AbstractVector{W} where {W<:AbstractWorld,A,T<:TruthValue}
+# function check(i::KripkeStructure{W,A,T}, f::AbstractFormula)::AbstractVector{W} where {W<:AbstractWorld,A,T<:TruthValue}
 
 ############################################################################################
 ############################################################################################
@@ -630,7 +634,7 @@ doc_DIAMOND = """
     arity(::Type{typeof(◊)}) = 1
 
 Logical diamond operator, typically interpreted as the modal existential quantifier.
-See (here)[https://en.m.wikipedia.org/wiki/Modal_operator].
+See [here](https://en.m.wikipedia.org/wiki/Modal_operator).
 
 See also [`BOX`](@ref), [`NamedOperator`](@ref), [`AbstractOperator`](@ref).
 """
@@ -649,7 +653,7 @@ doc_BOX = """
     arity(::Type{typeof(□)}) = 1
 
 Logical box operator, typically interpreted as the modal universal quantifier.
-See (here)[https://en.m.wikipedia.org/wiki/Modal_operator].
+See [here](https://en.m.wikipedia.org/wiki/Modal_operator).
 
 See also [`DIAMOND`](@ref), [`NamedOperator`](@ref), [`AbstractOperator`](@ref).
 """
@@ -740,11 +744,11 @@ const BaseModalLogic = AbstractLogic{G,A} where {ALP,G<:AbstractGrammar{ALP,<:Ba
 """
     abstract type AbstractRelationalOperator{R<:AbstractRelation} <: AbstractOperator end
 
-Abstract type for relational logical operators. A relational operator 
+Abstract type for relational logical operators. A relational operator
 allows for semantic quantification across relational structures (e.g., Krikpe structures).
 It has arity equal to the arity of its underlying relation minus one.
 
-See, for example (temporal modal logic)[https://en.m.wikipedia.org/wiki/Temporal_logic].
+See, for example [temporal modal logic](https://en.m.wikipedia.org/wiki/Temporal_logic).
 
 See also [`DiamondRelationalOperator`](@ref), [`BoxRelationalOperator`](@ref),
 [`AbstractKripkeStructure`](@ref), [`AbstractFrame`](@ref).
@@ -821,4 +825,3 @@ See also
 """
 dual(op::DiamondRelationalOperator) = BoxRelationalOperator{relationtype(op)}()
 dual(op::BoxRelationalOperator)     = DiamondRelationalOperator{relationtype(op)}()
-

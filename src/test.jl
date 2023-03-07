@@ -13,7 +13,12 @@ p1_number_float = @test_nowarn Proposition{Number}(1.4)
 p1_number = @test_nowarn Proposition{Number}(1)
 p_string = @test_nowarn Proposition{String}("1")
 
+@test Proposition(Proposition(1)) == Proposition(1)
+@test_throws AssertionError Proposition(parseformulatree("¬p"))
+@test_throws AssertionError Proposition(¬)
+
 @test arity(p1) == 0
+@test Proposition(1.0) != Proposition(1)
 @test propositionstype(SoleLogics.AbstractAlphabet{Int}) == Proposition{Int}
 
 @test_nowarn ExplicitAlphabet(Proposition.([1,2]))
@@ -106,11 +111,12 @@ f_int = @test_nowarn Formula(logic_int, t1_int)
 
 
 t2_int = @test_nowarn ¬(t1_int)
+@test_nowarn ⊥()
 @test_nowarn ¬(p1)
-@test propositionstype(p1 ∨ p1_number) != Proposition{Int}
-@test propositionstype(p1 ∨ p1_number_float) == Union{Proposition{Int}, Proposition{Number}}
-@test propositionstype(p1 ∨ p1_float) == Union{Proposition{Int}, Proposition{Float64}}
-@test propositions(p1 ∨ p100) == [p1, p100]
+@test_nowarn ∨(p1, p1)
+@test_nowarn p1 ∨ p1_number
+@test_nowarn ∨(p1, p1, p1_number)
+@test_nowarn ¬(∨(p1, p1, p1_number))
 @test_nowarn p1 ∨ p100
 @test_nowarn ¬(p1) ∨ p1
 @test_nowarn ¬(p1) ∨ ¬(p1)
@@ -118,6 +124,11 @@ t2_int = @test_nowarn ¬(t1_int)
 @test_nowarn ⊤ ∨ ⊤
 @test_nowarn p1 ∨ ⊤
 @test_nowarn ⊥ ∨ p1 ∨ ⊤
+
+@test propositionstype(p1 ∨ p1_number) != Proposition{Int}
+@test propositionstype(p1 ∨ p1_number_float) == Union{Proposition{Int}, Proposition{Number}}
+@test propositionstype(p1 ∨ p1_float) == Union{Proposition{Int}, Proposition{Float64}}
+@test propositions(p1 ∨ p100) == [p1, p100]
 
 @test_nowarn p1 ∨ t2_int
 @test_nowarn t2_int ∨ p1
@@ -128,6 +139,7 @@ t2_int = @test_nowarn ¬(t1_int)
 @test_nowarn ¬(¬(t2_int) ∧ t2_int)
 @test_nowarn ∧(¬(t2_int), t2_int)
 @test_nowarn ∧((¬(t2_int), t2_int),)
+@test_nowarn ∧(¬(t2_int), t2_int, ¬(t2_int) ∧ t2_int)
 @test_nowarn ¬(¬(p1))
 
 @test_nowarn f_int ∨ ⊤
@@ -169,9 +181,9 @@ f_conj_int = @test_nowarn CONJUNCTION(f_int, f_int, f_int)
 @test_throws AssertionError f_int(p1 ∧ p100 ∧ p1_float)
 f3_int = f_int(⊥ ∨ (p1 ∧ p100 ∧ p2 ∧ ⊤))
 
-@test_throws MethodError TruthDict()
-@test_throws MethodError TruthDict([])
-@test_throws MethodError TruthDict((2,3),)
+@test_nowarn TruthDict()
+@test_nowarn TruthDict([])
+@test_nowarn TruthDict((2,3),)
 @test_nowarn TruthDict((p1,true),)
 @test_nowarn TruthDict([(p1,true),])
 @test_nowarn TruthDict(p1 => true)
@@ -260,21 +272,5 @@ _operators = [NEGATION, CONJUNCTION, IMPLICATION]
 # @test_broken randformulatree(10, _alphabet, _operators)
 # @test_nowarn randformulatree(2, _alphabet, _operators)
 
-#=
-const TERN = NamedOperator{:TERN}()
-arity(::Type{typeof(TERN)}) = 3
-
-_operators = [_operators..., DiamondRelationalOperator(globalrel), BoxRelationalOperator(globalrel), TERN]
-@test all([begin
-    f = randformula(4, _alphabet, _operators; 1)
-    s = syntaxstring(f)
-    s == syntaxstring(parseformulatree(s))
-end
- for i in 1:1000])
-
-@test all([begin
-    f = randformula(4, _alphabet, _operators; 1)
-    s = syntaxstring(f)
-    s == syntaxstring(parseformulatree(s; function_notation = true); function_notation = true)
-end for i in 1:1000])
-=#
+include("test-checking.jl")
+include("test-worlds.jl")

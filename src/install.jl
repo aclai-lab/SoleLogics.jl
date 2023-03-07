@@ -4,6 +4,7 @@
 # respecting the correct dependency order.
 
 using Pkg
+Pkg.activate(".")
 
 # Remove the specified package (do not abort if it is already removed) and reinstall it.
 function install(package::String, url::String, rev::String)

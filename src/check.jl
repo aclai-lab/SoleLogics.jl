@@ -1,9 +1,9 @@
 
 """
-    subformulas(f::Union{AbstractFormula,SyntaxTree}; sorted=true)
+    subformulas(f::AbstractFormula; sorted=true)
 
-Returns all sub-formulas/sub-trees (sorted by size when `sorted=true`)
-of a given formula/syntax tree.
+Returns all sub-formulas (sorted by size when `sorted=true`)
+of a given formula.
 
 # Examples
 ```julia-repl
@@ -20,7 +20,7 @@ julia> syntaxstring.(SoleLogics.subformulas(parseformula("◊((p∧q)→r)")))
 See also
 [`SyntaxTree`](@ref), [`Formula`](@ref), [`AbstractFormula`](@ref).
 """
-subformulas(f::AbstractFormula; kwargs...) = f.(subformulas(tree(f); kwargs...))
+subformulas(f::Formula; kwargs...) = f.(subformulas(tree(f); kwargs...))
 function subformulas(t::SyntaxTree; sorted=true)
     # function _subformulas(_t::SyntaxTree)
     #     SyntaxTree{tokenstype(t)}[
@@ -41,33 +41,34 @@ function subformulas(t::SyntaxTree; sorted=true)
     ts
 end
 
+# TODO move to utils and rename "normalize" -> "transform"/"reshape"/"simplify"
 """
     normalize(
-        f::Union{AbstractFormula,SyntaxTree};
+        f::AbstractFormula;
         remove_boxes = true,
         reduce_negations = true,
         allow_inverse_propositions = true,
     )
 
-Returns a modified version of a given formula/syntax tree, that has the same semantics
+Returns a modified version of a given formula, that has the same semantics
 but different syntax. This is useful when dealing with the truth of many
 (possibly similar) formulas; for example, when performing
 [model checking](https://en.m.wikipedia.org/wiki/Model_checking).
 BEWARE: it currently assumes the underlying algebra is Boolean!
 
 # Arguments
-- `f::Union{AbstractFormula,SyntaxTree}`: when set to `true`,
-    the formula/syntax tree;
+- `f::AbstractFormula`: when set to `true`,
+    the formula;
 - `remove_boxes::Bool`: converts all uni-modal and multi-modal box operators by using the 
     equivalence ◊φ ≡ ¬□¬φ. Note: this assumes an underlying Boolean algebra.
 - `reduce_negations::Bool`: when set to `true`,
     attempts at reducing the number of negations by appling
     some transformation rules
-    (e.g., (De Morgan's laws)[https://en.m.wikipedia.org/wiki/De_Morgan%27s_laws]).
+    (e.g., [De Morgan's laws](https://en.m.wikipedia.org/wiki/De_Morgan%27s_laws)).
     Note: this assumes an underlying Boolean algebra.
 - `allow_inverse_propositions::Bool`: when set to `true`,
     together with `reduce_negations=true`, this may cause the negation of a proposition
-    to be replaced with the proposition with inverted semantics. See [`inverse`](@ref).
+    to be replaced with the proposition with its [`negation`](@ref).
 
 # Examples
 ```julia-repl
@@ -83,7 +84,7 @@ julia> syntaxstring(SoleLogics.normalize(f; allow_inverse_propositions = false))
 See also
 [`SyntaxTree`](@ref), [`Formula`](@ref), [`AbstractFormula`](@ref).
 """
-normalize(f::AbstractFormula; kwargs...) = f(normalize(tree(f); kwargs...))
+normalize(f::Formula; kwargs...) = f(normalize(tree(f); kwargs...))
 function normalize(
     t::SyntaxTree;
     remove_boxes = true,
@@ -128,7 +129,7 @@ function normalize(
             _normalize(grandchildren[1])
         elseif token(childtok) isa Proposition
             if allow_inverse_propositions
-                SyntaxTree(inverse(token(childtok)))
+                SyntaxTree(negation(token(childtok)))
             else
                 ¬(_normalize(childtok))
             end
@@ -155,7 +156,7 @@ function normalize(
 end
 
 """
-    isglobal(f::Union{AbstractFormula,SyntaxTree})::Bool
+    isglobal(f::AbstractFormula)::Bool
 
 Returns `true` if the formula is global, that is, if it can be inferred from its syntactic
 structure that, given any frame-based model, the truth value of the formula is the same
@@ -178,8 +179,10 @@ See also
 """
 isglobal(f::AbstractFormula)::Bool = isglobal(tree(f))
 isglobal(t::SyntaxTree)::Bool =
+    # (println(token(t)); println(children(t)); true) && 
     (token(t) isa SoleLogics.AbstractRelationalOperator && relation(token(t)) == globalrel) ||
-    (token(t) isa Union{typeof(∧),typeof(∨),typeof(¬),typeof(→)} && all(isglobal, children(t)))
+    # (token(t) in [◊,□]) ||
+    (token(t) isa AbstractOperator && all(c->isglobal(c), children(t)))
 
 """
     function collateworlds(
@@ -198,8 +201,8 @@ See also [`check`](@ref), [`iscrisp`](@ref),
 function collateworlds(
     fr::AbstractFrame{W,Bool},
     op::AbstractOperator,
-    t::NTuple{N,WorldSetType},
-)::AbstractWorldSet{<:W} where {N,W<:AbstractWorld,WorldSetType<:AbstractWorldSet}
+    t::NTuple{N,<:AbstractWorldSet},
+)::AbstractWorldSet{<:W} where {N,W<:AbstractWorld}
     if arity(op) != length(t)
         return error("Cannot collate $(length(t)) truth values for" *
                      " operator $(typeof(op)) with arity $(arity(op))).")
@@ -210,18 +213,18 @@ function collateworlds(
 end
 
 # I know, these exceed 92 characters. But they look nicer like this!! :D
-collateworlds(fr::AbstractFrame{W,Bool}, ::typeof(⊤), ::NTuple{0}) where {W<:AbstractWorld} = allworlds(fr)
-collateworlds(::AbstractFrame{W,Bool}, ::typeof(⊥), ::NTuple{0}) where {W<:AbstractWorld} = W[]
+collateworlds(fr::AbstractFrame{W,Bool}, ::typeof(⊤), ::NTuple{0,<:AbstractWorldSet}) where {W<:AbstractWorld} = allworlds(fr)
+collateworlds(::AbstractFrame{W,Bool}, ::typeof(⊥), ::NTuple{0,<:AbstractWorldSet}) where {W<:AbstractWorld} = W[]
 
-collateworlds(fr::AbstractFrame{W,Bool}, ::typeof(¬), (ws,)::NTuple{1}) where {W<:AbstractWorld} = setdiff(allworlds(fr), ws)
-collateworlds(::AbstractFrame{W,Bool}, ::typeof(∧), (ws1, ws2)::NTuple{2}) where {W<:AbstractWorld} = intersect(ws1, ws2)
-collateworlds(::AbstractFrame{W,Bool}, ::typeof(∨), (ws1, ws2)::NTuple{2}) where {W<:AbstractWorld} = union(ws1, ws2)
-collateworlds(fr::AbstractFrame{W,Bool}, ::typeof(→), (ws1, ws2)::NTuple{2}) where {W<:AbstractWorld} = union(setdiff(allworlds(fr), ws1), ws2)
+collateworlds(fr::AbstractFrame{W,Bool}, ::typeof(¬), (ws,)::NTuple{1,<:AbstractWorldSet}) where {W<:AbstractWorld} = setdiff(allworlds(fr), ws)
+collateworlds(::AbstractFrame{W,Bool}, ::typeof(∧), (ws1, ws2)::NTuple{2,<:AbstractWorldSet}) where {W<:AbstractWorld} = intersect(ws1, ws2)
+collateworlds(::AbstractFrame{W,Bool}, ::typeof(∨), (ws1, ws2)::NTuple{2,<:AbstractWorldSet}) where {W<:AbstractWorld} = union(ws1, ws2)
+collateworlds(fr::AbstractFrame{W,Bool}, ::typeof(→), (ws1, ws2)::NTuple{2,<:AbstractWorldSet}) where {W<:AbstractWorld} = union(setdiff(allworlds(fr), ws1), ws2)
 
 function collateworlds(
     fr::AbstractMultiModalFrame{W,Bool},
     op::DiamondRelationalOperator,
-    (ws,)::NTuple{1},
+    (ws,)::NTuple{1,<:AbstractWorldSet},
 ) where {W<:AbstractWorld}
     r = relation(op)
     if r == globalrel
@@ -244,7 +247,7 @@ end
 function collateworlds(
     fr::AbstractMultiModalFrame{W,Bool},
     op::BoxRelationalOperator,
-    (ws,)::NTuple{1},
+    (ws,)::NTuple{1,<:AbstractWorldSet},
 ) where {W<:AbstractWorld}
     r = relation(op)
     if r == globalrel
