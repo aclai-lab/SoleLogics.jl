@@ -4,6 +4,15 @@ export tokenizer
 
 using ReadableRegex
 
+#= ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Table of contents ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    TODO: Studying this code (which has to be refactored) is not so friendly.
+    A little overview about all the private methods and the workflow involved
+    in this page could be helpful to future developers.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ =#
+
+
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Precedence ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # Atleast 3 degrees of priority can be distinguished:
@@ -44,7 +53,10 @@ end
 # "a∧b → c∧d" is parsed "(a∧b) → (c∧d)" instead of "a ∧ (b→c) ∧ d"
 Base.operator_precedence(::typeof(IMPLICATION)) = LOW_PRIORITY
 
-const BASE_PARSABLE_OPERATORS = [BASE_MODAL_OPERATORS...]
+const BASE_PARSABLE_OPERATORS = [BASE_MODAL_OPERATORS...,
+    DiamondRelationalOperator(globalrel),
+    BoxRelationalOperator(globalrel),
+]
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Input and construction ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -53,11 +65,16 @@ const BASE_PARSABLE_OPERATORS = [BASE_MODAL_OPERATORS...]
 # 2) Recognize \w propositions
 # 3) User is informed about malformed input
 
+# @Mauro - 7/3/2023 - List of resolved todo
+# 1) More tokenizer refactoring
+# 2) Parse modal operators and modal relational operators
+# 3) additional_operators (see parseformulatree arguments)
+
 # Characters with special meaning in expressions.
 # '(' and ')' are needed to wrap a new scope
 # '⟨', '⟩', '[' and ']' delimits relations
 # ',' is ignored but might be useful to deal with more readable inputs
-_parsing_special_strings = ["(", ")", "⟨", "⟩"]
+_parsing_special_strings = ["(", ")", "⟨", "⟩", "[", "]"]
 _parsing_ignore_strings = [",", "", " "]
 
 # Raw tokens are cutted out from the initial expression
@@ -82,27 +99,70 @@ function _recognize_tokens(expression::String, splitters::Vector{String})
     return filter(x->!(x in _parsing_ignore_strings), raw_tokens);
 end
 
+# Check if a specific unary operator is in a valid position, during tokens recognition
+function _check_unary_validity(tokens::Vector{<:AbstractSyntaxToken}, op::AbstractOperator)
+    # A unary operator is always preceeded by some other operator or a '('
+    if (arity(op) == 1 &&
+        !isempty(tokens) &&
+        (syntaxstring(tokens[end]) != "(" && !(tokens[end] isa AbstractOperator))
+    )
+        error("Malformed input: " * syntaxstring(op) * " is following a ")
+    end
+end
+
+# Get a sequence of tokens until a "closing" string is found,
+# return the position at which the new token has been found or throw an error
+# TODO: this function should not push to `tokens`
+function _extract_token_in_context(
+    opening_idx::Int,
+    closing::String,
+    raw_tokens::Vector{String},
+    tokens::Vector{<:AbstractSyntaxToken},
+    string_to_op::Dict{String, AbstractOperator}
+)
+    closing_idx = opening_idx
+    try
+        while (raw_tokens[closing_idx] != closing)
+            closing_idx+=1
+        end
+    catch
+        error("Mismatching delimeters: " * raw_tokens[opening_idx] *
+            " at position " * string(opening_idx) * " is never closed with a " * closing)
+    end
+
+    op = string_to_op[string.(raw_tokens[opening_idx:closing_idx]...)] # Maybe is syntaxstring here
+    _check_unary_validity(tokens, op)
+    push!(tokens, op)
+
+    return closing_idx
+end
+
 # Raw tokens are interpreted and, thus, processable by a parser
 function _interpret_tokens(raw_tokens::Vector{String}, string_to_op::Dict{String, AbstractOperator})
     tokens = SoleLogics.AbstractSyntaxToken[]
 
-    for st in raw_tokens
-        # token is an operator
-        if (string(st) in keys(string_to_op))
-            op = string_to_op[string(st)]
+    i = 1
+    while i <= length(raw_tokens)
+        st = syntaxstring(raw_tokens[i])
 
-            # A unary operator is always preceeded by some other operator or a '('
-            if (arity(op) == 1 &&
-                !isempty(tokens) &&
-                (syntaxstring(tokens[end]) != "(" && !(tokens[end] isa AbstractOperator))
-            )
-                error("Malformed input: " * op * " is following a ")
-            end
+        # token is an operator
+        if (st in keys(string_to_op))
+            op = string_to_op[st]
+            _check_unary_validity(tokens, op)
             push!(tokens, op)
+
+        # token is a relational operator
+        elseif (st == "⟨")
+            i = _extract_token_in_context(i, "⟩", raw_tokens, tokens, string_to_op)
+        elseif (st == "[")
+            i = _extract_token_in_context(i, "]", raw_tokens, tokens, string_to_op)
+
         # token is something else
         else
             push!(tokens, Proposition{String}(string(st)))
         end
+
+        i+=1
     end
 
     return tokens;
@@ -119,9 +179,7 @@ function tokenizer(expression::String, operators::Vector{<:AbstractOperator})
 
     splitters = vcat(_parsing_special_strings, keys(string_to_op)...)
     raw_tokens = _recognize_tokens(expression, splitters)
-    a = _interpret_tokens(raw_tokens, string_to_op);
-    println(a)
-    return a;
+    return _interpret_tokens(raw_tokens, string_to_op);
 end
 
 # Rearrange a serie of token, from infix to postfix notation.
@@ -181,8 +239,7 @@ See also [`SyntaxTree`](@ref)
 """
 function parseformulatree(
     expression::String,
-    # TODO operators->additional_operators?
-    operators::Vector{<:AbstractOperator} = AbstractOperator[],
+    additional_operators::Vector{<:AbstractOperator} = AbstractOperator[],
 )
     # Build a formula starting from a Vector{AbstractSyntaxToken} representing its postfix notation
     function _buildformulatree(postfix::Vector{AbstractSyntaxToken})
@@ -206,7 +263,7 @@ function parseformulatree(
         return stack[1]
     end
 
-    operators = unique(AbstractOperator[BASE_PARSABLE_OPERATORS..., operators...])
+    operators = unique(AbstractOperator[BASE_PARSABLE_OPERATORS..., additional_operators...])
     tokens = tokenizer(expression, operators) # Still a Vector{SoleLogics.AbstractSyntaxToken}
 
     # Stack containing operators. Needed to transform the expression in postfix notation;
@@ -232,9 +289,6 @@ end
 
 # TODOs:
 # - Parametro function_notation = false,
-# - Parse modal operators and modal relational operators
-# - Parse propositions that are \w
-# - Aggiustare problema parsing ¬p◊
 function parseformula(
     expression::String;
     # TODO add alphabet parameter add custom parser for propositions

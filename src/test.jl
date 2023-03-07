@@ -232,6 +232,9 @@ emptylogic = @test_nowarn propositionallogic(; operators = SoleLogics.AbstractOp
 @test syntaxstring(parseformulatree("◊ ◊ ◊ ◊ p∧q"); function_notation = true) == "∧(◊(◊(◊(◊(p)))), q)"
 @test syntaxstring(parseformulatree("¬¬¬ □□□ ◊◊◊ p ∧ ¬¬¬ q"); function_notation = true) == "∧(¬(¬(¬(□(□(□(◊(◊(◊(p))))))))), ¬(¬(¬(q))))"
 
+@test syntaxstring(parseformulatree("⟨G⟩p")) == "⟨G⟩(p)"
+@test syntaxstring(parseformulatree("[G]p")) == "[G](p)"
+
 @test alphabet(logic(parseformula("p→q"))) == AlphabetOfAny{String}()
 
 # Malformed input
