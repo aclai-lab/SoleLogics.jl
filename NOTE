@@ -1,0 +1,48 @@
+# Notes about SoleLogics structure.
+
+	# This alphabet is not complete and its dispatches requires more arguments to work
+	struct NonCompleteDimensionalAlphabet{A} <: AbstractAlphabet{A}
+	    #
+	end
+
+	# AbstractAlphabet children types
+	propositions(::NonCompleteDimensionalAlphabet, thresholds...) = for for for for
+
+    #### Alphabet: new things (5 december) ####
+    AbstractDimensionaAlphabet
+        DimensionalAlphabet # Wraps a Vector{L}
+        FullUnbounded       # 4 parameters are combined using product
+                            #but A is infinite (thresholds are needed to enumerate things)
+
+
+# rand(Grammar, rng) dispatch to generate a new valid formula
+# rand(Logic, rng) dispatch to generate a new valid formula
+
+Example: XOR in the docs.
+
+
+
+##########################
+#      To keep from      #
+#    previous version    #
+##########################
+
+# To see with Giovanni. Is it possible to leverage an external package?
+# Also it could be cool to implement `priority` and `associativity` since this could
+# make the package more flexible.
+* SyntaxTree built from a string (precedence, tokenizer+shunting_yard or some package to deal with grammars)
+
+* formula normalization heuristic (can be done using precedence for letters, and precedence + hashing for operators)
+
+* fan-in fan-out method to generate pseudorandom Kripke Frames
+
+# To see with Giovanni
+* macro to define modal operators
+
+# Todo refine worlds and relations
+* `generate()` to generate pseudo random Kripke Frames
+
+# Todo relations
+
+# TODO:
+# print
