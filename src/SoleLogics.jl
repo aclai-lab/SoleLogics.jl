@@ -3,75 +3,83 @@ module SoleLogics
 import Base: show
 using DataStructures
 using Dictionaries
+using Random
 using Reexport
-@reexport using SoleBase
+using Lazy
 
-# Abstract types
-export AbstractLogic, CrispLogic, FuzzyLogic
+include("utils.jl")
 
-export AbstractOperator
-export AbstractModalOperator
-export AbstractExistentialModalOperator, AbstractUniversalModalOperator
+export iscrisp, isfinite, isnullary, isunary, isbinary
 
-# Concrete types, collections, wrappers, utilities related to operators
-export UNOP, BINOP
-export NEGATION, CONJUNCTION, DISJUNCTION, IMPLICATION
-export EQUAL, GREATER, GREATER_EQUAL, LOWER, LOWER_EQUAL
-export Operators, reltype, ariety, precedence
+export Proposition,
+    #
+    AlphabetOfAny,
+    ExplicitAlphabet,
+    #
+    SyntaxTree,
+    #
+    AbstractFormula,
+    Formula
 
-# Modal operators
-export EXMODOP, UNIVMODOP
-export DIAMOND, BOX
-export @modaloperators
+export syntaxstring
 
-# Modal logic extensions
-export HSRELATIONS, HS₃RELATIONS, HS₇RELATIONS
+export TOP, ⊤
+export BOTTOM, ⊥
 
-# Defined logics
-export Logic, alphabet, operators
-export PROPOSITIONAL_LOGIC, MODAL_LOGIC, DEFAULT_LOGIC
-
-# Formula tree definitions exports
-export FNode, Formula
-export token, formula, logic, fhash, leftchild, rightchild, parent, size, tree
-export formula!, leftchild!, rightchild!, parent!, size!
-export isleaf, height, modal_depth, inorder
-export subformulas, fnormalize!
-
-# Formula tree input and construction
-export shunting_yard, build_tree
-
-# Formula tree generation
-export gen_formula
-
-# Model checking exports
-#=
-export Worlds, Adjacents
-export KripkeModel, worlds, worlds!, adjacents, adjacents!, evaluations, evaluations!
-export memo, contains, push!
+export arity, atomtype, tokentype, tokenstype,
+        propositionstype, operatorstype, truthtype
 export check
-export gen_kmodel, dispense_alphabet
-=#
+export atom, token, children, alphabet, formulas
+export domain, top, bottom, grammar, algebra, logic, tree
+export tops, bottoms
 
-# The following includes and reexports are needed in this exact order
-include("Worlds/Worlds.jl")
-@reexport using .Worlds
+export tokens, operators, propositions
 
-include("Relations/Relations.jl")
-@reexport using .Relations
+include("general.jl")
 
-include("operators.jl")
-include("logics.jl")
+export ∧, ¬, ∨, →
+export CONJUNCTION, NEGATION, DISJUNCTION, IMPLICATION
 
-include("Alphabets/Alphabets.jl")
-@reexport using .Alphabets
+export BaseLogic
 
-include("formulas.jl")
 
-include("ModelChecking/checker.jl")
-include("ModelChecking/op_behaviour.jl")
-include("ModelChecking/generator.jl")
+include("base-logic.jl")
 
-# include modelchecking files here
+export propositionallogic
+
+export TruthDict, DefaultedTruthDict
+
+include("propositional-logic.jl")
+
+export accessibles
+export ismodal, modallogic
+export DiamondRelationalOperator, BoxRelationalOperator
+export DIAMOND, BOX, ◊, □
+
+export KripkeStructure
+export AbstractRelationalOperator, DiamondRelationalOperator, BoxRelationalOperator
+export relationtype, truthtype, worldtype
+
+export AbstractWorld
+
+export AbstractWorldSet, WorldSet
+
+export Interval, Interval2D, OneWorld
+
+include("modal-logic.jl")
+
+export subformulas, normalize
+
+include("check.jl")
+
+include("interpretation-sets.jl")
+
+export parseformula, parseformulatree
+
+include("parse.jl")
+
+export randformula, randformulatree
+
+include("random.jl")
 
 end
