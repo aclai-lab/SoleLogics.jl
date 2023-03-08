@@ -20,6 +20,7 @@ DataStructures = "0.18"
 Dictionaries = "0.3"
 Lazy = "0.15"
 ReadableRegex = "0.3"
+NamedArrays = "0.9"
 Reexport = "1"
 julia = "1"
 
