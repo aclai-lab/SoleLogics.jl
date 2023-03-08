@@ -13,7 +13,15 @@ makedocs(;
         canonical = "https://aclai-lab.github.io/SoleLogics.jl",
         assets = String[],
     ),
-    pages = ["Home" => "index.md"],
+    pages = [
+        "Home" => "index.md",
+        "About SoleLogics" => "temp.md",
+        "Getting started" => "temp.md",
+        "Manual" => [
+            "Basics" => "temp.md",
+            "Propositional logic" => "temp.md"
+        ]
+    ],
 )
 
 deploydocs(; repo = "github.com/aclai-lab/SoleLogics.jl")
