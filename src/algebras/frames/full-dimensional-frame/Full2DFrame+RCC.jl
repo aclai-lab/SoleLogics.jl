@@ -1,5 +1,3 @@
-# goeswith(::Type{<:Full2DFrame}, ::RCCRelation) = true
-
 _accessibles(::AbstractMultiModalFrame, w::Interval,    ::IdentityRel) = [(w.x, w.y),] # TODO try IterTools.imap(identity, [w])
 
 # Refer to [`RCCRelation`](@ref).

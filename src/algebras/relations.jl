@@ -2,7 +2,6 @@ export AbstractRelation, GeometricalRelations, IntervalRelation, RCCRelation
 
 export GlobalRel, IdentityRel
 export globalrel, identityrel
-# export goeswith
 
 # Interval algebra relations 1D
 
