@@ -1,4 +1,5 @@
 name: CompatHelper
+image: julia:1.7 # Set to the Julia version you want to use
 on:
   schedule:
     - cron: 0 0 * * *
