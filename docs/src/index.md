@@ -1,14 +1,28 @@
 ```@meta
-CurrentModule = SoleLogics
+CurrentModule = SoleLogics.jl
+DocTestSetup = quote
+    using SoleLogics
+end
 ```
 
 # SoleLogics
 
 Documentation for [SoleLogics](https://github.com/aclai-lab/SoleLogics.jl).
 
-```@index
+```@contents
 ```
 
-```@autodocs
-Modules = [SoleLogics]
+## Section 1
+
+```@docs
+CONJUNCTION
 ```
+Just a dummy text
+
+## Section 2
+
+```@docs
+NEGATION
+```
+
+Just a dummy text
