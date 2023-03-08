@@ -366,24 +366,6 @@ function accessibles(
     IterTools.imap(W, _accessibles(fr, w, r))
 end
 
-# TODO needed?
-# """
-# A frame must indicate their compatible relations via the `goeswith` trait, which
-# is defaulted by:
-
-#     goeswith(::Type{<:AbstractMultiModalFrame}, ::AbstractRelation) = false
-
-# For example, if frame of type `FR` is compatible with relation `R`, specify:
-
-#     goeswith(::Type{FR}, ::R) = true
-# """
-# goeswith(::Type{<:AbstractMultiModalFrame}, ::AbstractRelation) = false
-# # TODO Perhaps a check whether the `accessibles` method exists is enough?
-# # as in @show methods(accessibles, (FR, worldtype(FR), typeof(r)))
-# # goeswith(::Type{FR}, r::AbstractRelation) where {FR<:AbstractMultiModalFrame} = begin
-# #     @show methods(accessibles, (FR, worldtype(FR), typeof(r)))
-# # end
-
 ############################################################################################
 
 # TODO test
