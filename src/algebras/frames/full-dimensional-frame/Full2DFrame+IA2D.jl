@@ -1,8 +1,6 @@
 
 # Refer to [`IntervalRelation`](@ref).
 
-# goeswith(::Type{<:Full2DFrame}, ::RectangleRelation) = true
-
 # Convenience function
 _accessibles__(fr::Full1DFrame, w::Interval, r::IntervalRelation) = _accessibles(fr,w,r)
 _accessibles__(fr::Full1DFrame, w::Interval, r::IdentityRel, args...) = [(w.x, w.y)]
