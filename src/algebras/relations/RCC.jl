@@ -6,7 +6,7 @@
     abstract type RCCRelation <: GeometricalRelation end
 
 Topological binary relations from
-[Region Connection Calculus](https://en.m.wikipedia.org/wiki/Region_connection_calculus).
+[Region Connection Calculus](https://en.wikipedia.org/wiki/Region_connection_calculus).
 Region Connection Calculus (RCC) is most famous for RCC8, a set of 8 topological relations,
 which comprehends the identity relation (i.e., `identityrel'), and the following 7 relations:
 - Externally connected

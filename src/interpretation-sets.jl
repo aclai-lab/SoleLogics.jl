@@ -11,7 +11,7 @@ A set of interpretations, also referred to as a *dataset* in this context,
 is a collection of *instances*, each of which is an interpretation, and is 
 identified by an index i_sample::Integer.
 These structures are especially useful when performing 
-[model checking](https://en.m.wikipedia.org/wiki/Model_checking).
+[model checking](https://en.wikipedia.org/wiki/Model_checking).
 
 See also [`atomtype`](@ref), [`truthtype`](@ref),
 [`InterpretationSet`](@ref).

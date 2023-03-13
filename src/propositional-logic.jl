@@ -13,7 +13,7 @@ const BasePropositionalLogic = AbstractLogic{G,A} where {ALP,G<:AbstractGrammar{
         algebra = BooleanAlgebra(),
     )
 
-Instantiates a [propositional logic](https://simple.m.wikipedia.org/wiki/Propositional_logic)
+Instantiates a [propositional logic](https://simple.wikipedia.org/wiki/Propositional_logic)
 given a grammar and an algebra. Alternatively, an alphabet and a set of operators
 can be specified instead of the grammar.
 

@@ -48,7 +48,7 @@ some specific conditions.
 The following `kwargs` are currently supported:
 - `function_notation = false::Bool`: when set to `true`, it forces the use of
 function notation for binary operators.
-See [here](https://en.m.wikipedia.org/wiki/Infix_notation).
+See [here](https://en.wikipedia.org/wiki/Infix_notation).
 
 # Examples
 ```julia-repl
@@ -174,7 +174,7 @@ end
 """
     abstract type AbstractOperator <: AbstractSyntaxToken end
 
-An operator is a [logical constant](https://en.m.wikipedia.org/wiki/Logical_connective)
+An operator is a [logical constant](https://en.wikipedia.org/wiki/Logical_connective)
 which establishes a relation between propositions (i.e., facts).
 For example, the boolean operators AND, OR and IMPLIES (stylized as ∧, ∨ and →)
 are used to connect propositions and/or formulas to express derived concepts.
@@ -685,7 +685,7 @@ tree(t::SyntaxTree) = t
 
 Abstract type for representing an alphabet of propositions with atoms of type `A`.
 An alphabet (or propositional alphabet) is assumed to be a
-[countable](https://en.m.wikipedia.org/wiki/Countable_set) set of propositions.
+[countable](https://en.wikipedia.org/wiki/Countable_set) set of propositions.
 
 See also [`ExplicitAlphabet`](@ref), [`AlphabetOfAny`](@ref),
 [`propositionstype`](@ref), [`atomtype`](@ref),
@@ -875,7 +875,7 @@ Base.isiterable(::Type{<:AlphabetOfAny}) = false
     abstract type AbstractGrammar{A<:AbstractAlphabet,O<:AbstractOperator} end
 
 Abstract type for representing a
-[context-free grammar](https://en.m.wikipedia.org/wiki/Context-free_grammar)
+[context-free grammar](https://en.wikipedia.org/wiki/Context-free_grammar)
 based on a *single* alphabet of type `A`, and a set of operators
 that consists of all the (singleton) child types of `O`.
 A context-free grammar is a simple structure for defining formulas inductively.
@@ -1229,7 +1229,7 @@ syntaxstring(o::TruthOperator; kwargs...) = syntaxstring(value(o))
 
 Abstract type for representing algebras. Algebras are used for grounding the
 truth of propositions and the semantics of operators. They typically encode a
-[lattice structure](https://en.m.wikipedia.org/wiki/Lattice_(order)) where two
+[lattice structure](https://en.wikipedia.org/wiki/Lattice_(order)) where two
 elements(or nodes) *⊤* and *⊥* are referred to as *top* (or maximum)
 and *bottom* (or minimum). Each node in the lattice represents a truth value
 that a proposition or a formula can have on an interpretation, and the
@@ -1517,11 +1517,11 @@ algebra(f::Formula) = algebra(logic(f))
     abstract type AbstractInterpretation{A,T<:TruthValue} end
 
 Abstract type for representing a propositional
-[interpretation](https://en.m.wikipedia.org/wiki/Interpretation_(logic))
+[interpretation](https://en.wikipedia.org/wiki/Interpretation_(logic))
 (or propositional model)
 that associates truth values of a type `T` to propositional letters of atom type `A`.
 In the case of
-[propositional logic](https://simple.m.wikipedia.org/wiki/Propositional_logic),
+[propositional logic](https://simple.wikipedia.org/wiki/Propositional_logic),
 is essentially a map *proposition → truth value*.
 
 Properties expressed via logical formulas can be `check`ed on logical interpretations.
@@ -1542,7 +1542,7 @@ truthtype(::AbstractInterpretation{A,T}) where {A,T} = T
 
 Checks a formula on a logical interpretation (or model), returning a truth value.
 This process is referred to as
-[model checking](https://en.m.wikipedia.org/wiki/Model_checking), and there are many
+[model checking](https://en.wikipedia.org/wiki/Model_checking), and there are many
 algorithms for it, typically depending on the complexity of the logic.
 
 See also [`AbstractFormula`](@ref), [`AbstractInterpretation`](@ref).
