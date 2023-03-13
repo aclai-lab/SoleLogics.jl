@@ -1,5 +1,4 @@
 const BASE_PROPOSITIONAL_OPERATORS = BASE_OPERATORS
-# TODO3: BasePropositionalOperators is needed? Yep, right down a few lines.
 const BasePropositionalOperators = Union{typeof.(BASE_PROPOSITIONAL_OPERATORS)...}
 
 # A propositional logic based on the base propositional operators

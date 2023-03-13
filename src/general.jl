@@ -157,10 +157,6 @@ Note that, for a correct functioning,
 `SoleLogics.negation` must be defined for the wrapped atom.
 
 See also [`Proposition`](@ref), [`check`](@ref).
-
-TODO3: Perhaps this should be called "negation" instead of "inverse? 
-    Also, the documentation is not clear (i.e., what does it mean "which inverted semantics
-    with respect to p"?) Agree on "negation", and made a fix to the sentence.
 """
 negation(p::Proposition) = Proposition(negation(atom(p)))
 
@@ -699,8 +695,6 @@ propositionstype(a::AbstractAlphabet) = propositionstype(typeof(a))
 atomtype(a::Type{<:AbstractAlphabet}) = atomtype(propositionstype(a))
 atomtype(a::AbstractAlphabet) = atomtype(propositionstype(a))
 
-# TODO3: Perhaps add a method "propositions(a::AbstractAlphabet)? To use it in Base.in ? Such a method already exists, but not that it is only defined for finite alphabets. If I understand the Base.in correctly, it cannot work for infinite alphabets?
-
 """
 Each alphabet must provide a method for establishing whether
 a proposition belongs or not to it:
@@ -988,18 +982,15 @@ Base.hash(a::AbstractGrammar) = Base.hash(alphabet(a)) + Base.hash(operatorstype
         operators::Vector{<:O}
     end
 
-TODO3: I am not sure about the following description.. please explain it better. To discuss.
-
 Grammar that generates all well-formed formulas obtained by the arity-complying composition
 of propositions of an alphabet of type `A`, and all operators in `operators`.
-With n operators, this grammar has exactly n+1 production rules, and
-m+1 terminal symbols, where m is the number of nullary operators.
-For example, with `operators = [⊥,∧,∨]`, the grammar is:
+With n operators, this grammar has exactly n+1 production rules.
+For example, with `operators = [⊥,∧,∨]`, the grammar (in Backus-Naur form) is:
 
-    T ::= p | ⊥ | T ∧ T | T ∨ T
+    φ ::= p | ⊥ | φ ∧ φ | φ ∨ φ
 
 with p ∈ alphabet. Note: it is *flat* in the sense that all rules substitute the same
-(unique and starting) non-terminal symbol T.
+(unique and starting) non-terminal symbol φ.
 
 See also [`alphabet`](@ref), [`operators`](@ref),
 [`nonterminals`](@ref), [`terminals`](@ref),
@@ -1118,7 +1109,8 @@ See also [`top`](@ref), [`bottom`](@ref), [`tops`](@ref), [`bottoms`](@ref), [`A
 """
 const TruthValue = Any
 
-# TODO3: I do not understand the difference between tops and top (similarly for bottoms and bot)... To discuss
+# TODO tops->istop, bottoms->isbottom
+
 """
     tops(::TruthValue)::Bool
 
