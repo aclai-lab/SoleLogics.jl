@@ -253,6 +253,8 @@ emptylogic = @test_nowarn propositionallogic(; operators = SoleLogics.AbstractOp
 # TODO fix @Mauro
 @test_throws ErrorException parseformulatree("¬p◊")
 @test_throws ErrorException parseformulatree("¬p◊q")
+@test_throws ErrorException parseformulatree("◊¬p◊")
+@test_throws ErrorException parseformulatree("◊¬p◊q")
 @test_throws ErrorException parseformulatree("(p∧q", [NEGATION, CONJUNCTION])
 @test_throws ErrorException parseformulatree("))))", [CONJUNCTION])
 

@@ -56,26 +56,18 @@ Base.operator_precedence(::typeof(IMPLICATION)) = LOW_PRIORITY
 const BASE_PARSABLE_OPERATORS = [BASE_MODAL_OPERATORS...,
     DiamondRelationalOperator(globalrel),
     BoxRelationalOperator(globalrel),
+    DiamondRelationalOperator(identityrel),
+    BoxRelationalOperator(identityrel),
 ]
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Input and construction ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-# @Mauro - 6/3/2023 - List of resolved todo
-# 1) Deal with special characters
-# 2) Recognize \w propositions
-# 3) User is informed about malformed input
-
-# @Mauro - 7/3/2023 - List of resolved todo
-# 1) More tokenizer refactoring
-# 2) Parse modal operators and modal relational operators
-# 3) additional_operators (see parseformulatree arguments)
-
 # Characters with special meaning in expressions.
 # '(' and ')' are needed to wrap a new scope
-# '⟨', '⟩', '[' and ']' delimits relations
+# '⟨', '⟩', '[' and ']' wraps modal operators
 # ',' is ignored but might be useful to deal with more readable inputs
 _parsing_special_strings = ["(", ")", "⟨", "⟩", "[", "]"]
-_relation_delimeters = Dict("⟨" => "⟩", "[" => "]")
+_relation_delimeters = Dict("⟨" => "⟩", "[" => "]") #TODO: change name
 _parsing_ignore_strings = [",", "", " "]
 
 # Raw tokens are cutted out from the initial expression
@@ -83,6 +75,8 @@ function _recognize_tokens(expression::String, splitters::Vector{String})
     piece = ""
     raw_tokens = String[]
 
+    # TODO: Come gestisco i casi in cui gli splitter sono più lunghi di un carattere?
+    # Algoritmo di Gio (assert sui prefissi)
     for c in expression
         if string(c) in splitters
             push!(raw_tokens, piece)
@@ -107,7 +101,7 @@ function _check_unary_validity(tokens::Vector{<:AbstractSyntaxToken}, op::Abstra
         !isempty(tokens) &&
         (syntaxstring(tokens[end]) != "(" && !(tokens[end] isa AbstractOperator))
     )
-        error("Malformed input: " * syntaxstring(op) * " is following a ")
+        error("Malformed input: " * syntaxstring(op) * " is following " * syntaxstring(tokens[end]))
     end
 end
 
@@ -139,7 +133,8 @@ function _extract_token_in_context(
 end
 
 # Raw tokens are interpreted and, thus, processable by a parser
-function _interpret_tokens(raw_tokens::Vector{String}, string_to_op::Dict{String, AbstractOperator})
+
+function _interpret_tokens(raw_tokens::Vector{String}, string_to_op::Dict{String, AbstractOperator}, proposition_parser::Base.Callable)
     tokens = SoleLogics.AbstractSyntaxToken[]
 
     i = 1
@@ -162,7 +157,9 @@ function _interpret_tokens(raw_tokens::Vector{String}, string_to_op::Dict{String
 
         # token is something else
         else
-            push!(tokens, Proposition{String}(syntaxstring(st)))
+            proposition = proposition_parser(st)
+            @assert proposition isa Proposition
+            push!(tokens, proposition) # TODO: find a better name to proposition_constructor
         end
 
         i += 1
@@ -173,16 +170,17 @@ end
 
 # A simple lexer capable of distinguish operators in a string,
 # returning a Vector{SoleLogics.SyntaxTree}.
-function tokenizer(expression::String, operators::Vector{<:AbstractOperator})
+function tokenizer(expression::String, operators::Vector{<:AbstractOperator}, proposition_parser::Base.Callable)
     # Symbolic represention of given OPERATORS
-    expression = filter(x -> !isspace(x), expression)
+    # expression = filter(x -> !isspace(x), expression)
+    expression = String(strip(expression))
     string_to_op = Dict([syntaxstring(op) => op for op in operators])
 
-    @assert isempty(findall(in(keys(string_to_op)), _parsing_special_strings));
+    # TODO1: assert che tutti gli operators non abbiano spazi in testa o in coda
 
     splitters = vcat(_parsing_special_strings, keys(string_to_op)...)
-    raw_tokens = _recognize_tokens(expression, splitters)
-    return _interpret_tokens(raw_tokens, string_to_op);
+    raw_tokens = String.(strip.(_recognize_tokens(expression, splitters)))
+    return _interpret_tokens(raw_tokens, string_to_op, proposition_parser);
 end
 
 # Rearrange a serie of token, from infix to postfix notation.
@@ -225,6 +223,11 @@ function shunting_yard!(
     end
 end
 
+# TODO1: fai notare all'utente che ogni syntax token non può contenere spazi
+# NOTE: la syntax string di ogni token, non deve avere spazi in testa o in coda
+# questa doc deve riferirsi a syntaxstring e viceversa
+# in order to be parsable, un token non deve iniziare o terminare con degli spazi
+
 """
     parseformulatree(expression::String, operators::Vector{<:AbstractOperator})
 
@@ -242,7 +245,8 @@ See also [`SyntaxTree`](@ref)
 """
 function parseformulatree(
     expression::String,
-    additional_operators::Vector{<:AbstractOperator} = AbstractOperator[],
+    additional_operators::Vector{<:AbstractOperator} = AbstractOperator[];
+    proposition_parser::Base.Callable = Proposition{String} # Proposition
 )
     # Build a formula starting from a Vector{AbstractSyntaxToken} representing its postfix notation
     function _buildformulatree(postfix::Vector{AbstractSyntaxToken})
@@ -267,7 +271,7 @@ function parseformulatree(
     end
 
     operators = unique(AbstractOperator[BASE_PARSABLE_OPERATORS..., additional_operators...])
-    tokens = tokenizer(expression, operators) # Still a Vector{SoleLogics.AbstractSyntaxToken}
+    tokens = tokenizer(expression, operators, proposition_parser) # Still a Vector{SoleLogics.AbstractSyntaxToken}
 
     # Stack containing operators. Needed to transform the expression in postfix notation;
     # opstack may contain Proposition("("), Proposition(")") and operators
