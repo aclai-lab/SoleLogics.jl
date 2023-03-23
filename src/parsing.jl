@@ -75,6 +75,7 @@ const BASE_PARSABLE_OPERATORS = [BASE_MODAL_OPERATORS...,
 # '⟨', '⟩', '[' and ']' delimits relations
 # ',' is ignored but might be useful to deal with more readable inputs
 _parsing_special_strings = ["(", ")", "⟨", "⟩", "[", "]"]
+_relation_delimeters = Dict("⟨" => "⟩", "[" => "]")
 _parsing_ignore_strings = [",", "", " "]
 
 # Raw tokens are cutted out from the initial expression
@@ -111,8 +112,9 @@ function _check_unary_validity(tokens::Vector{<:AbstractSyntaxToken}, op::Abstra
 end
 
 # Get a sequence of tokens until a "closing" string is found,
-# return the position at which the new token has been found or throw an error
-# TODO: this function should not push to `tokens`
+# return the position at which the new token has been found or throw an error;
+# also, return the entire collected token: the method invoking this has
+# the responsability to push the token into a specific data structure.
 function _extract_token_in_context(
     opening_idx::Int,
     closing::String,
@@ -123,18 +125,17 @@ function _extract_token_in_context(
     closing_idx = opening_idx
     try
         while (raw_tokens[closing_idx] != closing)
-            closing_idx+=1
+            closing_idx += 1
         end
     catch
         error("Mismatching delimeters: " * raw_tokens[opening_idx] *
-            " at position " * string(opening_idx) * " is never closed with a " * closing)
+            " at position " * syntaxstring(opening_idx) * " is never closed with a " * closing)
     end
 
-    op = string_to_op[string.(raw_tokens[opening_idx:closing_idx]...)] # Maybe is syntaxstring here
+    op = string_to_op[string.(raw_tokens[opening_idx:closing_idx]...)] # TODO: Maybe is syntaxstring here
     _check_unary_validity(tokens, op)
-    push!(tokens, op)
 
-    return closing_idx
+    return [closing_idx, op]
 end
 
 # Raw tokens are interpreted and, thus, processable by a parser
@@ -151,18 +152,20 @@ function _interpret_tokens(raw_tokens::Vector{String}, string_to_op::Dict{String
             _check_unary_validity(tokens, op)
             push!(tokens, op)
 
-        # token is a relational operator
-        elseif (st == "⟨")
-            i = _extract_token_in_context(i, "⟩", raw_tokens, tokens, string_to_op)
-        elseif (st == "[")
-            i = _extract_token_in_context(i, "]", raw_tokens, tokens, string_to_op)
+        # token is a relational operator, thus, starts with a special opening character:
+        # find the position of its corresponding closing character
+        # and continue the loop from here onwards.
+        elseif (st in keys(_relation_delimeters))
+            i, op = _extract_token_in_context(i, _relation_delimeters[st], raw_tokens,
+                tokens, string_to_op)
+            push!(tokens, op)
 
         # token is something else
         else
-            push!(tokens, Proposition{String}(string(st)))
+            push!(tokens, Proposition{String}(syntaxstring(st)))
         end
 
-        i+=1
+        i += 1
     end
 
     return tokens;

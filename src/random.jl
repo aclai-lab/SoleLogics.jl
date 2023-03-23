@@ -1,5 +1,6 @@
 using Random
 
+#= ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Formulas ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ =#
 doc_randformula = """
     randformulatree(
         height::Integer,
@@ -46,7 +47,7 @@ function randformulatree(
     operators::Vector{<:AbstractOperator};
     rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG
 )::SyntaxTree
-    
+
     function _randformulatree(
         height::Integer,
         alphabet::AbstractAlphabet,
@@ -75,4 +76,22 @@ function randformulatree(
     rng = (typeof(rng) <: Integer) ? Random.MersenneTwister(rng) : rng
 
     return _randformulatree(height, alphabet, operators, rng=rng)
+end
+
+function fanfan()
+end
+
+function _fanout()
+end
+
+function _fanin()
+end
+
+function dispense_alphabet()
+end
+
+function gen_kmodel()
+end
+
+function gen_kmodel()
 end
