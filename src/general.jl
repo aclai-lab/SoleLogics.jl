@@ -98,7 +98,7 @@ syntaxstring(atom::Union{String,Number}; kwargs...) = string(atom)
     end
 
 A proposition, sometimes called a propositional letter (or simply *letter*), of type
-`Proposition{A}` wraps a value `atom::A` representing a fact which truth can be assessed on 
+`Proposition{A}` wraps a value `atom::A` representing a fact which truth can be assessed on
 a logical interpretation.
 
 Propositions are nullary tokens (i.e, they are at the leaves of a syntax tree).
@@ -158,7 +158,7 @@ Note that, for a correct functioning,
 
 See also [`Proposition`](@ref), [`check`](@ref).
 
-TODO3: Perhaps this should be called "negation" instead of "inverse? 
+TODO3: Perhaps this should be called "negation" instead of "inverse?
     Also, the documentation is not clear (i.e., what does it mean "which inverted semantics
     with respect to p"?) Agree on "negation", and made a fix to the sentence.
 """
@@ -593,6 +593,31 @@ function ntokens(t::SyntaxTree)::Integer
 end
 
 """
+    noperators(t::SyntaxTree)::Integer
+
+Counts all operators appearing in a tree.
+
+See also [`operaters`](@ref), [`AbstractSyntaxToken`](@ref).
+"""
+function noperators(t::SyntaxTree)::Integer
+    op = token(t) isa AbstractOperator ? 1 : 0
+    return length(children(t)) == 0 ? op : op + sum(noperators(c) for c in children(t))
+end
+
+"""
+    noperators_k(t::SyntaxTree, k::Integer)::Integer
+
+Counts all operators of k arity appearing in a tree.
+
+See also [`operaters`](@ref), [`AbstractSyntaxToken`](@ref).
+"""
+function noperators(t::SyntaxTree, k::Integer)::Integer
+    tok = token(t)
+    op = tok isa AbstractOperator && arity(tok) == k ? 1 : 0
+    return length(children(t)) == 0 ? op : op + sum(noperators(c) for c in children(t))
+end
+
+"""
     npropositions(t::SyntaxTree)::Integer
 
 Counts all propositions appearing in a tree.
@@ -618,7 +643,7 @@ end
 # Helpers that make SyntaxTree's map to the same dictionary key.
 # Useful for checking formulas on interpretations.
 function Base.isequal(a::SyntaxTree, b::SyntaxTree)
-    return Base.isequal(token(a), token(b)) && 
+    return Base.isequal(token(a), token(b)) &&
         all(((c1,c2),)->Base.isequal(c1,c2), zip(children(a), children(b)))
 end
 Base.hash(a::SyntaxTree) = Base.hash(syntaxstring(a))
@@ -665,10 +690,10 @@ end
 Extracts the `SyntaxTree` representation of a formula.
 This equivalent to calling `Base.convert(SyntaxTree, f)`.
 
-See also 
-[`SyntaxTree`](@ref), 
+See also
+[`SyntaxTree`](@ref),
 [`AbstractSyntaxStructure`](@ref).
-[`AbstractFormula`](@ref), 
+[`AbstractFormula`](@ref),
 """
 function tree(f::AbstractFormula)::SyntaxTree
     return error("Please, provide method tree(::$(typeof(f)))::SyntaxTree.")
@@ -677,6 +702,32 @@ Base.convert(::Type{SyntaxTree}, f::AbstractFormula) = tree(f)
 
 tree(t::SyntaxTree) = t
 
+############################################################################################
+
+# TODO: SyntaxStructure
+#=
+const RightieConjunctiveForm = RightieLinearForm{typeof(∧)}
+const RightieDisjunctiveForm = RightieLinearForm{typeof(∨)}
+
+struct RightieLinearForm{O<:AbstractOperator, F<:SyntaxTree} <: AbstractSyntaxStructure
+    antecedents::Vector{<:F}
+
+    function RightieLinearForm{O}(
+        antecedents::Vector,
+    )
+        # TODO: typejoin??
+        F = SoleBase._typejoin(typeof.(antecedents)...)
+        new{O,F}(antecedents)
+    end
+
+    function RightieLinearForm(
+        ::O,
+        antecedents::Vector,
+    ) where {O <: AbstractOperator}
+        RightieLinearForm{O}(antecedents)
+    end
+end
+=#
 
 ############################################################################################
 
