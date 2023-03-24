@@ -4,13 +4,11 @@ export tokenizer
 
 using ReadableRegex
 
-#= ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Table of contents ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-    TODO: Studying this code (which has to be refactored) is not so friendly.
-    A little overview about all the private methods and the workflow involved
-    in this page could be helpful to future developers.
-
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ =#
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Table of contents ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#
+#    TODO: Studying this code (which has to be refactored) is not so friendly.
+#    A little overview about all the private methods and the workflow involved
+#    in this page could be helpful to future developers.
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Precedence ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -67,7 +65,7 @@ const BASE_PARSABLE_OPERATORS = [BASE_MODAL_OPERATORS...,
 # '⟨', '⟩', '[' and ']' wraps modal operators
 # ',' is ignored but might be useful to deal with more readable inputs
 _parsing_special_strings = ["(", ")", "⟨", "⟩", "[", "]"]
-_relation_delimeters = Dict("⟨" => "⟩", "[" => "]") #TODO: change name
+_relation_operator_delimeters = Dict("⟨" => "⟩", "[" => "]")
 _parsing_ignore_strings = [",", "", " "]
 
 # Check if a specific unary operator is in a valid position, during tokens recognition
@@ -86,16 +84,42 @@ function _recognize_tokens(expression::String, splitters::Vector{String})
     piece = ""
     raw_tokens = String[]
 
-    # TODO: Come gestisco i casi in cui gli splitter sono più lunghi di un carattere?
-    # Algoritmo di Gio (assert sui prefissi)
-    for c in expression
-        if string(c) in splitters
-            push!(raw_tokens, piece)
-            push!(raw_tokens, string(c))
-            piece = "";
-        else
-            piece = piece * c;
+    # Si parlava di scremare gli splitter con lo stesso prefisso, in realtà
+    # è legale avere splitters con un prefisso simile ad esempio "[G]" e "[L]".
+    # Immagina di avere come splitters "," e ",;@":
+    # l'espressione "p,;@q" non deve essere divisa in ["p", ";@q"] ma in ["p", ",;@", "q"]
+    # quindi semplicemente cerco sempre una occorrenza scorrendo gli splitters dal più lungo
+    # al più corto.
+
+    sort!(splitters, by=length, rev=true)
+
+    i = 1
+    while i <= sizeof(expression)
+        splitter_found = false
+
+        for splitter in splitters
+            # The lenghtiest, correct splitter starting at index 'i' is found
+            splitrange = findnext(splitter, expression, i)
+
+            if (!isnothing(splitrange) && first(splitrange) == i)
+                # Iterator is teleported to the next UNICODE char
+                i = nextind(expression, last(splitrange))
+                push!(raw_tokens, piece)
+                push!(raw_tokens, splitter)
+                piece = ""
+                splitter_found = true
+                break
+            end
         end
+
+        # If no splitter has been found in this cycle, then simply continue collecting
+        # a new potential splitter
+        if (!splitter_found)
+            piece = piece * expression[i];
+            # Iterator is teleported to the next UNICODE char
+            i = nextind(expression, i)
+        end
+
     end
 
     if (!isempty(piece))
@@ -127,7 +151,7 @@ function _extract_token_in_context(
             " at position " * syntaxstring(opening_idx) * " is never closed with a " * closing)
     end
 
-    op = string_to_op[string.(raw_tokens[opening_idx:closing_idx]...)] # TODO: Maybe is syntaxstring here
+    op = string_to_op[string.(raw_tokens[opening_idx:closing_idx]...)]
     _check_unary_validity(tokens, op)
 
     return [closing_idx, op]
@@ -154,15 +178,17 @@ function _interpret_tokens(
         # token is a relational operator, thus, starts with a special opening character:
         # find the position of its corresponding closing character
         # and continue the loop from here onwards.
-        elseif (st in keys(_relation_delimeters))
-            i, op = _extract_token_in_context(i, _relation_delimeters[st], raw_tokens,
+        #= NOTE: DEPRECATED since now this is covered by _recognize_tokens
+        elseif (st in keys(_relation_operator_delimeters))
+            i, op = _extract_token_in_context(i, _relation_operator_delimeters[st], raw_tokens,
                 tokens, string_to_op)
             push!(tokens, op)
+        =#
 
         # token is something else
         else
             proposition = proposition_parser(st)
-            @assert proposition isa Proposition
+            @assert proposition isa Proposition # TODO: avvertire
             push!(tokens, proposition) # TODO: find a better name to proposition_constructor
         end
 
@@ -189,7 +215,7 @@ function tokenizer(
     invalidops = filter(o -> syntaxstring(o) != strip(syntaxstring(o)), operators)
     @assert length(invalidops) == 0 "Certain operators are identified by a name starting" *
         " or ending with a space. Please, fix typos in the following operators: " *
-        string(invalidops)[1:end]
+        string(invalidops)[1:end] # TODO: magari si toglie [1:end]? Da vedere con gio
 
     splitters = vcat(_parsing_special_strings, keys(string_to_op)...)
     raw_tokens = String.(strip.(_recognize_tokens(expression, splitters)))
@@ -235,13 +261,6 @@ function shunting_yard!(
         end
     end
 end
-
-# TODO1: fai notare all'utente che ogni syntax token non può contenere spazi
-# NOTE: la syntax string di ogni token, non deve avere spazi in testa o in coda
-# questa doc deve riferirsi a syntaxstring e viceversa
-# in order to be parsable, un token non deve iniziare o terminare con degli spazi
-
-# TODO2: rivedere tutte le docstring e
 
 """
     parseformulatree(
@@ -365,3 +384,5 @@ end
 # ☑ parseformulatree docstring modified
 # ☑ in parseformulatree docstring, user is notified about operators starting/ending with " "
 #    this change is reflected in `syntaxstring` docstring too
+# ☑ "_relation_delimeters" variable name changed to _relation_operator_delimeters
+# □ find a better name to
