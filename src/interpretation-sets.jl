@@ -28,30 +28,30 @@ truthtype(s::AbstractInterpretationSet) = atomtype(M)
 
 function check(
     tok::AbstractSyntaxToken,
-    X::AbstractInterpretationSet{M},
+    d::AbstractInterpretationSet{M},
     i_sample::Integer,
     args...,
 )::truthtype(M) where {M<:AbstractInterpretation}
-    error("Please, provide method check(::$(typeof(tok)), ::$(typeof(X)), ::Integer, ::$(typeof(args))...).")
+    error("Please, provide method check(::$(typeof(tok)), ::$(typeof(d)), ::Integer, ::$(typeof(args))...).")
 end
 
 function check(
     φ::AbstractFormula,
-    X::AbstractInterpretationSet{M},
+    d::AbstractInterpretationSet{M},
     i_sample::Integer,
     args...,
 )::truthtype(M) where {M<:AbstractInterpretation}
-    error("Please, provide method check(::$(typeof(φ)), ::$(typeof(X)), ::Integer, ::$(typeof(args))...).")
+    error("Please, provide method check(::$(typeof(φ)), ::$(typeof(d)), ::Integer, ::$(typeof(args))...).")
 end
 
 # Check on a dataset = map check on the instances
 function check(
     φ::Union{AbstractSyntaxToken,AbstractFormula},
-    X::AbstractInterpretationSet{M},
+    d::AbstractInterpretationSet{M},
     args...
 )::Vector{truthtype(M)} where {M<:AbstractInterpretation}
     # TODO normalize before checking, if it is faster!
-    [check(φ, X, i, args...) for i in 1:nsamples(X)]
+    map(i_sample->check(φ, d, i_sample, args...), 1:nsamples(d))
 end
 
 ############################################################################################
