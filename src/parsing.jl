@@ -70,6 +70,17 @@ _parsing_special_strings = ["(", ")", "⟨", "⟩", "[", "]"]
 _relation_delimeters = Dict("⟨" => "⟩", "[" => "]") #TODO: change name
 _parsing_ignore_strings = [",", "", " "]
 
+# Check if a specific unary operator is in a valid position, during tokens recognition
+function _check_unary_validity(tokens::Vector{<:AbstractSyntaxToken}, op::AbstractOperator)
+    # A unary operator is always preceeded by some other operator or a '('
+    if (arity(op) == 1 &&
+        !isempty(tokens) &&
+        (syntaxstring(tokens[end]) != "(" && !(tokens[end] isa AbstractOperator))
+    )
+        error("Malformed input: " * syntaxstring(op) * " is following " * syntaxstring(tokens[end]))
+    end
+end
+
 # Raw tokens are cutted out from the initial expression
 function _recognize_tokens(expression::String, splitters::Vector{String})
     piece = ""
@@ -94,16 +105,6 @@ function _recognize_tokens(expression::String, splitters::Vector{String})
     return filter(x->!(x in _parsing_ignore_strings), raw_tokens);
 end
 
-# Check if a specific unary operator is in a valid position, during tokens recognition
-function _check_unary_validity(tokens::Vector{<:AbstractSyntaxToken}, op::AbstractOperator)
-    # A unary operator is always preceeded by some other operator or a '('
-    if (arity(op) == 1 &&
-        !isempty(tokens) &&
-        (syntaxstring(tokens[end]) != "(" && !(tokens[end] isa AbstractOperator))
-    )
-        error("Malformed input: " * syntaxstring(op) * " is following " * syntaxstring(tokens[end]))
-    end
-end
 
 # Get a sequence of tokens until a "closing" string is found,
 # return the position at which the new token has been found or throw an error;
@@ -133,8 +134,11 @@ function _extract_token_in_context(
 end
 
 # Raw tokens are interpreted and, thus, processable by a parser
-
-function _interpret_tokens(raw_tokens::Vector{String}, string_to_op::Dict{String, AbstractOperator}, proposition_parser::Base.Callable)
+function _interpret_tokens(
+    raw_tokens::Vector{String},
+    string_to_op::Dict{String, AbstractOperator},
+    proposition_parser::Base.Callable
+)
     tokens = SoleLogics.AbstractSyntaxToken[]
 
     i = 1
@@ -170,13 +174,22 @@ end
 
 # A simple lexer capable of distinguish operators in a string,
 # returning a Vector{SoleLogics.SyntaxTree}.
-function tokenizer(expression::String, operators::Vector{<:AbstractOperator}, proposition_parser::Base.Callable)
+function tokenizer(
+    expression::String,
+    operators::Vector{<:AbstractOperator},
+    proposition_parser::Base.Callable
+)
     # Symbolic represention of given OPERATORS
     # expression = filter(x -> !isspace(x), expression)
     expression = String(strip(expression))
     string_to_op = Dict([syntaxstring(op) => op for op in operators])
 
-    # TODO1: assert che tutti gli operators non abbiano spazi in testa o in coda
+    # operators whose syntaxstring is padded with spaces are invalid
+    # since they might cause an ambiguous parse.
+    invalidops = filter(o -> syntaxstring(o) != strip(syntaxstring(o)), operators)
+    @assert length(invalidops) == 0 "Certain operators are identified by a name starting" *
+        " or ending with a space. Please, fix typos in the following operators: " *
+        string(invalidops)[1:end]
 
     splitters = vcat(_parsing_special_strings, keys(string_to_op)...)
     raw_tokens = String.(strip.(_recognize_tokens(expression, splitters)))
@@ -228,12 +241,29 @@ end
 # questa doc deve riferirsi a syntaxstring e viceversa
 # in order to be parsable, un token non deve iniziare o terminare con degli spazi
 
+# TODO2: rivedere tutte le docstring e
+
 """
-    parseformulatree(expression::String, operators::Vector{<:AbstractOperator})
+    parseformulatree(
+        expression::String,
+        additional_operators::Vector{<:AbstractOperator} = AbstractOperator[];
+        proposition_parser::Base.Callable = Proposition{String} # Proposition
+    )
 
 Returns a `SyntaxTree` which is the result from parsing `expression`.
-At the moment, the propositional letters in `expression` must be represented with
- a single character (e.g., "p", "q", etc...).
+
+!!! warning
+    Each addition_operators' `syntaxstring` must not contain spaces padding.
+    For example, if ☡ is an AbstractOperator syntaxstring(☡) = "  ☡" is invalid.
+
+# Arguments
+- `expression::String`: expression to be parsed
+- `additional_operators::Vector{<:AbstractOperator}` additional non-standard operators
+    needed to correctly parse expression. TODO: somewhere here, or in documentation, we
+    have to show what BASE_PARSABLE_OPERATORS are.
+- `proposition_parser::Base.Callable = Proposition{String}`: constructor needed to interpret
+    propositions recognized in expression. TODO: expand Examples section.
+
 
 # Examples
 ```julia-repl
@@ -241,7 +271,7 @@ julia> syntaxstring(parseformulatree("¬p∧q∧(¬s∧¬z)"))
 "(¬(p)) ∧ (q ∧ ((¬(s)) ∧ (¬(z))))"
 ```
 
-See also [`SyntaxTree`](@ref)
+See also [`SyntaxTree`](@ref), [`syntaxstring`](@ref).
 """
 function parseformulatree(
     expression::String,
@@ -329,3 +359,9 @@ function parseformula(
 )
     parseformula(expression; operators = operators, args...)
 end
+
+# Done TODOs
+# ☑ @assert about operators whose syntaxstring contains a space padding
+# ☑ parseformulatree docstring modified
+# ☑ in parseformulatree docstring, user is notified about operators starting/ending with " "
+#    this change is reflected in `syntaxstring` docstring too

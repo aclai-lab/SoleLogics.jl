@@ -50,6 +50,9 @@ The following `kwargs` are currently supported:
 function notation for binary operators.
 See [here](https://en.m.wikipedia.org/wiki/Infix_notation).
 
+!!! warning
+    The produced string must not be padded by spaces.
+
 # Examples
 ```julia-repl
 julia> syntaxstring((parseformula("◊((p∧s)→q)")))
