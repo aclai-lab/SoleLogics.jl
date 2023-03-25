@@ -62,11 +62,9 @@ const BASE_PARSABLE_OPERATORS = [BASE_MODAL_OPERATORS...,
 
 # Characters with special meaning in expressions.
 # '(' and ')' are needed to wrap a new scope
-# '⟨', '⟩', '[' and ']' wraps modal operators
 # ',' is ignored but might be useful to deal with more readable inputs
-_parsing_special_strings = ["(", ")", "⟨", "⟩", "[", "]"]
-_relation_operator_delimeters = Dict("⟨" => "⟩", "[" => "]")
-_parsing_ignore_strings = [",", "", " "]
+_parsing_special_strings = ["(", ")"]
+_parsing_ignored_strings = [",", ""]
 
 # Check if a specific unary operator is in a valid position, during tokens recognition
 function _check_unary_validity(tokens::Vector{<:AbstractSyntaxToken}, op::AbstractOperator)
@@ -81,15 +79,8 @@ end
 
 # Raw tokens are cutted out from the initial expression
 function _recognize_tokens(expression::String, splitters::Vector{String})
-    piece = ""
+    potential_token = ""
     raw_tokens = String[]
-
-    # Si parlava di scremare gli splitter con lo stesso prefisso, in realtà
-    # è legale avere splitters con un prefisso simile ad esempio "[G]" e "[L]".
-    # Immagina di avere come splitters "," e ",;@":
-    # l'espressione "p,;@q" non deve essere divisa in ["p", ";@q"] ma in ["p", ",;@", "q"]
-    # quindi semplicemente cerco sempre una occorrenza scorrendo gli splitters dal più lungo
-    # al più corto.
 
     sort!(splitters, by=length, rev=true)
 
@@ -98,35 +89,44 @@ function _recognize_tokens(expression::String, splitters::Vector{String})
         splitter_found = false
 
         for splitter in splitters
-            # The lenghtiest, correct splitter starting at index 'i' is found
+            # The lenghtiest, correct splitter starting at index 'i' is found (if possible)
             splitrange = findnext(splitter, expression, i)
 
             if (!isnothing(splitrange) && first(splitrange) == i)
-                # Iterator is teleported to the next UNICODE char
+                # Iterator is teleported to the next (possibly UNICODE) char
                 i = nextind(expression, last(splitrange))
-                push!(raw_tokens, piece)
+
+                # Currently loaded token is pushed: a new potential token has to be collect
+                push!(raw_tokens, potential_token)
+                potential_token = ""
+
+                # Splitter is pushed: since a correct splitter is found
+                # set a flag to avoid repeating the iterator increment later
                 push!(raw_tokens, splitter)
-                piece = ""
                 splitter_found = true
                 break
             end
         end
 
-        # If no splitter has been found in this cycle, then simply continue collecting
-        # a new potential splitter
+        # If no splitter has been found in this cycle,
+        # then simply continue collecting a new potential splitter
         if (!splitter_found)
-            piece = piece * expression[i];
-            # Iterator is teleported to the next UNICODE char
+            potential_token = potential_token * expression[i];
             i = nextind(expression, i)
         end
-
     end
 
-    if (!isempty(piece))
-        push!(raw_tokens, piece)
+    # Last potential token has to be pushed
+    if (!isempty(potential_token))
+        push!(raw_tokens, potential_token)
     end
 
-    return filter(x->!(x in _parsing_ignore_strings), raw_tokens);
+    # Particular special characters are ignored (see _parsing_ignore_strings);
+    # strip is added to avoid accepting concatenations of  " ":
+    # it is possible to have meaningful spaces in an expression (e.g [My operator]
+    # different from [MyOperator]) but here we are working on isolated presences of
+    # operators we want to ignore.
+    return filter(x -> !(strip(x) in _parsing_ignored_strings), raw_tokens);
 end
 
 
@@ -174,16 +174,6 @@ function _interpret_tokens(
             op = string_to_op[st]
             _check_unary_validity(tokens, op)
             push!(tokens, op)
-
-        # token is a relational operator, thus, starts with a special opening character:
-        # find the position of its corresponding closing character
-        # and continue the loop from here onwards.
-        #= NOTE: DEPRECATED since now this is covered by _recognize_tokens
-        elseif (st in keys(_relation_operator_delimeters))
-            i, op = _extract_token_in_context(i, _relation_operator_delimeters[st], raw_tokens,
-                tokens, string_to_op)
-            push!(tokens, op)
-        =#
 
         # token is something else
         else
@@ -340,7 +330,9 @@ function parseformulatree(
         push!(postfix, op)
     end
 
-    return _buildformulatree(postfix)
+    ans = _buildformulatree(postfix)
+    println(ans)
+    return ans
 end
 
 # TODOs:
@@ -384,5 +376,5 @@ end
 # ☑ parseformulatree docstring modified
 # ☑ in parseformulatree docstring, user is notified about operators starting/ending with " "
 #    this change is reflected in `syntaxstring` docstring too
-# ☑ "_relation_delimeters" variable name changed to _relation_operator_delimeters
+# ☑ "_relation_delimeters" variable name changed to
 # □ find a better name to
