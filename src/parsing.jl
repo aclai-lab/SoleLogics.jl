@@ -129,39 +129,11 @@ function _recognize_tokens(expression::String, splitters::Vector{String})
     return filter(x -> !(strip(x) in _parsing_ignored_strings), raw_tokens);
 end
 
-
-# Get a sequence of tokens until a "closing" string is found,
-# return the position at which the new token has been found or throw an error;
-# also, return the entire collected token: the method invoking this has
-# the responsability to push the token into a specific data structure.
-function _extract_token_in_context(
-    opening_idx::Int,
-    closing::String,
-    raw_tokens::Vector{String},
-    tokens::Vector{<:AbstractSyntaxToken},
-    string_to_op::Dict{String, AbstractOperator}
-)
-    closing_idx = opening_idx
-    try
-        while (raw_tokens[closing_idx] != closing)
-            closing_idx += 1
-        end
-    catch
-        error("Mismatching delimeters: " * raw_tokens[opening_idx] *
-            " at position " * syntaxstring(opening_idx) * " is never closed with a " * closing)
-    end
-
-    op = string_to_op[string.(raw_tokens[opening_idx:closing_idx]...)]
-    _check_unary_validity(tokens, op)
-
-    return [closing_idx, op]
-end
-
-# Raw tokens are interpreted and, thus, processable by a parser
+# Raw tokens are interpreted and, thus, made processable by a parser
 function _interpret_tokens(
     raw_tokens::Vector{String},
     string_to_op::Dict{String, AbstractOperator},
-    proposition_parser::Base.Callable
+    proposition_stencil::Base.Callable
 )
     tokens = SoleLogics.AbstractSyntaxToken[]
 
@@ -177,9 +149,10 @@ function _interpret_tokens(
 
         # token is something else
         else
-            proposition = proposition_parser(st)
-            @assert proposition isa Proposition # TODO: avvertire
-            push!(tokens, proposition) # TODO: find a better name to proposition_constructor
+            proposition = proposition_stencil(st)
+            @assert proposition isa Proposition syntaxstring(proposition) *
+                " is not a proposition. Please, choose a valid proposition_stencil."
+            push!(tokens, proposition)
         end
 
         i += 1
@@ -193,7 +166,7 @@ end
 function tokenizer(
     expression::String,
     operators::Vector{<:AbstractOperator},
-    proposition_parser::Base.Callable
+    proposition_stencil::Base.Callable
 )
     # Symbolic represention of given OPERATORS
     # expression = filter(x -> !isspace(x), expression)
@@ -205,11 +178,11 @@ function tokenizer(
     invalidops = filter(o -> syntaxstring(o) != strip(syntaxstring(o)), operators)
     @assert length(invalidops) == 0 "Certain operators are identified by a name starting" *
         " or ending with a space. Please, fix typos in the following operators: " *
-        string(invalidops)[1:end] # TODO: magari si toglie [1:end]? Da vedere con gio
+        join(invalidops, ", ")
 
     splitters = vcat(_parsing_special_strings, keys(string_to_op)...)
     raw_tokens = String.(strip.(_recognize_tokens(expression, splitters)))
-    return _interpret_tokens(raw_tokens, string_to_op, proposition_parser);
+    return _interpret_tokens(raw_tokens, string_to_op, proposition_stencil);
 end
 
 # Rearrange a serie of token, from infix to postfix notation.
@@ -252,27 +225,30 @@ function shunting_yard!(
     end
 end
 
+# TODO: in the following docstring, in `additional_operators` description,
+#   we have to write about what BASE_PARSABLE_OPERATORS are set by default.
+# TODO: in the following docstring, Examples section should be expanded to consider
+#   different use cases of `proposition_stencil`
+# TODO: `proposition_stencil` name (who was previously called `proposition_parser`) is ugly
 """
     parseformulatree(
         expression::String,
         additional_operators::Vector{<:AbstractOperator} = AbstractOperator[];
-        proposition_parser::Base.Callable = Proposition{String} # Proposition
+        proposition_stencil::Base.Callable = Proposition{String} # Proposition
     )
 
 Returns a `SyntaxTree` which is the result from parsing `expression`.
 
 !!! warning
     Each addition_operators' `syntaxstring` must not contain spaces padding.
-    For example, if ☡ is an AbstractOperator syntaxstring(☡) = "  ☡" is invalid.
+    For example, if ⨁ is an AbstractOperator syntaxstring(⨁) = "  ⨁ " is invalid.
 
 # Arguments
 - `expression::String`: expression to be parsed
 - `additional_operators::Vector{<:AbstractOperator}` additional non-standard operators
-    needed to correctly parse expression. TODO: somewhere here, or in documentation, we
-    have to show what BASE_PARSABLE_OPERATORS are.
-- `proposition_parser::Base.Callable = Proposition{String}`: constructor needed to interpret
-    propositions recognized in expression. TODO: expand Examples section.
-
+    needed to correctly parse expression.
+- `proposition_stencil::Base.Callable = Proposition{String}`: constructor needed to
+    interpret propositions recognized in expression.
 
 # Examples
 ```julia-repl
@@ -285,7 +261,7 @@ See also [`SyntaxTree`](@ref), [`syntaxstring`](@ref).
 function parseformulatree(
     expression::String,
     additional_operators::Vector{<:AbstractOperator} = AbstractOperator[];
-    proposition_parser::Base.Callable = Proposition{String} # Proposition
+    proposition_stencil::Base.Callable = Proposition{String} # Proposition
 )
     # Build a formula starting from a Vector{AbstractSyntaxToken} representing its postfix notation
     function _buildformulatree(postfix::Vector{AbstractSyntaxToken})
@@ -310,7 +286,7 @@ function parseformulatree(
     end
 
     operators = unique(AbstractOperator[BASE_PARSABLE_OPERATORS..., additional_operators...])
-    tokens = tokenizer(expression, operators, proposition_parser) # Still a Vector{SoleLogics.AbstractSyntaxToken}
+    tokens = tokenizer(expression, operators, proposition_stencil) # Still a Vector{SoleLogics.AbstractSyntaxToken}
 
     # Stack containing operators. Needed to transform the expression in postfix notation;
     # opstack may contain Proposition("("), Proposition(")") and operators
@@ -372,9 +348,22 @@ function parseformula(
 end
 
 # Done TODOs
-# ☑ @assert about operators whose syntaxstring contains a space padding
-# ☑ parseformulatree docstring modified
-# ☑ in parseformulatree docstring, user is notified about operators starting/ending with " "
-#    this change is reflected in `syntaxstring` docstring too
-# ☑ "_relation_delimeters" variable name changed to
-# □ find a better name to
+# Space paddings
+#   ☑ @assert about operators whose syntaxstring contains space padding
+#   ☑ parseformulatree docstring revised;
+#   ☑ warning section in syntaxstring docstring, to advise against
+#       syntaxstrings containing space padding
+# Logic
+#   ☑ `_relation_delimeters` variable removed: is no longer needed
+#   ☑ `_extract_token_in_context` removed: is no longer needed
+#   ☑ `_recognize_tokens` is now smart enough to interpret this snippet correctly:
+#
+#       struct MyCustomRelationalOperator{R<:AbstractRelation} <: AbstractRelationalOperator{R} end
+#       (MyCustomRelationalOperator)(r::AbstractRelation) = MyCustomRelationalOperator{typeof(r)}()
+#       SoleLogics.syntaxstring(op::MyCustomRelationalOperator; kwargs...) = "LEFT CUSTOM BRACKET $(syntaxstring(relationtype(op);  kwargs...)) RIGHT CUSTOM BRACKET"
+#
+#       f = parseformulatree("LEFT CUSTOM BRACKET G RIGHT CUSTOM BRACKET p ∧ ¬ LEFT CUSTOM BRACKET G RIGHT CUSTOM BRACKET q", [MyCustomRelationalOperator(globalrel)])
+#
+# Minor changes
+#   ☑ proposition_parser changed to proposition_stencil (mhhh)
+#   ☑ @assert about invalid `proposition_stencil` selections, now contains a string

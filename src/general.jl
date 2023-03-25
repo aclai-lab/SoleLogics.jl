@@ -51,7 +51,8 @@ function notation for binary operators.
 See [here](https://en.m.wikipedia.org/wiki/Infix_notation).
 
 !!! warning
-    The produced string must not be padded by spaces.
+    The produced string should not be padded by spaces as this may cause misinterpretations
+    when manipulating the string itself.
 
 # Examples
 ```julia-repl

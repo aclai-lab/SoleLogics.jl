@@ -249,6 +249,13 @@ emptylogic = @test_nowarn propositionallogic(; operators = SoleLogics.AbstractOp
 
 @test alphabet(logic(parseformula("p→q"))) == AlphabetOfAny{String}()
 
+struct MyCustomRelationalOperator{R<:AbstractRelation} <: AbstractRelationalOperator{R} end
+(MyCustomRelationalOperator)(r::AbstractRelation) = MyCustomRelationalOperator{typeof(r)}()
+SoleLogics.syntaxstring(op::MyCustomRelationalOperator; kwargs...) =
+    "LEFT CUSTOM ;à#@ BRACKET $(syntaxstring(relationtype(op);  kwargs...)) RIGHT CUSTOM --_-_ BRACKET"
+
+@test_nowarn parseformulatree("LEFT CUSTOM ;à#@ BRACKET G RIGHT CUSTOM --_-_ BRACKET p ∧ ¬ LEFT CUSTOM BRACKET G RIGHT CUSTOM BRACKET q", [MyCustomRelationalOperator(globalrel)])
+
 # Malformed input
 # TODO fix @Mauro
 @test_throws ErrorException parseformulatree("¬p◊")
