@@ -605,19 +605,6 @@ function noperators(t::SyntaxTree)::Integer
 end
 
 """
-    noperators_k(t::SyntaxTree, k::Integer)::Integer
-
-Counts all operators of k arity appearing in a tree.
-
-See also [`operaters`](@ref), [`AbstractSyntaxToken`](@ref).
-"""
-function noperators(t::SyntaxTree, k::Integer)::Integer
-    tok = token(t)
-    op = tok isa AbstractOperator && arity(tok) == k ? 1 : 0
-    return length(children(t)) == 0 ? op : op + sum(noperators(c) for c in children(t))
-end
-
-"""
     npropositions(t::SyntaxTree)::Integer
 
 Counts all propositions appearing in a tree.
@@ -704,30 +691,75 @@ tree(t::SyntaxTree) = t
 
 ############################################################################################
 
-# TODO: SyntaxStructure
 #=
-const RightieConjunctiveForm = RightieLinearForm{typeof(∧)}
-const RightieDisjunctiveForm = RightieLinearForm{typeof(∨)}
+const RightmostConjunctiveForm = RightmostLinearForm{typeof(∧)}
+const RightmostDisjunctiveForm = RightmostLinearForm{typeof(∨)}
+=#
 
-struct RightieLinearForm{O<:AbstractOperator, F<:SyntaxTree} <: AbstractSyntaxStructure
+struct RightmostLinearForm{O<:AbstractOperator, F<:AbstractSyntaxStructure} <: AbstractSyntaxStructure
     antecedents::Vector{<:F}
 
-    function RightieLinearForm{O}(
+    function RightmostLinearForm{O,F}(
         antecedents::Vector,
-    )
-        # TODO: typejoin??
-        F = SoleBase._typejoin(typeof.(antecedents)...)
+    ) where {O<:AbstractOperator,F<:AbstractSyntaxStructure}
         new{O,F}(antecedents)
     end
 
-    function RightieLinearForm(
-        ::O,
+    function RightmostLinearForm{O}(
         antecedents::Vector,
     ) where {O <: AbstractOperator}
-        RightieLinearForm{O}(antecedents)
+        F = SoleBase._typejoin(typeof.(antecedents)...)
+        RightmostLinearForm{O,F}(antecedents)
+    end
+
+    function RightmostLinearForm(
+        op_type::DataType,
+        antecedents::Vector,
+    )
+        RightmostLinearForm{op_type}(antecedents)
+    end
+
+    function RightmostLinearForm(
+        op::AbstractOperator,
+        antecedents::Vector,
+    )
+        RightmostLinearForm(typeof(op),antecedents)
     end
 end
-=#
+
+antecedents(rmlf::RightmostLinearForm) = rmlf.antecedents
+
+############################################################################################
+
+struct Literal{T<:AbstractSyntaxToken} <: AbstractSyntaxStructure
+    neg::Bool
+    prop::T
+
+    function Literal{T}(
+        neg::Bool,
+        prop::T,
+    ) where {T<:AbstractSyntaxToken}
+        new{T}(neg,prop)
+    end
+
+    function Literal(
+        neg::Bool,
+        prop::T,
+    ) where {T<:AbstractSyntaxToken}
+        Literal{T}(neg,prop)
+    end
+end
+
+neg(l::Literal) = l.neg
+prop(l::Literal) = l.prop
+
+convert(::Type{SyntaxTree},l::Literal) = neg ? ¬l : SyntaxTree(l)
+
+function complement(l::Literal)
+    prop_literal = prop(l)
+
+    return neg(l) ? Literal(false, prop_literal) : Literal(true, prop_literal)
+end
 
 ############################################################################################
 
