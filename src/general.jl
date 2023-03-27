@@ -728,6 +728,7 @@ struct RightmostLinearForm{O<:AbstractOperator, F<:AbstractSyntaxStructure} <: A
 end
 
 antecedents(rmlf::RightmostLinearForm) = rmlf.antecedents
+op(::RightmostLinearForm{O}) where {O} = name(O)
 
 ############################################################################################
 
