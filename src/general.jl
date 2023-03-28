@@ -730,6 +730,8 @@ end
 antecedents(rmlf::RightmostLinearForm) = rmlf.antecedents
 op(::RightmostLinearForm{O}) where {O} = name(O)
 
+convert(::Type{SyntaxTree},rmlf::RightmostLinearForm) = op(rmlf)(antecedents(rmlf)...)
+
 ############################################################################################
 
 struct Literal{T<:AbstractSyntaxToken} <: AbstractSyntaxStructure
