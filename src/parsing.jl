@@ -65,6 +65,7 @@ const BASE_PARSABLE_OPERATORS = [BASE_MODAL_OPERATORS...,
 # ',' is ignored but might be useful to deal with more readable inputs
 _parsing_special_strings = ["(", ")"]
 _parsing_ignored_strings = [",", ""]
+_default_proposition_stencil = Proposition{String}
 
 # Check if a specific unary operator is in a valid position, during tokens recognition
 function _check_unary_validity(tokens::Vector{<:AbstractSyntaxToken}, op::AbstractOperator)
@@ -146,6 +147,10 @@ function _interpret_tokens(
             op = string_to_op[st]
             _check_unary_validity(tokens, op)
             push!(tokens, op)
+
+        # token is a special string
+        elseif st in _parsing_special_strings
+            push!(tokens, _default_proposition_stencil(st))
 
         # token is something else
         else
@@ -306,9 +311,7 @@ function parseformulatree(
         push!(postfix, op)
     end
 
-    ans = _buildformulatree(postfix)
-    println(ans)
-    return ans
+    return _buildformulatree(postfix)
 end
 
 # TODOs:
@@ -363,6 +366,8 @@ end
 #       SoleLogics.syntaxstring(op::MyCustomRelationalOperator; kwargs...) = "LEFT CUSTOM BRACKET $(syntaxstring(relationtype(op);  kwargs...)) RIGHT CUSTOM BRACKET"
 #
 #       f = parseformulatree("LEFT CUSTOM BRACKET G RIGHT CUSTOM BRACKET p ∧ ¬ LEFT CUSTOM BRACKET G RIGHT CUSTOM BRACKET q", [MyCustomRelationalOperator(globalrel)])
+#
+# ☑ Tests
 #
 # Minor changes
 #   ☑ proposition_parser changed to proposition_stencil (mhhh)

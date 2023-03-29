@@ -223,6 +223,27 @@ emptylogic = @test_nowarn propositionallogic(; operators = SoleLogics.AbstractOp
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ parsing.jl ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+struct _TestRel <: AbstractRelation end;
+const testrel  = _TestRel();
+SoleLogics.arity(::Type{_TestRel}) = 2
+SoleLogics.syntaxstring(::Type{_TestRel}; kwargs...) = "Test,Relation"
+
+# If AbstractRelationalOperator interface changes, just redefine the following:
+struct SoleRelationalOperator{R<:AbstractRelation} <: AbstractRelationalOperator{R} end
+(SoleRelationalOperator)(r::AbstractRelation) = SoleRelationalOperator{typeof(r)}()
+SoleLogics.syntaxstring(op::SoleRelationalOperator; kwargs...) =
+    "🌅$(syntaxstring(relationtype(op);  kwargs...))🌄"
+
+struct PipeRelationalOperator{R<:AbstractRelation} <: AbstractRelationalOperator{R} end
+(PipeRelationalOperator)(r::AbstractRelation) = PipeRelationalOperator{typeof(r)}()
+SoleLogics.syntaxstring(op::PipeRelationalOperator; kwargs...) =
+    "|$(syntaxstring(relationtype(op);  kwargs...))|"
+
+struct CurlyRelationalOperator{R<:AbstractRelation} <: AbstractRelationalOperator{R} end
+(CurlyRelationalOperator)(r::AbstractRelation) = CurlyRelationalOperator{typeof(r)}()
+SoleLogics.syntaxstring(op::CurlyRelationalOperator; kwargs...) =
+    "{$(syntaxstring(relationtype(op);  kwargs...))}"
+
 @test_nowarn parseformulatree("p")
 @test_nowarn parseformulatree("⊤")
 
@@ -249,27 +270,52 @@ emptylogic = @test_nowarn propositionallogic(; operators = SoleLogics.AbstractOp
 
 @test alphabet(logic(parseformula("p→q"))) == AlphabetOfAny{String}()
 
-struct MyCustomRelationalOperator{R<:AbstractRelation} <: AbstractRelationalOperator{R} end
-(MyCustomRelationalOperator)(r::AbstractRelation) = MyCustomRelationalOperator{typeof(r)}()
-SoleLogics.syntaxstring(op::MyCustomRelationalOperator; kwargs...) =
-    "LEFT CUSTOM ;à#@ BRACKET $(syntaxstring(relationtype(op);  kwargs...)) RIGHT CUSTOM --_-_ BRACKET"
+@test_nowarn parseformulatree("🌅G🌄p ∧ ¬🌅G🌄q", [SoleRelationalOperator(globalrel)])
+@test_nowarn parseformulatree("|G|p ∧ ¬|G|q", [PipeRelationalOperator(globalrel)])
+@test_nowarn parseformulatree("{G}p ∧ ¬{G}q", [CurlyRelationalOperator(globalrel)])
 
-@test_nowarn parseformulatree("LEFT CUSTOM ;à#@ BRACKET G RIGHT CUSTOM --_-_ BRACKET p ∧ ¬ LEFT CUSTOM BRACKET G RIGHT CUSTOM BRACKET q", [MyCustomRelationalOperator(globalrel)])
+_f = parseformulatree("|G|p ∧ ¬{G}q", [CurlyRelationalOperator(globalrel)])
+@test syntaxstring(token(children(_f)[1])) == "|G|p" # PipeRelationalOperator not specified
 
-# Malformed input
-# TODO fix @Mauro
+_f = parseformulatree("{Gp ∧ ¬{G}q", [CurlyRelationalOperator(globalrel)])
+@test syntaxstring(token(children(_f)[1])) == "{Gp"
+
+@test_nowarn parseformulatree("¬⟨Test,Relation⟩[Test,Relation]p",
+    [BoxRelationalOperator(testrel), DiamondRelationalOperator(testrel)]
+)
+@test_nowarn parseformulatree("¬1→0",
+    proposition_stencil=(x->Proposition{Float64}(parse(Float64, x)))
+)
+@test_nowarn parseformulatree("¬0.42∧1",
+    proposition_stencil=(x->Proposition{Float64}(parse(Float64, x)))
+)
+@test_nowarn parseformulatree("¬-96",
+    proposition_stencil=(x->Proposition{Float64}(parse(Float64, x)))
+)
+
 @test_throws ErrorException parseformulatree("¬p◊")
 @test_throws ErrorException parseformulatree("¬p◊q")
 @test_throws ErrorException parseformulatree("◊¬p◊")
 @test_throws ErrorException parseformulatree("◊¬p◊q")
 @test_throws ErrorException parseformulatree("(p∧q", [NEGATION, CONJUNCTION])
 @test_throws ErrorException parseformulatree("))))", [CONJUNCTION])
+@test_throws ErrorException parseformulatree("⟨G⟩p ¬⟨G⟩q",
+    [DiamondRelationalOperator(globalrel)]
+    )
+@test_throws ErrorException parseformulatree("¬[[G]]p", [BoxRelationalOperator(globalrel)])
 
-# TODO
-# @test ErrorException parseformulatree("⟨G⟩p", [DiamondRelationalOperator{GlobalRel}()])
-
+@test_throws ErrorException parseformulatree("[G][G]-1.2[G]",
+    [BoxRelationalOperator(globalrel)],
+    proposition_stencil=(x->Proposition{Float64}(parse(Float64, x)))
+)
+@test_throws ErrorException parseformulatree("¬-3(",
+    proposition_stencil=(x->Proposition{Float64}(parse(Float64, x)))
+)
 
 @test_nowarn parseformula("p")
+@test_throws ArgumentError parseformulatree("p",
+    proposition_stencil=(x->Proposition{Float64}(parse(Float64, x)))
+)
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
