@@ -48,7 +48,7 @@ some specific conditions.
 The following `kwargs` are currently supported:
 - `function_notation = false::Bool`: when set to `true`, it forces the use of
 function notation for binary operators.
-See [here](https://en.m.wikipedia.org/wiki/Infix_notation).
+See [here](https://en.wikipedia.org/wiki/Infix_notation).
 
 !!! warning
     The produced string should not be padded by spaces as this may cause misinterpretations
@@ -161,10 +161,6 @@ Note that, for a correct functioning,
 `SoleLogics.negation` must be defined for the wrapped atom.
 
 See also [`Proposition`](@ref), [`check`](@ref).
-
-TODO3: Perhaps this should be called "negation" instead of "inverse?
-    Also, the documentation is not clear (i.e., what does it mean "which inverted semantics
-    with respect to p"?) Agree on "negation", and made a fix to the sentence.
 """
 negation(p::Proposition) = Proposition(negation(atom(p)))
 
@@ -178,7 +174,7 @@ end
 """
     abstract type AbstractOperator <: AbstractSyntaxToken end
 
-An operator is a [logical constant](https://en.m.wikipedia.org/wiki/Logical_connective)
+An operator is a [logical constant](https://en.wikipedia.org/wiki/Logical_connective)
 which establishes a relation between propositions (i.e., facts).
 For example, the boolean operators AND, OR and IMPLIES (stylized as ∧, ∨ and →)
 are used to connect propositions and/or formulas to express derived concepts.
@@ -629,15 +625,6 @@ Base.hash(a::SyntaxTree) = Base.hash(syntaxstring(a))
 
 # Refer to syntaxstring(tok::AbstractSyntaxToken; kwargs...) for documentation
 function syntaxstring(t::SyntaxTree; function_notation = false, kwargs...)
-    function syntaxstring_fun(t::SyntaxTree)
-        tok = token(t)
-        return length(children(t)) == 0 ?
-               syntaxstring(tok; function_notation = function_notation, kwargs...) :
-               syntaxstring(tok; function_notation = function_notation, kwargs...) * "(" *
-                    join([syntaxstring(c; function_notation = function_notation, kwargs...) for c in children(t)], ", ") *
-                ")"
-        # "$(syntaxstring(tok; kwargs...))(" * join(map((c)->("($(syntaxstring(c; kwargs...)))"), children(t)), ",") * ")"
-    end
 
     tok = token(t)
     if arity(tok) == 0
@@ -648,7 +635,12 @@ function syntaxstring(t::SyntaxTree; function_notation = false, kwargs...)
         "$(f(children(t)[1])) $(syntaxstring(tok; function_notation = function_notation, kwargs...)) $(f(children(t)[2]))"
     else
         # Function notation for higher arity operator
-        syntaxstring_fun(t)
+        length(children(t)) == 0 ?
+               syntaxstring(tok; function_notation = function_notation, kwargs...) :
+               syntaxstring(tok; function_notation = function_notation, kwargs...) * "(" *
+                    join([syntaxstring(c; function_notation = function_notation, kwargs...) for c in children(t)], ", ") *
+                ")"
+        # "$(syntaxstring(tok; kwargs...))(" * join(map((c)->("($(syntaxstring(c; kwargs...)))"), children(t)), ",") * ")"
     end
 end
 
@@ -693,7 +685,7 @@ tree(t::SyntaxTree) = t
 
 Abstract type for representing an alphabet of propositions with atoms of type `A`.
 An alphabet (or propositional alphabet) is assumed to be a
-[countable](https://en.m.wikipedia.org/wiki/Countable_set) set of propositions.
+[countable](https://en.wikipedia.org/wiki/Countable_set) set of propositions.
 
 See also [`ExplicitAlphabet`](@ref), [`AlphabetOfAny`](@ref),
 [`propositionstype`](@ref), [`atomtype`](@ref),
@@ -706,8 +698,6 @@ propositionstype(A::Type{<:AbstractAlphabet}) = eltype(A)
 propositionstype(a::AbstractAlphabet) = propositionstype(typeof(a))
 atomtype(a::Type{<:AbstractAlphabet}) = atomtype(propositionstype(a))
 atomtype(a::AbstractAlphabet) = atomtype(propositionstype(a))
-
-# TODO3: Perhaps add a method "propositions(a::AbstractAlphabet)? To use it in Base.in ? Such a method already exists, but not that it is only defined for finite alphabets. If I understand the Base.in correctly, it cannot work for infinite alphabets?
 
 """
 Each alphabet must provide a method for establishing whether
@@ -880,11 +870,10 @@ Base.isiterable(::Type{<:AlphabetOfAny}) = false
 ############################################################################################
 
 """
-
     abstract type AbstractGrammar{A<:AbstractAlphabet,O<:AbstractOperator} end
 
 Abstract type for representing a
-[context-free grammar](https://en.m.wikipedia.org/wiki/Context-free_grammar)
+[context-free grammar](https://en.wikipedia.org/wiki/Context-free_grammar)
 based on a *single* alphabet of type `A`, and a set of operators
 that consists of all the (singleton) child types of `O`.
 A context-free grammar is a simple structure for defining formulas inductively.
@@ -984,24 +973,28 @@ function formulas(
     end
 end
 
+function Base.isequal(a::AbstractGrammar, b::AbstractGrammar)
+    Base.isequal(alphabet(a), alphabet(b)) &&
+    Base.isequal(operatorstype(a), operatorstype(b))
+end
+Base.hash(a::AbstractGrammar) = Base.hash(alphabet(a)) + Base.hash(operatorstype(a))
+
+
 """
     struct CompleteFlatGrammar{A<:AbstractAlphabet,O<:AbstractOperator} <: AbstractGrammar{A,O}
         alphabet::A
         operators::Vector{<:O}
     end
 
-TODO3: I am not sure about the following description.. please explain it better. To discuss.
-
 Grammar that generates all well-formed formulas obtained by the arity-complying composition
 of propositions of an alphabet of type `A`, and all operators in `operators`.
-With n operators, this grammar has exactly n+1 production rules, and
-m+1 terminal symbols, where m is the number of nullary operators.
-For example, with `operators = [⊥,∧,∨]`, the grammar is:
+With n operators, this grammar has exactly n+1 production rules.
+For example, with `operators = [⊥,∧,∨]`, the grammar (in Backus-Naur form) is:
 
-    T ::= p | ⊥ | T ∧ T | T ∨ T
+    φ ::= p | ⊥ | φ ∧ φ | φ ∨ φ
 
 with p ∈ alphabet. Note: it is *flat* in the sense that all rules substitute the same
-(unique and starting) non-terminal symbol T.
+(unique and starting) non-terminal symbol φ.
 
 See also [`alphabet`](@ref), [`operators`](@ref),
 [`nonterminals`](@ref), [`terminals`](@ref),
@@ -1120,7 +1113,8 @@ See also [`top`](@ref), [`bottom`](@ref), [`tops`](@ref), [`bottoms`](@ref), [`A
 """
 const TruthValue = Any
 
-# TODO3: I do not understand the difference between tops and top (similarly for bottoms and bot)... To discuss
+# TODO tops->istop, bottoms->isbottom
+
 """
     tops(::TruthValue)::Bool
 
@@ -1231,7 +1225,7 @@ syntaxstring(o::TruthOperator; kwargs...) = syntaxstring(value(o))
 
 Abstract type for representing algebras. Algebras are used for grounding the
 truth of propositions and the semantics of operators. They typically encode a
-[lattice structure](https://en.m.wikipedia.org/wiki/Lattice_(order)) where two
+[lattice structure](https://en.wikipedia.org/wiki/Lattice_(order)) where two
 elements(or nodes) *⊤* and *⊥* are referred to as *top* (or maximum)
 and *bottom* (or minimum). Each node in the lattice represents a truth value
 that a proposition or a formula can have on an interpretation, and the
@@ -1357,6 +1351,12 @@ top(l::AbstractLogic) = top(algebra(l))
 bottom(l::AbstractLogic) = bottom(algebra(l))
 iscrisp(l::AbstractLogic) = iscrisp(algebra(l))
 
+function Base.isequal(a::AbstractLogic, b::AbstractLogic)
+    Base.isequal(grammar(a), grammar(b)) &&
+    Base.isequal(algebra(a), algebra(b))
+end
+Base.hash(a::AbstractLogic) = Base.hash(grammar(a)) + Base.hash(algebra(a))
+
 ############################################################################################
 
 """
@@ -1475,13 +1475,13 @@ end
 # Note that, since `op` might not be in the logic of the child formulas,
 #  the resulting formula may be of a different logic.
 function joinformulas(op::AbstractOperator, children::NTuple{N,Formula}) where {N}
-    ls = unique(logic.(children))
+    ls = unique(logic.(children)) # Uses Base.isequal
     @assert length(ls) == 1 "Cannot" *
                 " build formula by combination of formulas with different logics: $(ls)."
     l = first(ls)
     # "TODO expand logic's set of operators (op is not in it: $(typeof(op)) ∉ $(operatorstype(l)))."
     @assert typeof(op) <: operatorstype(l) "Can't join $(N) formulas via operator $(op):" *
-        " this operator doesNot belong to the logic. $(typeof(op)) <: $(operatorstype(l)) should hold!"
+        " this operator does not belong to the logic. $(typeof(op)) <: $(operatorstype(l)) should hold!"
     return Formula(l, joinformulas(op, map(synstruct, children)))
 end
 
@@ -1513,11 +1513,11 @@ algebra(f::Formula) = algebra(logic(f))
     abstract type AbstractInterpretation{A,T<:TruthValue} end
 
 Abstract type for representing a propositional
-[interpretation](https://en.m.wikipedia.org/wiki/Interpretation_(logic))
+[interpretation](https://en.wikipedia.org/wiki/Interpretation_(logic))
 (or propositional model)
 that associates truth values of a type `T` to propositional letters of atom type `A`.
 In the case of
-[propositional logic](https://simple.m.wikipedia.org/wiki/Propositional_logic),
+[propositional logic](https://simple.wikipedia.org/wiki/Propositional_logic),
 is essentially a map *proposition → truth value*.
 
 Properties expressed via logical formulas can be `check`ed on logical interpretations.
@@ -1538,7 +1538,7 @@ truthtype(::AbstractInterpretation{A,T}) where {A,T} = T
 
 Checks a formula on a logical interpretation (or model), returning a truth value.
 This process is referred to as
-[model checking](https://en.m.wikipedia.org/wiki/Model_checking), and there are many
+[model checking](https://en.wikipedia.org/wiki/Model_checking), and there are many
 algorithms for it, typically depending on the complexity of the logic.
 
 See also [`AbstractFormula`](@ref), [`AbstractInterpretation`](@ref).

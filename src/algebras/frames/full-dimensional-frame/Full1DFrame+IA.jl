@@ -1,9 +1,6 @@
 
 # Refer to [`IntervalRelation`](@ref).
 
-# TODO remove these goeswith. 
-# goeswith(::Type{<:Full1DFrame}, ::IntervalRelation) = true
-
 # Allen relations
 _accessibles(fr::Full1DFrame, w::Interval{Int}, ::_IA_A) = zip(Iterators.repeated(w.y), w.y+1:X(fr)+1)
 _accessibles(fr::Full1DFrame, w::Interval{Int}, ::_IA_Ai) = zip(1:w.x-1, Iterators.repeated(w.x))

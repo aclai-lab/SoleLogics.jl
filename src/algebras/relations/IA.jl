@@ -7,7 +7,7 @@
 
 Abstract type for interval binary relations.
 Originally defined by Allen in 1983,
-[interval algebra](https://en.m.wikipedia.org/wiki/Allen%27s_interval_algebra)
+[interval algebra](https://en.wikipedia.org/wiki/Allen%27s_interval_algebra)
 comprehends 12 directional relations between intervals,
 plus the identity (i.e., `identityrel`).
 

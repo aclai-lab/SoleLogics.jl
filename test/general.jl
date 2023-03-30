@@ -1,8 +1,9 @@
 # julia
-using Revise
-using Test
-using SoleLogics
-using SoleLogics: BasePropositionalLogic
+# using Revise
+# using Test
+# using SoleLogics
+
+# @testset "General" begin
 
 p1 = @test_nowarn Proposition(1)
 p2 = @test_nowarn Proposition(2)
@@ -181,6 +182,8 @@ f_conj_int = @test_nowarn CONJUNCTION(f_int, f_int, f_int)
 @test_throws AssertionError f_int(p1 ∧ p100 ∧ p1_float)
 f3_int = f_int(⊥ ∨ (p1 ∧ p100 ∧ p2 ∧ ⊤))
 
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ checking ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 @test_nowarn TruthDict()
 @test_nowarn TruthDict([])
 @test_nowarn TruthDict((2,3),)
@@ -211,121 +214,16 @@ emptylogic = @test_nowarn propositionallogic(; operators = SoleLogics.AbstractOp
 @test length(formulas(emptylogic, maxdepth = 2, nformulas = 2)) == 0
 
 
-@test propositionallogic() isa BasePropositionalLogic
-@test propositionallogic(; operators = [¬, ∨]) isa BasePropositionalLogic
+@test propositionallogic() isa SoleLogics.BasePropositionalLogic
+@test propositionallogic(; operators = [¬, ∨]) isa SoleLogics.BasePropositionalLogic
 
 @test_throws AssertionError propositionallogic(; operators = [¬, ∨])(¬ p1)
 @test_nowarn propositionallogic(; operators = [¬, ∨])(¬ p_string)
-@test propositionallogic(; alphabet = ["p", "q"]) isa BasePropositionalLogic
+@test propositionallogic(; alphabet = ["p", "q"]) isa SoleLogics.BasePropositionalLogic
 
 @test modallogic() isa SoleLogics.BaseModalLogic
 @test (@test_logs (:warn,) modallogic(; operators = [¬, ∨]) isa SoleLogics.BasePropositionalLogic)
 
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ parsing.jl ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-struct _TestRel <: AbstractRelation end;
-const testrel  = _TestRel();
-SoleLogics.arity(::Type{_TestRel}) = 2
-SoleLogics.syntaxstring(::Type{_TestRel}; kwargs...) = "Test,Relation"
-
-# If AbstractRelationalOperator interface changes, just redefine the following:
-struct SoleRelationalOperator{R<:AbstractRelation} <: AbstractRelationalOperator{R} end
-(SoleRelationalOperator)(r::AbstractRelation) = SoleRelationalOperator{typeof(r)}()
-SoleLogics.syntaxstring(op::SoleRelationalOperator; kwargs...) =
-    "🌅$(syntaxstring(relationtype(op);  kwargs...))🌄"
-
-struct PipeRelationalOperator{R<:AbstractRelation} <: AbstractRelationalOperator{R} end
-(PipeRelationalOperator)(r::AbstractRelation) = PipeRelationalOperator{typeof(r)}()
-SoleLogics.syntaxstring(op::PipeRelationalOperator; kwargs...) =
-    "|$(syntaxstring(relationtype(op);  kwargs...))|"
-
-struct CurlyRelationalOperator{R<:AbstractRelation} <: AbstractRelationalOperator{R} end
-(CurlyRelationalOperator)(r::AbstractRelation) = CurlyRelationalOperator{typeof(r)}()
-SoleLogics.syntaxstring(op::CurlyRelationalOperator; kwargs...) =
-    "{$(syntaxstring(relationtype(op);  kwargs...))}"
-
-@test_nowarn parseformulatree("p")
-@test_nowarn parseformulatree("⊤")
-
-@test syntaxstring(parseformulatree("p∧q"); function_notation = true) == "∧(p, q)"
-@test syntaxstring(parseformulatree("p→q"); function_notation = true) == "→(p, q)"
-@test parseformulatree("¬p∧q") == parseformulatree("¬(p)∧q")
-@test parseformulatree("¬p∧q") != parseformulatree("¬(p∧q)")
-
-@test filter(!isspace, syntaxstring(parseformulatree("¬p∧q∧(¬s∧¬z)"); function_notation = true)) == "∧(¬(p),∧(q,∧(¬(s),¬(z))))"
-@test_nowarn parseformulatree("¬p∧q∧(¬s∧¬z)", [NEGATION, CONJUNCTION])
-@test_nowarn parseformulatree("¬p∧q∧(¬s∧¬z)", [NEGATION])
-# @test ((@test_logs (:warn,) operatorstype(logic(parseformula("¬p∧q∧(¬s∧¬z)", [BOX])))) == Union{typeof(□),typeof(¬),typeof(∧)})
-@test operatorstype(logic(parseformula("¬p∧q∧(¬s∧¬z)", [BOX]))) == Union{typeof(□),typeof(¬),typeof(∧)}
-@test (@test_nowarn operatorstype(logic(parseformula("¬p∧q∧(¬s∧¬z)"))) == Union{typeof(¬),typeof(∧)})
-@test_nowarn parseformulatree("¬p∧q→(¬s∧¬z)")
-@test filter(!isspace, syntaxstring(parseformulatree("¬p∧q→(¬s∧¬z)"); function_notation = true)) == "→(∧(¬(p),q),∧(¬(s),¬(z)))"
-@test_nowarn parseformulatree("¬p∧q→     (¬s∧¬z)")
-@test parseformulatree("□p∧   q∧(□s∧◊z)", [BOX]) == parseformulatree("□p∧   q∧(□s∧◊z)")
-@test syntaxstring(parseformulatree("◊ ◊ ◊ ◊ p∧q"); function_notation = true) == "∧(◊(◊(◊(◊(p)))), q)"
-@test syntaxstring(parseformulatree("¬¬¬ □□□ ◊◊◊ p ∧ ¬¬¬ q"); function_notation = true) == "∧(¬(¬(¬(□(□(□(◊(◊(◊(p))))))))), ¬(¬(¬(q))))"
-
-@test syntaxstring(parseformulatree("⟨G⟩p")) == "⟨G⟩(p)"
-@test syntaxstring(parseformulatree("[G]p")) == "[G](p)"
-
-@test alphabet(logic(parseformula("p→q"))) == AlphabetOfAny{String}()
-
-@test_nowarn parseformulatree("🌅G🌄p ∧ ¬🌅G🌄q", [SoleRelationalOperator(globalrel)])
-@test_nowarn parseformulatree("|G|p ∧ ¬|G|q", [PipeRelationalOperator(globalrel)])
-@test_nowarn parseformulatree("{G}p ∧ ¬{G}q", [CurlyRelationalOperator(globalrel)])
-
-_f = parseformulatree("|G|p ∧ ¬{G}q", [CurlyRelationalOperator(globalrel)])
-@test syntaxstring(token(children(_f)[1])) == "|G|p" # PipeRelationalOperator not specified
-
-_f = parseformulatree("{Gp ∧ ¬{G}q", [CurlyRelationalOperator(globalrel)])
-@test syntaxstring(token(children(_f)[1])) == "{Gp"
-
-@test_nowarn parseformulatree("¬⟨Test,Relation⟩[Test,Relation]p",
-    [BoxRelationalOperator(testrel), DiamondRelationalOperator(testrel)]
-)
-@test_nowarn parseformulatree("¬1→0",
-    proposition_parser=(x->Proposition{Float64}(parse(Float64, x)))
-)
-@test_nowarn parseformulatree("¬0.42∧1",
-    proposition_parser=(x->Proposition{Float64}(parse(Float64, x)))
-)
-@test_nowarn parseformulatree("¬-96",
-    proposition_parser=(x->Proposition{Float64}(parse(Float64, x)))
-)
-
-@test_throws ErrorException parseformulatree("¬p◊")
-@test_throws ErrorException parseformulatree("¬p◊q")
-@test_throws ErrorException parseformulatree("◊¬p◊")
-@test_throws ErrorException parseformulatree("◊¬p◊q")
-@test_throws ErrorException parseformulatree("(p∧q", [NEGATION, CONJUNCTION])
-@test_throws ErrorException parseformulatree("))))", [CONJUNCTION])
-@test_throws ErrorException parseformulatree("⟨G⟩p ¬⟨G⟩q",
-    [DiamondRelationalOperator(globalrel)]
-    )
-@test_throws ErrorException parseformulatree("¬[[G]]p", [BoxRelationalOperator(globalrel)])
-
-@test_throws ErrorException parseformulatree("[G][G]-1.2[G]",
-    [BoxRelationalOperator(globalrel)],
-    proposition_parser=(x->Proposition{Float64}(parse(Float64, x)))
-)
-@test_throws ErrorException parseformulatree("¬-3(",
-    proposition_parser=(x->Proposition{Float64}(parse(Float64, x)))
-)
-
-@test_nowarn parseformula("p")
-@test_throws ArgumentError parseformulatree("p",
-    proposition_parser=(x->Proposition{Float64}(parse(Float64, x)))
-)
-
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-# Mauro: I commented the following tests since a cryptic error message fills up the REPL.
-# This is strange, also because `randformulatree` actually returns correct SyntaxTrees.
-# TODO bring back
-_alphabet = ExplicitAlphabet(Proposition.(["pr", "qt_aoeu"]))
-_operators = [NEGATION, CONJUNCTION, IMPLICATION]
-# @test_broken randformulatree(10, _alphabet, _operators)
-# @test_nowarn randformulatree(2, _alphabet, _operators)
-
-include("test-checking.jl")
-include("test-worlds.jl")
+include("check/propositional.jl")

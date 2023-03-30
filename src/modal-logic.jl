@@ -18,7 +18,7 @@ include("algebras/worlds.jl")
     abstract type AbstractFrame{W<:AbstractWorld,T<:TruthValue} end
 
 Abstract type for an accessibility graph (Kripke frame), that gives the structure to
-[Kripke structures](https://en.m.wikipedia.org/wiki/Kripke_structure_(model_checking))'s).
+[Kripke structures](https://en.wikipedia.org/wiki/Kripke_structure_(model_checking))'s).
 
 See also [`truthtype`](@ref), [`worldtype`](@ref),
 [`allworlds`](@ref), [`nworlds`](@ref), [`initialworld`](@ref),
@@ -184,7 +184,7 @@ arity(r::AbstractRelation)::Integer = arity(typeof(r))
 syntaxstring(R::Type{<:AbstractRelation}; kwargs...)::String = error("Please, provide method syntaxstring(::$(typeof(R)); kwargs...).")
 syntaxstring(r::AbstractRelation; kwargs...)::String = syntaxstring(typeof(r); kwargs...)
 
-# TODO3: This *should be* inverse (not converse??) actually no, read up: https://en.m.wikipedia.org/wiki/Converse_relation
+# TODO3: This *should be* inverse (not converse??) actually no, read up: https://en.wikipedia.org/wiki/Converse_relation
 doc_conv_rel = """
     converse(R::Type{<:AbstractRelation})::Type{<:AbstractRelation}
     converse(r::AbstractRelation)::AbstractRelation = converse(typeof(r))()
@@ -226,7 +226,6 @@ Returns whether it is known that a relation is symmetric.
 See also [`hasconverse`](@ref), [`converse`](@ref),
 [`isreflexive`](@ref), [`istransitive`](@ref), [`AbstractRelation`](@ref).
 """
-# TODO3: r is not defined. nice catch :D
 issymmetric(r::AbstractRelation) = hasconverse(r) ? converse(r) == r : false
 
 """
@@ -366,24 +365,6 @@ function accessibles(
     IterTools.imap(W, _accessibles(fr, w, r))
 end
 
-# TODO needed?
-# """
-# A frame must indicate their compatible relations via the `goeswith` trait, which
-# is defaulted by:
-
-#     goeswith(::Type{<:AbstractMultiModalFrame}, ::AbstractRelation) = false
-
-# For example, if frame of type `FR` is compatible with relation `R`, specify:
-
-#     goeswith(::Type{FR}, ::R) = true
-# """
-# goeswith(::Type{<:AbstractMultiModalFrame}, ::AbstractRelation) = false
-# # TODO Perhaps a check whether the `accessibles` method exists is enough?
-# # as in @show methods(accessibles, (FR, worldtype(FR), typeof(r)))
-# # goeswith(::Type{FR}, r::AbstractRelation) where {FR<:AbstractMultiModalFrame} = begin
-# #     @show methods(accessibles, (FR, worldtype(FR), typeof(r)))
-# # end
-
 ############################################################################################
 
 # TODO test
@@ -479,7 +460,7 @@ abstract type AbstractModalAssignment{W<:AbstractWorld,A,T<:TruthValue} end
     } <: AbstractInterpretation{A,T} end
 
 Abstract type for representing
-[Kripke structures](https://en.m.wikipedia.org/wiki/Kripke_structure_(model_checking))'s).
+[Kripke structures](https://en.wikipedia.org/wiki/Kripke_structure_(model_checking))'s).
 It comprehends a directed graph structure (Kripke frame), where nodes are referred to as
 *worlds*, and the binary relation between them is referred to as the
 *accessibility relation*. Additionally, each world is associated with a mapping from
@@ -557,7 +538,7 @@ initialworld(i::AbstractKripkeStructure) = initialworld(frame(i))
 
 
 Structure for representing
-[Kripke structures](https://en.m.wikipedia.org/wiki/Kripke_structure_(model_checking))'s).
+[Kripke structures](https://en.wikipedia.org/wiki/Kripke_structure_(model_checking))'s).
 explicitly; it wraps a `frame`, and an abstract dictionary that assigns an interpretation to
 each world.
 """
@@ -634,7 +615,7 @@ doc_DIAMOND = """
     arity(::Type{typeof(◊)}) = 1
 
 Logical diamond operator, typically interpreted as the modal existential quantifier.
-See [here](https://en.m.wikipedia.org/wiki/Modal_operator).
+See [here](https://en.wikipedia.org/wiki/Modal_operator).
 
 See also [`BOX`](@ref), [`NamedOperator`](@ref), [`AbstractOperator`](@ref).
 """
@@ -653,7 +634,7 @@ doc_BOX = """
     arity(::Type{typeof(□)}) = 1
 
 Logical box operator, typically interpreted as the modal universal quantifier.
-See [here](https://en.m.wikipedia.org/wiki/Modal_operator).
+See [here](https://en.wikipedia.org/wiki/Modal_operator).
 
 See also [`DIAMOND`](@ref), [`NamedOperator`](@ref), [`AbstractOperator`](@ref).
 """
@@ -691,7 +672,7 @@ const BaseModalOperators = Union{typeof.(BASE_MODAL_OPERATORS)...}
         algebra = BooleanAlgebra(),
     )
 
-Instantiates a [modal logic](https://simple.m.wikipedia.org/wiki/Modal_logic)
+Instantiates a [modal logic](https://simple.wikipedia.org/wiki/Modal_logic)
 given a grammar and an algebra. Alternatively, an alphabet and a set of operators
 can be specified instead of the grammar.
 
@@ -748,7 +729,7 @@ Abstract type for relational logical operators. A relational operator
 allows for semantic quantification across relational structures (e.g., Krikpe structures).
 It has arity equal to the arity of its underlying relation minus one.
 
-See, for example [temporal modal logic](https://en.m.wikipedia.org/wiki/Temporal_logic).
+See, for example [temporal modal logic](https://en.wikipedia.org/wiki/Temporal_logic).
 
 See also [`DiamondRelationalOperator`](@ref), [`BoxRelationalOperator`](@ref),
 [`AbstractKripkeStructure`](@ref), [`AbstractFrame`](@ref).

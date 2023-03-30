@@ -13,75 +13,106 @@ using ReadableRegex
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Precedence ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-doc_priority = """
-    Standard integer representing a precedence.
-    High numbers take precedence over low numbers.
-    This is needed to establish unambiguous implementations of parsing-related algorithms.
+# At least 3 levels of operator precedence can be distinguished:
+#
+# HIGH_PRECEDENCE = 15 (this value is Base.operator_precedence(:^))
+# BASE_PRECEDENCE = 12 (this value is Base.operator_precedence(:*))
+# LOW_PRECEDENCE  = 11 (this value is Base.operator_precedence(:+))
 
-    
-    Consider the following pairs (operator, priority):
-    
-    (¬, HIGH_PRIORITY), (∧, BASE_PRIORITY), (⟹, LOW_PRIORITY),
-    
-    then the expression "¬a ⟹ b ∧ c" is interpreted as "¬(a) ⟹ (b ∧ c)"
+doc_precedence = """
+    const HIGH_PRECEDENCE = Base.operator_precedence(:^)
+    const BASE_PRECEDENCE = Base.operator_precedence(:*)
+    const LOW_PRECEDENCE  = Base.operator_precedence(:+)
 
-    "a∧b → c∧d" is parsed "(a∧b) → (c∧d)" instead of "a ∧ (b→c) ∧ d"
+Standard integers representing operator precedence;
+operators with high values take precedence over operators with lower values.
+This is needed to establish unambiguous implementations of parsing-related algorithms.
 
+By default, all operators are assigned a `BASE_PRECEDENCE`, except for:
+- unary operators (e.g., ¬, ◊), that are assigned a `HIGH_PRECEDENCE`;
+- the implication (⟹), that are assigned a `LOW_PRECEDENCE`.
+
+In case of tie, operators are evaluated in the left-to-right order.
+
+# Examples
+```julia-repl
+julia> julia> syntaxstring(parseformulatree("a ∧ b ∨ c"))
+"a ∧ (b ∨ c)"
+
+# TODO this is wrong.
+julia> syntaxstring(parseformulatree("¬a ⟹ b ∧ c"))
+"(¬(a ⟹ b)) ∧ c"
+
+julia> syntaxstring(parseformulatree("a∧b → c∧d"))
+"(a ∧ b) → (c ∧ d)"
+```
+
+See also [`parseformulatree`](@ref).
 """
 
-# At least 3 degrees of priority can be distinguished:
-
-"""$(doc_priority)"""
-const HIGH_PRIORITY = Base.operator_precedence(:^)
-
-"""$(doc_priority)"""
-const BASE_PRIORITY = Base.operator_precedence(:*)
-
-"""$(doc_priority)"""
-const LOW_PRIORITY  = Base.operator_precedence(:+)
-
+"""$(doc_precedence)"""
+const HIGH_PRECEDENCE = Base.operator_precedence(:^)
+"""$(doc_precedence)"""
+const BASE_PRECEDENCE = Base.operator_precedence(:*)
+"""$(doc_precedence)"""
+const LOW_PRECEDENCE  = Base.operator_precedence(:+)
 
 function Base.operator_precedence(op::AbstractOperator)
     if isunary(op)
-        HIGH_PRIORITY
+        HIGH_PRECEDENCE
     else
-        BASE_PRIORITY
+        BASE_PRECEDENCE
     end
 end
-Base.operator_precedence(::typeof(IMPLICATION)) = LOW_PRIORITY
 
-const BASE_PARSABLE_OPERATORS = [BASE_MODAL_OPERATORS...,
-    DiamondRelationalOperator(globalrel),
-    BoxRelationalOperator(globalrel),
-    DiamondRelationalOperator(identityrel),
-    BoxRelationalOperator(identityrel),
-]
+Base.operator_precedence(::typeof(IMPLICATION)) = LOW_PRECEDENCE
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Input and construction ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # Characters with special meaning in expressions.
 # '(' and ')' are needed to wrap a new scope
 # ',' is ignored but might be useful to deal with more readable inputs
-_parsing_special_strings = ["(", ")"]
-_parsing_ignored_strings = [",", ""]
-_default_proposition_parser = Proposition{String}
 
-# Check if a specific unary operator is in a valid position, during tokens recognition
-function _check_unary_validity(tokens::Vector{<:AbstractSyntaxToken}, op::AbstractOperator)
-    # A unary operator is always preceeded by some other operator or a '('
+# TODO make these a parameter of the parsing algorithm.
+const OPENING_BRACKET = ("(")
+const CLOSING_BRACKET = (")")
+
+_parsing_special_strings = [OPENING_BRACKET, CLOSING_BRACKET]
+_parsing_ignored_strings = [",", ""] # TODO make this a parsing argument
+
+const BASE_PARSABLE_OPERATORS = [
+    BASE_MODAL_OPERATORS...,
+    DiamondRelationalOperator(globalrel),
+    BoxRelationalOperator(globalrel),
+    DiamondRelationalOperator(identityrel),
+    BoxRelationalOperator(identityrel),
+]
+
+
+# Check if a specific unary operator is in a valid position, during token recognition
+function _check_unary_validity(
+    tokens::Vector{<:AbstractSyntaxToken},
+    op::AbstractOperator,
+)
+    # A unary operator is always preceeded by some other operator or a OPENING_BRACKET
     if (arity(op) == 1 &&
         !isempty(tokens) &&
-        (syntaxstring(tokens[end]) != "(" && !(tokens[end] isa AbstractOperator))
+        (syntaxstring(tokens[end]) != OPENING_BRACKET && !(tokens[end] isa AbstractOperator))
     )
-        error("Malformed input: " * syntaxstring(op) * " is following " * syntaxstring(tokens[end]))
+        error("Malformed input! Operator `" * syntaxstring(op) *
+            "` encountered following `" * syntaxstring(tokens[end]) * "`.")
     end
 end
 
 # Raw tokens are cutted out from the initial expression
-function _recognize_tokens(expression::String, splitters::Vector{String})
+function _recognize_tokens(
+    expression::String,
+    splitters::Vector{String},
+)
     potential_token = ""
     raw_tokens = String[]
 
+    # Important: this allows to have splitters that are prefixes of other splitters.
     sort!(splitters, by=length, rev=true)
 
     i = 1
@@ -89,7 +120,7 @@ function _recognize_tokens(expression::String, splitters::Vector{String})
         splitter_found = false
 
         for splitter in splitters
-            # The lenghtiest, correct splitter starting at index 'i' is found (if possible)
+            # The longest correct splitter starting at index `i` is found (if possible)
             splitrange = findnext(splitter, expression, i)
 
             if (!isnothing(splitrange) && first(splitrange) == i)
@@ -121,10 +152,11 @@ function _recognize_tokens(expression::String, splitters::Vector{String})
         push!(raw_tokens, potential_token)
     end
 
-    # Particular special characters are ignored (see _parsing_ignore_strings);
-    # strip is added to avoid accepting concatenations of  " ":
-    # it is possible to have meaningful spaces in an expression (e.g [My operator]
-    # different from [MyOperator]) but here we are working on isolated presences of
+    # Special characters are ignored (see _parsing_ignore_strings);
+    # strip is added to avoid accepting concatenations of whitespaces:
+    # it is possible to have meaningful spaces in an expression (e.g.,
+    # two different operators "[My operator]" and "[MyOperator]")
+    # but here we are working on isolated presences of
     # operators we want to ignore.
     return filter(x -> !(strip(x) in _parsing_ignored_strings), raw_tokens);
 end
@@ -132,34 +164,37 @@ end
 # Raw tokens are interpreted and, thus, made processable by a parser
 function _interpret_tokens(
     raw_tokens::Vector{String},
-    string_to_op::Dict{String, AbstractOperator},
-    proposition_parser::Base.Callable
+    string_to_op::Dict{String,AbstractOperator},
+    proposition_parser::Base.Callable,
 )
-    tokens = SoleLogics.AbstractSyntaxToken[]
+    tokens = AbstractSyntaxToken[]
 
     i = 1
     while i <= length(raw_tokens)
         st = syntaxstring(raw_tokens[i])
 
-        # token is an operator
-        if (st in keys(string_to_op))
-            op = string_to_op[st]
-            _check_unary_validity(tokens, op)
-            push!(tokens, op)
-
-        # token is a special string
-        elseif st in _parsing_special_strings
-            # NOTE: this is a trick to distinguish parentheses (special parsing characters).
-            # TODO: change this to work with Symbol types and modify shunting yard accordingly.
-            push!(tokens, _default_proposition_parser(st))
-
-        # token is something else
-        else
-            proposition = proposition_parser(st)
-            @assert proposition isa Proposition string(proposition) *
-                " is not a proposition. Please, provide a valid proposition_parser."
-            push!(tokens, proposition)
+        tok = begin
+            if (st in keys(string_to_op))
+                # If the token is an operator -> perform check and push it as is
+                op = string_to_op[st]
+                _check_unary_validity(tokens, op)
+                op
+            elseif st in _parsing_special_strings
+                # If the token is a special string -> push it
+                # NOTE: wrap special strings into Proposition{String}`s.
+                #  shunting_yard will take care of this.
+                # TODO: use Symbol(st) instead, and modify shunting yard accordingly.
+                Proposition{String}(st)
+            else
+                # If the token is something else -> parse as Proposition and push it
+                proposition = proposition_parser(st)
+                @assert proposition isa Proposition string(proposition) *
+                    " is not a proposition. Please, provide a valid proposition_parser."
+                proposition
+            end
         end
+
+        push!(tokens, tok)
 
         i += 1
     end
@@ -167,42 +202,41 @@ function _interpret_tokens(
     return tokens;
 end
 
-# A simple lexer capable of distinguish operators in a string,
-# returning a Vector{SoleLogics.SyntaxTree}.
+# A simple lexer capable of distinguish operators in a string.
 function tokenizer(
     expression::String,
     operators::Vector{<:AbstractOperator},
-    proposition_parser::Base.Callable
+    proposition_parser::Base.Callable,
 )
-    # Symbolic represention of given OPERATORS
-    # expression = filter(x -> !isspace(x), expression)
+    # Strip whitespaces
     expression = String(strip(expression))
+    # Get the string representions of the given `operators`
     string_to_op = Dict([syntaxstring(op) => op for op in operators])
 
-    # operators whose syntaxstring is padded with spaces are invalid
-    # since they might cause an ambiguous parse.
+    # Note: operators whose syntaxstring is padded with spaces are invalid
+    # since they might cause ambiguities.
     invalidops = filter(o -> syntaxstring(o) != strip(syntaxstring(o)), operators)
-    @assert length(invalidops) == 0 "Certain operators are identified by a name starting" *
-        " or ending with a space. Please, fix typos in the following operators: " *
-        join(invalidops, ", ")
+    @assert length(invalidops) == 0 "Cannot safely parse operators that are" *
+        " prefixed/suffixed by whitespaces: " * join(invalidops, ", ")
 
-    splitters = vcat(_parsing_special_strings, keys(string_to_op)...)
+    # Note: everything that is not a special string or an operator
+    #  will be parsed as a Proposition.
+    splitters = vcat(_parsing_special_strings, collect(keys(string_to_op)))
     raw_tokens = String.(strip.(_recognize_tokens(expression, splitters)))
     return _interpret_tokens(raw_tokens, string_to_op, proposition_parser);
 end
 
 # Rearrange a serie of token, from infix to postfix notation.
-# Tokens are consumed from `tokens` in order to fill `postfix` and `opstack`.
+# Elements from `tokens` are consumed in order to fill `postfix` and `opstack`.
 function shunting_yard!(
-    tokens::Vector{SoleLogics.AbstractSyntaxToken},
-    opstack::Vector{SoleLogics.AbstractSyntaxToken},
-    postfix::Vector{SoleLogics.AbstractSyntaxToken}
+    tokens::Vector{<:AbstractSyntaxToken},
+    opstack::Vector{<:AbstractSyntaxToken},
+    postfix::Vector{<:AbstractSyntaxToken},
 )
     for tok in tokens
-
-        # tok is an operator, something must be done until another operator
-        # is placed at the top of the stack.
         if tok isa AbstractOperator
+            # If tok is an operator, something must be done until another operator
+            # is placed at the top of the stack.
             while !isempty(opstack) &&
                 (opstack[end] isa AbstractOperator &&
                 Base.operator_precedence(opstack[end]) > Base.operator_precedence(tok))
@@ -211,22 +245,23 @@ function shunting_yard!(
             # Now push the current operator onto the opstack
             push!(opstack, tok)
 
-        # Start a new "context" in the expression
-        elseif atom(tok) === "("
+        elseif atom(tok) === OPENING_BRACKET
+            # Start a new "context" in the expression
             push!(opstack, tok)
 
-        # opstack shrinkens and postfix vector is filled
-        elseif atom(tok) === ")"
+        elseif atom(tok) === CLOSING_BRACKET
+            # `opstack` shrinks and postfix vector is filled
             while !isempty(opstack)
                 op = pop!(opstack)
-                if op isa AbstractOperator || atom(op) != "("
+                if op isa AbstractOperator || atom(op) != OPENING_BRACKET
                     push!(postfix, op)
                 end
             end
 
-        # tok is certainly a Proposition
-        else
+        elseif tok isa Proposition
             push!(postfix, tok)
+        else
+            error("Parsing error! Unexpected token type encountered: $(typeof(tok)).")
         end
     end
 end
@@ -235,26 +270,34 @@ end
 #   we have to write about what BASE_PARSABLE_OPERATORS are set by default.
 # TODO: in the following docstring, Examples section should be expanded to consider
 #   different use cases of `proposition_parser`
-# TODO: `proposition_parser` name (who was previously called `proposition_parser`) is ugly
+# TODO do and explain overwrite
+# TODO: Parameter function_notation = false,
+# TODO function_notation only affects the syntaxstring of binary operators. Ternary operators always rely on ","
 """
     parseformulatree(
         expression::String,
-        additional_operators::Vector{<:AbstractOperator} = AbstractOperator[];
+        additional_operators::Union{Nothing,Vector{<:AbstractOperator}} = nothing;
         proposition_parser::Base.Callable = Proposition{String} # Proposition
     )
 
-Returns a `SyntaxTree` which is the result from parsing `expression`.
+Returns a `SyntaxTree` which is the result of parsing `expression`.
+By default, this function is only able to parse operators in
+`SoleLogics.BASE_PARSABLE_OPERATORS`; additional operators may be provided as
+parameter `additional_operators`. In case of clashing syntaxstring's, the provided
+additional operators will override the base parsable ones.
 
 !!! warning
-    Each additional_operators' `syntaxstring` must not contain spaces padding.
-    For example, if ⨁ is an AbstractOperator syntaxstring(⨁) = "  ⨁ " is invalid.
+    Operators' `syntaxstring`'s must not be prefixed/suffixed by whitespaces. Essentially,
+    for any operator ⨁, it must hold that `syntaxstring(⨁) == strip(syntaxstring(⨁))`.
 
 # Arguments
-- `expression::String`: expression to be parsed
+- `expression::String`: expression to be parsed;
 - `additional_operators::Vector{<:AbstractOperator}` additional non-standard operators
-    needed to correctly parse expression.
-- `proposition_parser::Base.Callable = Proposition{String}`: constructor needed to
-    interpret propositions recognized in expression.
+    needed to correctly parse expression;
+
+# Keyword Arguments
+- `proposition_parser::Base.Callable = Proposition{String}`: a callable function to use in
+    order to build propositions from strings recognized in the expression.
 
 # Examples
 ```julia-repl
@@ -266,38 +309,41 @@ See also [`SyntaxTree`](@ref), [`syntaxstring`](@ref).
 """
 function parseformulatree(
     expression::String,
-    additional_operators::Vector{<:AbstractOperator} = AbstractOperator[];
-    proposition_parser::Base.Callable = Proposition{String} # Proposition
+    additional_operators::Union{Nothing,Vector{<:AbstractOperator}} = nothing;
+    proposition_parser::Base.Callable = Proposition{String},
 )
-    # Build a formula starting from a Vector{AbstractSyntaxToken} representing its postfix notation
-    function _buildformulatree(postfix::Vector{AbstractSyntaxToken})
+    additional_operators = (isnothing(additional_operators) ? AbstractOperator[] : additional_operators)
+
+    # Build a formula starting from its postfix notation
+    function _buildformulatree(postfix::Vector{<:AbstractSyntaxToken})
         stack = SyntaxTree[]
 
-        # Each tok might be a Proposition or a AbstractOperator
         for tok in postfix
             # Stack collapses, composing a new part of the syntax tree
             if tok isa AbstractOperator
                 children = [pop!(stack) for _ in 1:arity(tok)]
                 push!(stack, SyntaxTree(tok, Tuple(reverse(children))))
-            else
+            elseif tok isa Proposition
                 push!(stack, SyntaxTree(tok))
+            else
+                error("Parsing error! Unexpected token type encountered: $(typeof(tok)).")
             end
         end
 
         if length(stack) != 1
-            error("Malformed input: $(expression) (postfix: $(postfix))")
+            error("Malformed input! Expression: `$(expression)`. (postfix: `$(postfix)`).")
         end
 
         return stack[1]
     end
 
     operators = unique(AbstractOperator[BASE_PARSABLE_OPERATORS..., additional_operators...])
-    tokens = tokenizer(expression, operators, proposition_parser) # Still a Vector{SoleLogics.AbstractSyntaxToken}
+    tokens = tokenizer(expression, operators, proposition_parser)
 
     # Stack containing operators. Needed to transform the expression in postfix notation;
-    # opstack may contain Proposition("("), Proposition(")") and operators
-    opstack = Vector{SoleLogics.AbstractSyntaxToken}([])
-    postfix = Vector{SoleLogics.AbstractSyntaxToken}([])
+    # opstack may contain Proposition(OPENING_BRACKET), Proposition(CLOSING_BRACKET) and operators
+    opstack = AbstractSyntaxToken[]
+    postfix = AbstractSyntaxToken[]
 
     shunting_yard!(tokens, opstack, postfix)
 
@@ -305,9 +351,9 @@ function parseformulatree(
     while !isempty(opstack)
         op = pop!(opstack)
 
-        # Starting expression is not well formatted, or a "(" is found
+        # Starting expression is not well formatted, or a OPENING_BRACKET is found
         if !(op isa AbstractOperator)
-            error("Mismatching brackets")
+            error("Parsing error! Mismatching brackets detected.")
         end
         push!(postfix, op)
     end
@@ -315,20 +361,26 @@ function parseformulatree(
     return _buildformulatree(postfix)
 end
 
-# TODOs:
-# - Parametro function_notation = false,
+function parseformulatree(
+    expression::String,
+    logic::AbstractLogic,
+)
+    parseformulatree(expression, operators(logic))
+end
+
 function parseformula(
     expression::String;
     # TODO add alphabet parameter add custom parser for propositions
     # alphabet::Union{Nothing,Vector,AbstractAlphabet} = nothing,
-    operators::Union{Nothing,Vector{<:AbstractOperator}} = nothing,
+    additional_operators::Union{Nothing,Vector{<:AbstractOperator}} = nothing,
     grammar::Union{Nothing,AbstractGrammar} = nothing,
     algebra::Union{Nothing,AbstractAlgebra} = nothing,
 )
-    operators = (isnothing(operators) ? AbstractOperator[] : operators)
-    t = parseformulatree(expression, operators)
+    additional_operators = (isnothing(additional_operators) ? AbstractOperator[] : additional_operators)
+    t = parseformulatree(expression, additional_operators)
     baseformula(t;
-        operators = unique(AbstractOperator[operators..., SoleLogics.operators(t)...]),
+        # additional_operators = unique(AbstractOperator[operators..., SoleLogics.operators(t)...]),
+        additional_operators = length(additional_operators) == 0 ? nothing : unique(AbstractOperator[additional_operators..., SoleLogics.operators(t)...]),
         # alphabet = alphabet,
         alphabet = AlphabetOfAny{String}(),
         grammar = grammar,
@@ -340,7 +392,7 @@ function parseformula(
     expression::String,
     logic::AbstractLogic,
 )
-    Formula(parseformulatree(expression, operatorstype(logic)), logic)
+    Formula(logic, parseformulatree(expression, operators(logic)))
 end
 
 function parseformula(
@@ -348,29 +400,5 @@ function parseformula(
     operators::Union{Nothing,Vector{<:AbstractOperator}};
     args...,
 )
-    parseformula(expression; operators = operators, args...)
+    parseformula(expression; additional_operators = operators, args...)
 end
-
-# Done TODOs
-# Space paddings
-#   ☑ @assert about operators whose syntaxstring contains space padding
-#   ☑ parseformulatree docstring revised;
-#   ☑ warning section in syntaxstring docstring, to advise against
-#       syntaxstrings containing space padding
-#
-# Logic
-#   ☑ `_relation_delimeters` variable removed: is no longer needed
-#   ☑ `_extract_token_in_context` removed: is no longer needed
-#   ☑ `_recognize_tokens` is now smart enough to interpret this snippet correctly:
-#
-#       struct MyCustomRelationalOperator{R<:AbstractRelation} <: AbstractRelationalOperator{R} end
-#       (MyCustomRelationalOperator)(r::AbstractRelation) = MyCustomRelationalOperator{typeof(r)}()
-#       SoleLogics.syntaxstring(op::MyCustomRelationalOperator; kwargs...) = "LEFT CUSTOM BRACKET $(syntaxstring(relationtype(op);  kwargs...)) RIGHT CUSTOM BRACKET"
-#
-#       f = parseformulatree("LEFT CUSTOM BRACKET G RIGHT CUSTOM BRACKET p ∧ ¬ LEFT CUSTOM BRACKET G RIGHT CUSTOM BRACKET q", [MyCustomRelationalOperator(globalrel)])
-#
-# ☑ Tests
-#
-# Minor changes
-#   ☑ proposition_parser changed to proposition_parser (mhhh)
-#   ☑ @assert about invalid `proposition_parser` selections, now contains a string
