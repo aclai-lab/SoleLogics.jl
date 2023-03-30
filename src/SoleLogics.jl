@@ -78,6 +78,8 @@ export parseformula, parseformulatree
 
 include("parse.jl")
 
+include("syntax-forms.jl")
+
 export randformula, randformulatree
 
 include("random.jl")
