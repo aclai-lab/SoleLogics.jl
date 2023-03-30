@@ -284,13 +284,13 @@ _f = parseformulatree("{Gp ∧ ¬{G}q", [CurlyRelationalOperator(globalrel)])
     [BoxRelationalOperator(testrel), DiamondRelationalOperator(testrel)]
 )
 @test_nowarn parseformulatree("¬1→0",
-    proposition_stencil=(x->Proposition{Float64}(parse(Float64, x)))
+    proposition_parser=(x->Proposition{Float64}(parse(Float64, x)))
 )
 @test_nowarn parseformulatree("¬0.42∧1",
-    proposition_stencil=(x->Proposition{Float64}(parse(Float64, x)))
+    proposition_parser=(x->Proposition{Float64}(parse(Float64, x)))
 )
 @test_nowarn parseformulatree("¬-96",
-    proposition_stencil=(x->Proposition{Float64}(parse(Float64, x)))
+    proposition_parser=(x->Proposition{Float64}(parse(Float64, x)))
 )
 
 @test_throws ErrorException parseformulatree("¬p◊")
@@ -306,15 +306,15 @@ _f = parseformulatree("{Gp ∧ ¬{G}q", [CurlyRelationalOperator(globalrel)])
 
 @test_throws ErrorException parseformulatree("[G][G]-1.2[G]",
     [BoxRelationalOperator(globalrel)],
-    proposition_stencil=(x->Proposition{Float64}(parse(Float64, x)))
+    proposition_parser=(x->Proposition{Float64}(parse(Float64, x)))
 )
 @test_throws ErrorException parseformulatree("¬-3(",
-    proposition_stencil=(x->Proposition{Float64}(parse(Float64, x)))
+    proposition_parser=(x->Proposition{Float64}(parse(Float64, x)))
 )
 
 @test_nowarn parseformula("p")
 @test_throws ArgumentError parseformulatree("p",
-    proposition_stencil=(x->Proposition{Float64}(parse(Float64, x)))
+    proposition_parser=(x->Proposition{Float64}(parse(Float64, x)))
 )
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
