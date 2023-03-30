@@ -78,7 +78,7 @@ include("interpretation-sets.jl")
 
 include("utils.jl")
 
-include("parsing.jl")
+include("parse.jl")
 
 export randformula, randformulatree
 

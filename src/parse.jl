@@ -13,23 +13,23 @@ using ReadableRegex
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Precedence ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-# Atleast 3 degrees of priority can be distinguished:
-#
-# HIGH_PRIORITY = 15 (this value is Base.operator_precedence(:^))
-# BASE_PRIORITY = 12 (this value is Base.operator_precedence(:*))
-# LOW_PRIORITY  = 11 (this value is Base.operator_precedence(:+))
-#
-# Consider the following pairs (operator, priority):
-#
-# (!, HIGH_PRIORITY), (∧, BASE_PRIORITY), (=>, LOW_PRIORITY),
-#
-# then the expression "!a => b ∧ c" is evaluated as "(!a) => (b ∧ c)"
-
 doc_priority = """
     Standard integer representing a precedence.
     High numbers take precedence over low numbers.
     This is needed to establish unambiguous implementations of parsing-related algorithms.
+
+    
+    Consider the following pairs (operator, priority):
+    
+    (¬, HIGH_PRIORITY), (∧, BASE_PRIORITY), (⟹, LOW_PRIORITY),
+    
+    then the expression "¬a ⟹ b ∧ c" is interpreted as "¬(a) ⟹ (b ∧ c)"
+
+    "a∧b → c∧d" is parsed "(a∧b) → (c∧d)" instead of "a ∧ (b→c) ∧ d"
+
 """
+
+# At least 3 degrees of priority can be distinguished:
 
 """$(doc_priority)"""
 const HIGH_PRIORITY = Base.operator_precedence(:^)
@@ -40,6 +40,7 @@ const BASE_PRIORITY = Base.operator_precedence(:*)
 """$(doc_priority)"""
 const LOW_PRIORITY  = Base.operator_precedence(:+)
 
+
 function Base.operator_precedence(op::AbstractOperator)
     if isunary(op)
         HIGH_PRIORITY
@@ -47,8 +48,6 @@ function Base.operator_precedence(op::AbstractOperator)
         BASE_PRIORITY
     end
 end
-
-# "a∧b → c∧d" is parsed "(a∧b) → (c∧d)" instead of "a ∧ (b→c) ∧ d"
 Base.operator_precedence(::typeof(IMPLICATION)) = LOW_PRIORITY
 
 const BASE_PARSABLE_OPERATORS = [BASE_MODAL_OPERATORS...,
