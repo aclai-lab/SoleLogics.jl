@@ -271,6 +271,7 @@ end
 # TODO: in the following docstring, Examples section should be expanded to consider
 #   different use cases of `proposition_parser`
 # TODO do and explain overwrite
+# TODO special characters should not appear in the tokens.
 # TODO: Parameter function_notation = false,
 # TODO function_notation only affects the syntaxstring of binary operators. Ternary operators always rely on ","
 """
