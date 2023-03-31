@@ -35,13 +35,16 @@ struct LeftmostLinearForm{O<:AbstractOperator, SS<:AbstractSyntaxStructure} <: A
         a = arity(O)
         n_children = length(children)
 
-        a == 1 ? begin
-            n_children != 1 &&
-                error("Number of children doesn't match with operator's arity")
-        end : begin
+        if a == 0
+            n_children == 0 ||
+                error("Mismatching number of children and operator's arity.")
+        elseif a == 1
+            n_children == 1 ||
+                error("Mismatching number of children and operator's arity.")
+        else
             h = (n_children-1)/(a-1)
-            !(h isa Integer) && h < 1 &&
-                error("Number of children doesn't match with operator's arity")
+            (isinteger(h) && h >= 1) ||
+                error("Mismatching number of children and operator's arity.")
         end
 
         new{O,SS}(children)
@@ -75,25 +78,48 @@ op(::LeftmostLinearForm{O}) where {O} = O()
 operatortype(::LeftmostLinearForm{O}) where {O} = O
 childrentype(::LeftmostLinearForm{O,SS}) where {O,SS} = SS
 
-function Base.show(io::IO, lf::LeftmostLinearForm)
-    cs = children(lf)
-
-    println(io, "LeftmostLinearForm{$(operatortype(lf)),$(childrentype(lf))}")
-    println("⩚(" * join(map(c->syntaxstring(c; syntaxstring_kwargs...), cs), ", ") * ")")
+function syntaxstring(
+    lf::LeftmostLinearForm;
+    # function_notation = false,
+    kwargs...,
+)
+    ch = children(lf)
+    if length(ch)
+        # syntaxstring(op(lf); function_notation = function_notation, kwargs...)
+        syntaxstring(op(lf); kwargs...)
+    else
+        children_ss = map(
+            # c->syntaxstring(c; function_notation = function_notation, kwargs...),
+            c->syntaxstring(c; kwargs...),
+            ch
+        )
+        # if function_notation
+            # println("$(syntaxstring(op(lf)))(" * join(children_ss, ", ") * ")")
+        # else
+        println("(" * join(children_ss, ") $(syntaxstring(op(lf); kwargs...)) (") * ")")
+    end
 end
 
-function tree(op::AbstractOperator, children::Vector{<:AbstractSyntaxStructure})
-    a = arity(op)
-
-    return length(children) == a ?
-                SyntaxTree(op, (children...)) :
-                SyntaxTree(op, (children[1:(a-1)]..., tree(op, children[a:end])))
+function tree(lf::LeftmostLinearForm)
+    operator = op(lf)
+    a = arity(operator)
+    function _tree(children::Vector{<:AbstractSyntaxStructure})
+        return length(children) == a ?
+            SyntaxTree(operator, children...) :
+            SyntaxTree(operator, children[1:(a-1)]..., _tree(children[a:end]))
+    end
+    _tree(tree.(children(lf)))
 end
-tree(lf::LeftmostLinearForm) = tree(op(lf), map(c->tree(c), children(lf)))
 
-Base.promote_rule(::Type{<:LeftmostLinearForm}, ::Type{<:LeftmostLinearForm}) = LeftmostLinearForm
-Base.promote_rule(::Type{<:AbstractSyntaxStructure}, ::Type{S}) where {S<:LeftmostLinearForm} = S
-Base.promote_rule(::Type{S}, ::Type{<:AbstractSyntaxStructure}) where {S<:LeftmostLinearForm} = S
+function Base.show(io::IO, lf::LeftmostLinearForm{O,SS}) where {O,SS}
+    println(io, "LeftmostLinearForm{$(O),$(SS)}")
+    println(io, "\t$(syntaxstring(lf))")
+end
+
+Base.promote_rule(::Type{<:LeftmostLinearForm}, ::Type{<:LeftmostLinearForm}) where {O} = SyntaxTree
+Base.promote_rule(::Type{SS<:AbstractSyntaxStructure}, ::Type{LF}) where {LF<:LeftmostLinearForm} = SyntaxTree
+Base.promote_rule(::Type{LF}, ::Type{SS<:AbstractSyntaxStructure}) where {LF<:LeftmostLinearForm} = SyntaxTree
+
 ############################################################################################
 
 """
@@ -104,7 +130,7 @@ Base.promote_rule(::Type{S}, ::Type{<:AbstractSyntaxStructure}) where {S<:Leftmo
 
 A proposition or its negation.
 
-See also [`CNF`](@ref), [`DNF`](@ref).
+See also [`CNF`](@ref), [`DNF`](@ref), [`AbstractSyntaxStructure`](@ref).
 """
 struct Literal{T<:AbstractSyntaxToken} <: AbstractSyntaxStructure
     ispos::Bool
@@ -153,7 +179,3 @@ const LeftmostDisjunctiveForm{SS<:AbstractSyntaxStructure} = LeftmostLinearForm{
 const CNF{SS<:AbstractSyntaxStructure} = LeftmostLinearForm{typeof(∧),LeftmostLinearForm{typeof(∨),SS}}
 """$(doc_lmlf)"""
 const DNF{SS<:AbstractSyntaxStructure} = LeftmostLinearForm{typeof(∨),LeftmostLinearForm{typeof(∧),SS}}
-
-Base.promote_rule(::Type{<:LeftmostConjunctiveForm}, ::Type{<:LeftmostConjunctiveForm}) = LeftmostConjunctiveForm
-Base.promote_rule(::Type{<:LeftmostDisjunctiveForm}, ::Type{<:LeftmostDisjunctiveForm}) = LeftmostDisjunctiveForm
-Base.promote_rule(::Type{<:LeftmostConjunctiveForm}, ::Type{<:LeftmostDisjunctiveForm}) = LeftmostDisjunctiveForm
