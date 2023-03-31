@@ -1,4 +1,29 @@
+doc_lmlf = """
+    struct LeftmostLinearForm{O<:AbstractOperator, SS<:AbstractSyntaxStructure} <: AbstractSyntaxStructure
+        children::Vector{<:SS}
+    end
 
+A syntax structure representing the `foldl` of a set of other syntax structure of type `SS`
+by means of an operator `O`. This structure enables a structured instantiation of
+formulas in conjuctive/disjunctive forms, and
+conjuctive normal form (CNF) or disjunctive normal form (DNF), defined as:
+
+    const LeftmostConjunctiveForm{SS<:AbstractSyntaxStructure} = LeftmostLinearForm{typeof(∧),SS}
+    const LeftmostDisjunctiveForm{SS<:AbstractSyntaxStructure} = LeftmostLinearForm{typeof(∨),SS}
+
+    const CNF{SS<:AbstractSyntaxStructure} = LeftmostLinearForm{typeof(∧),LeftmostLinearForm{typeof(∨),SS}}
+    const DNF{SS<:AbstractSyntaxStructure} = LeftmostLinearForm{typeof(∨),LeftmostLinearForm{typeof(∧),SS}}
+
+# Examples
+TODO four examples of syntaxstring of a LeftmostConjunctiveForm, LeftmostDisjunctiveForm, CNF, DNF
+"""
+
+"""$(doc_lmlf)
+
+See also [`AbstractSyntaxStructure`](@ref), [`SyntaxTree`](@ref),
+[`LeftmostConjunctiveForm`](@ref), [`LeftmostDisjunctiveForm`](@ref),
+[`Literal`](@ref).
+"""
 struct LeftmostLinearForm{O<:AbstractOperator, SS<:AbstractSyntaxStructure} <: AbstractSyntaxStructure
     children::Vector{<:SS}
 
@@ -40,6 +65,16 @@ convert(::Type{SyntaxTree}, lf::LeftmostLinearForm) = op(lf)(children(lf)...)
 
 ############################################################################################
 
+"""
+    struct Literal{T<:AbstractSyntaxToken} <: AbstractSyntaxStructure
+        ispos::Bool
+        prop::T
+    end
+
+A proposition or its negation.
+
+See also [`CNF`](@ref), [`DNF`](@ref).
+"""
 struct Literal{T<:AbstractSyntaxToken} <: AbstractSyntaxStructure
     ispos::Bool
     prop::T
@@ -48,14 +83,14 @@ struct Literal{T<:AbstractSyntaxToken} <: AbstractSyntaxStructure
         ispos::Bool,
         prop::T,
     ) where {T<:AbstractSyntaxToken}
-        new{T}(ispos,prop)
+        new{T}(ispos, prop)
     end
 
     function Literal(
         ispos::Bool,
         prop::T,
     ) where {T<:AbstractSyntaxToken}
-        Literal{T}(ispos,prop)
+        Literal{T}(ispos, prop)
     end
 end
 
@@ -68,9 +103,12 @@ complement(l::Literal) = Literal(!ispos(l), prop(l))
 
 ############################################################################################
 
-# TODO explain these forms
+"""$(doc_lmlf)"""
 const LeftmostConjunctiveForm{SS<:AbstractSyntaxStructure} = LeftmostLinearForm{typeof(∧),SS}
+"""$(doc_lmlf)"""
 const LeftmostDisjunctiveForm{SS<:AbstractSyntaxStructure} = LeftmostLinearForm{typeof(∨),SS}
 
+"""$(doc_lmlf)"""
 const CNF{SS<:AbstractSyntaxStructure} = LeftmostLinearForm{typeof(∧),LeftmostLinearForm{typeof(∨),SS}}
+"""$(doc_lmlf)"""
 const DNF{SS<:AbstractSyntaxStructure} = LeftmostLinearForm{typeof(∨),LeftmostLinearForm{typeof(∧),SS}}
