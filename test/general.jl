@@ -184,7 +184,6 @@ f3_int = f_int(⊥ ∨ (p1 ∧ p100 ∧ p2 ∧ ⊤))
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ checking ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-# TODO remove from here
 @test_nowarn TruthDict()
 @test_nowarn TruthDict([])
 @test_nowarn TruthDict((2,3),)
@@ -225,4 +224,6 @@ emptylogic = @test_nowarn propositionallogic(; operators = SoleLogics.AbstractOp
 @test modallogic() isa SoleLogics.BaseModalLogic
 @test (@test_logs (:warn,) modallogic(; operators = [¬, ∨]) isa SoleLogics.BasePropositionalLogic)
 
-# end
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+include("check/propositional.jl")

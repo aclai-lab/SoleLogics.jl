@@ -226,7 +226,6 @@ Returns whether it is known that a relation is symmetric.
 See also [`hasconverse`](@ref), [`converse`](@ref),
 [`isreflexive`](@ref), [`istransitive`](@ref), [`AbstractRelation`](@ref).
 """
-# TODO3: r is not defined. nice catch :D
 issymmetric(r::AbstractRelation) = hasconverse(r) ? converse(r) == r : false
 
 """

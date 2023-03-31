@@ -59,7 +59,7 @@ BEWARE: it currently assumes the underlying algebra is Boolean!
 # Arguments
 - `f::AbstractFormula`: when set to `true`,
     the formula;
-- `remove_boxes::Bool`: converts all uni-modal and multi-modal box operators by using the 
+- `remove_boxes::Bool`: converts all uni-modal and multi-modal box operators by using the
     equivalence ◊φ ≡ ¬□¬φ. Note: this assumes an underlying Boolean algebra.
 - `reduce_negations::Bool`: when set to `true`,
     attempts at reducing the number of negations by appling
@@ -179,7 +179,7 @@ See also
 """
 isglobal(f::AbstractFormula)::Bool = isglobal(tree(f))
 isglobal(t::SyntaxTree)::Bool =
-    # (println(token(t)); println(children(t)); true) && 
+    # (println(token(t)); println(children(t)); true) &&
     (token(t) isa SoleLogics.AbstractRelationalOperator && relation(token(t)) == globalrel) ||
     # (token(t) in [◊,□]) ||
     (token(t) isa AbstractOperator && all(c->isglobal(c), children(t)))
@@ -272,4 +272,3 @@ function collateworlds(
         # union(intersect(W[], [accessibles(fr, w, converse(r)) for w in ws]...))
     end
 end
-

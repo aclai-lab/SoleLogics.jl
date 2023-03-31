@@ -133,7 +133,8 @@ name(r::NamedRelation) = r.name
 # struct UnionOfRelations     <: AbstractRelation
 #     relations :: NTuple{N,AbstractRelation} where {N}
 # end;
-# _accessibles(::AbstractMultiModalFrame, w::AbstractWorld, r::UnionOfRelations) = Iterators.flatten((_accessibles(fr, w, sub_relation) for sub_relation in topo2IARelations(r)))
+# _accessibles(::AbstractMultiModalFrame, w::AbstractWorld, r::UnionOfRelations) =
+#     Iterators.flatten((_accessibles(fr, w, sub_relation) for sub_relation in r.relations))
 
 ############################################################################################
 
