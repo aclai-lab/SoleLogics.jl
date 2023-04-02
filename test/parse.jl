@@ -23,12 +23,12 @@
 @test_nowarn parseformulatree("¬p∧q∧(¬s∧¬z)", [NEGATION, CONJUNCTION])
 @test_nowarn parseformulatree("¬p∧q∧(¬s∧¬z)", [NEGATION])
 # @test ((@test_logs (:warn,) operatorstype(logic(parseformula("¬p∧q∧(¬s∧¬z)", [BOX])))) == Union{typeof(□),typeof(¬),typeof(∧)})
-# 
+#
 @test operatorstype(logic(parseformula("¬p∧q∧(¬s∧¬z)", [BOX]))) <: SoleLogics.BaseModalOperators
 @test !(operatorstype(logic(parseformula("¬p∧q∧(¬s∧¬z)", [BOX]))) <: SoleLogics.BasePropositionalOperators)
 @test !(operatorstype(logic(parseformula("¬p∧q∧(¬s∧¬z)", modallogic()))) <: SoleLogics.BasePropositionalOperators)
 @test (@test_nowarn operatorstype(logic(parseformula("¬p∧q∧(¬s∧¬z)"))) <: SoleLogics.BasePropositionalOperators)
-# 
+#
 @test_nowarn parseformulatree("¬p∧q→(¬s∧¬z)")
 @test filter(!isspace, syntaxstring(parseformulatree("¬p∧q→(¬s∧¬z)"); function_notation = true)) == "→(∧(¬(p),q),∧(¬(s),¬(z)))"
 @test_nowarn parseformulatree("¬p∧q→     (¬s∧¬z)")

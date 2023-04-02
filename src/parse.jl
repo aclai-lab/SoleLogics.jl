@@ -30,7 +30,7 @@ This is needed to establish unambiguous implementations of parsing-related algor
 
 By default, all operators are assigned a `BASE_PRECEDENCE`, except for:
 - unary operators (e.g., ¬, ◊), that are assigned a `HIGH_PRECEDENCE`;
-- the implication (⟹), that are assigned a `LOW_PRECEDENCE`.
+- the implication (→), that are assigned a `LOW_PRECEDENCE`.
 
 In case of tie, operators are evaluated in the left-to-right order.
 
@@ -39,9 +39,8 @@ In case of tie, operators are evaluated in the left-to-right order.
 julia> julia> syntaxstring(parseformulatree("a ∧ b ∨ c"))
 "a ∧ (b ∨ c)"
 
-# TODO this is wrong.
-julia> syntaxstring(parseformulatree("¬a ⟹ b ∧ c"))
-"(¬(a ⟹ b)) ∧ c"
+julia> syntaxstring(parseformulatree("¬a → b ∧ c"))
+"(¬(a → b)) ∧ c"
 
 julia> syntaxstring(parseformulatree("a∧b → c∧d"))
 "(a ∧ b) → (c ∧ d)"
@@ -69,15 +68,12 @@ Base.operator_precedence(::typeof(IMPLICATION)) = LOW_PRECEDENCE
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Input and construction ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-# Characters with special meaning in expressions.
-# '(' and ')' are needed to wrap a new scope
-# ',' is ignored but might be useful to deal with more readable inputs
+const TOKEN_TYPE = Union{<:AbstractSyntaxToken, Symbol}
 
-# TODO make these a parameter of the parsing algorithm.
-const OPENING_BRACKET = ("(")
-const CLOSING_BRACKET = (")")
+const OPENING_BRACKET = Symbol("(")
+const CLOSING_BRACKET = Symbol(")")
 
-_parsing_special_strings = [OPENING_BRACKET, CLOSING_BRACKET]
+_parsing_special_symbols = [OPENING_BRACKET, CLOSING_BRACKET]
 _parsing_ignored_strings = [",", ""] # TODO make this a parsing argument
 
 const BASE_PARSABLE_OPERATORS = [
@@ -91,16 +87,18 @@ const BASE_PARSABLE_OPERATORS = [
 
 # Check if a specific unary operator is in a valid position, during token recognition
 function _check_unary_validity(
-    tokens::Vector{<:AbstractSyntaxToken},
+    tokens::Vector{TOKEN_TYPE},
     op::AbstractOperator,
 )
     # A unary operator is always preceeded by some other operator or a OPENING_BRACKET
     if (arity(op) == 1 &&
         !isempty(tokens) &&
-        (syntaxstring(tokens[end]) != OPENING_BRACKET && !(tokens[end] isa AbstractOperator))
+        (tokens[end] !== OPENING_BRACKET && !(tokens[end] isa AbstractOperator))
     )
         error("Malformed input! Operator `" * syntaxstring(op) *
-            "` encountered following `" * syntaxstring(tokens[end]) * "`.")
+            "` encountered following `" *
+            (tokens[end] isa Symbol ? string(tokens[end]) : syntaxstring(tokens[end])) *
+            "`.")
     end
 end
 
@@ -120,6 +118,9 @@ function _recognize_tokens(
         splitter_found = false
 
         for splitter in splitters
+            # Here, splitter might be a special parsing character (a Symbol)
+            # but we need to operate over string types here.
+            splitter = string(splitter)
             # The longest correct splitter starting at index `i` is found (if possible)
             splitrange = findnext(splitter, expression, i)
 
@@ -132,7 +133,7 @@ function _recognize_tokens(
                 potential_token = ""
 
                 # Splitter is pushed: since a correct splitter is found
-                # set a flag to avoid repeating the iterator increment later
+                # set a flag to avoid repeating the iterator increment later.
                 push!(raw_tokens, splitter)
                 splitter_found = true
                 break
@@ -167,35 +168,32 @@ function _interpret_tokens(
     string_to_op::Dict{String,AbstractOperator},
     proposition_parser::Base.Callable,
 )
-    tokens = AbstractSyntaxToken[]
+    tokens = TOKEN_TYPE[]
 
     i = 1
     while i <= length(raw_tokens)
-        st = syntaxstring(raw_tokens[i])
-
         tok = begin
-            if (st in keys(string_to_op))
-                # If the token is an operator -> perform check and push it as is
-                op = string_to_op[st]
-                _check_unary_validity(tokens, op)
-                op
-            elseif st in _parsing_special_strings
-                # If the token is a special string -> push it
-                # NOTE: wrap special strings into Proposition{String}`s.
-                #  shunting_yard will take care of this.
-                # TODO: use Symbol(st) instead, and modify shunting yard accordingly.
-                Proposition{String}(st)
+            if (Symbol(raw_tokens[i]) in _parsing_special_symbols)
+                # If the token is a special symbol -> push it as is
+                Symbol(raw_tokens[i])
             else
-                # If the token is something else -> parse as Proposition and push it
-                proposition = proposition_parser(st)
-                @assert proposition isa Proposition string(proposition) *
-                    " is not a proposition. Please, provide a valid proposition_parser."
-                proposition
+                st = syntaxstring(raw_tokens[i])
+                if (st in keys(string_to_op))
+                    # If the token is an operator -> perform check and push it as is
+                    op = string_to_op[st]
+                    _check_unary_validity(tokens, op)
+                    op
+                else
+                    # If the token is something else -> parse as Proposition and push it
+                    proposition = proposition_parser(st)
+                    @assert proposition isa Proposition string(proposition) *
+                        " is not a proposition. Please, provide a valid proposition_parser."
+                    proposition
+                end
             end
         end
 
         push!(tokens, tok)
-
         i += 1
     end
 
@@ -221,42 +219,45 @@ function tokenizer(
 
     # Note: everything that is not a special string or an operator
     #  will be parsed as a Proposition.
-    splitters = vcat(_parsing_special_strings, collect(keys(string_to_op)))
+    splitters = Vector{String}(
+        vcat(string.(_parsing_special_symbols), collect(keys(string_to_op))))
     raw_tokens = String.(strip.(_recognize_tokens(expression, splitters)))
     return _interpret_tokens(raw_tokens, string_to_op, proposition_parser);
 end
 
 # Rearrange a serie of token, from infix to postfix notation.
-# Elements from `tokens` are consumed in order to fill `postfix` and `opstack`.
+# Elements from `tokens` are consumed in order to fill `postfix` and `tokstack`.
 function shunting_yard!(
-    tokens::Vector{<:AbstractSyntaxToken},
-    opstack::Vector{<:AbstractSyntaxToken},
+    tokens::Vector{TOKEN_TYPE},
+    tokstack::Vector{TOKEN_TYPE},
     postfix::Vector{<:AbstractSyntaxToken},
 )
     for tok in tokens
-        if tok isa AbstractOperator
-            # If tok is an operator, something must be done until another operator
-            # is placed at the top of the stack.
-            while !isempty(opstack) &&
-                (opstack[end] isa AbstractOperator &&
-                Base.operator_precedence(opstack[end]) > Base.operator_precedence(tok))
-                push!(postfix, pop!(opstack))
-            end
-            # Now push the current operator onto the opstack
-            push!(opstack, tok)
-
-        elseif atom(tok) === OPENING_BRACKET
-            # Start a new "context" in the expression
-            push!(opstack, tok)
-
-        elseif atom(tok) === CLOSING_BRACKET
-            # `opstack` shrinks and postfix vector is filled
-            while !isempty(opstack)
-                op = pop!(opstack)
-                if op isa AbstractOperator || atom(op) != OPENING_BRACKET
-                    push!(postfix, op)
+        if tok isa Symbol
+            # If tok is a Symbol, then it might be a special parsing symbol
+            if tok === OPENING_BRACKET
+                # Start a new "context" in the expression
+                push!(tokstack, tok)
+            elseif tok === CLOSING_BRACKET
+                # `tokstack` shrinks and postfix vector is filled
+                while !isempty(tokstack)
+                    op = pop!(tokstack)
+                    if op isa AbstractOperator || op !== OPENING_BRACKET
+                        push!(postfix, op)
+                    end
                 end
             end
+
+        elseif tok isa AbstractOperator
+            # If tok is an operator, something must be done until another operator
+            # is placed at the top of the stack.
+            while !isempty(tokstack) &&
+                (tokstack[end] isa AbstractOperator &&
+                Base.operator_precedence(tokstack[end]) > Base.operator_precedence(tok))
+                push!(postfix, pop!(tokstack))
+            end
+            # Now push the current operator onto the tokstack
+            push!(tokstack, tok)
 
         elseif tok isa Proposition
             push!(postfix, tok)
@@ -313,7 +314,8 @@ function parseformulatree(
     additional_operators::Union{Nothing,Vector{<:AbstractOperator}} = nothing;
     proposition_parser::Base.Callable = Proposition{String},
 )
-    additional_operators = (isnothing(additional_operators) ? AbstractOperator[] : additional_operators)
+    additional_operators = (
+        isnothing(additional_operators) ? AbstractOperator[] : additional_operators)
 
     # Build a formula starting from its postfix notation
     function _buildformulatree(postfix::Vector{<:AbstractSyntaxToken})
@@ -341,16 +343,15 @@ function parseformulatree(
     operators = unique(AbstractOperator[BASE_PARSABLE_OPERATORS..., additional_operators...])
     tokens = tokenizer(expression, operators, proposition_parser)
 
-    # Stack containing operators. Needed to transform the expression in postfix notation;
-    # opstack may contain Proposition(OPENING_BRACKET), Proposition(CLOSING_BRACKET) and operators
-    opstack = AbstractSyntaxToken[]
+    # Stack containing operators. Needed to transform the expression in postfix notation
+    tokstack = TOKEN_TYPE[]
     postfix = AbstractSyntaxToken[]
 
-    shunting_yard!(tokens, opstack, postfix)
+    shunting_yard!(tokens, tokstack, postfix)
 
-    # Consume the leftovers in the opstack
-    while !isempty(opstack)
-        op = pop!(opstack)
+    # Consume the leftovers in the tokstack
+    while !isempty(tokstack)
+        op = pop!(tokstack)
 
         # Starting expression is not well formatted, or a OPENING_BRACKET is found
         if !(op isa AbstractOperator)
@@ -381,7 +382,8 @@ function parseformula(
     t = parseformulatree(expression, additional_operators)
     baseformula(t;
         # additional_operators = unique(AbstractOperator[operators..., SoleLogics.operators(t)...]),
-        additional_operators = length(additional_operators) == 0 ? nothing : unique(AbstractOperator[additional_operators..., SoleLogics.operators(t)...]),
+        additional_operators = length(additional_operators) == 0 ? nothing :
+            unique(AbstractOperator[additional_operators..., SoleLogics.operators(t)...]),
         # alphabet = alphabet,
         alphabet = AlphabetOfAny{String}(),
         grammar = grammar,
@@ -403,3 +405,8 @@ function parseformula(
 )
     parseformula(expression; additional_operators = operators, args...)
 end
+
+# Working on...
+# ☑ throw in /dev/null cryptic errors (actually, in random.jl)
+# ☑ make OPENING_BRACKET and CLOSING_BRACKET symbols, and adapt parsing accordingly
+# ☑ implication seemed to be broken in a docstring: changing '⟹' with '→' did the work

@@ -37,11 +37,11 @@ function randformula(
     # NOTE: a cryptic error message is sometimes thrown when calling this function.
     # Momentarily, this error is being ignored.
     redirect_stderr(devnull)
-        baseformula(
-            randformulatree(height, alphabet, operators; rng = rng);
-            alphabet = alphabet,
-            additional_operators = operators,
-        )
+    baseformula(
+        randformulatree(height, alphabet, operators; rng = rng);
+        alphabet = alphabet,
+        additional_operators = operators,
+    )
 end
 
 """$(doc_randformula)"""
@@ -69,6 +69,10 @@ function randformulatree(
             Tuple([_randformulatree(height-1, alphabet, operators; rng=rng) for _ in 1:arity(op)])
         )
     end
+
+    # NOTE: a cryptic error message is sometimes thrown when calling this function.
+    # Momentarily, this error is being ignored.
+    redirect_stderr(devnull)
 
     # If the alphabet is not iterable, this function should not work.
     # NOTE: the error message here is the same as in general.jl.
