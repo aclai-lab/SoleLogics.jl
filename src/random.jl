@@ -36,13 +36,12 @@ function randformula(
 )::Formula
     # NOTE: a cryptic error message is sometimes thrown when calling this function.
     # Momentarily, this error is being ignored.
-    redirect_stderr(devnull) doc
+    redirect_stderr(devnull)
         baseformula(
             randformulatree(height, alphabet, operators; rng = rng);
             alphabet = alphabet,
             additional_operators = operators,
         )
-    end
 end
 
 """$(doc_randformula)"""
