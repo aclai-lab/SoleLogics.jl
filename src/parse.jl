@@ -74,7 +74,6 @@ const OPENING_BRACKET = Symbol("(")
 const CLOSING_BRACKET = Symbol(")")
 
 _parsing_special_symbols = [OPENING_BRACKET, CLOSING_BRACKET]
-_parsing_ignored_strings = [",", ""] # TODO make this a parsing argument
 
 const BASE_PARSABLE_OPERATORS = [
     BASE_MODAL_OPERATORS...,
@@ -96,9 +95,9 @@ function _check_unary_validity(
         (tokens[end] !== OPENING_BRACKET && !(tokens[end] isa AbstractOperator))
     )
         error("Malformed input! Operator `" * syntaxstring(op) *
-            "` encountered following `" *
-            (tokens[end] isa Symbol ? string(tokens[end]) : syntaxstring(tokens[end])) *
-            "`.")
+              "` encountered following `" *
+              (tokens[end] isa Symbol ? string(tokens[end]) : syntaxstring(tokens[end])) *
+              "`.")
     end
 end
 
@@ -106,6 +105,7 @@ end
 function _recognize_tokens(
     expression::String,
     splitters::Vector{String},
+    ignored::Vector{String}
 )
     potential_token = ""
     raw_tokens = String[]
@@ -143,7 +143,7 @@ function _recognize_tokens(
         # If no splitter has been found in this cycle,
         # then simply continue collecting a new potential splitter
         if (!splitter_found)
-            potential_token = potential_token * expression[i];
+            potential_token = potential_token * expression[i]
             i = nextind(expression, i)
         end
     end
@@ -153,13 +153,13 @@ function _recognize_tokens(
         push!(raw_tokens, potential_token)
     end
 
-    # Special characters are ignored (see _parsing_ignore_strings);
+    # Strings in "ignored" are cutted out;
     # strip is added to avoid accepting concatenations of whitespaces:
     # it is possible to have meaningful spaces in an expression (e.g.,
     # two different operators "[My operator]" and "[MyOperator]")
     # but here we are working on isolated presences of
     # operators we want to ignore.
-    return filter(x -> !(strip(x) in _parsing_ignored_strings), raw_tokens);
+    return filter(x -> !(strip(x) in ignored), raw_tokens)
 end
 
 # Raw tokens are interpreted and, thus, made processable by a parser
@@ -197,7 +197,7 @@ function _interpret_tokens(
         i += 1
     end
 
-    return tokens;
+    return tokens
 end
 
 # A simple lexer capable of distinguish operators in a string.
@@ -205,6 +205,7 @@ function tokenizer(
     expression::String,
     operators::Vector{<:AbstractOperator},
     proposition_parser::Base.Callable,
+    ignored_strings::Vector{String}
 )
     # Strip whitespaces
     expression = String(strip(expression))
@@ -221,17 +222,18 @@ function tokenizer(
     #  will be parsed as a Proposition.
     splitters = Vector{String}(
         vcat(string.(_parsing_special_symbols), collect(keys(string_to_op))))
-    raw_tokens = String.(strip.(_recognize_tokens(expression, splitters)))
-    return _interpret_tokens(raw_tokens, string_to_op, proposition_parser);
+    raw_tokens = String.(strip.(_recognize_tokens(expression, splitters, ignored_strings)))
+    return _interpret_tokens(raw_tokens, string_to_op, proposition_parser)
 end
 
 # Rearrange a serie of token, from infix to postfix notation.
-# Elements from `tokens` are consumed in order to fill `postfix` and `tokstack`.
+# Elements from `tokens` are consumed in order to fill `postfix`.
 function shunting_yard!(
     tokens::Vector{TOKEN_TYPE},
-    tokstack::Vector{TOKEN_TYPE},
     postfix::Vector{<:AbstractSyntaxToken},
 )
+    tokstack = TOKEN_TYPE[]
+
     for tok in tokens
         if tok isa Symbol
             # If tok is a Symbol, then it might be a special parsing symbol
@@ -241,9 +243,9 @@ function shunting_yard!(
             elseif tok === CLOSING_BRACKET
                 # `tokstack` shrinks and postfix vector is filled
                 while !isempty(tokstack)
-                    op = pop!(tokstack)
-                    if op isa AbstractOperator || op !== OPENING_BRACKET
-                        push!(postfix, op)
+                    popped = pop!(tokstack)
+                    if popped isa AbstractOperator || popped !== OPENING_BRACKET
+                        push!(postfix, popped)
                     end
                 end
             end
@@ -253,7 +255,7 @@ function shunting_yard!(
             # is placed at the top of the stack.
             while !isempty(tokstack) &&
                 (tokstack[end] isa AbstractOperator &&
-                Base.operator_precedence(tokstack[end]) > Base.operator_precedence(tok))
+                 Base.operator_precedence(tokstack[end]) > Base.operator_precedence(tok))
                 push!(postfix, pop!(tokstack))
             end
             # Now push the current operator onto the tokstack
@@ -264,6 +266,17 @@ function shunting_yard!(
         else
             error("Parsing error! Unexpected token type encountered: $(typeof(tok)).")
         end
+    end
+
+    # Consume the leftovers in the tokstack
+    while !isempty(tokstack)
+        popped = pop!(tokstack)
+
+        # Starting expression is not well formatted, or a OPENING_BRACKET is found
+        if !(popped isa AbstractOperator)
+            error("Parsing error! Mismatching brackets detected.")
+        end
+        push!(postfix, popped)
     end
 end
 
@@ -312,13 +325,12 @@ See also [`SyntaxTree`](@ref), [`syntaxstring`](@ref).
 function parseformulatree(
     expression::String,
     additional_operators::Union{Nothing,Vector{<:AbstractOperator}} = nothing;
+    function_notation::Bool = false,
     proposition_parser::Base.Callable = Proposition{String},
+    ignored_strings::Vector{String} = [""]
 )
-    additional_operators = (
-        isnothing(additional_operators) ? AbstractOperator[] : additional_operators)
-
     # Build a formula starting from its postfix notation
-    function _buildformulatree(postfix::Vector{<:AbstractSyntaxToken})
+    function _postfixbuild(postfix::Vector{<:AbstractSyntaxToken})
         stack = SyntaxTree[]
 
         for tok in postfix
@@ -340,27 +352,26 @@ function parseformulatree(
         return stack[1]
     end
 
-    operators = unique(AbstractOperator[BASE_PARSABLE_OPERATORS..., additional_operators...])
-    tokens = tokenizer(expression, operators, proposition_parser)
+    # Build a formula starting from its infix notation:
+    # actually: process expression in order to correctly fallback into _postfixbuild
+    function _infixbuild()
+        additional_operators = (
+            isnothing(additional_operators) ? AbstractOperator[] : additional_operators)
+        operators = unique(
+            AbstractOperator[BASE_PARSABLE_OPERATORS..., additional_operators...])
+        tokens = tokenizer(expression, operators, proposition_parser, ignored_strings)
+        postfix = AbstractSyntaxToken[]
 
-    # Stack containing operators. Needed to transform the expression in postfix notation
-    tokstack = TOKEN_TYPE[]
-    postfix = AbstractSyntaxToken[]
-
-    shunting_yard!(tokens, tokstack, postfix)
-
-    # Consume the leftovers in the tokstack
-    while !isempty(tokstack)
-        op = pop!(tokstack)
-
-        # Starting expression is not well formatted, or a OPENING_BRACKET is found
-        if !(op isa AbstractOperator)
-            error("Parsing error! Mismatching brackets detected.")
-        end
-        push!(postfix, op)
+        shunting_yard!(tokens, postfix)
+        return _postfixbuild(postfix)
     end
 
-    return _buildformulatree(postfix)
+    function _fxbuild()
+        error("TODO expand code")
+    end
+
+    return (function_notation ? _fxbuild() : _infixbuild())
+
 end
 
 function parseformulatree(
@@ -374,11 +385,13 @@ function parseformula(
     expression::String;
     # TODO add alphabet parameter add custom parser for propositions
     # alphabet::Union{Nothing,Vector,AbstractAlphabet} = nothing,
-    additional_operators::Union{Nothing,Vector{<:AbstractOperator}} = nothing,
-    grammar::Union{Nothing,AbstractGrammar} = nothing,
-    algebra::Union{Nothing,AbstractAlgebra} = nothing,
+    additional_operators::Union{Nothing,Vector{<:AbstractOperator}}=nothing,
+    grammar::Union{Nothing,AbstractGrammar}=nothing,
+    algebra::Union{Nothing,AbstractAlgebra}=nothing
 )
-    additional_operators = (isnothing(additional_operators) ? AbstractOperator[] : additional_operators)
+    additional_operators =
+        (isnothing(additional_operators) ? AbstractOperator[] : additional_operators)
+
     t = parseformulatree(expression, additional_operators)
     baseformula(t;
         # additional_operators = unique(AbstractOperator[operators..., SoleLogics.operators(t)...]),
@@ -387,7 +400,7 @@ function parseformula(
         # alphabet = alphabet,
         alphabet = AlphabetOfAny{String}(),
         grammar = grammar,
-        algebra = algebra,
+        algebra = algebra
     )
 end
 
@@ -401,12 +414,14 @@ end
 function parseformula(
     expression::String,
     operators::Union{Nothing,Vector{<:AbstractOperator}};
-    args...,
+    args...
 )
-    parseformula(expression; additional_operators = operators, args...)
+    parseformula(expression; additional_operators=operators, args...)
 end
 
 # Working on...
 # ☑ throw in /dev/null cryptic errors (actually, in random.jl)
 # ☑ make OPENING_BRACKET and CLOSING_BRACKET symbols, and adapt parsing accordingly
 # ☑ implication seemed to be broken in a docstring: changing '⟹' with '→' did the work
+# ☑ _parsing_ignored_strings is now an argument in parseformulatree
+# ☑ function_notation setup
