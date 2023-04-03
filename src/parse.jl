@@ -70,10 +70,14 @@ Base.operator_precedence(::typeof(IMPLICATION)) = LOW_PRECEDENCE
 
 const TOKEN_TYPE = Union{<:AbstractSyntaxToken, Symbol}
 
+# Those special symbols defines parsing limits:
+# each proposition cannot contain the following in order to work
 const OPENING_BRACKET = Symbol("(")
 const CLOSING_BRACKET = Symbol(")")
+const ARG_DELIM       = Symbol(",")
 
-_parsing_special_symbols = [OPENING_BRACKET, CLOSING_BRACKET]
+_parsing_context_delimeters  = [OPENING_BRACKET, CLOSING_BRACKET]
+_parsing_function_delimeters = [ARG_DELIM]
 
 const BASE_PARSABLE_OPERATORS = [
     BASE_MODAL_OPERATORS...,
@@ -82,7 +86,6 @@ const BASE_PARSABLE_OPERATORS = [
     DiamondRelationalOperator(identityrel),
     BoxRelationalOperator(identityrel),
 ]
-
 
 # Check if a specific unary operator is in a valid position, during token recognition
 function _check_unary_validity(
@@ -173,7 +176,7 @@ function _interpret_tokens(
     i = 1
     while i <= length(raw_tokens)
         tok = begin
-            if (Symbol(raw_tokens[i]) in _parsing_special_symbols)
+            if (Symbol(raw_tokens[i]) in _parsing_context_delimeters)
                 # If the token is a special symbol -> push it as is
                 Symbol(raw_tokens[i])
             else
@@ -205,7 +208,8 @@ function tokenizer(
     expression::String,
     operators::Vector{<:AbstractOperator},
     proposition_parser::Base.Callable,
-    ignored_strings::Vector{String}
+    ignored_strings::Vector{String};
+    additional_splitters::Union{Vector{Symbol}, Nothing} = nothing
 )
     # Strip whitespaces
     expression = String(strip(expression))
@@ -218,21 +222,24 @@ function tokenizer(
     @assert length(invalidops) == 0 "Cannot safely parse operators that are" *
         " prefixed/suffixed by whitespaces: " * join(invalidops, ", ")
 
+    # This is necessary, for example, when parsing in functio notation
+    additional_splitters =
+        (isnothing(additional_splitters) ? Symbol[] : additional_splitters)
+
     # Note: everything that is not a special string or an operator
     #  will be parsed as a Proposition.
-    splitters = Vector{String}(
-        vcat(string.(_parsing_special_symbols), collect(keys(string_to_op))))
+    splitters = Vector{String}(vcat(string.(_parsing_context_delimeters),
+        collect(keys(string_to_op)), string.(additional_splitters)))
     raw_tokens = String.(strip.(_recognize_tokens(expression, splitters, ignored_strings)))
     return _interpret_tokens(raw_tokens, string_to_op, proposition_parser)
 end
 
-# Rearrange a serie of token, from infix to postfix notation.
-# Elements from `tokens` are consumed in order to fill `postfix`.
+# Rearrange a serie of token, from infix to postfix notation
 function shunting_yard!(
-    tokens::Vector{TOKEN_TYPE},
-    postfix::Vector{<:AbstractSyntaxToken},
+    tokens::Vector{TOKEN_TYPE}
 )
-    tokstack = TOKEN_TYPE[]
+    tokstack = TOKEN_TYPE[] # support structure
+    postfix = AbstractSyntaxToken[] # returned structure: tokens rearranged in postfix
 
     for tok in tokens
         if tok isa Symbol
@@ -278,6 +285,8 @@ function shunting_yard!(
         end
         push!(postfix, popped)
     end
+
+    return postfix
 end
 
 # TODO: in the following docstring, in `additional_operators` description,
@@ -329,7 +338,18 @@ function parseformulatree(
     proposition_parser::Base.Callable = Proposition{String},
     ignored_strings::Vector{String} = [""]
 )
-    # Build a formula starting from its postfix notation
+    additional_operators = (
+        isnothing(additional_operators) ? AbstractOperator[] : additional_operators)
+    operators = unique(
+        AbstractOperator[BASE_PARSABLE_OPERATORS..., additional_operators...])
+
+    # TODO: refactor comments, in order to clearly distinguish among the two workflows
+    # _infixbuild -> shunting_yard + malformed input check -> _postfixbuild
+    # _fxbuild -> _prefixbuild + malformed input check
+
+    # Build a formula starting from its postfix notation, preprocessed with shunting yard.
+    # In other words, all special symbols (e.g. OPENING_BRACKET) are already filtered
+    # out and only AbstractSyntaxToken are considered.
     function _postfixbuild(postfix::Vector{<:AbstractSyntaxToken})
         stack = SyntaxTree[]
 
@@ -352,47 +372,67 @@ function parseformulatree(
         return stack[1]
     end
 
-    # Build a formula starting from its infix notation:
-    # actually: process expression in order to correctly fallback into _postfixbuild
+    # Build a formula starting from its infix notation
+    # actually this is a preprocessing who fallbacks into _postfixbuild
     function _infixbuild()
-        additional_operators = (
-            isnothing(additional_operators) ? AbstractOperator[] : additional_operators)
-        operators = unique(
-            AbstractOperator[BASE_PARSABLE_OPERATORS..., additional_operators...])
         tokens = tokenizer(expression, operators, proposition_parser, ignored_strings)
-        postfix = AbstractSyntaxToken[]
-
-        shunting_yard!(tokens, postfix)
-        return _postfixbuild(postfix)
+        return _postfixbuild(shunting_yard!(tokens))
     end
 
+    function _prefixbuild(prefix::Vector{TOKEN_TYPE})
+        # Unluckily, it's not possible to just fallback to _postfixbuild(reverse(prefix))
+        # since - before _postfixbuild - infixbuild is called and
+
+        # Each operator must - at the top of the stack - see:
+        # 1) OPENING_BRACKET,
+        # 2) Proposition{...}, arity(operator) times
+        # 3) CLOSING BRACKET
+        #
+        # If arity(operator) is 1, then  OPENING_BRACKET and CLOSING_BRACKET may be avoided
+
+        # Convert each special parsing symbol in its propositional
+
+        # NOTE: WORK IN PROGRESS HERE
+        prefix = filter(x -> !(syntaxstring(x) == string(ARG_DELIM)),
+            map(x -> (x isa Symbol) ? Proposition{String}(string(x)) : x, prefix))
+
+        @show "PREFIX BUILD"
+        @show prefix
+    end
+
+    # Build a formula starting from its prefix notation
+    # actually this is a preprocessing who fallbacks into _prefixbuild
     function _fxbuild()
-        error("TODO expand code")
+        tokens = tokenizer(expression, operators, proposition_parser, ignored_strings;
+            additional_splitters = _parsing_function_delimeters)
+        return _prefixbuild(tokens)
     end
 
     return (function_notation ? _fxbuild() : _infixbuild())
-
 end
 
 function parseformulatree(
     expression::String,
-    logic::AbstractLogic,
+    logic::AbstractLogic;
+    function_notation::Bool = false
 )
-    parseformulatree(expression, operators(logic))
+    parseformulatree(expression, operators(logic), function_notation = function_notation)
 end
 
 function parseformula(
     expression::String;
     # TODO add alphabet parameter add custom parser for propositions
     # alphabet::Union{Nothing,Vector,AbstractAlphabet} = nothing,
-    additional_operators::Union{Nothing,Vector{<:AbstractOperator}}=nothing,
-    grammar::Union{Nothing,AbstractGrammar}=nothing,
-    algebra::Union{Nothing,AbstractAlgebra}=nothing
+    additional_operators::Union{Nothing,Vector{<:AbstractOperator}} = nothing,
+    grammar::Union{Nothing,AbstractGrammar} = nothing,
+    algebra::Union{Nothing,AbstractAlgebra} = nothing,
+    function_notation::Bool = false
 )
     additional_operators =
         (isnothing(additional_operators) ? AbstractOperator[] : additional_operators)
 
-    t = parseformulatree(expression, additional_operators)
+    t = parseformulatree(expression, additional_operators;
+        function_notation = function_notation)
     baseformula(t;
         # additional_operators = unique(AbstractOperator[operators..., SoleLogics.operators(t)...]),
         additional_operators = length(additional_operators) == 0 ? nothing :
@@ -406,9 +446,10 @@ end
 
 function parseformula(
     expression::String,
-    logic::AbstractLogic,
+    logic::AbstractLogic;
+    args...
 )
-    Formula(logic, parseformulatree(expression, operators(logic)))
+    Formula(logic, parseformulatree(expression, operators(logic), args...))
 end
 
 function parseformula(
@@ -425,3 +466,6 @@ end
 # ☑ implication seemed to be broken in a docstring: changing '⟹' with '→' did the work
 # ☑ _parsing_ignored_strings is now an argument in parseformulatree
 # ☑ function_notation setup
+
+# parseformulatree("p ∧ (¬s ∧ z))", propositionallogic(); function_notation=false)
+# parseformulatree("∧(p,∧(¬s,z))", propositionallogic(); function_notation=true)
