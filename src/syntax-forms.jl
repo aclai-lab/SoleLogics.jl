@@ -18,6 +18,15 @@ conjuctive normal form (CNF) or disjunctive normal form (DNF), defined as:
 
 # Examples
 TODO four examples of syntaxstring of a LeftmostConjunctiveForm, LeftmostDisjunctiveForm, CNF, DNF
+```julia-repl
+julia> lfcf = LeftmostConjunctiveForm{Literal}([l1,l2_neg,l1_float])
+LeftmostLinearForm{SoleLogics.NamedOperator{:∧},Literal}
+(1) ∧ (¬(2)) ∧ (1.0)
+
+julia> lfdf = LeftmostDisjunctiveForm{Literal}([l1_number_float,l_string_neg])
+LeftmostLinearForm{SoleLogics.NamedOperator{:∨},Literal}
+(1.4) ∨ (¬(1))
+```
 """
 
 """$(doc_lmlf)
@@ -84,7 +93,7 @@ function syntaxstring(
     kwargs...,
 )
     ch = children(lf)
-    if length(ch)
+    if length(ch) == 0
         # syntaxstring(op(lf); function_notation = function_notation, kwargs...)
         syntaxstring(op(lf); kwargs...)
     else
@@ -117,8 +126,8 @@ function Base.show(io::IO, lf::LeftmostLinearForm{O,SS}) where {O,SS}
 end
 
 Base.promote_rule(::Type{<:LeftmostLinearForm}, ::Type{<:LeftmostLinearForm}) where {O} = SyntaxTree
-Base.promote_rule(::Type{SS<:AbstractSyntaxStructure}, ::Type{LF}) where {LF<:LeftmostLinearForm} = SyntaxTree
-Base.promote_rule(::Type{LF}, ::Type{SS<:AbstractSyntaxStructure}) where {LF<:LeftmostLinearForm} = SyntaxTree
+Base.promote_rule(::Type{SS}, ::Type{LF}) where {SS<:AbstractSyntaxStructure, LF<:LeftmostLinearForm} = SyntaxTree
+Base.promote_rule(::Type{LF}, ::Type{SS}) where {LF<:LeftmostLinearForm, SS<:AbstractSyntaxStructure} = SyntaxTree
 
 ############################################################################################
 
@@ -156,15 +165,13 @@ prop(l::Literal) = l.prop
 
 propositionstype(::Literal{T}) where {T} = T
 
-tree(l::Literal) = ispos ? SyntaxTree(l.prop) : ¬(SyntaxTree(l.prop))
+tree(l::Literal) = ispos(l) ? SyntaxTree(l.prop) : ¬(SyntaxTree(l.prop))
 
 complement(l::Literal) = Literal(!ispos(l), prop(l))
 
 function Base.show(io::IO, l::Literal)
-    cs = children(lf)
-
     println(io,
-        "Literal{$(propositiontype(lf))}: " * (ispos(l) ? "" : "¬") * syntaxstring(prop(l))
+        "Literal{$(propositionstype(l))}: " * (ispos(l) ? "" : "¬") * syntaxstring(prop(l))
     )
 end
 
