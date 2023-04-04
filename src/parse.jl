@@ -10,6 +10,14 @@ using ReadableRegex
 #    A little overview about all the private methods and the workflow involved
 #    in this page could be helpful to future developers.
 
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Utils ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+function strip_whitespaces(
+    expression::String;
+    additional_whitespaces::Vector{Char} = Char[]
+)
+    return strip(x -> isspace(x) || x in additional_whitespaces, expression)
+end
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Precedence ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -162,7 +170,9 @@ function _recognize_tokens(
     # two different operators "[My operator]" and "[MyOperator]")
     # but here we are working on isolated presences of
     # operators we want to ignore.
-    raw_tokens = map(x -> strip(rt -> isspace(rt) || rt in additional_whitespaces, x), raw_tokens)
+    raw_tokens = map(
+        x -> strip_whitespaces(x, additional_whitespaces = additional_whitespaces) ,
+        raw_tokens)
     return filter(!isempty, raw_tokens)
 end
 
@@ -170,14 +180,15 @@ end
 function _interpret_tokens(
     raw_tokens::Vector{String},
     string_to_op::Dict{String,AbstractOperator},
-    proposition_parser::Base.Callable,
+    proposition_parser::Base.Callable;
+    special_delimeters::Vector{Symbol}
 )
     tokens = TOKEN_TYPE[]
 
     i = 1
     while i <= length(raw_tokens)
         tok = begin
-            if (Symbol(raw_tokens[i]) in _parsing_context_delimeters)
+            if (Symbol(raw_tokens[i]) in special_delimeters)
                 # If the token is a special symbol -> push it as is
                 Symbol(raw_tokens[i])
             else
@@ -213,14 +224,16 @@ function tokenizer(
     additional_splitters::Union{Vector{Symbol}, Nothing} = nothing
 )
     # Strip whitespaces
-    expression = String(strip(x -> isspace(x) || x in additional_whitespaces, expression))
+    expression = String(
+        strip_whitespaces(expression, additional_whitespaces = additional_whitespaces))
     # Get the string representions of the given `operators`
     string_to_op = Dict([syntaxstring(op) => op for op in operators])
 
     # Note: operators whose syntaxstring is padded with spaces are invalid
     # since they might cause ambiguities.
     invalidops = filter(o -> syntaxstring(o) !=
-        strip(x -> isspace(x) || x in additional_whitespaces, syntaxstring(o)), operators)
+        strip_whitespaces(syntaxstring(o), additional_whitespaces = additional_whitespaces),
+        operators)
     @assert length(invalidops) == 0 "Cannot safely parse operators that are" *
         " prefixed/suffixed by whitespaces: " * join(invalidops, ", ")
 
@@ -233,13 +246,12 @@ function tokenizer(
     splitters = Vector{String}(vcat(string.(_parsing_context_delimeters),
         collect(keys(string_to_op)), string.(additional_splitters)))
     raw_tokens = _recognize_tokens(expression, splitters, additional_whitespaces)
-    return _interpret_tokens(raw_tokens, string_to_op, proposition_parser)
+    return _interpret_tokens(raw_tokens, string_to_op, proposition_parser;
+        special_delimeters = vcat(_parsing_context_delimeters, additional_splitters))
 end
 
 # Rearrange a serie of token, from infix to postfix notation
-function shunting_yard!(
-    tokens::Vector{TOKEN_TYPE}
-)
+function shunting_yard!(tokens::Vector{TOKEN_TYPE})
     tokstack = TOKEN_TYPE[] # support structure
     postfix = AbstractSyntaxToken[] # returned structure: tokens rearranged in postfix
 
@@ -330,9 +342,10 @@ See also [`SyntaxTree`](@ref), [`syntaxstring`](@ref).
 function parseformulatree(
     expression::String,
     additional_operators::Union{Nothing,Vector{<:AbstractOperator}} = nothing;
+
     function_notation::Bool = false,
     proposition_parser::Base.Callable = Proposition{String},
-    additional_whitespaces::Vector{Char} = []
+    additional_whitespaces::Vector{Char} = Char[]
 )
     additional_operators = (
         isnothing(additional_operators) ? AbstractOperator[] : additional_operators)
@@ -376,6 +389,49 @@ function parseformulatree(
     end
 
     function _prefixbuild(prefix::Vector{TOKEN_TYPE})
+        stack = SyntaxTree[]
+        tokstack = TOKEN_TYPE[]
+
+        for tok in reverse(prefix)
+            if tok isa Symbol || tok isa Proposition
+                push!(tokstack, tok)
+            elseif tok isa AbstractOperator
+                if (arity(tok) == 1 && stack[end] <: SoleLogics.AbstractSyntaxToken)
+                    # If operator arity is 1, then what follows could be a single AST
+                    newtok = SyntaxTree(tok, stack[end])
+                    pop!(stack)
+                    push!(stack, SyntaxTree(newtok))
+                elseif (lenght(stack) >= (1+ariety(tok)))
+                    # Else, the follow this general procedure;
+                    # consider 1 opening bracket, `ariety` AbstractSyntaxToken and
+                    # `ariety`-1 separators: then 1 closing bracket for a total of
+                    # 1 + (ariety) + (ariety-1) + 1 = (1 + 2*ariety) tokens to read.
+                    #
+                    # (      T      ,     T   ,   ...     ,        T        )
+                    # end  end-1  end-2                               end-(1 + 2*ariety)
+
+                    # Extract needed tokens from `stack`
+                    # (in other words, execute pop! (1+2*ariety) times)
+                    popped = stack[end:-1:(1+2*ariety)]
+                    stack = stack[1:(2*ariety)]
+
+                    # The following conditions must hold
+                    # stack[1] == OPENING BRACKET
+                    # stack[end] == CLOSING BRACKET
+                    # stack[even indexes] <: AbstractSyntaxTree
+                    # stack[odd indexes after 1 and before length(stack)] == SEP
+                    # else an error has to be thrown
+
+                else
+                    # Input was malformed: print all the stack slice
+                    # that current `tok` tried to operate on
+                    error("Malformed expression $(syntaxstring(tok)) followed by " *
+                        "$(stack[end:-1:max(length(stack)-(1+2*ariety(tok)),1)])")
+                end
+            else
+                error("Unexpected unparsable token: $(tok).")
+            end
+        end
         @show prefix
         # Unluckily, it's not possible to just fallback to _postfixbuild(reverse(prefix))
         # since - before _postfixbuild - infixbuild is called and
@@ -390,15 +446,14 @@ function parseformulatree(
         # Convert each special parsing symbol in its propositional
 
         # NOTE: WORK IN PROGRESS HERE
-        prefix = filter(x -> !(syntaxstring(x) == string(ARG_DELIM)),
-            map(x -> (x isa Symbol) ? Proposition{String}(string(x)) : x, prefix))
+        return 0
     end
 
     # Build a formula starting from its prefix notation
     # actually this is a preprocessing who fallbacks into _prefixbuild
     function _fxbuild()
-        tokens = tokenizer(expression, operators, proposition_parser, additional_whitespaces;
-            additional_splitters = _parsing_function_delimeters)
+        tokens = tokenizer(expression, operators, proposition_parser, additional_whitespaces
+            ; additional_splitters = _parsing_function_delimeters)
         return _prefixbuild(tokens)
     end
 
@@ -455,22 +510,18 @@ function parseformula(
 end
 
 # Working on...
-# ☑ throw in /dev/null cryptic errors (actually, in random.jl)
-# ☑ make OPENING_BRACKET and CLOSING_BRACKET symbols, and adapt parsing accordingly
-# ☑ implication seemed to be broken in a docstring: changing '⟹' with '→' did the work
-# ☑ _parsing_additional_whitespaces is now an argument in parseformulatree
-# ☑ function_notation setup
+# ☑ make some new "strip_whitespaces" function
 
 # parseformulatree("p ∧ (¬s ∧ z))", propositionallogic(); function_notation=false)
 # parseformulatree("∧(p,∧(¬s,z))", propositionallogic(); function_notation=true)
 
-# TODO: change strip(x -> isspace(x) || x in additional_whitespaces, expression)
 # TODO: parameter for context and argument delimiters
 # TODO: in the following docstring, in `additional_operators` description,
 #   we have to write about what BASE_PARSABLE_OPERATORS are set by default.
 # TODO: in the following docstring, Examples section should be expanded to consider
 #   different use cases of `proposition_parser`
 # TODO do and explain overwrite
-# TODO special characters should not appear in the tokens.
+# TODO special characters should not appear in the tokens. (in general, write about all
+#   the limitations of this parser)
 # TODO: Parameter function_notation = false,
 # TODO function_notation only affects the syntaxstring of binary operators. Ternary operators always rely on ","
