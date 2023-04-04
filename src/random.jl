@@ -34,9 +34,6 @@ function randformula(
     operators::Vector{<:AbstractOperator};
     rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG
 )::Formula
-    # NOTE: a cryptic error message is sometimes thrown when calling this function.
-    # Momentarily, this error is being ignored.
-    redirect_stderr(devnull)
     baseformula(
         randformulatree(height, alphabet, operators; rng = rng);
         alphabet = alphabet,

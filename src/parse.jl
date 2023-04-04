@@ -36,11 +36,11 @@ In case of tie, operators are evaluated in the left-to-right order.
 
 # Examples
 ```julia-repl
-julia> julia> syntaxstring(parseformulatree("a ∧ b ∨ c"))
-"a ∧ (b ∨ c)"
+julia> syntaxstring(parseformulatree("¬a ∧ b ∧ c"))
+"(¬(a)) ∧ (b ∧ c)"
 
 julia> syntaxstring(parseformulatree("¬a → b ∧ c"))
-"(¬(a → b)) ∧ c"
+"(¬(a)) → (b ∧ c)"
 
 julia> syntaxstring(parseformulatree("a∧b → c∧d"))
 "(a ∧ b) → (c ∧ d)"
@@ -108,8 +108,8 @@ end
 function _recognize_tokens(
     expression::String,
     splitters::Vector{String},
-    ignored::Vector{String}
-)
+    additional_whitespaces::Vector{Char}
+)::Vector{String}
     potential_token = ""
     raw_tokens = String[]
 
@@ -156,13 +156,14 @@ function _recognize_tokens(
         push!(raw_tokens, potential_token)
     end
 
-    # Strings in "ignored" are cutted out;
+    # Strings in "additional_whitespaces" are cutted out;
     # strip is added to avoid accepting concatenations of whitespaces:
     # it is possible to have meaningful spaces in an expression (e.g.,
     # two different operators "[My operator]" and "[MyOperator]")
     # but here we are working on isolated presences of
     # operators we want to ignore.
-    return filter(x -> !(strip(x) in ignored), raw_tokens)
+    raw_tokens = map(x -> strip(rt -> isspace(rt) || rt in additional_whitespaces, x), raw_tokens)
+    return filter(!isempty, raw_tokens)
 end
 
 # Raw tokens are interpreted and, thus, made processable by a parser
@@ -208,21 +209,22 @@ function tokenizer(
     expression::String,
     operators::Vector{<:AbstractOperator},
     proposition_parser::Base.Callable,
-    ignored_strings::Vector{String};
+    additional_whitespaces::Vector{Char};
     additional_splitters::Union{Vector{Symbol}, Nothing} = nothing
 )
     # Strip whitespaces
-    expression = String(strip(expression))
+    expression = String(strip(x -> isspace(x) || x in additional_whitespaces, expression))
     # Get the string representions of the given `operators`
     string_to_op = Dict([syntaxstring(op) => op for op in operators])
 
     # Note: operators whose syntaxstring is padded with spaces are invalid
     # since they might cause ambiguities.
-    invalidops = filter(o -> syntaxstring(o) != strip(syntaxstring(o)), operators)
+    invalidops = filter(o -> syntaxstring(o) !=
+        strip(x -> isspace(x) || x in additional_whitespaces, syntaxstring(o)), operators)
     @assert length(invalidops) == 0 "Cannot safely parse operators that are" *
         " prefixed/suffixed by whitespaces: " * join(invalidops, ", ")
 
-    # This is necessary, for example, when parsing in functio notation
+    # This is necessary, for example, when parsing in function notation
     additional_splitters =
         (isnothing(additional_splitters) ? Symbol[] : additional_splitters)
 
@@ -230,7 +232,7 @@ function tokenizer(
     #  will be parsed as a Proposition.
     splitters = Vector{String}(vcat(string.(_parsing_context_delimeters),
         collect(keys(string_to_op)), string.(additional_splitters)))
-    raw_tokens = String.(strip.(_recognize_tokens(expression, splitters, ignored_strings)))
+    raw_tokens = _recognize_tokens(expression, splitters, additional_whitespaces)
     return _interpret_tokens(raw_tokens, string_to_op, proposition_parser)
 end
 
@@ -251,10 +253,12 @@ function shunting_yard!(
                 # `tokstack` shrinks and postfix vector is filled
                 while !isempty(tokstack)
                     popped = pop!(tokstack)
-                    if popped isa AbstractOperator || popped !== OPENING_BRACKET
+                    if popped !== OPENING_BRACKET
                         push!(postfix, popped)
                     end
                 end
+            else
+                error("Unexpected special symbol encountered: $(tok).")
             end
 
         elseif tok isa AbstractOperator
@@ -289,14 +293,6 @@ function shunting_yard!(
     return postfix
 end
 
-# TODO: in the following docstring, in `additional_operators` description,
-#   we have to write about what BASE_PARSABLE_OPERATORS are set by default.
-# TODO: in the following docstring, Examples section should be expanded to consider
-#   different use cases of `proposition_parser`
-# TODO do and explain overwrite
-# TODO special characters should not appear in the tokens.
-# TODO: Parameter function_notation = false,
-# TODO function_notation only affects the syntaxstring of binary operators. Ternary operators always rely on ","
 """
     parseformulatree(
         expression::String,
@@ -312,7 +308,7 @@ additional operators will override the base parsable ones.
 
 !!! warning
     Operators' `syntaxstring`'s must not be prefixed/suffixed by whitespaces. Essentially,
-    for any operator ⨁, it must hold that `syntaxstring(⨁) == strip(syntaxstring(⨁))`.
+    for any operator ⨁, it must hold that `syntaxstring(⨁) == strip(TODO syntaxstring(⨁))`.
 
 # Arguments
 - `expression::String`: expression to be parsed;
@@ -336,7 +332,7 @@ function parseformulatree(
     additional_operators::Union{Nothing,Vector{<:AbstractOperator}} = nothing;
     function_notation::Bool = false,
     proposition_parser::Base.Callable = Proposition{String},
-    ignored_strings::Vector{String} = [""]
+    additional_whitespaces::Vector{Char} = []
 )
     additional_operators = (
         isnothing(additional_operators) ? AbstractOperator[] : additional_operators)
@@ -375,11 +371,12 @@ function parseformulatree(
     # Build a formula starting from its infix notation
     # actually this is a preprocessing who fallbacks into _postfixbuild
     function _infixbuild()
-        tokens = tokenizer(expression, operators, proposition_parser, ignored_strings)
+        tokens = tokenizer(expression, operators, proposition_parser, additional_whitespaces)
         return _postfixbuild(shunting_yard!(tokens))
     end
 
     function _prefixbuild(prefix::Vector{TOKEN_TYPE})
+        @show prefix
         # Unluckily, it's not possible to just fallback to _postfixbuild(reverse(prefix))
         # since - before _postfixbuild - infixbuild is called and
 
@@ -395,15 +392,12 @@ function parseformulatree(
         # NOTE: WORK IN PROGRESS HERE
         prefix = filter(x -> !(syntaxstring(x) == string(ARG_DELIM)),
             map(x -> (x isa Symbol) ? Proposition{String}(string(x)) : x, prefix))
-
-        @show "PREFIX BUILD"
-        @show prefix
     end
 
     # Build a formula starting from its prefix notation
     # actually this is a preprocessing who fallbacks into _prefixbuild
     function _fxbuild()
-        tokens = tokenizer(expression, operators, proposition_parser, ignored_strings;
+        tokens = tokenizer(expression, operators, proposition_parser, additional_whitespaces;
             additional_splitters = _parsing_function_delimeters)
         return _prefixbuild(tokens)
     end
@@ -464,8 +458,19 @@ end
 # ☑ throw in /dev/null cryptic errors (actually, in random.jl)
 # ☑ make OPENING_BRACKET and CLOSING_BRACKET symbols, and adapt parsing accordingly
 # ☑ implication seemed to be broken in a docstring: changing '⟹' with '→' did the work
-# ☑ _parsing_ignored_strings is now an argument in parseformulatree
+# ☑ _parsing_additional_whitespaces is now an argument in parseformulatree
 # ☑ function_notation setup
 
 # parseformulatree("p ∧ (¬s ∧ z))", propositionallogic(); function_notation=false)
 # parseformulatree("∧(p,∧(¬s,z))", propositionallogic(); function_notation=true)
+
+# TODO: change strip(x -> isspace(x) || x in additional_whitespaces, expression)
+# TODO: parameter for context and argument delimiters
+# TODO: in the following docstring, in `additional_operators` description,
+#   we have to write about what BASE_PARSABLE_OPERATORS are set by default.
+# TODO: in the following docstring, Examples section should be expanded to consider
+#   different use cases of `proposition_parser`
+# TODO do and explain overwrite
+# TODO special characters should not appear in the tokens.
+# TODO: Parameter function_notation = false,
+# TODO function_notation only affects the syntaxstring of binary operators. Ternary operators always rely on ","
