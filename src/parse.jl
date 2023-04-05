@@ -99,11 +99,13 @@ const BASE_PARSABLE_OPERATORS = [
 function _check_unary_validity(
     tokens::Vector{TOKEN_TYPE},
     op::AbstractOperator,
+    opening_bracket::Symbol,
+    arg_delimeter::Union{Symbol,Nothing}
 )
     # A unary operator is always preceeded by some other operator or a OPENING_BRACKET
-    if (arity(op) == 1 &&
-        !isempty(tokens) &&
-        (tokens[end] !== OPENING_BRACKET && !(tokens[end] isa AbstractOperator))
+    if (arity(op) == 1 && !isempty(tokens) &&
+        (tokens[end] !== opening_bracket && tokens[end] !== arg_delimeter &&
+        !(tokens[end] isa AbstractOperator))
     )
         error("Malformed input: operator `" * syntaxstring(op) *
               "` encountered following `" *
@@ -181,14 +183,16 @@ function _interpret_tokens(
     raw_tokens::Vector{String},
     string_to_op::Dict{String,AbstractOperator},
     proposition_parser::Base.Callable;
-    special_delimeters::Vector{Symbol}
+    opening_bracket::Symbol,
+    closing_bracket::Symbol,
+    arg_delimeter::Union{Symbol,Nothing}
 )
     tokens = TOKEN_TYPE[]
 
     i = 1
     while i <= length(raw_tokens)
         tok = begin
-            if (Symbol(raw_tokens[i]) in special_delimeters)
+            if (Symbol(raw_tokens[i]) in [opening_bracket, closing_bracket, arg_delimeter])
                 # If the token is a special symbol -> push it as is
                 Symbol(raw_tokens[i])
             else
@@ -196,7 +200,7 @@ function _interpret_tokens(
                 if (st in keys(string_to_op))
                     # If the token is an operator -> perform check and push it as is
                     op = string_to_op[st]
-                    _check_unary_validity(tokens, op)
+                    _check_unary_validity(tokens, op, opening_bracket, arg_delimeter)
                     op
                 else
                     # If the token is something else -> parse as Proposition and push it
@@ -221,7 +225,9 @@ function tokenizer(
     operators::Vector{<:AbstractOperator},
     proposition_parser::Base.Callable,
     additional_whitespaces::Vector{Char};
-    additional_splitters::Union{Vector{Symbol}, Nothing} = nothing
+    opening_bracket::Symbol = OPENING_BRACKET,
+    closing_bracket::Symbol = CLOSING_BRACKET,
+    arg_delimeter::Union{Symbol,Nothing} = nothing
 )
     # Strip whitespaces
     expression = String(
@@ -237,17 +243,19 @@ function tokenizer(
     @assert length(invalidops) == 0 "Cannot safely parse operators that are" *
         " prefixed/suffixed by whitespaces: " * join(invalidops, ", ")
 
-    # This is necessary, for example, when parsing in function notation
-    additional_splitters =
-        (isnothing(additional_splitters) ? Symbol[] : additional_splitters)
+    # Special symbols used as delimeters:
+    # parsing in function notation needs an arg_delimeter
+    special_delimeters = vcat(opening_bracket, closing_bracket)
+    if !(isnothing(arg_delimeter))
+        push!(special_delimeters, arg_delimeter)
+    end
+    splitters = Vector{String}(vcat(string.(special_delimeters),
+        collect(keys(string_to_op))))
 
-    # Note: everything that is not a special string or an operator
-    #  will be parsed as a Proposition.
-    splitters = Vector{String}(vcat(string.(_parsing_context_delimeters),
-        collect(keys(string_to_op)), string.(additional_splitters)))
     raw_tokens = _recognize_tokens(expression, splitters, additional_whitespaces)
     return _interpret_tokens(raw_tokens, string_to_op, proposition_parser;
-        special_delimeters = vcat(_parsing_context_delimeters, additional_splitters))
+        opening_bracket = opening_bracket, closing_bracket = closing_bracket,
+        arg_delimeter = arg_delimeter)
 end
 
 # Rearrange a serie of token, from infix to postfix notation
@@ -456,8 +464,8 @@ function parseformulatree(
     # Build a formula starting from its prefix notation
     # actually this is a preprocessing who fallbacks into _prefixbuild
     function _fxbuild()
-        tokens = tokenizer(expression, operators, proposition_parser, additional_whitespaces
-            ; additional_splitters = _parsing_function_delimeters)
+        tokens = tokenizer(expression, operators, proposition_parser,
+        additional_whitespaces; arg_delimeter = ARG_DELIM)
         return _prefixbuild(tokens)
     end
 
