@@ -54,38 +54,60 @@
 @test_throws ErrorException parseformulatree("(p∧q", [NEGATION, CONJUNCTION])
 @test_throws ErrorException parseformulatree("))))", [CONJUNCTION])
 @test_throws ErrorException parseformulatree("⟨G⟩p ¬⟨G⟩q",
-    [DiamondRelationalOperator(globalrel)]
-    )
+[DiamondRelationalOperator(globalrel)]
+)
 @test_throws ErrorException parseformulatree("¬[[G]]p", [BoxRelationalOperator(globalrel)])
 
+@test_throws parseformulatree(""; function_notation = true)
+@test_throws ErrorException parseformulatree("¬p◊"; function_notation = true)
+@test_throws ErrorException parseformulatree("¬p◊q"; function_notation = true)
+@test_throws ErrorException parseformulatree("◊¬p◊"; function_notation = true)
+@test_throws ErrorException parseformulatree("◊¬p◊q"; function_notation = true)
+@test_throws ErrorException parseformulatree("(p∧q", [NEGATION, CONJUNCTION];
+    function_notation = true)
+@test_throws ErrorException parseformulatree("))))", [CONJUNCTION];
+    function_notation = true)
+@test_throws ErrorException parseformulatree("¬[[G]]p", [BoxRelationalOperator(globalrel)];
+    function_notation = true)
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ parsing propositions ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 @test_nowarn parseformulatree("¬1→0";
-    proposition_parser=(x->Proposition{Float64}(parse(Float64, x)))
+    proposition_parser = (x -> Proposition{Float64}(parse(Float64, x)))
 )
 @test_nowarn parseformulatree("¬0.42∧1";
-    proposition_parser=(x->Proposition{Float64}(parse(Float64, x)))
+    proposition_parser = (x -> Proposition{Float64}(parse(Float64, x)))
 )
 @test_nowarn parseformulatree("¬-96";
-    proposition_parser=(x->Proposition{Float64}(parse(Float64, x)))
+    proposition_parser = (x -> Proposition{Float64}(parse(Float64, x)))
+)
+
+@test_nowarn parseformulatree("→(¬1,0)";
+    proposition_parser = (x -> Proposition{Float64}(parse(Float64, x))),
+    function_notation = true
+)
+@test_nowarn parseformulatree("∧(¬0.42,1)";
+    proposition_parser = (x -> Proposition{Float64}(parse(Float64, x))),
+    function_notation = true
+)
+@test_nowarn parseformulatree("¬-96";
+    proposition_parser = (x -> Proposition{Float64}(parse(Float64, x))),
+    function_notation = true
 )
 
 @test_throws ErrorException parseformulatree("[G][G]-1.2[G]",
     [BoxRelationalOperator(globalrel)];
-    proposition_parser=(x->Proposition{Float64}(parse(Float64, x)))
+    proposition_parser = (x -> Proposition{Float64}(parse(Float64, x)))
 )
 @test_throws ErrorException parseformulatree("¬-3(";
-    proposition_parser=(x->Proposition{Float64}(parse(Float64, x)))
+    proposition_parser = (x -> Proposition{Float64}(parse(Float64, x)))
 )
 
 @test_throws ArgumentError parseformulatree("p";
-    proposition_parser=(x->Proposition{Float64}(parse(Float64, x)))
+    proposition_parser = (x -> Proposition{Float64}(parse(Float64, x)))
 )
 
-
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ custom operator ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 
 struct _TestRel <: AbstractRelation end;
 testrel  = _TestRel();
@@ -113,15 +135,23 @@ struct MyCustomRelationalOperator{R<:AbstractRelation} <: AbstractRelationalOper
 SoleLogics.syntaxstring(op::MyCustomRelationalOperator; kwargs...) = "LEFT CUSTOM BRACKET $(syntaxstring(relationtype(op);  kwargs...)) RIGHT CUSTOM BRACKET"
 f = parseformulatree("LEFT CUSTOM BRACKET G RIGHT CUSTOM BRACKET p ∧ ¬ LEFT CUSTOM BRACKET G RIGHT CUSTOM BRACKET q", [MyCustomRelationalOperator(globalrel)])
 
-
-
-
 @test_nowarn parseformulatree("🌅G🌄p ∧ ¬🌅G🌄q", [SoleRelationalOperator(globalrel)])
-@test_nowarn parseformulatree("|G|p ∧ ¬|G|q", [PipeRelationalOperator(globalrel)])
-@test_nowarn parseformulatree("{G}p ∧ ¬{G}q", [CurlyRelationalOperator(globalrel)])
+parseformulatree("∧(🌅G🌄p,¬🌅G🌄q)", [SoleRelationalOperator(globalrel)];
+    function_notation = true)
+
+@test_nowarn parseformulatree("|G|p   ∧ ¬|G|q", [PipeRelationalOperator(globalrel)])
+@test_nowarn parseformulatree("∧(|G|p,  ¬|G|q)", [PipeRelationalOperator(globalrel)];
+    function_notation = true)
+
+@test_nowarn parseformulatree("{G}p   ∧  ¬{G}q", [CurlyRelationalOperator(globalrel)])
+@test_nowarn parseformulatree("∧({G}p   ,¬{G}q)", [CurlyRelationalOperator(globalrel)];
+    function_notation = true)
 
 _f = parseformulatree("|G|p ∧ ¬{G}q", [CurlyRelationalOperator(globalrel)])
 @test syntaxstring(token(children(_f)[1])) == "|G|p" # PipeRelationalOperator not specified
+_f = parseformulatree("∧(|G|p,¬{G}q)", [CurlyRelationalOperator(globalrel)];
+    function_notation = true)
+@test syntaxstring(token(children(_f)[1])) == "|G|p"
 
 _f = parseformulatree("{Gp ∧ ¬{G}q", [CurlyRelationalOperator(globalrel)])
 @test syntaxstring(token(children(_f)[1])) == "{Gp"
@@ -129,5 +159,4 @@ _f = parseformulatree("{Gp ∧ ¬{G}q", [CurlyRelationalOperator(globalrel)])
 @test_nowarn parseformulatree("¬⟨Test,Relation⟩[Test,Relation]p",
     [BoxRelationalOperator(testrel), DiamondRelationalOperator(testrel)]
 )
-
 end

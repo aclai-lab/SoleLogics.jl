@@ -105,7 +105,7 @@ function _check_unary_validity(
         !isempty(tokens) &&
         (tokens[end] !== OPENING_BRACKET && !(tokens[end] isa AbstractOperator))
     )
-        error("Malformed input! Operator `" * syntaxstring(op) *
+        error("Malformed input: operator `" * syntaxstring(op) *
               "` encountered following `" *
               (tokens[end] isa Symbol ? string(tokens[end]) : syntaxstring(tokens[end])) *
               "`.")
@@ -375,7 +375,7 @@ function parseformulatree(
         end
 
         if length(stack) != 1
-            error("Malformed input! Expression: `$(expression)`. (postfix: `$(postfix)`).")
+            error("Malformed input: expression: `$(expression)`. (postfix: `$(postfix)`).")
         end
 
         return stack[1]
@@ -389,31 +389,31 @@ function parseformulatree(
     end
 
     function _prefixbuild(prefix::Vector{TOKEN_TYPE})
-        stack = SyntaxTree[]
-        tokstack = TOKEN_TYPE[]
+        stack = Vector{Union{SyntaxTree, TOKEN_TYPE}}()
 
         for tok in reverse(prefix)
             if tok isa Symbol || tok isa Proposition
-                push!(tokstack, tok)
+                push!(stack, tok)
             elseif tok isa AbstractOperator
-                if (arity(tok) == 1 && stack[end] <: SoleLogics.AbstractSyntaxToken)
+                if (arity(tok) == 1 && typeof(stack[end]) <:
+                    Union{AbstractSyntaxToken, AbstractSyntaxStructure})
                     # If operator arity is 1, then what follows could be a single AST
                     newtok = SyntaxTree(tok, stack[end])
                     pop!(stack)
-                    push!(stack, SyntaxTree(newtok))
-                elseif (lenght(stack) >= (1+ariety(tok)))
-                    # Else, the follow this general procedure;
-                    # consider 1 opening bracket, `ariety` AbstractSyntaxToken and
-                    # `ariety`-1 separators: then 1 closing bracket for a total of
-                    # 1 + (ariety) + (ariety-1) + 1 = (1 + 2*ariety) tokens to read.
+                    push!(stack, newtok)
+                elseif (length(stack) >= (1 + 2*arity(tok)))
+                    # Else, follow this general procedure;
+                    # consider 1 opening bracket, `arity` AbstractSyntaxToken,
+                    # `arity`-1 separators and 1 closing bracket for a total of
+                    # 1 + (arity) + (arity-1) + 1 = (1 + 2*arity) tokens to read.
                     #
-                    # (      T      ,     T   ,   ...     ,        T        )
-                    # end  end-1  end-2                               end-(1 + 2*ariety)
+                    #   (           T      ,     T   ,   ...     ,     T        )
+                    # stack[end]  end-1  end-2                           end-(1 + 2*arity)
 
                     # Extract needed tokens from `stack`
-                    # (in other words, execute pop! (1+2*ariety) times)
-                    popped = stack[end:-1:(1+2*ariety)]
-                    stack = stack[1:(2*ariety)]
+                    # (in other words, execute pop! (1+2*arity) times)
+                    popped = reverse(stack[(length(stack) - 2*arity(tok)) : end])
+                    stack = stack[1:(length(stack) - 1 - 2*arity(tok))]
 
                     # The following conditions must hold
                     # stack[1] == OPENING BRACKET
@@ -422,31 +422,35 @@ function parseformulatree(
                     # stack[odd indexes after 1 and before length(stack)] == SEP
                     # else an error has to be thrown
 
-                else
-                    # Input was malformed: print all the stack slice
-                    # that current `tok` tried to operate on
-                    error("Malformed expression $(syntaxstring(tok)) followed by " *
-                        "$(stack[end:-1:max(length(stack)-(1+2*ariety(tok)),1)])")
+                    children =
+                        [popped[s] for s in 2:length(popped) if typeof(popped[s]) <:
+                            Union{AbstractSyntaxToken, AbstractSyntaxStructure}]
+                    separators = [s for s in 3:(length(popped)-2) if popped[s] == ARG_DELIM]
+
+                    if (popped[1] == OPENING_BRACKET &&
+                        popped[end] == CLOSING_BRACKET &&
+                        length(children) == arity(tok) &&
+                        length(separators) == arity(tok) - 1)
+                        push!(stack, SyntaxTree(tok, Tuple(children)))
+                    else
+                        error("Malformed expression $(syntaxstring(tok)) followed by " *
+                        "$(popped).")
+                    end
                 end
             else
                 error("Unexpected unparsable token: $(tok).")
             end
         end
-        @show prefix
-        # Unluckily, it's not possible to just fallback to _postfixbuild(reverse(prefix))
-        # since - before _postfixbuild - infixbuild is called and
 
-        # Each operator must - at the top of the stack - see:
-        # 1) OPENING_BRACKET,
-        # 2) Proposition{...}, arity(operator) times
-        # 3) CLOSING BRACKET
-        #
-        # If arity(operator) is 1, then  OPENING_BRACKET and CLOSING_BRACKET may be avoided
+        if (isempty(stack))
+            error("Malformed expression: parsing stack is empty.")
+        end
 
-        # Convert each special parsing symbol in its propositional
+        if (length(stack) > 1)
+            error("Malformed expression: parsing stack could not interpret $(stack).")
+        end
 
-        # NOTE: WORK IN PROGRESS HERE
-        return 0
+        return stack[1]
     end
 
     # Build a formula starting from its prefix notation
@@ -511,6 +515,8 @@ end
 
 # Working on...
 # ☑ make some new "strip_whitespaces" function
+# ☑ function notation parsing it's working
+# □ OPENING_BRACKET, CLOSING_BRACKET, SEPARATOR as arguments
 
 # parseformulatree("p ∧ (¬s ∧ z))", propositionallogic(); function_notation=false)
 # parseformulatree("∧(p,∧(¬s,z))", propositionallogic(); function_notation=true)
