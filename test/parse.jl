@@ -9,7 +9,8 @@
 @test parseformulatree("¬p∧q") == parseformulatree("¬(p)∧q")
 @test parseformulatree("¬p∧q") != parseformulatree("¬(p∧q)")
 
-@test filter(!isspace, syntaxstring(parseformulatree("¬p∧q∧(¬s∧¬z)"); function_notation = true)) == "∧(¬(p),∧(q,∧(¬(s),¬(z))))"
+@test filter(!isspace, syntaxstring(parseformulatree("¬p∧q∧(¬s∧¬z)");
+    function_notation = true)) == "∧(¬(p),∧(q,∧(¬(s),¬(z))))"
 
 @test_nowarn parseformula("p")
 
@@ -20,6 +21,10 @@
 
 @test_nowarn parseformulatree("¬p∧q∧(¬s∧¬z)", [NEGATION, CONJUNCTION])
 @test_nowarn parseformulatree("¬p∧q∧(¬s∧¬z)", [NEGATION])
+@test_nowarn parseformulatree("¬p∧q∧{¬s∧¬z}",
+    opening_bracket=Symbol("{"), closing_bracket=Symbol("}"))
+@test_nowarn parseformulatree("¬p∧q∧ A ¬s∧¬z    B",
+    opening_bracket=Symbol("A"), closing_bracket=Symbol("B"))
 
 @test operatorstype(
         logic(parseformula("¬p∧q∧(¬s∧¬z)", [BOX]))) <: SoleLogics.BaseModalOperators
@@ -29,9 +34,22 @@
     parseformula("¬p∧q∧(¬s∧¬z)", modallogic()))) <: SoleLogics.BasePropositionalOperators)
 @test (@test_nowarn operatorstype(
     logic(parseformula("¬p∧q∧(¬s∧¬z)"))) <: SoleLogics.BasePropositionalOperators)
-    
+
 @test_nowarn parseformulatree("¬p∧q→(¬s∧¬z)")
+@test_nowarn parseformulatree("→(∧(¬p, q), ∧(¬s, ¬z))", function_notation=true)
+@test_nowarn parseformulatree("→(∧(¬p; q); ∧(¬s; ¬z))",
+    function_notation=true, arg_delimeter = Symbol(";"))
+@test_nowarn parseformulatree("→{∧{¬p; q}; ∧{¬s; ¬z}}", function_notation=true,
+    opening_bracket = Symbol("{"), closing_bracket = Symbol("}"),
+    arg_delimeter = Symbol(";"))
+
+
 @test filter(!isspace, syntaxstring(parseformulatree("¬p∧q→(¬s∧¬z)");
+    function_notation = true)) == "→(∧(¬(p),q),∧(¬(s),¬(z)))"
+@test filter(!isspace, syntaxstring(
+    parseformulatree("¬p∧q→A¬s∧¬zB",
+        opening_bracket = Symbol("A"),
+        closing_bracket = Symbol("B"));
     function_notation = true)) == "→(∧(¬(p),q),∧(¬(s),¬(z)))"
 @test_nowarn parseformulatree("¬p∧q→     (¬s∧¬z)")
 @test parseformulatree("□p∧   q∧(□s∧◊z)", [BOX]) == parseformulatree("□p∧   q∧(□s∧◊z)")
@@ -73,6 +91,15 @@
 @test_throws ErrorException parseformulatree("¬[[G]]p", [BoxRelationalOperator(globalrel)];
     function_notation = true)
 
+@test_throws ErrorException parseformulatree("¬p∧q∧(¬s∧¬z)", opening_bracket=Symbol("{"))
+@test_throws ErrorException parseformulatree("¬p∧q∧{¬s∧¬z)",
+    opening_bracket=Symbol("{"), closing_bracket=Symbol("}"))
+@test_throws ErrorException parseformulatree("¬p∧q∧ C ¬s∧¬z    B",
+    opening_bracket=Symbol("A"), closing_bracket=Symbol("B"))
+
+@test_throws ErrorException parseformulatree("¬p∧q→ |¬s∧¬z|",
+    opening_bracket = Symbol("|"), closing_bracket = Symbol("|"))
+
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ parsing propositions ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 @test_nowarn parseformulatree("¬1→0";
@@ -85,6 +112,12 @@
 @test_nowarn parseformulatree("→(¬1,0)";
     proposition_parser = (x -> Proposition{Float64}(parse(Float64, x))),
     function_notation = true)
+@test_nowarn parseformulatree("→(¬1;0)";
+    proposition_parser = (x -> Proposition{Float64}(parse(Float64, x))),
+    function_notation = true, arg_delimeter = Symbol(";"))
+@test_nowarn parseformulatree("→(¬1/0)";
+    proposition_parser = (x -> Proposition{Float64}(parse(Float64, x))),
+    function_notation = true, arg_delimeter = Symbol("/"))
 @test_nowarn parseformulatree("∧(¬0.42,1)";
     proposition_parser = (x -> Proposition{Float64}(parse(Float64, x))),
     function_notation = true)
@@ -134,6 +167,8 @@ f = parseformulatree("LEFT CUSTOM BRACKET G RIGHT CUSTOM BRACKET p ∧ ¬" *
 @test_nowarn parseformulatree("🌅G🌄p ∧ ¬🌅G🌄q", [SoleRelationalOperator(globalrel)])
 @test_nowarn parseformulatree("∧(🌅G🌄p,¬🌅G🌄q)", [SoleRelationalOperator(globalrel)];
     function_notation = true)
+@test_nowarn parseformulatree("∧[🌅G🌄p SEP ¬🌅G🌄q)", [SoleRelationalOperator(globalrel)];
+    function_notation = true, opening_bracket = Symbol("["), arg_delimeter = Symbol("SEP"))
 
 @test_nowarn parseformulatree("|G|p   ∧ ¬|G|q", [PipeRelationalOperator(globalrel)])
 @test_nowarn parseformulatree("∧(|G|p,  ¬|G|q)", [PipeRelationalOperator(globalrel)];

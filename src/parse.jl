@@ -102,11 +102,15 @@ function _check_unary_validity(
     opening_bracket::Symbol,
     arg_delimeter::Union{Symbol,Nothing}
 )
-    # A unary operator is always preceeded by some other operator or a OPENING_BRACKET
+    # A unary operator is always preceeded by some other operator or a opening_bracket
     if (arity(op) == 1 && !isempty(tokens) &&
         (tokens[end] !== opening_bracket && tokens[end] !== arg_delimeter &&
         !(tokens[end] isa AbstractOperator))
     )
+        for t in tokens
+            println(t)
+        end
+
         error("Malformed input: operator `" * syntaxstring(op) *
               "` encountered following `" *
               (tokens[end] isa Symbol ? string(tokens[end]) : syntaxstring(tokens[end])) *
@@ -224,7 +228,7 @@ function tokenizer(
     expression::String,
     operators::Vector{<:AbstractOperator},
     proposition_parser::Base.Callable,
-    additional_whitespaces::Vector{Char};
+    additional_whitespaces::Vector{Char},
     opening_bracket::Symbol = OPENING_BRACKET,
     closing_bracket::Symbol = CLOSING_BRACKET,
     arg_delimeter::Union{Symbol,Nothing} = nothing
@@ -259,21 +263,23 @@ function tokenizer(
 end
 
 # Rearrange a serie of token, from infix to postfix notation
-function shunting_yard!(tokens::Vector{TOKEN_TYPE})
+function shunting_yard!(tokens::Vector{TOKEN_TYPE};
+    opening_bracket::Symbol = OPENING_BRACKET,
+    closing_bracket::Symbol = CLOSING_BRACKET)
     tokstack = TOKEN_TYPE[] # support structure
     postfix = AbstractSyntaxToken[] # returned structure: tokens rearranged in postfix
 
     for tok in tokens
         if tok isa Symbol
             # If tok is a Symbol, then it might be a special parsing symbol
-            if tok === OPENING_BRACKET
+            if tok === opening_bracket
                 # Start a new "context" in the expression
                 push!(tokstack, tok)
-            elseif tok === CLOSING_BRACKET
+            elseif tok === closing_bracket
                 # `tokstack` shrinks and postfix vector is filled
                 while !isempty(tokstack)
                     popped = pop!(tokstack)
-                    if popped !== OPENING_BRACKET
+                    if popped !== opening_bracket
                         push!(postfix, popped)
                     end
                 end
@@ -303,7 +309,7 @@ function shunting_yard!(tokens::Vector{TOKEN_TYPE})
     while !isempty(tokstack)
         popped = pop!(tokstack)
 
-        # Starting expression is not well formatted, or a OPENING_BRACKET is found
+        # Starting expression is not well formatted, or a opening_bracket is found
         if !(popped isa AbstractOperator)
             error("Parsing error! Mismatching brackets detected.")
         end
@@ -350,10 +356,12 @@ See also [`SyntaxTree`](@ref), [`syntaxstring`](@ref).
 function parseformulatree(
     expression::String,
     additional_operators::Union{Nothing,Vector{<:AbstractOperator}} = nothing;
-
     function_notation::Bool = false,
     proposition_parser::Base.Callable = Proposition{String},
-    additional_whitespaces::Vector{Char} = Char[]
+    additional_whitespaces::Vector{Char} = Char[],
+    opening_bracket::Symbol = OPENING_BRACKET,
+    closing_bracket::Symbol = CLOSING_BRACKET,
+    arg_delimeter::Union{Symbol,Nothing} = ARG_DELIM
 )
     additional_operators = (
         isnothing(additional_operators) ? AbstractOperator[] : additional_operators)
@@ -365,7 +373,7 @@ function parseformulatree(
     # _fxbuild -> _prefixbuild + malformed input check
 
     # Build a formula starting from its postfix notation, preprocessed with shunting yard.
-    # In other words, all special symbols (e.g. OPENING_BRACKET) are already filtered
+    # In other words, all special symbols (e.g. opening_bracket) are already filtered
     # out and only AbstractSyntaxToken are considered.
     function _postfixbuild(postfix::Vector{<:AbstractSyntaxToken})
         stack = SyntaxTree[]
@@ -392,8 +400,10 @@ function parseformulatree(
     # Build a formula starting from its infix notation
     # actually this is a preprocessing who fallbacks into _postfixbuild
     function _infixbuild()
-        tokens = tokenizer(expression, operators, proposition_parser, additional_whitespaces)
-        return _postfixbuild(shunting_yard!(tokens))
+        tokens = tokenizer(expression, operators, proposition_parser,
+            additional_whitespaces, opening_bracket, closing_bracket)
+        return _postfixbuild(shunting_yard!(tokens,
+            opening_bracket = opening_bracket, closing_bracket = closing_bracket))
     end
 
     function _prefixbuild(prefix::Vector{TOKEN_TYPE})
@@ -433,10 +443,11 @@ function parseformulatree(
                     children =
                         [popped[s] for s in 2:length(popped) if typeof(popped[s]) <:
                             Union{AbstractSyntaxToken, AbstractSyntaxStructure}]
-                    separators = [s for s in 3:(length(popped)-2) if popped[s] == ARG_DELIM]
+                    separators =
+                        [s for s in 3:(length(popped)-2) if popped[s] == arg_delimeter]
 
-                    if (popped[1] == OPENING_BRACKET &&
-                        popped[end] == CLOSING_BRACKET &&
+                    if (popped[1] == opening_bracket &&
+                        popped[end] == closing_bracket &&
                         length(children) == arity(tok) &&
                         length(separators) == arity(tok) - 1)
                         push!(stack, SyntaxTree(tok, Tuple(children)))
@@ -465,7 +476,7 @@ function parseformulatree(
     # actually this is a preprocessing who fallbacks into _prefixbuild
     function _fxbuild()
         tokens = tokenizer(expression, operators, proposition_parser,
-        additional_whitespaces; arg_delimeter = ARG_DELIM)
+            additional_whitespaces, opening_bracket, closing_bracket, arg_delimeter)
         return _prefixbuild(tokens)
     end
 
@@ -475,9 +486,19 @@ end
 function parseformulatree(
     expression::String,
     logic::AbstractLogic;
-    function_notation::Bool = false
+    function_notation::Bool = false,
+    proposition_parser::Base.Callable = Proposition{String},
+    additional_whitespaces::Vector{Char} = Char[],
+    opening_bracket::Symbol = OPENING_BRACKET,
+    closing_bracket::Symbol = CLOSING_BRACKET,
+    arg_delimeter::Union{Symbol,Nothing} = nothing
 )
-    parseformulatree(expression, operators(logic), function_notation = function_notation)
+    parseformulatree(expression, operators(logic), function_notation = function_notation,
+        proposition_parser = proposition_parser,
+        additional_whitespaces = additional_whitespaces,
+        opening_bracket = opening_bracket,
+        closing_bracket = closing_bracket,
+        arg_delimeter = arg_delimeter)
 end
 
 function parseformula(
@@ -487,13 +508,23 @@ function parseformula(
     additional_operators::Union{Nothing,Vector{<:AbstractOperator}} = nothing,
     grammar::Union{Nothing,AbstractGrammar} = nothing,
     algebra::Union{Nothing,AbstractAlgebra} = nothing,
-    function_notation::Bool = false
+    function_notation::Bool = false,
+    proposition_parser::Base.Callable = Proposition{String},
+    additional_whitespaces::Vector{Char} = Char[],
+    opening_bracket::Symbol = OPENING_BRACKET,
+    closing_bracket::Symbol = CLOSING_BRACKET,
+    arg_delimeter::Union{Symbol,Nothing} = nothing
 )
     additional_operators =
         (isnothing(additional_operators) ? AbstractOperator[] : additional_operators)
 
     t = parseformulatree(expression, additional_operators;
-        function_notation = function_notation)
+        function_notation = function_notation,
+        proposition_parser = proposition_parser,
+        additional_whitespaces = additional_whitespaces,
+        opening_bracket = opening_bracket,
+        closing_bracket = closing_bracket,
+        arg_delimeter = arg_delimeter)
     baseformula(t;
         # additional_operators = unique(AbstractOperator[operators..., SoleLogics.operators(t)...]),
         additional_operators = length(additional_operators) == 0 ? nothing :
