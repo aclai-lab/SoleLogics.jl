@@ -103,9 +103,9 @@ function syntaxstring(
             ch
         )
         # if function_notation
-            # println("$(syntaxstring(op(lf)))(" * join(children_ss, ", ") * ")")
+            # "$(syntaxstring(op(lf)))(" * join(children_ss, ", ") * ")"
         # else
-        println("(" * join(children_ss, ") $(syntaxstring(op(lf); kwargs...)) (") * ")")
+        "(" * join(children_ss, ") $(syntaxstring(op(lf); kwargs...)) (") * ")"
     end
 end
 
