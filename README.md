@@ -1,4 +1,4 @@
-# SoleLogics.jl – Computational logic in Julia
+# *SoleLogics.jl* – Computational logic in Julia
 
 [![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://aclai-lab.github.io/SoleLogics.jl/stable)
 [![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://aclai-lab.github.io/SoleLogics.jl/dev)
