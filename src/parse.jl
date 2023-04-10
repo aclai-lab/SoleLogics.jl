@@ -76,13 +76,17 @@ Base.operator_precedence(::typeof(IMPLICATION)) = LOW_PRECEDENCE
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Input and construction ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-const TOKEN_TYPE = Union{<:AbstractSyntaxToken, Symbol}
+const STACK_TOKEN_TYPE = Union{<:AbstractSyntaxToken, Symbol}
 
-# Those special symbols defines parsing limits:
-# each proposition cannot contain the following in order to work
-const OPENING_BRACKET = Symbol("(")
-const CLOSING_BRACKET = Symbol(")")
-const ARG_DELIM       = Symbol(",")
+const _OPENING_BRACKET = "("
+const _CLOSING_BRACKET = ")"
+const _ARG_DELIM       = ","
+
+
+# Special symbols: syntax tokens cannot contain these:
+const OPENING_BRACKET = Symbol(_OPENING_BRACKET)
+const CLOSING_BRACKET = Symbol(_CLOSING_BRACKET)
+const ARG_DELIM       = Symbol(_ARG_DELIM)
 
 const BASE_PARSABLE_OPERATORS = [
     BASE_MODAL_OPERATORS...,
@@ -94,14 +98,14 @@ const BASE_PARSABLE_OPERATORS = [
 
 # Check if a specific unary operator is in a valid position, during token recognition
 function _check_unary_validity(
-    tokens::Vector{TOKEN_TYPE},
+    tokens::Vector{STACK_TOKEN_TYPE},
     op::AbstractOperator,
     opening_bracket::Symbol,
-    arg_delimeter::Union{Symbol,Nothing}
+    arg_separator::Union{Symbol,Nothing}
 )
     # A unary operator is always preceeded by some other operator or a opening_bracket
     if (arity(op) == 1 && !isempty(tokens) &&
-        (tokens[end] !== opening_bracket && tokens[end] !== arg_delimeter &&
+        (tokens[end] !== opening_bracket && tokens[end] !== arg_separator &&
         !(tokens[end] isa AbstractOperator))
     )
         for t in tokens
@@ -132,8 +136,8 @@ function _recognize_tokens(
         splitter_found = false
 
         for splitter in splitters
-            # Here, splitter might be a special parsing character (a Symbol)
-            # but we need to operate over string types here.
+            # Here, splitter might be a special character (a Symbol, see above)
+            #  but we need to operate over string types here.
             splitter = string(splitter)
             # The longest correct splitter starting at index `i` is found (if possible)
             splitrange = findnext(splitter, expression, i)
@@ -147,7 +151,7 @@ function _recognize_tokens(
                 potential_token = ""
 
                 # Splitter is pushed: since a correct splitter is found
-                # set a flag to avoid repeating the iterator increment later.
+                #  set a flag to avoid repeating the iterator increment later.
                 push!(raw_tokens, splitter)
                 splitter_found = true
                 break
@@ -155,7 +159,7 @@ function _recognize_tokens(
         end
 
         # If no splitter has been found in this cycle,
-        # then simply continue collecting a new potential splitter.
+        #  then simply continue collecting a new potential splitter.
         if (!splitter_found)
             potential_token = potential_token * expression[i]
             i = nextind(expression, i)
@@ -168,7 +172,7 @@ function _recognize_tokens(
     end
 
     # Strings in "additional_whitespaces" are stripped out;
-    # for example, if '@' is an additional whitespace then "@p @" becomes just "p".
+    #  for example, if '@' is an additional whitespace then "@p @" becomes just "p".
     raw_tokens =
         map(x -> strip_whitespaces(x, additional_whitespaces = additional_whitespaces),
         raw_tokens)
@@ -182,14 +186,14 @@ function _interpret_tokens(
     proposition_parser::Base.Callable;
     opening_bracket::Symbol,
     closing_bracket::Symbol,
-    arg_delimeter::Union{Symbol,Nothing}
+    arg_separator::Union{Symbol,Nothing}
 )
-    tokens = TOKEN_TYPE[]
+    tokens = STACK_TOKEN_TYPE[]
 
     i = 1
     while i <= length(raw_tokens)
         tok = begin
-            if (Symbol(raw_tokens[i]) in [opening_bracket, closing_bracket, arg_delimeter])
+            if (Symbol(raw_tokens[i]) in [opening_bracket, closing_bracket, arg_separator])
                 # If the token is a special symbol -> push it as is
                 Symbol(raw_tokens[i])
             else
@@ -197,7 +201,7 @@ function _interpret_tokens(
                 if (st in keys(string_to_op))
                     # If the token is an operator -> perform check and push it as is
                     op = string_to_op[st]
-                    _check_unary_validity(tokens, op, opening_bracket, arg_delimeter)
+                    _check_unary_validity(tokens, op, opening_bracket, arg_separator)
                     op
                 else
                     # If the token is something else -> parse as Proposition and push it
@@ -224,7 +228,7 @@ function tokenizer(
     additional_whitespaces::Vector{Char},
     opening_bracket::Symbol = OPENING_BRACKET,
     closing_bracket::Symbol = CLOSING_BRACKET,
-    arg_delimeter::Union{Symbol,Nothing} = nothing
+    arg_separator::Union{Symbol,Nothing} = nothing
 )
     # Strip input's whitespaces
     expression = String(
@@ -241,13 +245,13 @@ function tokenizer(
         " prefixed/suffixed by whitespaces: " * join(invalidops, ", ")
 
     # Each parsing method has to know which symbols represent opening/closing a context;
-    # additionaly, parsing in function notation needs to know how arguments are separated.
-    special_delimeters = vcat(opening_bracket, closing_bracket)
-    if !(isnothing(arg_delimeter))
-        push!(special_delimeters, arg_delimeter)
+    #  additionaly, parsing in function notation needs to know how arguments are separated.
+    special_delimiters = vcat(opening_bracket, closing_bracket)
+    if !(isnothing(arg_separator))
+        push!(special_delimiters, arg_separator)
     end
 
-    splitters = Vector{String}(vcat(string.(special_delimeters),
+    splitters = Vector{String}(vcat(string.(special_delimiters),
         collect(keys(string_to_op))))
 
     # Determine which tokens are separated for sure
@@ -256,14 +260,14 @@ function tokenizer(
     # Interpret each raw token
     return _interpret_tokens(raw_tokens, string_to_op, proposition_parser;
         opening_bracket = opening_bracket, closing_bracket = closing_bracket,
-        arg_delimeter = arg_delimeter)
+        arg_separator = arg_separator)
 end
 
 # Rearrange a serie of token, from infix to postfix notation
-function shunting_yard!(tokens::Vector{TOKEN_TYPE};
+function shunting_yard!(tokens::Vector{STACK_TOKEN_TYPE};
     opening_bracket::Symbol = OPENING_BRACKET,
     closing_bracket::Symbol = CLOSING_BRACKET)
-    tokstack = TOKEN_TYPE[] # support structure
+    tokstack = STACK_TOKEN_TYPE[] # support structure
     postfix = AbstractSyntaxToken[] # returned structure: tokens rearranged in postfix
 
     for tok in tokens
@@ -286,7 +290,7 @@ function shunting_yard!(tokens::Vector{TOKEN_TYPE};
 
         elseif tok isa AbstractOperator
             # If tok is an operator, something must be done until another operator
-            # is placed at the top of the stack.
+            #  is placed at the top of the stack.
             while !isempty(tokstack) &&
                 (tokstack[end] isa AbstractOperator &&
                  Base.operator_precedence(tokstack[end]) > Base.operator_precedence(tok))
@@ -323,49 +327,55 @@ end
         function_notation::Bool = false,
         proposition_parser::Base.Callable = Proposition{String},
         additional_whitespaces::Vector{Char} = Char[],
-        opening_bracket::Symbol = OPENING_BRACKET,
-        closing_bracket::Symbol = CLOSING_BRACKET,
-        arg_delimeter::Union{Symbol,Nothing} = ARG_DELIM
+        opening_bracket::Symbol = $(OPENING_BRACKET),
+        closing_bracket::Symbol = $(CLOSING_BRACKET),
+        arg_separator::Union{Symbol,Nothing} = $(ARG_DELIM)
     )
 
-Returns a `SyntaxTree` which is the result of parsing `expression`.
+Returns a `SyntaxTree` which is the result of parsing `expression`
+ via [Shunting yard](https://en.wikipedia.org/wiki/Shunting_yard_algorithm).
 By default, this function is only able to parse operators in
 `SoleLogics.BASE_PARSABLE_OPERATORS`; additional operators may be provided as
-parameter `additional_operators`. In case of clashing syntaxstring's, the provided
-additional operators will override the base parsable ones.
-
-!!! warning
-    Operators' `syntaxstring`'s must not be prefixed/suffixed by whitespaces. Essentially,
-    for any operator ⨁, it must hold that `syntaxstring(⨁) == strip(syntaxstring(⨁))`.
-    Also, special symbols (`opening_bracket`, `closing_bracket` and `arg_delimeter`) must
-    be all different from each other and CAN NOT compare in tokens (e.g "pro(position" will
-    never be interpreted as an atomic proposition).
+parameter `additional_operators`.
 
 # Arguments
 - `expression::String`: expression to be parsed;
-- `additional_operators::Vector{<:AbstractOperator}` additional non-standard operators
-    needed to correctly parse expression;
+- `additional_operators::Vector{<:AbstractOperator}:` additional, non-standard operators
+    needed to correctly parse the expression; in case of clashing `syntaxstring`'s,
+    the provided additional operators will override the base parsable ones.
 
 # Keyword Arguments
-- `function_notation::Bool = false`: if set to true expression is parsed in function
-    notation (e.g ⨁(arg1, arg2)) otherwise it's parsed in infix (e.g arg1 ⨁ arg2)
-- `proposition_parser::Base.Callable = Proposition{String}`: a callable function to use in
-    order to build propositions from strings recognized in the expression.
-- `additional_whitespaces`::Vector{Char} = Char[]: characters to be stripped out for each
-    token found. For example, if '@' is added, "¬@p@" is parsed as "¬p".
-- `opening_bracket`::Symbol = OPENING_BRACKET: identifies an expression block opening;
-    default value is Symbol("(").
-- `closing_bracket`::Symbol = CLOSING_BRACKET: identifies an expression block closing;
-    default value is Symbol(")").
-- `arg_delimeter`::Union{Symbol,Nothing} = ARG_DELIM: necessary to separate different
-    arguments during parsing if `function_notation` is true; deafult value is Symbol(",").
+- `function_notation::Bool = false`: if set to `true`, the expression is considered
+    in function notation (e.g, ⨁(arg1, arg2));
+    otherwise, it is considered in
+    [infix notation](https://en.m.wikipedia.org/wiki/Infix_notation) (e.g, arg1 ⨁ arg2);
+- `proposition_parser::Base.Callable = Proposition{String}`: a callable to be used when
+    parsing `Proposition`s, once they are recognized in the expression;
+- `additional_whitespaces`::Vector{Char} = Char[]: characters to be stripped out from each
+    syntax token. For example, if '@' is added, "¬@p@" is parsed just as "¬p".
+- `opening_bracket`::Symbol = $(OPENING_BRACKET):
+    the string signaling the opening of anexpression block;
+- `closing_bracket`::Symbol = $(CLOSING_BRACKET):
+    the string signaling the closing of anexpression block;
+- `arg_separator`::Union{Symbol,Nothing} = $(ARG_DELIM): when `function_notation = true`,
+    the string that separates the different arguments of a function call.
+
+!!! warning
+    For a proper functioning,
+    operators' `syntaxstring`'s must not be prefixed/suffixed by whitespaces. Essentially,
+    for any operator ⨁, it must hold that `syntaxstring(⨁) == strip(syntaxstring(⨁))`.
+    Also, special symbols (`opening_bracket`, `closing_bracket` and `arg_separator`) must
+    be all different from each other and CAN NOT compare in tokens (e.g, "pro(position" will
+    never be interpreted as an atomic proposition).
 
 # Examples
 ```julia-repl
 julia> syntaxstring(parseformulatree("¬p∧q∧(¬s∧¬z)"))
 "(¬(p)) ∧ (q ∧ ((¬(s)) ∧ (¬(z))))"
+
 julia> syntaxstring(parseformulatree("∧(¬p,∧(q,∧(¬s,¬z)))", function_notation=true))
 "(¬(p)) ∧ (q ∧ ((¬(s)) ∧ (¬(z))))"
+
 julia> syntaxstring(parseformulatree("¬1→0";
     proposition_parser = (x -> Proposition{Float64}(parse(Float64, x)))))
 "(¬(1.0)) → 0.0"
@@ -381,7 +391,7 @@ function parseformulatree(
     additional_whitespaces::Vector{Char} = Char[],
     opening_bracket::Symbol = OPENING_BRACKET,
     closing_bracket::Symbol = CLOSING_BRACKET,
-    arg_delimeter::Union{Symbol,Nothing} = ARG_DELIM
+    arg_separator::Union{Symbol,Nothing} = ARG_DELIM
 )
     additional_operators = (
         isnothing(additional_operators) ? AbstractOperator[] : additional_operators)
@@ -393,8 +403,8 @@ function parseformulatree(
     # 2) function_notation = true;  _fxbuild    -> _prefixbuild
 
     # Build a formula starting from its postfix notation, preprocessed with shunting yard.
-    # In other words, all special symbols (e.g. opening_bracket) are already filtered
-    # out and only AbstractSyntaxToken are considered.
+    #  In other words, all special symbols (e.g. opening_bracket) are already filtered
+    #  out and only AbstractSyntaxToken are considered.
     function _postfixbuild(postfix::Vector{<:AbstractSyntaxToken})
         stack = SyntaxTree[]
 
@@ -427,8 +437,8 @@ function parseformulatree(
     end
 
     # Build a formula starting from its function notation;
-    function _prefixbuild(prefix::Vector{TOKEN_TYPE})
-        stack = Vector{Union{SyntaxTree, TOKEN_TYPE}}()
+    function _prefixbuild(prefix::Vector{STACK_TOKEN_TYPE})
+        stack = Vector{Union{SyntaxTree, STACK_TOKEN_TYPE}}()
 
         for tok in reverse(prefix)
             if tok isa Symbol || tok isa Proposition
@@ -465,7 +475,7 @@ function parseformulatree(
                         [popped[s] for s in 2:length(popped) if typeof(popped[s]) <:
                             Union{AbstractSyntaxToken, AbstractSyntaxStructure}]
                     separators =
-                        [s for s in 3:(length(popped)-2) if popped[s] == arg_delimeter]
+                        [s for s in 3:(length(popped)-2) if popped[s] == arg_separator]
 
                     if (popped[1] == opening_bracket &&
                         popped[end] == closing_bracket &&
@@ -497,7 +507,7 @@ function parseformulatree(
     # actually this is a preprocessing who fallbacks into `_prefixbuild`
     function _fxbuild()
         tokens = tokenizer(expression, operators, proposition_parser,
-            additional_whitespaces, opening_bracket, closing_bracket, arg_delimeter)
+            additional_whitespaces, opening_bracket, closing_bracket, arg_separator)
         return _prefixbuild(tokens)
     end
 
@@ -512,14 +522,18 @@ function parseformulatree(
     additional_whitespaces::Vector{Char} = Char[],
     opening_bracket::Symbol = OPENING_BRACKET,
     closing_bracket::Symbol = CLOSING_BRACKET,
-    arg_delimeter::Union{Symbol,Nothing} = nothing
+    arg_separator::Union{Symbol,Nothing} = nothing
 )
-    parseformulatree(expression, operators(logic), function_notation = function_notation,
+    parseformulatree(
+        expression,
+        operators(logic),
+        function_notation = function_notation,
         proposition_parser = proposition_parser,
         additional_whitespaces = additional_whitespaces,
         opening_bracket = opening_bracket,
         closing_bracket = closing_bracket,
-        arg_delimeter = arg_delimeter)
+        arg_separator = arg_separator,
+    )
 end
 
 ```
@@ -537,7 +551,7 @@ function parseformula(
     additional_whitespaces::Vector{Char} = Char[],
     opening_bracket::Symbol = OPENING_BRACKET,
     closing_bracket::Symbol = CLOSING_BRACKET,
-    arg_delimeter::Union{Symbol,Nothing} = nothing
+    arg_separator::Union{Symbol,Nothing} = nothing
 )
     additional_operators =
         (isnothing(additional_operators) ? AbstractOperator[] : additional_operators)
@@ -548,7 +562,7 @@ function parseformula(
         additional_whitespaces = additional_whitespaces,
         opening_bracket = opening_bracket,
         closing_bracket = closing_bracket,
-        arg_delimeter = arg_delimeter)
+        arg_separator = arg_separator)
     baseformula(t;
         # additional_operators = unique(AbstractOperator[operators..., SoleLogics.operators(t)...]),
         additional_operators = length(additional_operators) == 0 ? nothing :
@@ -563,17 +577,17 @@ end
 function parseformula(
     expression::String,
     logic::AbstractLogic;
-    args...
+    kwargs...,
 )
-    Formula(logic, parseformulatree(expression, operators(logic), args...))
+    Formula(logic, parseformulatree(expression, operators(logic); kwargs...))
 end
 
 function parseformula(
     expression::String,
     operators::Union{Nothing,Vector{<:AbstractOperator}};
-    args...
+    kwargs...,
 )
-    parseformula(expression; additional_operators=operators, args...)
+    parseformula(expression; additional_operators = operators; kwargs...)
 end
 
 # Working on...
@@ -585,3 +599,6 @@ end
 #   ☑ written about limitations in warning, but maybe there's more to safely
 #   ☑ info about left-right operator precedence in case of tie (precedence docstrings)
 #   □ in official documentation, user has to be informed about BASE_PARSABLE_OPERATORS
+
+# TODO allow the user to specify a string instead of a symbol for a special character. Symbols are only used internally.
+# See _OPENING_BRACKET, _CLOSING_BRACKET, _ARG_DELIM above

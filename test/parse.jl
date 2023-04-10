@@ -4,13 +4,8 @@
 @test_nowarn parseformulatree("p")
 @test_nowarn parseformulatree("⊤")
 
-@test syntaxstring(parseformulatree("p∧q"); function_notation = true) == "∧(p, q)"
-@test syntaxstring(parseformulatree("p→q"); function_notation = true) == "→(p, q)"
 @test parseformulatree("¬p∧q") == parseformulatree("¬(p)∧q")
 @test parseformulatree("¬p∧q") != parseformulatree("¬(p∧q)")
-
-@test filter(!isspace, syntaxstring(parseformulatree("¬p∧q∧(¬s∧¬z)");
-    function_notation = true)) == "∧(¬(p),∧(q,∧(¬(s),¬(z))))"
 
 @test_nowarn parseformula("p")
 
@@ -36,6 +31,24 @@
     logic(parseformula("¬p∧q∧(¬s∧¬z)"))) <: SoleLogics.BasePropositionalOperators)
 
 @test_nowarn parseformulatree("¬p∧q→(¬s∧¬z)")
+
+@test syntaxstring(parseformulatree("⟨G⟩p")) == "⟨G⟩(p)"
+@test syntaxstring(parseformulatree("[G]p")) == "[G](p)"
+
+@test_nowarn parseformulatree("⟨G⟩p", [DiamondRelationalOperator{GlobalRel}()])
+
+@test alphabet(logic(parseformula("p→q"))) == AlphabetOfAny{String}()
+
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ function notation ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+@test syntaxstring(parseformulatree("p∧q"); function_notation = true) == "∧(p, q)"
+@test syntaxstring(parseformulatree("p→q"); function_notation = true) == "→(p, q)"
+
+@test filter(!isspace, syntaxstring(parseformulatree("¬p∧q∧(¬s∧¬z)");
+    function_notation = true)) == "∧(¬(p),∧(q,∧(¬(s),¬(z))))"
+
+
 @test_nowarn parseformulatree("→(∧(¬p, q), ∧(¬s, ¬z))", function_notation=true)
 @test_nowarn parseformulatree("→(∧(¬p; q); ∧(¬s; ¬z))",
     function_notation=true, arg_delimeter = Symbol(";"))
@@ -57,14 +70,6 @@
     "∧(◊(◊(◊(◊(p)))), q)"
 @test syntaxstring(parseformulatree("¬¬¬ □□□ ◊◊◊ p ∧ ¬¬¬ q"); function_notation = true) ==
     "∧(¬(¬(¬(□(□(□(◊(◊(◊(p))))))))), ¬(¬(¬(q))))"
-
-@test syntaxstring(parseformulatree("⟨G⟩p")) == "⟨G⟩(p)"
-@test syntaxstring(parseformulatree("[G]p")) == "[G](p)"
-
-@test_nowarn parseformulatree("⟨G⟩p", [DiamondRelationalOperator{GlobalRel}()])
-
-@test alphabet(logic(parseformula("p→q"))) == AlphabetOfAny{String}()
-
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ malformed input ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
