@@ -9,7 +9,7 @@
 
 ## In a nutshell
 
-SoleLogics.jl provides a fresh codebase for computational logic, featuring easy manipulation of:
+*SoleLogics.jl* provides a fresh codebase for computational logic, featuring easy manipulation of:
 - Propositional and (multi)modal logics (propositions, logical constants, alphabet, grammars, crisp/fuzzy algebras);
 - Logical formulas (random generation, parsing, minimization);
 - Logical interpretations (e.g., propositional valuations, Kripke structures);
@@ -34,4 +34,4 @@ SoleLogics.jl provides a fresh codebase for computational logic, featuring easy 
 
 The package is developed by the [ACLAI Lab](https://aclai.unife.it/en/) @ University of Ferrara.
 
-SoleLogics.jl lays the logical foundations for [Sole.jl](https://pretalx.com/juliacon2023/talk/review/7LY9ZBBJQYVVLJFFSZMV9JCCMMTQJXPK), an open-source framework for *symbolic machine learning*.
+*SoleLogics.jl* lays the logical foundations for [*Sole.jl*](https://github.com/aclai-lab/Sole.jl), an open-source framework for *symbolic machine learning*.
