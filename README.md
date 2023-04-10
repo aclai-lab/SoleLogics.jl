@@ -21,9 +21,9 @@ SoleLogics.jl provides a fresh codebase for computational logic, featuring easy 
 
 ## Generating random formulas
 
-## Generating random interpretations
-
 ## Parsing Formulas
+
+## Generating random interpretations
 
 ## Model checking
 
