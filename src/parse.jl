@@ -89,12 +89,10 @@ const CLOSING_BRACKET = Symbol(_CLOSING_BRACKET)
 const ARG_DELIM       = Symbol(_ARG_DELIM)
 
 const BASE_PARSABLE_OPERATORS = [
+    BASE_PROPOSITIONAL_OPERATORS...,
     BASE_MODAL_OPERATORS...,
-    DiamondRelationalOperator(globalrel),
-    BoxRelationalOperator(globalrel),
-    DiamondRelationalOperator(identityrel),
-    BoxRelationalOperator(identityrel),
-]
+    BASE_MULTIMODAL_OPERATORS...,
+] |> unique
 
 # Check if a specific unary operator is in a valid position, during token recognition
 function _check_unary_validity(
@@ -587,7 +585,7 @@ function parseformula(
     operators::Union{Nothing,Vector{<:AbstractOperator}};
     kwargs...,
 )
-    parseformula(expression; additional_operators = operators; kwargs...)
+    parseformula(expression; additional_operators = operators, kwargs...)
 end
 
 # Working on...
@@ -602,3 +600,5 @@ end
 
 # TODO allow the user to specify a string instead of a symbol for a special character. Symbols are only used internally.
 # See _OPENING_BRACKET, _CLOSING_BRACKET, _ARG_DELIM above
+
+# TODO make tests silent

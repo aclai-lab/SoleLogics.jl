@@ -385,6 +385,13 @@ function baseformula(
         elseif issubset(ops, BASE_MODAL_OPERATORS)
             modallogic(;
                 operators = (infer_logic ? BASE_MODAL_OPERATORS : ops),
+                default_operators = BASE_MODAL_OPERATORS,
+                kwargs...,
+            )
+        elseif issubset(ops, BASE_MULTIMODAL_OPERATORS)
+            modallogic(;
+                operators = (infer_logic ? BASE_MULTIMODAL_OPERATORS : ops),
+                default_operators = BASE_MULTIMODAL_OPERATORS,
                 kwargs...,
             )
         else

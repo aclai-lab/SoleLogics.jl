@@ -30,7 +30,7 @@ SoleLogics.jl provides a fresh codebase for computational logic, featuring easy 
 ## Interpretation sets
 
 
-# About
+## About
 
 The package is developed by the [ACLAI Lab](https://aclai.unife.it/en/) @ University of Ferrara.
 

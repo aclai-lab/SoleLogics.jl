@@ -51,10 +51,10 @@
 
 @test_nowarn parseformulatree("→(∧(¬p, q), ∧(¬s, ¬z))", function_notation=true)
 @test_nowarn parseformulatree("→(∧(¬p; q); ∧(¬s; ¬z))",
-    function_notation=true, arg_delimeter = Symbol(";"))
+    function_notation=true, arg_separator = Symbol(";"))
 @test_nowarn parseformulatree("→{∧{¬p; q}; ∧{¬s; ¬z}}", function_notation=true,
     opening_bracket = Symbol("{"), closing_bracket = Symbol("}"),
-    arg_delimeter = Symbol(";"))
+    arg_separator = Symbol(";"))
 
 
 @test filter(!isspace, syntaxstring(parseformulatree("¬p∧q→(¬s∧¬z)");
@@ -119,10 +119,10 @@
     function_notation = true)
 @test_nowarn parseformulatree("→(¬1;0)";
     proposition_parser = (x -> Proposition{Float64}(parse(Float64, x))),
-    function_notation = true, arg_delimeter = Symbol(";"))
+    function_notation = true, arg_separator = Symbol(";"))
 @test_nowarn parseformulatree("→(¬1/0)";
     proposition_parser = (x -> Proposition{Float64}(parse(Float64, x))),
-    function_notation = true, arg_delimeter = Symbol("/"))
+    function_notation = true, arg_separator = Symbol("/"))
 @test_nowarn parseformulatree("∧(¬0.42,1)";
     proposition_parser = (x -> Proposition{Float64}(parse(Float64, x))),
     function_notation = true)
@@ -173,7 +173,7 @@ f = parseformulatree("LEFT CUSTOM BRACKET G RIGHT CUSTOM BRACKET p ∧ ¬" *
 @test_nowarn parseformulatree("∧(🌅G🌄p,¬🌅G🌄q)", [SoleRelationalOperator(globalrel)];
     function_notation = true)
 @test_nowarn parseformulatree("∧[🌅G🌄p SEP ¬🌅G🌄q)", [SoleRelationalOperator(globalrel)];
-    function_notation = true, opening_bracket = Symbol("["), arg_delimeter = Symbol("SEP"))
+    function_notation = true, opening_bracket = Symbol("["), arg_separator = Symbol("SEP"))
 
 @test_nowarn parseformulatree("|G|p   ∧ ¬|G|q", [PipeRelationalOperator(globalrel)])
 @test_nowarn parseformulatree("∧(|G|p,  ¬|G|q)", [PipeRelationalOperator(globalrel)];
