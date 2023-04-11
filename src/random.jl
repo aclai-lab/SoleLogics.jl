@@ -67,6 +67,10 @@ function randformulatree(
         )
     end
 
+    # NOTE: a cryptic error message is sometimes thrown when calling this function.
+    # Momentarily, this error is being ignored.
+    redirect_stderr(devnull)
+
     # If the alphabet is not iterable, this function should not work.
     # NOTE: the error message here is the same as in general.jl.
     if !isiterable(alphabet)

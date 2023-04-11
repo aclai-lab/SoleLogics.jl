@@ -50,10 +50,6 @@ The following `kwargs` are currently supported:
 function notation for binary operators.
 See [here](https://en.wikipedia.org/wiki/Infix_notation).
 
-!!! warning
-    The produced string should not be padded by spaces as this may cause misinterpretations
-    when manipulating the string itself.
-
 # Examples
 ```julia-repl
 julia> syntaxstring((parseformula("◊((p∧s)→q)")))
@@ -62,6 +58,7 @@ julia> syntaxstring((parseformula("◊((p∧s)→q)")))
 julia> syntaxstring((parseformula("◊((p∧s)→q)")); function_notation = true)
 "→(◊(∧(p, s)), q)"
 ```
+
 See also [`parseformula`](@ref), [`parseformulatree`](@ref),
 [`SyntaxTree`](@ref), [`AbstractSyntaxToken`](@ref).
 
@@ -79,10 +76,14 @@ In particular, for the case of `Proposition`s, the function calls itself on the 
 
     syntaxstring(p::Proposition; kwargs...) = syntaxstring(atom(p); kwargs...)
 
-Then, the syntaxstring for a given atom can be defined. For example, with string atoms,
+Then, the syntaxstring for a given atom can be defined. For example, with `String atoms,
 the function can simply be:
 
     syntaxstring(atom::String; kwargs...) = atom
+
+!!! warning
+    The `syntaxstring` for syntax tokens (e.g., propositions, operators) should not be
+    prefixed/suffixed by whitespaces, as this may cause ambiguities upon parsing.
 
 """
 function syntaxstring(tok::AbstractSyntaxToken; kwargs...)::String

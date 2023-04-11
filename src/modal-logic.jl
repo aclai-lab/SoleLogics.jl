@@ -702,6 +702,7 @@ function modallogic(;
     operators::Union{Nothing,Vector{<:AbstractOperator}} = nothing,
     grammar::Union{Nothing,AbstractGrammar} = nothing,
     algebra::Union{Nothing,AbstractAlgebra} = nothing,
+    default_operators = BASE_MODAL_OPERATORS,
 )
     if !isnothing(operators) && length(setdiff(operators, BASE_PROPOSITIONAL_OPERATORS)) == 0
         @warn "Instantiating modal logic (via `modallogic`) with solely" *
@@ -712,7 +713,7 @@ function modallogic(;
         operators = operators,
         grammar = grammar,
         algebra = algebra;
-        default_operators = BASE_MODAL_OPERATORS,
+        default_operators = default_operators,
         logictypename = "modal logic",
     )
 end
@@ -806,3 +807,12 @@ See also
 """
 dual(op::DiamondRelationalOperator) = BoxRelationalOperator{relationtype(op)}()
 dual(op::BoxRelationalOperator)     = DiamondRelationalOperator{relationtype(op)}()
+
+
+const BASE_MULTIMODAL_OPERATORS = [BASE_PROPOSITIONAL_OPERATORS...,
+    DiamondRelationalOperator(globalrel),
+    BoxRelationalOperator(globalrel),
+    DiamondRelationalOperator(identityrel),
+    BoxRelationalOperator(identityrel),
+]
+const BaseMultiModalOperators = Union{typeof.(BASE_MULTIMODAL_OPERATORS)...}

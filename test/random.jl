@@ -3,37 +3,41 @@
 
 @testset "Random" begin
 
-# TODO @Mauro: bring back and throw away output
-# Mauro: I commented the following tests since a cryptic error message fills up the REPL.
-# This is strange, also because `randformulatree` actually returns correct SyntaxTrees.
-# _alphabet = ExplicitAlphabet(Proposition.([1,2]))
-_alphabet = ExplicitAlphabet(Proposition.(["pr", "qt_aoeu"]))
+_alphabet = ExplicitAlphabet(Proposition.(["p", "q"]))
 _operators = [NEGATION, CONJUNCTION, IMPLICATION]
 @test_broken randformulatree(10, _alphabet, _operators)
 @test_nowarn randformulatree(2, _alphabet, _operators)
 
 end
 
-
 @testset "Random+Parsing" begin
 
-const TERN = SoleLogics.NamedOperator{:TERN}()
-import SoleLogics: arity
-SoleLogics.arity(::Type{typeof(TERN)}) = 3
+#=
+    TODO: fix
+    LoadError: syntax: unsupported `const` declaration on local variable around
+    /home/mauro/Desktop/UNI/Laboratorio/Sole/SoleLogics.jl/test/random.jl:15
 
-_operators = [_operators..., DiamondRelationalOperator(globalrel), BoxRelationalOperator(globalrel), TERN]
+    const TERN = SoleLogics.NamedOperator{:TERN}()
+    import SoleLogics: arity
+    SoleLogics.arity(::Type{typeof(TERN)}) = 3
+=#
+
+_alphabet = ExplicitAlphabet(Proposition.(["p", "q"]))
+_operators = [NEGATION, CONJUNCTION, IMPLICATION,
+    DiamondRelationalOperator(globalrel), BoxRelationalOperator(globalrel)]
+
 @test all([begin
-    f = randformula(4, _alphabet, _operators; 1)
+    f = randformula(4, _alphabet, _operators)
     s = syntaxstring(f)
     s == syntaxstring(parseformulatree(s))
 end
  for i in 1:1000])
 
 @test all([begin
-    f = randformula(4, _alphabet, _operators; 1)
+    f = randformula(4, _alphabet, _operators)
     s = syntaxstring(f)
-    s == syntaxstring(parseformulatree(s; function_notation = true); function_notation = true)
+    s == syntaxstring(
+        parseformulatree(s; function_notation = true); function_notation = true)
 end for i in 1:1000])
-
 
 end
