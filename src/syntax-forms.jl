@@ -1,4 +1,5 @@
 import Base: show, promote_rule
+using SoleBase
 
 doc_lmlf = """
     struct LeftmostLinearForm{O<:AbstractOperator, SS<:AbstractSyntaxStructure} <: AbstractSyntaxStructure
