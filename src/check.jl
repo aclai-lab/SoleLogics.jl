@@ -20,6 +20,7 @@ julia> syntaxstring.(SoleLogics.subformulas(parseformula("◊((p∧q)→r)")))
 See also
 [`SyntaxTree`](@ref), [`Formula`](@ref), [`AbstractFormula`](@ref).
 """
+subformulas(lf::LeftmostLinearForm) = subformulas(tree(lf))
 subformulas(f::Formula; kwargs...) = f.(subformulas(tree(f); kwargs...))
 function subformulas(t::SyntaxTree; sorted=true)
     # function _subformulas(_t::SyntaxTree)

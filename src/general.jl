@@ -528,6 +528,8 @@ tokenstype(::SyntaxTree{FT,T}) where {FT,T} = FT
 operatorstype(t::SyntaxTree) = typeintersect(AbstractOperator, tokenstype(t))
 propositionstype(t::SyntaxTree) = typeintersect(Proposition, tokenstype(t))
 
+Base.length(t::SyntaxTree) = 1
+
 # Shows the type of the syntax tree and its syntaxstring.
 # Base.show(io::IO, t::SyntaxTree) = print(io, "$(typeof(t))($(syntaxstring(t)))")
 function Base.show(io::IO, t::SyntaxTree)
@@ -590,7 +592,7 @@ Counts all tokens appearing in a tree.
 See also [`tokens`](@ref), [`AbstractSyntaxToken`](@ref).
 """
 function ntokens(t::SyntaxTree)::Integer
-    length(children(t)) == 0 ? 1 : 1 + sum(ntoken(c) for c in children(t))
+    length(children(t)) == 0 ? 1 : 1 + sum(ntokens(c) for c in children(t))
 end
 
 """

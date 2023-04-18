@@ -1,4 +1,4 @@
-import Base: show, promote_rule
+import Base: show, promote_rule, length
 using SoleBase
 
 doc_lmlf = """
@@ -37,7 +37,7 @@ See also [`AbstractSyntaxStructure`](@ref), [`SyntaxTree`](@ref),
 [`Literal`](@ref).
 """
 struct LeftmostLinearForm{O<:AbstractOperator, SS<:AbstractSyntaxStructure} <: AbstractSyntaxStructure
-    children::Vector{<:SS}
+    children::Vector{SS}
 
     function LeftmostLinearForm{O,SS}(
         children::Vector,
@@ -87,6 +87,8 @@ op(::LeftmostLinearForm{O}) where {O} = O()
 
 operatortype(::LeftmostLinearForm{O}) where {O} = O
 childrentype(::LeftmostLinearForm{O,SS}) where {O,SS} = SS
+
+Base.length(lf::LeftmostLinearForm) = length(children(lf))
 
 function syntaxstring(
     lf::LeftmostLinearForm;
@@ -169,6 +171,8 @@ propositionstype(::Literal{T}) where {T} = T
 tree(l::Literal) = ispos(l) ? SyntaxTree(l.prop) : ¬(SyntaxTree(l.prop))
 
 complement(l::Literal) = Literal(!ispos(l), prop(l))
+
+Base.length(l::Literal) = 1
 
 function Base.show(io::IO, l::Literal)
     println(io,
