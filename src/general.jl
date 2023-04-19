@@ -428,8 +428,7 @@ Base.promote_rule(::Type{<:AbstractSyntaxToken}, ::Type{SS}) where {SS<:Abstract
 
 """
     struct SyntaxTree{
-        FT<:AbstractSyntaxToken,
-        T<:FT,
+        T<:AbstractSyntaxToken,
     } <: AbstractSyntaxStructure
         token::T
         children::NTuple{N,SyntaxTree} where {N}
@@ -441,11 +440,6 @@ has as many children as the `arity` of the token.
 
 This implementation is *arity-compliant*, in that, upon construction,
 the arity is checked against the number of children provided.
-An additional type parameter `FT` ensures that the token types of the sub-tree are
-constrained to a predefined set of types.
-When it is not specified, this parameter defaults to the `Union` between `T`, and the `FT`s
-of the child nodes. Note: if not handled correctly, this can cause an abuse of Julia's
-[multiple dispatch engine](https://docs.julialang.org/en/v1/manual/performance-tips/#The-dangers-of-abusing-multiple-dispatch-(aka,-more-on-types-with-values-as-parameters)).
 
 See also [`token`](@ref), [`children`](@ref), [`tokentype`](@ref),
 [`tokens`](@ref), [`operators`](@ref), [`propositions`](@ref),
@@ -454,8 +448,7 @@ See also [`token`](@ref), [`children`](@ref), [`tokentype`](@ref),
 [`AbstractSyntaxToken`](@ref), [`arity`](@ref), [`Proposition`](@ref), [`Operator`](@ref).
 """
 struct SyntaxTree{
-    FT<:AbstractSyntaxToken,
-    T<:AbstractSyntaxToken, # Note: actually, T<:FT, but it seems to raise low-level issues!
+    T<:AbstractSyntaxToken,
 } <: AbstractSyntaxStructure
 
     # The syntax token at the current node
@@ -464,37 +457,25 @@ struct SyntaxTree{
     # The child nodes of the current node
     children::NTuple{N,SyntaxTree} where {N}
 
-    function _boundchecks(FT, N, T, token, children)
-        @assert arity(token) == N "Cannot instantiate SyntaxTree{$(FT),$(T)} with token" *
+    function _aritycheck(N, T, token, children)
+        @assert arity(token) == N "Cannot instantiate SyntaxTree{$(T)} with token" *
                                   " $(token) of arity $(arity(token)) and $(N) children."
-        @assert all([T, tokenstype.(children)...] .<: FT) "" *
-                "Cannot instantiate SyntaxTree{$(FT),$(T)} with token::$(T) and" *
-                " tokenstype.(children)::$(tokenstype.(children))."
         return nothing
     end
 
-    function SyntaxTree{FT,T}(
+    function SyntaxTree{T}(
         token::T,
         children::NTuple{N,Union{AbstractSyntaxToken,AbstractSyntaxStructure}} = (),
-    ) where {FT<:AbstractSyntaxToken,T<:FT,N}
+    ) where {T<:AbstractSyntaxToken,N}
         children = convert.(SyntaxTree, children)
-        _boundchecks(FT, N, T, token, children)
-        return new{FT,T}(token, children)
+        _aritycheck(N, T, token, children)
+        return new{T}(token, children)
     end
 
-    function SyntaxTree{FT}(
-        token::T,
-        children::NTuple{N,Union{AbstractSyntaxToken,AbstractSyntaxStructure}} = (),
-    ) where {FT<:AbstractSyntaxToken,T<:FT,N}
-        children = convert.(SyntaxTree, children)
-        _boundchecks(FT, N, T, token, children)
-        return new{FT,T}(token, children)
-    end
-
-    function SyntaxTree{FT}(
-        t::SyntaxTree{FT2,T},
-    ) where {FT<:AbstractSyntaxToken,T<:FT,FT2}
-        return SyntaxTree{FT,T}(token(t), children(t))
+    function SyntaxTree{T}(
+        t::SyntaxTree{T},
+    ) where {T<:AbstractSyntaxToken}
+        return SyntaxTree{T}(token(t), children(t))
     end
 
     function SyntaxTree(
@@ -502,18 +483,14 @@ struct SyntaxTree{
         children::NTuple{N,Union{AbstractSyntaxToken,AbstractSyntaxStructure}} = (),
     ) where {T<:AbstractSyntaxToken,N}
         children = convert.(SyntaxTree, children)
-        FT = Union{T,tokenstype.(children)...}
-        _boundchecks(FT, N, T, token, children)
-        return new{FT,T}(token, children)
+        _aritycheck(N, T, token, children)
+        return new{T}(token, children)
     end
 end
 
 # Helpers
-function SyntaxTree{FT,T}(token::T, children...) where {FT,T<:AbstractSyntaxToken}
-    return SyntaxTree{FT,T}(token, children)
-end
-function SyntaxTree{FT}(token::T, children...) where {FT,T<:AbstractSyntaxToken}
-    return SyntaxTree{FT}(token, children)
+function SyntaxTree{T}(token::T, children...) where {T<:AbstractSyntaxToken}
+    return SyntaxTree{T}(token, children)
 end
 function SyntaxTree(token::T, children...) where {T<:AbstractSyntaxToken}
     return SyntaxTree(token, children)
@@ -523,8 +500,8 @@ end
 token(t::SyntaxTree) = t.token
 children(t::SyntaxTree) = t.children
 
-tokentype(::SyntaxTree{FT,T}) where {FT,T} = T
-tokenstype(::SyntaxTree{FT,T}) where {FT,T} = FT
+tokentype(::SyntaxTree{T}) where {T} = T
+tokenstype(t::SyntaxTree) = Union{tokentype(t),tokenstype.(children(t))...}
 operatorstype(t::SyntaxTree) = typeintersect(AbstractOperator, tokenstype(t))
 propositionstype(t::SyntaxTree) = typeintersect(Proposition, tokenstype(t))
 
@@ -952,7 +929,7 @@ end
         maxdepth::Integer,
         nformulas::Union{Integer,Nothing} = nothing,
         args...
-    )::Vector{<:SyntaxTree{<:tokenstype(g)}}
+    )::Vector{<:SyntaxTree
 
 Each grammar with a finite and iterable alphabet must provide a method for
 enumerating its formulas, encoded as `SyntaxTree`s.
@@ -970,7 +947,7 @@ function formulas(
     maxdepth::Integer,
     nformulas::Union{Integer,Nothing} = nothing,
     args...
-)::Vector{<:SyntaxTree{<:tokenstype(g)}}
+)::Vector{<:SyntaxTree}
     @assert maxdepth >= 0
     @assert nformulas > 0
     fin = isfinite(alphabet(g))
@@ -1072,7 +1049,7 @@ end
         g::CompleteFlatGrammar{A,O} where {A,O};
         maxdepth::Integer,
         nformulas::Union{Integer,Nothing} = nothing
-    )::Vector{SyntaxTree{<:tokenstype(g)}}
+    )::Vector{SyntaxTree}
 
 Generates all formulas with syntax trees shorter than a given `maxdepth`.
 
@@ -1082,7 +1059,7 @@ function formulas(
     g::CompleteFlatGrammar{A,O} where {A,O};
     maxdepth::Integer,
     nformulas::Union{Integer,Nothing} = nothing,
-)::Vector{SyntaxTree{<:tokenstype(g)}}
+)::Vector{SyntaxTree}
     @assert maxdepth >= 0
     @assert isnothing(nformulas) || nformulas > 0
     # With increasing `depth`, accumulate all formulas of length `depth` by combining all
