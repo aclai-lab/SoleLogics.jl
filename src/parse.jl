@@ -344,7 +344,7 @@ parameter `additional_operators`.
 - `function_notation::Bool = false`: if set to `true`, the expression is considered
     in function notation (e.g, ⨁(arg1, arg2));
     otherwise, it is considered in
-    [infix notation](https://en.m.wikipedia.org/wiki/Infix_notation) (e.g, arg1 ⨁ arg2);
+    [infix notation](https://en.wikipedia.org/wiki/Infix_notation) (e.g, arg1 ⨁ arg2);
 - `proposition_parser::Base.Callable = Proposition{String}`: a callable to be used when
     parsing `Proposition`s, once they are recognized in the expression;
 - `additional_whitespaces`::Vector{Char} = Char[]: characters to be stripped out from each
