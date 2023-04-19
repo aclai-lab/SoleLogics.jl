@@ -21,7 +21,8 @@ Return a pseudo-randomic `SyntaxTree` or `Formula`.
 
 # Examples
 ```julia-repl
-julia> syntaxstring(randformulatree(4, ExplicitAlphabet(Proposition.([1,2])), [NEGATION, CONJUNCTION, IMPLICATION]))
+julia> syntaxstring(randformulatree(4,
+    ExplicitAlphabet(Proposition.([1,2])), [NEGATION, CONJUNCTION, IMPLICATION]))
 "¬((¬(¬(2))) → ((1 → 2) → (1 → 2)))"
 ```
 See also [`randformula`](@ref), [`SyntaxTree`](@ref).
@@ -63,7 +64,8 @@ function randformulatree(
 
         return SyntaxTree(
             op,
-            Tuple([_randformulatree(height-1, alphabet, operators; rng=rng) for _ in 1:arity(op)])
+            Tuple([_randformulatree(height-1, alphabet, operators; rng=rng)
+                for _ in 1:arity(op)])
         )
     end
 

@@ -48,7 +48,6 @@
 @test filter(!isspace, syntaxstring(parseformulatree("¬p∧q∧(¬s∧¬z)");
     function_notation = true)) == "∧(¬(p),∧(q,∧(¬(s),¬(z))))"
 
-
 @test_nowarn parseformulatree("→(∧(¬p, q), ∧(¬s, ¬z))", function_notation=true)
 @test_nowarn parseformulatree("→(∧(¬p; q); ∧(¬s; ¬z))",
     function_notation=true, arg_separator = Symbol(";"))
@@ -70,6 +69,35 @@
     "∧(◊(◊(◊(◊(p)))), q)"
 @test syntaxstring(parseformulatree("¬¬¬ □□□ ◊◊◊ p ∧ ¬¬¬ q"); function_notation = true) ==
     "∧(¬(¬(¬(□(□(□(◊(◊(◊(p))))))))), ¬(¬(¬(q))))"
+
+f = parseformulatree("¬((¬(⟨G⟩(q))) → (([G](p)) ∧ ([G](q))))",
+    [BoxRelationalOperator(globalrel), DiamondRelationalOperator(globalrel)])
+@test syntaxstring(f) == syntaxstring(parseformulatree(syntaxstring(f)))
+@test syntaxstring(f; function_notation = true) ==
+    syntaxstring(parseformulatree(syntaxstring(f)); function_notation = true)
+f = parseformulatree("((¬(q ∧ q)) ∧ ((p ∧ p) ∧ (q → q))) → ([G]([G](⟨G⟩(p))))",
+    [BoxRelationalOperator(globalrel), DiamondRelationalOperator(globalrel)])
+@test syntaxstring(f) == syntaxstring(parseformulatree(syntaxstring(f)))
+@test syntaxstring(f; function_notation = true) ==
+    syntaxstring(parseformulatree(syntaxstring(f)); function_notation = true)
+f = parseformulatree("((⟨G⟩(⟨G⟩(q))) ∧ (¬([G](p)))) → (((q → p) → (¬(q))) ∧ (¬([G](q))))",
+    [BoxRelationalOperator(globalrel), DiamondRelationalOperator(globalrel)])
+@test syntaxstring(f) == syntaxstring(parseformulatree(syntaxstring(f)))
+@test syntaxstring(f; function_notation = true) ==
+    syntaxstring(parseformulatree(syntaxstring(f)); function_notation = true)
+f = parseformulatree("[G](¬(⟨G⟩(p ∧ q)))",
+    [BoxRelationalOperator(globalrel), DiamondRelationalOperator(globalrel)])
+@test syntaxstring(f) == syntaxstring(parseformulatree(syntaxstring(f)))
+@test syntaxstring(f; function_notation = true) ==
+    syntaxstring(parseformulatree(syntaxstring(f)); function_notation = true)
+# TODO: for some reason, the following parseformulatree gives a cryptic internal error
+# f = parseformulatree("⟨G⟩(((¬(⟨G⟩((q ∧ p) → (¬(q))))) ∧ (((¬(q → q)) → ((q → p) → (¬(q))))"*
+#     "∧ (((¬(p)) ∧ (⟨G⟩(p))) → (¬(⟨G⟩(q)))))) ∧ ((¬(([G](p ∧ q)) → (¬(p → q)))) →" *
+#     "([G](([G](q∧ q)) ∧ ([G](q → p))))))",
+#     [BoxRelationalOperator(globalrel), DiamondRelationalOperator(globalrel)])
+# @test syntaxstring(f) == syntaxstring(parseformulatree(syntaxstring(f)))
+# @test syntaxstring(f; function_notation = true) ==
+#     syntaxstring(parseformulatree(syntaxstring(f)); function_notation = true)
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ malformed input ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -196,3 +224,31 @@ _f = parseformulatree("{Gp ∧ ¬{G}q", [CurlyRelationalOperator(globalrel)])
     [BoxRelationalOperator(testrel), DiamondRelationalOperator(testrel)]
 )
 end
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ stress tests ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#=
+s = "¬((¬(([G](⟨G⟩(¬((¬([G](⟨G⟩(⟨G⟩(q))))) → (¬(⟨G⟩((¬(q)) ∧ ([G](p))))))))) ∧ (⟨G⟩((" *
+    "[G](⟨G⟩([G](⟨G⟩(⟨G⟩(q ∧ q)))))) ∧ (¬(⟨G⟩((([G](⟨G⟩(p))) ∧ (⟨G⟩(⟨G⟩(p)))) ∧ (⟨G⟩(" *
+    "[G](p → p)))))))))) ∧ (([G](([G]([G](¬((((¬(p)) → (⟨G⟩(q))) → ((⟨G⟩(p)) → (q → p" *
+    "))) ∧ (⟨G⟩(¬([G](p)))))))) ∧ ([G](⟨G⟩([G](¬([G]([G](q ∧ p))))))))) ∧ (¬([G]((⟨G⟩" *
+    "(⟨G⟩(¬(((⟨G⟩(q)) ∧ (⟨G⟩(q))) → (⟨G⟩(q → p)))))) ∧ ([G](¬(((¬(¬(q))) → (¬(q → p))" *
+    ") ∧ (([G](p → p)) → ((⟨G⟩(p)) → (q → p)))))))))))"
+f = parseformulatree(s,
+    [BoxRelationalOperator(globalrel), DiamondRelationalOperator(globalrel)])
+@test syntaxstring(f) == syntaxstring(parseformulatree(syntaxstring(f)))
+@test syntaxstring(f; function_notation = true) ==
+    syntaxstring(parseformulatree(syntaxstring(f)); function_notation = true)
+
+s = "◊((¬((◊(◊(((¬(¬(q))) ∧ ((p ∧ p) ∨ (¬(p)))) → (¬(□(¬(q))))))) ∨ ((□(((□(◊(q))) →"  *
+    "((p → q) ∨ (□(q)))) → (◊(□(◊(p)))))) ∨ ((((□(q ∨ p)) → (◊(¬(q)))) → (((p ∨ q) →"  *
+    "(◊(q))) ∧ ((q ∨ p) ∧ (◊(q))))) ∧ ((¬((◊(p)) ∨ (¬(p)))) ∧ (□(◊(q ∧ p)))))))) → ((" *
+    "◊(¬((□((◊(q → q)) ∨ (□(□(p))))) ∧ (¬((¬(◊(p))) ∨ ((◊(q)) ∨ (□(q)))))))) → ((¬((¬" *
+    "(◊((q ∨ q) ∨ (□(q))))) → (((¬(□(q))) ∨ (□(◊(q)))) → (((◊(p)) ∧ (◊(q))) ∨ (¬(q ∧"  *
+    "q)))))) → ((□(◊(¬(◊(¬(p)))))) ∨ ((□(□((q → p) ∧ (p ∧ p)))) ∨ (((◊(◊(p))) → ((p →" *
+    "q) ∧ (p → q))) ∧ (□((p ∨ q) ∧ (◊(q))))))))))"
+f = parseformulatree(s,
+    [BoxRelationalOperator(globalrel), DiamondRelationalOperator(globalrel)])
+@test syntaxstring(f) == syntaxstring(parseformulatree(syntaxstring(f)))
+@test syntaxstring(f; function_notation = true) ==
+    syntaxstring(parseformulatree(syntaxstring(f)); function_notation = true)
+=#
