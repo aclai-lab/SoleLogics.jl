@@ -323,9 +323,9 @@ end
         function_notation::Bool = false,
         proposition_parser::Base.Callable = Proposition{String},
         additional_whitespaces::Vector{Char} = Char[],
-        opening_bracket::Symbol = $(OPENING_BRACKET),
-        closing_bracket::Symbol = $(CLOSING_BRACKET),
-        arg_separator::Union{Symbol,Nothing} = $(ARG_DELIM)
+        opening_bracket::Symbol = $(repr(OPENING_BRACKET)),
+        closing_bracket::Symbol = $(repr(CLOSING_BRACKET)),
+        arg_separator::Union{Symbol,Nothing} = $(repr(ARG_DELIM))
     )
 
 Returns a `SyntaxTree` which is the result of parsing `expression`
@@ -349,11 +349,11 @@ parameter `additional_operators`.
     parsing `Proposition`s, once they are recognized in the expression;
 - `additional_whitespaces`::Vector{Char} = Char[]: characters to be stripped out from each
     syntax token. For example, if '@' is added, "¬@p@" is parsed just as "¬p".
-- `opening_bracket`::Symbol = $(OPENING_BRACKET):
+- `opening_bracket`::Symbol = $(repr(OPENING_BRACKET)):
     the string signaling the opening of anexpression block;
-- `closing_bracket`::Symbol = $(CLOSING_BRACKET):
+- `closing_bracket`::Symbol = $(repr(CLOSING_BRACKET)):
     the string signaling the closing of anexpression block;
-- `arg_separator`::Union{Symbol,Nothing} = $(ARG_DELIM): when `function_notation = true`,
+- `arg_separator`::Union{Symbol,Nothing} = $(repr(ARG_DELIM)): when `function_notation = true`,
     the string that separates the different arguments of a function call.
 
 !!! warning
