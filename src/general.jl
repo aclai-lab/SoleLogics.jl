@@ -528,8 +528,6 @@ tokenstype(::SyntaxTree{FT,T}) where {FT,T} = FT
 operatorstype(t::SyntaxTree) = typeintersect(AbstractOperator, tokenstype(t))
 propositionstype(t::SyntaxTree) = typeintersect(Proposition, tokenstype(t))
 
-Base.length(t::SyntaxTree) = 1
-
 # Shows the type of the syntax tree and its syntaxstring.
 # Base.show(io::IO, t::SyntaxTree) = print(io, "$(typeof(t))($(syntaxstring(t)))")
 function Base.show(io::IO, t::SyntaxTree)

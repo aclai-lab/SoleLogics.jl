@@ -54,6 +54,7 @@ struct LeftmostLinearForm{O<:AbstractOperator, SS<:AbstractSyntaxStructure} <: A
         else
             h = (n_children-1)/(a-1)
             (isinteger(h) && h >= 1) ||
+            # TODO figure out whether the base case n_children = 0 makes sense
                 error("Mismatching number of children and operator's arity.")
         end
 
@@ -88,27 +89,29 @@ op(::LeftmostLinearForm{O}) where {O} = O()
 operatortype(::LeftmostLinearForm{O}) where {O} = O
 childrentype(::LeftmostLinearForm{O,SS}) where {O,SS} = SS
 
-Base.length(lf::LeftmostLinearForm) = length(children(lf))
+Base.length(lf::LeftmostLinearForm) = Base.length(children(lf))
+Base.getindex(lf::LeftmostLinearForm, args...) = Base.getindex(lf, args...))
+
+nchildren(lf::LeftmostLinearForm) = length(children(lf))
 
 function syntaxstring(
     lf::LeftmostLinearForm;
-    # function_notation = false,
+    function_notation = false,
     kwargs...,
 )
-    ch = children(lf)
-    if length(ch) == 0
-        # syntaxstring(op(lf); function_notation = function_notation, kwargs...)
-        syntaxstring(op(lf); kwargs...)
+    if function_notation
+        syntaxstring(tree(lf); function_notation = function_notation, kwargs...)
     else
-        children_ss = map(
-            # c->syntaxstring(c; function_notation = function_notation, kwargs...),
-            c->syntaxstring(c; kwargs...),
-            ch
-        )
-        # if function_notation
-            # "$(syntaxstring(op(lf)))(" * join(children_ss, ", ") * ")"
-        # else
-        "(" * join(children_ss, ") $(syntaxstring(op(lf); kwargs...)) (") * ")"
+        ch = children(lf)
+        if length(ch) == 0
+            syntaxstring(op(lf); kwargs...)
+        else
+            children_ss = map(
+                c->syntaxstring(c; kwargs...),
+                ch
+            )
+            "(" * join(children_ss, ") $(syntaxstring(op(lf); kwargs...)) (") * ")"
+        end
     end
 end
 
@@ -171,8 +174,6 @@ propositionstype(::Literal{T}) where {T} = T
 tree(l::Literal) = ispos(l) ? SyntaxTree(l.prop) : ¬(SyntaxTree(l.prop))
 
 complement(l::Literal) = Literal(!ispos(l), prop(l))
-
-Base.length(l::Literal) = 1
 
 function Base.show(io::IO, l::Literal)
     println(io,
