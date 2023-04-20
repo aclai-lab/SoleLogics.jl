@@ -90,7 +90,7 @@ operatortype(::LeftmostLinearForm{O}) where {O} = O
 childrentype(::LeftmostLinearForm{O,SS}) where {O,SS} = SS
 
 Base.length(lf::LeftmostLinearForm) = Base.length(children(lf))
-Base.getindex(lf::LeftmostLinearForm, args...) = Base.getindex(lf, args...))
+Base.getindex(lf::LeftmostLinearForm, args...) = Base.getindex(lf, args...)
 
 nchildren(lf::LeftmostLinearForm) = length(children(lf))
 
