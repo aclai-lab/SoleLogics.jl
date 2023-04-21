@@ -24,7 +24,7 @@ using SoleLogics
 
 ## Parsing and manipulating Formulas
 
-```julia-repl
+```julia
 julia> φ1 = parseformulatree("¬p∧q∧(¬s∧¬z)");
 
 julia> φ1 isa SyntaxTree
