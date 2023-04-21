@@ -68,6 +68,8 @@ export Interval, Interval2D, OneWorld
 
 include("modal-logic.jl")
 
+export LeftmostLinearForm, LeftmostConjunctiveForm, LeftmostDisjunctiveForm, Literal
+
 include("syntax-forms.jl")
 
 export subformulas, normalize
