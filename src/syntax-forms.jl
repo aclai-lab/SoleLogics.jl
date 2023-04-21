@@ -90,7 +90,7 @@ operatortype(::LeftmostLinearForm{O}) where {O} = O
 childrentype(::LeftmostLinearForm{O,SS}) where {O,SS} = SS
 
 Base.length(lf::LeftmostLinearForm) = Base.length(children(lf))
-Base.getindex(lf::LeftmostLinearForm, args...) = Base.getindex(lf, args...))
+Base.getindex(lf::LeftmostLinearForm, args...) = Base.getindex(lf, args...)
 
 nchildren(lf::LeftmostLinearForm) = length(children(lf))
 
@@ -131,7 +131,7 @@ function Base.show(io::IO, lf::LeftmostLinearForm{O,SS}) where {O,SS}
     println(io, "\t$(syntaxstring(lf))")
 end
 
-Base.promote_rule(::Type{<:LeftmostLinearForm}, ::Type{<:LeftmostLinearForm}) where {O} = SyntaxTree
+Base.promote_rule(::Type{<:LeftmostLinearForm}, ::Type{<:LeftmostLinearForm}) = SyntaxTree
 Base.promote_rule(::Type{SS}, ::Type{LF}) where {SS<:AbstractSyntaxStructure, LF<:LeftmostLinearForm} = SyntaxTree
 Base.promote_rule(::Type{LF}, ::Type{SS}) where {LF<:LeftmostLinearForm, SS<:AbstractSyntaxStructure} = SyntaxTree
 
