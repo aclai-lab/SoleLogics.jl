@@ -1,4 +1,4 @@
-import Base: show, promote_rule, length
+import Base: show, promote_rule, length, getindex
 using SoleBase
 
 doc_lmlf = """
@@ -90,7 +90,13 @@ operatortype(::LeftmostLinearForm{O}) where {O} = O
 childrentype(::LeftmostLinearForm{O,SS}) where {O,SS} = SS
 
 Base.length(lf::LeftmostLinearForm) = Base.length(children(lf))
-Base.getindex(lf::LeftmostLinearForm, args...) = Base.getindex(lf, args...)
+function Base.getindex(
+    lf::LeftmostLinearForm{O,SS},
+    idxs::AbstractVector{T}
+) where {O,SS,T<:Integer}
+    return LeftmostLinearForm{O,SS}(children(lf)[idxs])
+end
+Base.getindex(lf::LeftmostLinearForm,idx::Integer) = Base.getindex(lf,[idx])
 
 nchildren(lf::LeftmostLinearForm) = length(children(lf))
 
