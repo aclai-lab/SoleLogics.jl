@@ -1,9 +1,5 @@
 export parseformula, parseformulatree
 
-export tokenizer
-
-using ReadableRegex
-
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Table of contents ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
 #    TODO: Studying this code (which has to be refactored) is not so friendly.
@@ -339,6 +335,7 @@ parameter `additional_operators`.
 - `additional_operators::Vector{<:AbstractOperator}:` additional, non-standard operators
     needed to correctly parse the expression; in case of clashing `syntaxstring`'s,
     the provided additional operators will override the base parsable ones.
+    If this is left unset, operators are defaulted to $(repr(BASE_PARSABLE_OPERATORS))
 
 # Keyword Arguments
 - `function_notation::Bool = false`: if set to `true`, the expression is considered
@@ -441,7 +438,7 @@ function parseformulatree(
             if tok isa Symbol || tok isa Proposition
                 push!(stack, tok)
             elseif tok isa AbstractOperator
-                if (arity(tok) == 1 && typeof(stack[end]) <:
+                if (arity(tok) == 1 && stack[end] isa
                     Union{AbstractSyntaxToken, AbstractSyntaxStructure})
                     # If operator arity is 1, then what follows could be a single AST
                     newtok = SyntaxTree(tok, stack[end])
@@ -469,7 +466,7 @@ function parseformulatree(
                     # else an error has to be thrown
 
                     children =
-                        [popped[s] for s in 2:length(popped) if typeof(popped[s]) <:
+                        [popped[s] for s in 2:length(popped) if popped[s] isa
                             Union{AbstractSyntaxToken, AbstractSyntaxStructure}]
                     separators =
                         [s for s in 3:(length(popped)-2) if popped[s] == arg_separator]
@@ -590,171 +587,3 @@ function parseformula(
 )
     parseformula(expression; additional_operators = operators, kwargs...)
 end
-
-# Working on...
-# ☑ make some new "strip_whitespaces" function
-# ☑ function notation parsing it's working
-# ☑ OPENING_BRACKET, CLOSING_BRACKET, SEPARATOR as arguments
-# ☑ comments refactoring
-# ☑ parseformulatree docstring updated
-#   ☑ written about limitations in warning, but maybe there's more to safely
-#   ☑ info about left-right operator precedence in case of tie (precedence docstrings)
-#   □ in official documentation, user has to be informed about BASE_PARSABLE_OPERATORS
-
-# 82ad8c2570d8e69162edad822d591ebff5edb5a4:
-# ☑ allow the user to specify a string instead of a symbol for a special character.
-#   Symbols are only used internally.
-#   See _OPENING_BRACKET, _CLOSING_BRACKET, _ARG_DELIM above
-#   NOTE: user can now choose to use string type OR symbol.
-#   Should Symbols be completely removed from parseformulatree interface instead?
-# ☑ shunting_yard critical bug solve
-# ☑ more tests added
-# ☑ make tests silent
-#   □ everything works, but actually the cryptic error thrown by _randformulatree
-#   now is also thrown by a specific test (see test/parse.jl) where parseformulatree
-#   is called with a long expression string as first argument.
-#   I'm investigating... see (@)
-
-#= (@)
-f = parseformulatree("⟨G⟩(((¬(⟨G⟩((q ∧ p) → (¬(q))))) ∧ (((¬(q → q)) → ((q → p) → (¬(q))))"*
-           "∧ (((¬(p)) ∧ (⟨G⟩(p))) → (¬(⟨G⟩(q)))))) ∧ ((¬(([G](p ∧ q)) → (¬(p → q)))) →" *
-           "([G](([G](q∧ q)) ∧ ([G](q → p))))))",
-           [BoxRelationalOperator(globalrel), DiamondRelationalOperator(globalrel)])
-Internal error: encountered unexpected error in runtime:
-BoundsError(a=Type{Union{SoleLogics.NamedOperator{Symbol("¬")}, SoleLogics.NamedOperator{:→}, SoleLogics.Proposition{String}}}, i=1)
-ijl_bounds_error at /cache/build/default-amdci4-2/julialang/julia-release-1-dot-8/src/rtutils.c:146
-get_fieldtype at /cache/build/default-amdci4-2/julialang/julia-release-1-dot-8/src/builtins.c:1106
-tmerge at ./compiler/typelimits.jl:468
-abstract_call_gf_by_type at ./compiler/abstractinterpretation.jl:169
-abstract_call_known at ./compiler/abstractinterpretation.jl:1716
-abstract_call at ./compiler/abstractinterpretation.jl:1786
-abstract_apply at ./compiler/abstractinterpretation.jl:1357
-abstract_call_known at ./compiler/abstractinterpretation.jl:1620
-abstract_call at ./compiler/abstractinterpretation.jl:1786
-abstract_call at ./compiler/abstractinterpretation.jl:1753
-abstract_eval_statement at ./compiler/abstractinterpretation.jl:1910
-typeinf_local at ./compiler/abstractinterpretation.jl:2386
-typeinf_nocycle at ./compiler/abstractinterpretation.jl:2482
-_typeinf at ./compiler/typeinfer.jl:230
-typeinf at ./compiler/typeinfer.jl:213
-typeinf_edge at ./compiler/typeinfer.jl:877
-abstract_call_method at ./compiler/abstractinterpretation.jl:647
-abstract_call_gf_by_type at ./compiler/abstractinterpretation.jl:139
-abstract_call_known at ./compiler/abstractinterpretation.jl:1716
-abstract_call at ./compiler/abstractinterpretation.jl:1786
-abstract_call at ./compiler/abstractinterpretation.jl:1753
-abstract_eval_statement at ./compiler/abstractinterpretation.jl:1910
-typeinf_local at ./compiler/abstractinterpretation.jl:2360
-typeinf_nocycle at ./compiler/abstractinterpretation.jl:2482
-_typeinf at ./compiler/typeinfer.jl:230
-typeinf at ./compiler/typeinfer.jl:213
-typeinf_edge at ./compiler/typeinfer.jl:877
-abstract_call_method at ./compiler/abstractinterpretation.jl:647
-abstract_call_gf_by_type at ./compiler/abstractinterpretation.jl:139
-abstract_call at ./compiler/abstractinterpretation.jl:1784
-abstract_call at ./compiler/abstractinterpretation.jl:1753
-abstract_eval_statement at ./compiler/abstractinterpretation.jl:1910
-typeinf_local at ./compiler/abstractinterpretation.jl:2386
-typeinf_nocycle at ./compiler/abstractinterpretation.jl:2482
-_typeinf at ./compiler/typeinfer.jl:230
-typeinf at ./compiler/typeinfer.jl:213
-typeinf_edge at ./compiler/typeinfer.jl:877
-abstract_call_method at ./compiler/abstractinterpretation.jl:647
-abstract_call_gf_by_type at ./compiler/abstractinterpretation.jl:139
-abstract_call_known at ./compiler/abstractinterpretation.jl:1716
-abstract_call at ./compiler/abstractinterpretation.jl:1786
-abstract_call at ./compiler/abstractinterpretation.jl:1753
-abstract_eval_statement at ./compiler/abstractinterpretation.jl:1910
-typeinf_local at ./compiler/abstractinterpretation.jl:2386
-typeinf_nocycle at ./compiler/abstractinterpretation.jl:2482
-_typeinf at ./compiler/typeinfer.jl:230
-typeinf at ./compiler/typeinfer.jl:213
-typeinf_edge at ./compiler/typeinfer.jl:877
-abstract_call_method at ./compiler/abstractinterpretation.jl:647
-abstract_call_gf_by_type at ./compiler/abstractinterpretation.jl:139
-abstract_call_known at ./compiler/abstractinterpretation.jl:1716
-abstract_call at ./compiler/abstractinterpretation.jl:1786
-abstract_call at ./compiler/abstractinterpretation.jl:1753
-abstract_eval_statement at ./compiler/abstractinterpretation.jl:1910
-typeinf_local at ./compiler/abstractinterpretation.jl:2386
-typeinf_nocycle at ./compiler/abstractinterpretation.jl:2482
-_typeinf at ./compiler/typeinfer.jl:230
-typeinf at ./compiler/typeinfer.jl:213
-typeinf_edge at ./compiler/typeinfer.jl:877
-abstract_call_method at ./compiler/abstractinterpretation.jl:647
-abstract_call_gf_by_type at ./compiler/abstractinterpretation.jl:139
-abstract_call_known at ./compiler/abstractinterpretation.jl:1716
-abstract_call at ./compiler/abstractinterpretation.jl:1786
-abstract_call at ./compiler/abstractinterpretation.jl:1753
-abstract_eval_statement at ./compiler/abstractinterpretation.jl:1910
-typeinf_local at ./compiler/abstractinterpretation.jl:2386
-typeinf_nocycle at ./compiler/abstractinterpretation.jl:2482
-_typeinf at ./compiler/typeinfer.jl:230
-typeinf at ./compiler/typeinfer.jl:213
-typeinf_ext at ./compiler/typeinfer.jl:967
-typeinf_ext_toplevel at ./compiler/typeinfer.jl:1000
-typeinf_ext_toplevel at ./compiler/typeinfer.jl:996
-jfptr_typeinf_ext_toplevel_17539.clone_1 at /home/mauro/.julia/julia_exec/julia-1.8.5/lib/julia/sys.so (unknown line)
-_jl_invoke at /cache/build/default-amdci4-2/julialang/julia-release-1-dot-8/src/gf.c:2377 [inlined]
-ijl_apply_generic at /cache/build/default-amdci4-2/julialang/julia-release-1-dot-8/src/gf.c:2559
-jl_apply at /cache/build/default-amdci4-2/julialang/julia-release-1-dot-8/src/julia.h:1843 [inlined]
-jl_type_infer at /cache/build/default-amdci4-2/julialang/julia-release-1-dot-8/src/gf.c:315
-jl_generate_fptr_impl at /cache/build/default-amdci4-2/julialang/julia-release-1-dot-8/src/jitlayers.cpp:319
-jl_compile_method_internal at /cache/build/default-amdci4-2/julialang/julia-release-1-dot-8/src/gf.c:2091 [inlined]
-jl_compile_method_internal at /cache/build/default-amdci4-2/julialang/julia-release-1-dot-8/src/gf.c:2035
-_jl_invoke at /cache/build/default-amdci4-2/julialang/julia-release-1-dot-8/src/gf.c:2369 [inlined]
-ijl_apply_generic at /cache/build/default-amdci4-2/julialang/julia-release-1-dot-8/src/gf.c:2559
-SyntaxTree at /home/mauro/Desktop/UNI/Laboratorio/Sole/SoleLogics.jl/src/general.jl:506
-_jl_invoke at /cache/build/default-amdci4-2/julialang/julia-release-1-dot-8/src/gf.c:2377 [inlined]
-ijl_apply_generic at /cache/build/default-amdci4-2/julialang/julia-release-1-dot-8/src/gf.c:2559
-_postfixbuild at /home/mauro/Desktop/UNI/Laboratorio/Sole/SoleLogics.jl/src/parse.jl:412
-_infixbuild at /home/mauro/Desktop/UNI/Laboratorio/Sole/SoleLogics.jl/src/parse.jl:432 [inlined]
-#parseformulatree#155 at /home/mauro/Desktop/UNI/Laboratorio/Sole/SoleLogics.jl/src/parse.jl:511
-parseformulatree at /home/mauro/Desktop/UNI/Laboratorio/Sole/SoleLogics.jl/src/parse.jl:382
-unknown function (ip: 0x7fa310f3ea86)
-_jl_invoke at /cache/build/default-amdci4-2/julialang/julia-release-1-dot-8/src/gf.c:2377 [inlined]
-ijl_apply_generic at /cache/build/default-amdci4-2/julialang/julia-release-1-dot-8/src/gf.c:2559
-jl_apply at /cache/build/default-amdci4-2/julialang/julia-release-1-dot-8/src/julia.h:1843 [inlined]
-do_call at /cache/build/default-amdci4-2/julialang/julia-release-1-dot-8/src/interpreter.c:126
-eval_value at /cache/build/default-amdci4-2/julialang/julia-release-1-dot-8/src/interpreter.c:215
-eval_stmt_value at /cache/build/default-amdci4-2/julialang/julia-release-1-dot-8/src/interpreter.c:166 [inlined]
-eval_body at /cache/build/default-amdci4-2/julialang/julia-release-1-dot-8/src/interpreter.c:612
-jl_interpret_toplevel_thunk at /cache/build/default-amdci4-2/julialang/julia-release-1-dot-8/src/interpreter.c:750
-top-level scope at REPL[6]:1
-jl_toplevel_eval_flex at /cache/build/default-amdci4-2/julialang/julia-release-1-dot-8/src/toplevel.c:906
-jl_toplevel_eval_flex at /cache/build/default-amdci4-2/julialang/julia-release-1-dot-8/src/toplevel.c:850
-jl_toplevel_eval_flex at /cache/build/default-amdci4-2/julialang/julia-release-1-dot-8/src/toplevel.c:850
-ijl_toplevel_eval_in at /cache/build/default-amdci4-2/julialang/julia-release-1-dot-8/src/toplevel.c:965
-eval at ./boot.jl:368 [inlined]
-eval_user_input at /cache/build/default-amdci4-2/julialang/julia-release-1-dot-8/usr/share/julia/stdlib/v1.8/REPL/src/REPL.jl:151
-repl_backend_loop at /cache/build/default-amdci4-2/julialang/julia-release-1-dot-8/usr/share/julia/stdlib/v1.8/REPL/src/REPL.jl:247
-start_repl_backend at /cache/build/default-amdci4-2/julialang/julia-release-1-dot-8/usr/share/julia/stdlib/v1.8/REPL/src/REPL.jl:232
-#run_repl#47 at /cache/build/default-amdci4-2/julialang/julia-release-1-dot-8/usr/share/julia/stdlib/v1.8/REPL/src/REPL.jl:369
-run_repl at /cache/build/default-amdci4-2/julialang/julia-release-1-dot-8/usr/share/julia/stdlib/v1.8/REPL/src/REPL.jl:355
-jfptr_run_repl_65104.clone_1 at /home/mauro/.julia/julia_exec/julia-1.8.5/lib/julia/sys.so (unknown line)
-_jl_invoke at /cache/build/default-amdci4-2/julialang/julia-release-1-dot-8/src/gf.c:2377 [inlined]
-ijl_apply_generic at /cache/build/default-amdci4-2/julialang/julia-release-1-dot-8/src/gf.c:2559
-#967 at ./client.jl:419
-jfptr_YY.967_33139.clone_1 at /home/mauro/.julia/julia_exec/julia-1.8.5/lib/julia/sys.so (unknown line)
-_jl_invoke at /cache/build/default-amdci4-2/julialang/julia-release-1-dot-8/src/gf.c:2377 [inlined]
-ijl_apply_generic at /cache/build/default-amdci4-2/julialang/julia-release-1-dot-8/src/gf.c:2559
-jl_apply at /cache/build/default-amdci4-2/julialang/julia-release-1-dot-8/src/julia.h:1843 [inlined]
-jl_f__call_latest at /cache/build/default-amdci4-2/julialang/julia-release-1-dot-8/src/builtins.c:774
-#invokelatest#2 at ./essentials.jl:729 [inlined]
-invokelatest at ./essentials.jl:726 [inlined]
-run_main_repl at ./client.jl:404
-exec_options at ./client.jl:318
-_start at ./client.jl:522
-jfptr__start_38041.clone_1 at /home/mauro/.julia/julia_exec/julia-1.8.5/lib/julia/sys.so (unknown line)
-_jl_invoke at /cache/build/default-amdci4-2/julialang/julia-release-1-dot-8/src/gf.c:2377 [inlined]
-ijl_apply_generic at /cache/build/default-amdci4-2/julialang/julia-release-1-dot-8/src/gf.c:2559
-jl_apply at /cache/build/default-amdci4-2/julialang/julia-release-1-dot-8/src/julia.h:1843 [inlined]
-true_main at /cache/build/default-amdci4-2/julialang/julia-release-1-dot-8/src/jlapi.c:575
-jl_repl_entrypoint at /cache/build/default-amdci4-2/julialang/julia-release-1-dot-8/src/jlapi.c:719
-main at julia (unknown line)
-unknown function (ip: 0x7fa327029d8f)
-__libc_start_main at /lib/x86_64-linux-gnu/libc.so.6 (unknown line)
-unknown function (ip: 0x401098)
-SyntaxTree: ⟨G⟩(((¬(⟨G⟩((q ∧ p) → (¬(q))))) ∧ (((¬(q → q)) → ((q → p) → (¬(q)))) ∧ (((¬(p)) ∧ (⟨G⟩(p))) → (¬(⟨G⟩(q)))))) ∧ ((¬(([G](p ∧ q)) → (¬(p → q)))) → ([G](([G](q ∧ q)) ∧ ([G](q → p))))))
-Allowed token types: Union{BoxRelationalOperator{GlobalRel}, DiamondRelationalOperator{GlobalRel}, SoleLogics.NamedOperator{:∧}, SoleLogics.NamedOperator{:¬}, SoleLogics.NamedOperator{:→}, Proposition{String}}
-=#
