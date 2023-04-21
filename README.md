@@ -15,14 +15,14 @@
 
 <!-- However, it can be used for other purposes by computational logicians. -->
 
-# Usage
+## Usage
 
 ```julia
 using Pkg; Pkg.add("SoleLogics")
 using SoleLogics
 ```
 
-## Parsing and manipulating Formulas
+### Parsing and manipulating Formulas
 
 ```julia
 julia> φ1 = parseformulatree("¬p∧q∧(¬s∧¬z)");
@@ -43,21 +43,21 @@ julia> syntaxstring(φ2)
 ```
 
 <!-- 
-## Generating random formulas
+### Generating random formulas
 
 ```julia-repl
 julia> parseformulatree("")
 ```
 
-## Generating random interpretations
+### Generating random interpretations
 
 ```julia-repl
 julia> parseformulatree("")
 ```
 
-## Model checking
+### Model checking
 
-## Interpretation sets
+### Interpretation sets
 
 -->
 
