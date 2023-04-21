@@ -57,7 +57,7 @@ alphabet_mixed = AlphabetOfAny{Union{String,Number}}()
 
 @test_nowarn convert(SyntaxTree, p1)
 @test_nowarn SyntaxTree(p1)
-@test_nowarn SyntaxTree{typeof(p1),typeof(p1)}(p1)
+@test_nowarn SyntaxTree{typeof(p1)}(p1)
 @test_nowarn SyntaxTree(p1)
 t1_int = @test_nowarn SyntaxTree(p1, ())
 t100_int = @test_nowarn SyntaxTree(p100, ())

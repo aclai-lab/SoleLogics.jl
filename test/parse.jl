@@ -90,14 +90,14 @@ f = parseformulatree("[G](¬(⟨G⟩(p ∧ q)))",
 @test syntaxstring(f) == syntaxstring(parseformulatree(syntaxstring(f)))
 @test syntaxstring(f; function_notation = true) ==
     syntaxstring(parseformulatree(syntaxstring(f)); function_notation = true)
-# TODO: for some reason, the following parseformulatree gives a cryptic internal error
-# f = parseformulatree("⟨G⟩(((¬(⟨G⟩((q ∧ p) → (¬(q))))) ∧ (((¬(q → q)) → ((q → p) → (¬(q))))"*
-#     "∧ (((¬(p)) ∧ (⟨G⟩(p))) → (¬(⟨G⟩(q)))))) ∧ ((¬(([G](p ∧ q)) → (¬(p → q)))) →" *
-#     "([G](([G](q∧ q)) ∧ ([G](q → p))))))",
-#     [BoxRelationalOperator(globalrel), DiamondRelationalOperator(globalrel)])
-# @test syntaxstring(f) == syntaxstring(parseformulatree(syntaxstring(f)))
-# @test syntaxstring(f; function_notation = true) ==
-#     syntaxstring(parseformulatree(syntaxstring(f)); function_notation = true)
+
+f = parseformulatree("⟨G⟩(((¬(⟨G⟩((q ∧ p) → (¬(q))))) ∧ (((¬(q → q)) → ((q → p) → (¬(q))))"*
+    "∧ (((¬(p)) ∧ (⟨G⟩(p))) → (¬(⟨G⟩(q)))))) ∧ ((¬(([G](p ∧ q)) → (¬(p → q)))) →" *
+    "([G](([G](q∧ q)) ∧ ([G](q → p))))))",
+    [BoxRelationalOperator(globalrel), DiamondRelationalOperator(globalrel)])
+@test syntaxstring(f) == syntaxstring(parseformulatree(syntaxstring(f)))
+@test syntaxstring(f; function_notation = true) ==
+    syntaxstring(parseformulatree(syntaxstring(f)); function_notation = true)
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ malformed input ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -226,7 +226,7 @@ _f = parseformulatree("{Gp ∧ ¬{G}q", [CurlyRelationalOperator(globalrel)])
 end
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ stress tests ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#=
+
 s = "¬((¬(([G](⟨G⟩(¬((¬([G](⟨G⟩(⟨G⟩(q))))) → (¬(⟨G⟩((¬(q)) ∧ ([G](p))))))))) ∧ (⟨G⟩((" *
     "[G](⟨G⟩([G](⟨G⟩(⟨G⟩(q ∧ q)))))) ∧ (¬(⟨G⟩((([G](⟨G⟩(p))) ∧ (⟨G⟩(⟨G⟩(p)))) ∧ (⟨G⟩(" *
     "[G](p → p)))))))))) ∧ (([G](([G]([G](¬((((¬(p)) → (⟨G⟩(q))) → ((⟨G⟩(p)) → (q → p" *
@@ -251,4 +251,4 @@ f = parseformulatree(s,
 @test syntaxstring(f) == syntaxstring(parseformulatree(syntaxstring(f)))
 @test syntaxstring(f; function_notation = true) ==
     syntaxstring(parseformulatree(syntaxstring(f)); function_notation = true)
-=#
+

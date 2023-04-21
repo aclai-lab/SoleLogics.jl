@@ -23,9 +23,9 @@ See also
 subformulas(f::Formula; kwargs...) = f.(subformulas(tree(f); kwargs...))
 function subformulas(t::SyntaxTree; sorted=true)
     # function _subformulas(_t::SyntaxTree)
-    #     SyntaxTree{tokenstype(t)}[
-    #         (map(SyntaxTree{tokenstype(t)}, Iterators.flatten(subformulas.(children(_t)))))...,
-    #         SyntaxTree{tokenstype(t)}(_t)
+    #     SyntaxTree[
+    #         (map(SyntaxTree, Iterators.flatten(subformulas.(children(_t)))))...,
+    #         SyntaxTree(_t)
     #     ]
     # end
     function _subformulas(_t::SyntaxTree)
