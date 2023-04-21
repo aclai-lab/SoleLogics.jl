@@ -1,4 +1,4 @@
-name: Workflow for Codecov example-julia
+name: Upload coverage reports to Codecov
 on: [push, pull_request]
 jobs:
   run:

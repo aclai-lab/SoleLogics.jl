@@ -76,14 +76,14 @@ In particular, for the case of `Proposition`s, the function calls itself on the 
 
     syntaxstring(p::Proposition; kwargs...) = syntaxstring(atom(p); kwargs...)
 
-Then, the syntaxstring for a given atom can be defined. For example, with `String atoms,
+Then, the syntaxstring for a given atom can be defined. For example, with `String` atoms,
 the function can simply be:
 
     syntaxstring(atom::String; kwargs...) = atom
 
 !!! warning
     The `syntaxstring` for syntax tokens (e.g., propositions, operators) should not be
-    prefixed/suffixed by whitespaces, as this may cause ambiguities upon parsing.
+    prefixed/suffixed by whitespaces, as this may cause ambiguities upon *parsing*.
 
 """
 function syntaxstring(tok::AbstractSyntaxToken; kwargs...)::String
@@ -929,7 +929,7 @@ end
         maxdepth::Integer,
         nformulas::Union{Integer,Nothing} = nothing,
         args...
-    )::Vector{<:SyntaxTree
+    )::Vector{<:SyntaxTree}
 
 Each grammar with a finite and iterable alphabet must provide a method for
 enumerating its formulas, encoded as `SyntaxTree`s.
