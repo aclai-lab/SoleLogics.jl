@@ -1398,7 +1398,7 @@ See also
 """
 struct Formula{L<:AbstractLogic} <: AbstractFormula
     _logic::Base.RefValue{L}
-    synstruct::AbstractSyntaxStructure # SyntaxTree{FT} where {FT<:tokenstype(_logic[])}
+    synstruct::AbstractSyntaxStructure
 
     _l(l::AbstractLogic) = Base.RefValue(l)
     _l(l::Base.RefValue) = l
