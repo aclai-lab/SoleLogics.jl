@@ -184,7 +184,6 @@ arity(r::AbstractRelation)::Integer = arity(typeof(r))
 syntaxstring(R::Type{<:AbstractRelation}; kwargs...)::String = error("Please, provide method syntaxstring(::$(typeof(R)); kwargs...).")
 syntaxstring(r::AbstractRelation; kwargs...)::String = syntaxstring(typeof(r); kwargs...)
 
-# TODO3: This *should be* inverse (not converse??) actually no, read up: https://en.wikipedia.org/wiki/Converse_relation
 doc_conv_rel = """
     converse(R::Type{<:AbstractRelation})::Type{<:AbstractRelation}
     converse(r::AbstractRelation)::AbstractRelation = converse(typeof(r))()

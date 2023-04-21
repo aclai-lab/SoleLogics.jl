@@ -84,6 +84,9 @@ the function can simply be:
 !!! warning
     The `syntaxstring` for syntax tokens (e.g., propositions, operators) should not be
     prefixed/suffixed by whitespaces, as this may cause ambiguities upon *parsing*.
+    For similar reasons, `syntaxstring`s should not contain parenthesis (`'('`, `')'`),
+    and, when parsing in function notation, commas (`','`).
+    See also [`parseformula`](@ref).
 
 """
 function syntaxstring(tok::AbstractSyntaxToken; kwargs...)::String
@@ -1362,13 +1365,13 @@ on interpretations of the same logic. Note that, here, the logic is represented 
 
 Upon construction, the logic can be passed either directly, or via a RefValue.
 Additionally, the following keyword arguments may be specified:
-- `check_propositions`: whether to perform or not a check that the propositions
+- `check_propositions::Bool = false`: whether to perform or not a check that the propositions
     belong to the alphabet of the logic;
-- `check_tree`: whether to perform or not a check that the formula's syntactic structure
+- `check_tree::Bool = false`: whether to perform or not a check that the formula's syntactic structure
     honors the grammar (includes the check performed with `check_propositions = true`) (TODO);
 
 *Cool feature*: a `Formula` can be used for instating other formulas of the same logic.
-See examples
+See the examples.
 
 # Examples
 ```julia-repl

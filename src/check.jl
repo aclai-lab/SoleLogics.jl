@@ -48,7 +48,7 @@ end
         f::AbstractFormula;
         remove_boxes = true,
         reduce_negations = true,
-        allow_inverse_propositions = true,
+        allow_proposition_flipping = true,
     )
 
 Returns a modified version of a given formula, that has the same semantics
@@ -67,7 +67,7 @@ BEWARE: it currently assumes the underlying algebra is Boolean!
     some transformation rules
     (e.g., [De Morgan's laws](https://en.wikipedia.org/wiki/De_Morgan%27s_laws)).
     Note: this assumes an underlying Boolean algebra.
-- `allow_inverse_propositions::Bool`: when set to `true`,
+- `allow_proposition_flipping::Bool`: when set to `true`,
     together with `reduce_negations=true`, this may cause the negation of a proposition
     to be replaced with the proposition with its [`negation`](@ref).
 
@@ -78,7 +78,7 @@ julia> f = parseformula("¬□¬((p∧¬q)→r)"; operators = SoleLogics.BASE_MO
 julia> syntaxstring(f)
 "(¬(□(¬(p ∧ (¬(q)))))) → r"
 
-julia> syntaxstring(SoleLogics.normalize(f; allow_inverse_propositions = false))
+julia> syntaxstring(SoleLogics.normalize(f; allow_proposition_flipping = false))
 "(◊(p ∧ (¬(q)))) → r"
 ```
 
@@ -90,14 +90,14 @@ function normalize(
     t::SyntaxTree;
     remove_boxes = true,
     reduce_negations = true,
-    allow_inverse_propositions = true,
+    allow_proposition_flipping = true,
 )
     # TODO we're currently assuming Boolean algebra!!! Very wrong.
 
     _normalize = x->normalize(x;
         remove_boxes = remove_boxes,
         reduce_negations = reduce_negations,
-        allow_inverse_propositions = allow_inverse_propositions,
+        allow_proposition_flipping = allow_proposition_flipping,
     )
 
     # TODO @Mauro introduce rotate_commutatives parameter and use rotate_commutatives && iscommutative for normalizing the structure of commutative operators.
@@ -129,7 +129,7 @@ function normalize(
         elseif (token(childtok) == ¬) && arity(token(childtok)) == 1
             _normalize(grandchildren[1])
         elseif token(childtok) isa Proposition
-            if allow_inverse_propositions
+            if allow_proposition_flipping
                 SyntaxTree(negation(token(childtok)))
             else
                 ¬(_normalize(childtok))
