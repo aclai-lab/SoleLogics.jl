@@ -124,12 +124,26 @@ end
 function tree(lf::LeftmostLinearForm)
     operator = op(lf)
     a = arity(operator)
-    function _tree(children::Vector{<:AbstractSyntaxStructure})
-        return length(children) == a ?
-            SyntaxTree(operator, children...) :
-            SyntaxTree(operator, children[1:(a-1)]..., _tree(children[a:end]))
+    cs = children(lf)
+
+    function _tree(childs::Vector{<:AbstractSyntaxStructure})
+        @assert (length(childs) != 0) (println(childs); println(lf); println(operator); println(a); println(cs))
+        return length(childs) == a ?
+            SyntaxTree(operator, childs...) :
+            SyntaxTree(operator, childs[1:(a-1)]..., _tree(childs[a:end]))
     end
-    _tree(tree.(children(lf)))
+
+    st = begin
+        if length(cs) == 0
+            SyntaxTree(operator)
+        elseif length(cs) == 1 && a == 2
+            tree(cs[1])
+        else
+            _tree(tree.(children(lf)))
+        end
+    end
+
+    return st
 end
 
 function Base.show(io::IO, lf::LeftmostLinearForm{O,SS}) where {O,SS}
