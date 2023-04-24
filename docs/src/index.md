@@ -7,22 +7,12 @@ end
 
 # SoleLogics
 
-Documentation for [SoleLogics](https://github.com/aclai-lab/SoleLogics.jl).
+Welcome to the documentation for [SoleLogics](https://github.com/aclai-lab/SoleLogics.jl).
 
-```@contents
-```
+SoleLogics.jl provides a fresh codebase for computational logic, featuring easy manipulation of:
 
-## Section 1
-
-```@docs
-CONJUNCTION
-```
-Just a dummy text
-
-## Section 2
-
-```@docs
-NEGATION
-```
-
-Just a dummy text
+- Propositional and (multi)modal logics (propositions, logical constants, alphabet, grammars, crisp/fuzzy algebras);
+- Logical formulas (random generation, parsing, minimization);
+- Logical interpretations (e.g., propositional valuations, Kripke structures);
+- Algorithms for model checking, that is, checking that a formula is satisfied by an interpretation.
+- SoleLogics.jl lays the logical foundations for Sole.jl, an open-source framework for symbolic machine learning.
