@@ -212,3 +212,13 @@ const LeftmostDisjunctiveForm{SS<:AbstractSyntaxStructure} = LeftmostLinearForm{
 const CNF{SS<:AbstractSyntaxStructure} = LeftmostLinearForm{typeof(∧),LeftmostLinearForm{typeof(∨),SS}}
 """$(doc_lmlf)"""
 const DNF{SS<:AbstractSyntaxStructure} = LeftmostLinearForm{typeof(∨),LeftmostLinearForm{typeof(∧),SS}}
+
+conjuncts(m::Union{LeftmostConjunctiveForm,CNF}) = children(m)
+nconjuncts(m::Union{LeftmostConjunctiveForm,CNF}) = nchildren(m)
+disjuncts(m::Union{LeftmostDisjunctiveForm,DNF}) = children(m)
+ndisjuncts(m::Union{LeftmostDisjunctiveForm,DNF}) = nchildren(m)
+
+conjuncts(m::DNF) = map(d->conjuncts(d), disjuncts(m))
+nconjuncts(m::DNF) = map(d->nconjuncts(d), disjuncts(m))
+disjuncts(m::CNF) = map(d->disjuncts(d), conjuncts(m))
+ndisjuncts(m::CNF) = map(d->ndisjuncts(d), conjuncts(m))
