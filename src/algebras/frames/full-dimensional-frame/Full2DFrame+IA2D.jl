@@ -2,7 +2,7 @@
 # Refer to [`IntervalRelation`](@ref).
 
 # Convenience function
-_accessibles__(fr::Full1DFrame, w::Interval, r::IntervalRelation) = _accessibles(fr,w,r)
+_accessibles__(fr::Full1DFrame, w::Interval, r::IntervalRelation) = _accessibles(fr, w, r)
 _accessibles__(fr::Full1DFrame, w::Interval, r::IdentityRel, args...) = [(w.x, w.y)]
 _accessibles__(fr::Full1DFrame, w::Interval{Int}, r::GlobalRel) = _intervals_in(1, X(fr)+1)
 

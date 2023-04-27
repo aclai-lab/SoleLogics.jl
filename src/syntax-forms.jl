@@ -20,11 +20,11 @@ conjuctive normal form (CNF) or disjunctive normal form (DNF), defined as:
 # Examples
 TODO four examples of syntaxstring of a LeftmostConjunctiveForm, LeftmostDisjunctiveForm, CNF, DNF
 ```julia-repl
-julia> lfcf = LeftmostConjunctiveForm{Literal}([l1,l2_neg,l1_float])
+julia> lfcf = LeftmostConjunctiveForm{Literal}([l1, l2_neg, l1_float])
 LeftmostLinearForm{SoleLogics.NamedOperator{:∧},Literal}
 (1) ∧ (¬(2)) ∧ (1.0)
 
-julia> lfdf = LeftmostDisjunctiveForm{Literal}([l1_number_float,l_string_neg])
+julia> lfdf = LeftmostDisjunctiveForm{Literal}([l1_number_float, l_string_neg])
 LeftmostLinearForm{SoleLogics.NamedOperator{:∨},Literal}
 (1.4) ∨ (¬(1))
 ```
@@ -79,7 +79,7 @@ struct LeftmostLinearForm{O<:AbstractOperator, SS<:AbstractSyntaxStructure} <: A
         op::AbstractOperator,
         children::Vector,
     )
-        LeftmostLinearForm(typeof(op),children)
+        LeftmostLinearForm(typeof(op), children)
     end
 end
 
@@ -92,11 +92,11 @@ childrentype(::LeftmostLinearForm{O,SS}) where {O,SS} = SS
 Base.length(lf::LeftmostLinearForm) = Base.length(children(lf))
 function Base.getindex(
     lf::LeftmostLinearForm{O,SS},
-    idxs::AbstractVector{T}
-) where {O,SS,T<:Integer}
+    idxs::AbstractVector
+) where {O,SS}
     return LeftmostLinearForm{O,SS}(children(lf)[idxs])
 end
-Base.getindex(lf::LeftmostLinearForm,idx::Integer) = Base.getindex(lf,[idx])
+Base.getindex(lf::LeftmostLinearForm, idx::Integer) = Base.getindex(lf,[idx])
 
 nchildren(lf::LeftmostLinearForm) = length(children(lf))
 
@@ -126,19 +126,20 @@ function tree(lf::LeftmostLinearForm)
     a = arity(operator)
     cs = children(lf)
 
-    function _tree(childs::Vector{<:AbstractSyntaxStructure})
-        @assert (length(childs) != 0) (println(childs); println(lf); println(operator); println(a); println(cs))
-        return length(childs) == a ?
-            SyntaxTree(operator, childs...) :
-            SyntaxTree(operator, childs[1:(a-1)]..., _tree(childs[a:end]))
-    end
-
     st = begin
         if length(cs) == 0
+            # No children
             SyntaxTree(operator)
-        elseif length(cs) == 1 && a == 2
+        elseif length(cs) == 1
+            # Only child
             tree(cs[1])
         else
+            function _tree(childs::Vector{<:SyntaxTree})
+                @assert (length(childs) != 0) "$(childs); $(lf); $(operator); $(a); $(cs)"
+                return length(childs) == a ?
+                    SyntaxTree(operator, childs...) :
+                    SyntaxTree(operator, childs[1:(a-1)]..., _tree(childs[a:end]))
+            end
             _tree(tree.(children(lf)))
         end
     end
@@ -218,7 +219,7 @@ nconjuncts(m::Union{LeftmostConjunctiveForm,CNF}) = nchildren(m)
 disjuncts(m::Union{LeftmostDisjunctiveForm,DNF}) = children(m)
 ndisjuncts(m::Union{LeftmostDisjunctiveForm,DNF}) = nchildren(m)
 
-conjuncts(m::DNF) = map(d->conjuncts(d), disjuncts(m))
-nconjuncts(m::DNF) = map(d->nconjuncts(d), disjuncts(m))
-disjuncts(m::CNF) = map(d->disjuncts(d), conjuncts(m))
-ndisjuncts(m::CNF) = map(d->ndisjuncts(d), conjuncts(m))
+# conjuncts(m::DNF) = map(d->conjuncts(d), disjuncts(m))
+# nconjuncts(m::DNF) = map(d->nconjuncts(d), disjuncts(m))
+# disjuncts(m::CNF) = map(d->disjuncts(d), conjuncts(m))
+# ndisjuncts(m::CNF) = map(d->ndisjuncts(d), conjuncts(m))

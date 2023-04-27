@@ -190,8 +190,8 @@ f3_int = f_int(⊥ ∨ (p1 ∧ p100 ∧ p2 ∧ ⊤))
 @test_nowarn TruthDict()
 @test_nowarn TruthDict([])
 @test_nowarn TruthDict((2,3),)
-@test_nowarn TruthDict((p1,true),)
-@test_nowarn TruthDict([(p1,true),])
+@test_nowarn TruthDict((p1, true),)
+@test_nowarn TruthDict([(p1, true),])
 @test_nowarn TruthDict(p1 => true)
 @test_nowarn TruthDict([p1 => true])
 @test_nowarn TruthDict(Dict([p1 => true]))
@@ -256,11 +256,11 @@ l_string_neg = @test_nowarn Literal(false, p_string)
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Syntax Forms ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-lfcf1 = @test_nowarn LeftmostConjunctiveForm{Literal}([l1,l2_neg,l1_float])
-lfcf2 = @test_nowarn LeftmostConjunctiveForm{Literal}([l2,l100_neg,l1_number_neg])
+lfcf1 = @test_nowarn LeftmostConjunctiveForm{Literal}([l1, l2_neg, l1_float])
+lfcf2 = @test_nowarn LeftmostConjunctiveForm{Literal}([l2, l100_neg, l1_number_neg])
 
-lfdf1 = @test_nowarn LeftmostDisjunctiveForm{Literal}([l1_number_float,l_string_neg])
-lfdf2 = @test_nowarn LeftmostDisjunctiveForm{Literal}([l1_number_float,l_string_neg])
+lfdf1 = @test_nowarn LeftmostDisjunctiveForm{Literal}([l1_number_float, l_string_neg])
+lfdf2 = @test_nowarn LeftmostDisjunctiveForm{Literal}([l1_number_float, l_string_neg])
 
-cnf1 = CNF{Literal}([lfdf1,lfdf2])
-dnf1 = DNF{Literal}([lfcf1,lfcf2])
+cnf1 = CNF{Literal}([lfdf1, lfdf2])
+dnf1 = DNF{Literal}([lfcf1, lfcf2])
