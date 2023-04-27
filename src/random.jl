@@ -20,11 +20,13 @@ doc_randformula = """
 Return a pseudo-randomic `SyntaxTree` or `Formula`.
 
 # Examples
+
 ```julia-repl
 julia> syntaxstring(randformulatree(4,
     ExplicitAlphabet(Proposition.([1,2])), [NEGATION, CONJUNCTION, IMPLICATION]))
 "¬((¬(¬(2))) → ((1 → 2) → (1 → 2)))"
 ```
+
 See also [`randformula`](@ref), [`SyntaxTree`](@ref).
 """
 
@@ -75,10 +77,8 @@ function randformulatree(
 
     # If the alphabet is not iterable, this function should not work.
     # NOTE: the error message here is the same as in general.jl.
-    if !isiterable(alphabet)
-        return error("Please, provide method propositions(::$(typeof(a)))" *
-        " to allow formula generation.")
-    end
+    @assert isfinite(alphabet) "Cannot generate random formulas from" *
+        " (infinite) alphabet of type $(typeof(alphabet))!"
 
     rng = (typeof(rng) <: Integer) ? Random.MersenneTwister(rng) : rng
 
