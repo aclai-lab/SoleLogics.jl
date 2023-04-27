@@ -612,7 +612,7 @@ end
 # Useful for checking formulas on interpretations.
 function Base.isequal(a::SyntaxTree, b::SyntaxTree)
     return Base.isequal(token(a), token(b)) &&
-        all(((c1,c2),)->Base.isequal(c1,c2), zip(children(a), children(b)))
+        all(((c1,c2),)->Base.isequal(c1, c2), zip(children(a), children(b)))
 end
 Base.hash(a::SyntaxTree) = Base.hash(syntaxstring(a))
 
