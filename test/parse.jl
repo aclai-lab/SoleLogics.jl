@@ -35,7 +35,7 @@
 @test syntaxstring(parseformulatree("⟨G⟩p")) == "⟨G⟩(p)"
 @test syntaxstring(parseformulatree("[G]p")) == "[G](p)"
 
-@test_nowarn parseformulatree("⟨G⟩p", [DiamondRelationalOperator{GlobalRel}()])
+@test_nowarn parseformulatree("⟨G⟩p")
 
 @test alphabet(logic(parseformula("p→q"))) == AlphabetOfAny{String}()
 
@@ -70,31 +70,26 @@
 @test syntaxstring(parseformulatree("¬¬¬ □□□ ◊◊◊ p ∧ ¬¬¬ q"); function_notation = true) ==
     "∧(¬(¬(¬(□(□(□(◊(◊(◊(p))))))))), ¬(¬(¬(q))))"
 
-f = parseformulatree("¬((¬(⟨G⟩(q))) → (([G](p)) ∧ ([G](q))))",
-    [BoxRelationalOperator(globalrel), DiamondRelationalOperator(globalrel)])
+f = parseformulatree("¬((¬(⟨G⟩(q))) → (([G](p)) ∧ ([G](q))))")
 @test syntaxstring(f) == syntaxstring(parseformulatree(syntaxstring(f)))
 @test syntaxstring(f; function_notation = true) ==
     syntaxstring(parseformulatree(syntaxstring(f)); function_notation = true)
-f = parseformulatree("((¬(q ∧ q)) ∧ ((p ∧ p) ∧ (q → q))) → ([G]([G](⟨G⟩(p))))",
-    [BoxRelationalOperator(globalrel), DiamondRelationalOperator(globalrel)])
+f = parseformulatree("((¬(q ∧ q)) ∧ ((p ∧ p) ∧ (q → q))) → ([G]([G](⟨G⟩(p))))")
 @test syntaxstring(f) == syntaxstring(parseformulatree(syntaxstring(f)))
 @test syntaxstring(f; function_notation = true) ==
     syntaxstring(parseformulatree(syntaxstring(f)); function_notation = true)
-f = parseformulatree("((⟨G⟩(⟨G⟩(q))) ∧ (¬([G](p)))) → (((q → p) → (¬(q))) ∧ (¬([G](q))))",
-    [BoxRelationalOperator(globalrel), DiamondRelationalOperator(globalrel)])
+f = parseformulatree("((⟨G⟩(⟨G⟩(q))) ∧ (¬([G](p)))) → (((q → p) → (¬(q))) ∧ (¬([G](q))))")
 @test syntaxstring(f) == syntaxstring(parseformulatree(syntaxstring(f)))
 @test syntaxstring(f; function_notation = true) ==
     syntaxstring(parseformulatree(syntaxstring(f)); function_notation = true)
-f = parseformulatree("[G](¬(⟨G⟩(p ∧ q)))",
-    [BoxRelationalOperator(globalrel), DiamondRelationalOperator(globalrel)])
+f = parseformulatree("[G](¬(⟨G⟩(p ∧ q)))")
 @test syntaxstring(f) == syntaxstring(parseformulatree(syntaxstring(f)))
 @test syntaxstring(f; function_notation = true) ==
     syntaxstring(parseformulatree(syntaxstring(f)); function_notation = true)
 
 f = parseformulatree("⟨G⟩(((¬(⟨G⟩((q ∧ p) → (¬(q))))) ∧ (((¬(q → q)) → ((q → p) → (¬(q))))"*
     "∧ (((¬(p)) ∧ (⟨G⟩(p))) → (¬(⟨G⟩(q)))))) ∧ ((¬(([G](p ∧ q)) → (¬(p → q)))) →" *
-    "([G](([G](q∧ q)) ∧ ([G](q → p))))))",
-    [BoxRelationalOperator(globalrel), DiamondRelationalOperator(globalrel)])
+    "([G](([G](q∧ q)) ∧ ([G](q → p))))))")
 @test syntaxstring(f) == syntaxstring(parseformulatree(syntaxstring(f)))
 @test syntaxstring(f; function_notation = true) ==
     syntaxstring(parseformulatree(syntaxstring(f)); function_notation = true)
@@ -108,9 +103,8 @@ f = parseformulatree("⟨G⟩(((¬(⟨G⟩((q ∧ p) → (¬(q))))) ∧ (((¬(q 
 @test_throws ErrorException parseformulatree("◊¬p◊q")
 @test_throws ErrorException parseformulatree("(p∧q", [NEGATION, CONJUNCTION])
 @test_throws ErrorException parseformulatree("))))", [CONJUNCTION])
-@test_throws ErrorException parseformulatree("⟨G⟩p ¬⟨G⟩q",
-    [DiamondRelationalOperator(globalrel)])
-@test_throws ErrorException parseformulatree("¬[[G]]p", [BoxRelationalOperator(globalrel)])
+@test_throws ErrorException parseformulatree("⟨G⟩p ¬⟨G⟩q")
+@test_throws ErrorException parseformulatree("¬[[G]]p")
 
 @test_throws ErrorException parseformulatree(""; function_notation = true)
 @test_throws ErrorException parseformulatree("¬p◊"; function_notation = true)
@@ -121,8 +115,7 @@ f = parseformulatree("⟨G⟩(((¬(⟨G⟩((q ∧ p) → (¬(q))))) ∧ (((¬(q 
     function_notation = true)
 @test_throws ErrorException parseformulatree("))))", [CONJUNCTION];
     function_notation = true)
-@test_throws ErrorException parseformulatree("¬[[G]]p", [BoxRelationalOperator(globalrel)];
-    function_notation = true)
+@test_throws ErrorException parseformulatree("¬[[G]]p"; function_notation = true)
 
 @test_throws ErrorException parseformulatree("¬p∧q∧(¬s∧¬z)", opening_bracket=Symbol("{"))
 @test_throws ErrorException parseformulatree("¬p∧q∧{¬s∧¬z)",
@@ -158,8 +151,7 @@ f = parseformulatree("⟨G⟩(((¬(⟨G⟩((q ∧ p) → (¬(q))))) ∧ (((¬(q 
     proposition_parser = (x -> Proposition{Float64}(parse(Float64, x))),
     function_notation = true)
 
-@test_throws ErrorException parseformulatree("[G][G]-1.2[G]",
-    [BoxRelationalOperator(globalrel)];
+@test_throws ErrorException parseformulatree("[G][G]-1.2[G]";
     proposition_parser = (x -> Proposition{Float64}(parse(Float64, x))))
 @test_throws ErrorException parseformulatree("¬-3(";
     proposition_parser = (x -> Proposition{Float64}(parse(Float64, x))))
@@ -233,8 +225,7 @@ s = "¬((¬(([G](⟨G⟩(¬((¬([G](⟨G⟩(⟨G⟩(q))))) → (¬(⟨G⟩((¬(q
     "))) ∧ (⟨G⟩(¬([G](p)))))))) ∧ ([G](⟨G⟩([G](¬([G]([G](q ∧ p))))))))) ∧ (¬([G]((⟨G⟩" *
     "(⟨G⟩(¬(((⟨G⟩(q)) ∧ (⟨G⟩(q))) → (⟨G⟩(q → p)))))) ∧ ([G](¬(((¬(¬(q))) → (¬(q → p))" *
     ") ∧ (([G](p → p)) → ((⟨G⟩(p)) → (q → p)))))))))))"
-f = parseformulatree(s,
-    [BoxRelationalOperator(globalrel), DiamondRelationalOperator(globalrel)])
+f = parseformulatree(s)
 @test syntaxstring(f) == syntaxstring(parseformulatree(syntaxstring(f)))
 @test syntaxstring(f; function_notation = true) ==
     syntaxstring(parseformulatree(syntaxstring(f)); function_notation = true)
@@ -246,9 +237,7 @@ s = "◊((¬((◊(◊(((¬(¬(q))) ∧ ((p ∧ p) ∨ (¬(p)))) → (¬(□(¬(q
     "(◊((q ∨ q) ∨ (□(q))))) → (((¬(□(q))) ∨ (□(◊(q)))) → (((◊(p)) ∧ (◊(q))) ∨ (¬(q ∧"  *
     "q)))))) → ((□(◊(¬(◊(¬(p)))))) ∨ ((□(□((q → p) ∧ (p ∧ p)))) ∨ (((◊(◊(p))) → ((p →" *
     "q) ∧ (p → q))) ∧ (□((p ∨ q) ∧ (◊(q))))))))))"
-f = parseformulatree(s,
-    [BoxRelationalOperator(globalrel), DiamondRelationalOperator(globalrel)])
+f = parseformulatree(s)
 @test syntaxstring(f) == syntaxstring(parseformulatree(syntaxstring(f)))
 @test syntaxstring(f; function_notation = true) ==
     syntaxstring(parseformulatree(syntaxstring(f)); function_notation = true)
-

@@ -49,24 +49,27 @@ function randformulatree(
     height::Integer,
     alphabet::AbstractAlphabet,
     operators::Vector{<:AbstractOperator};
+    modal_depth::Integer = height,
     rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG
 )::SyntaxTree
 
     function _randformulatree(
         height::Integer,
         alphabet::AbstractAlphabet,
-        operators::Vector{<:AbstractOperator};
-        rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG
+        operators::Vector{<:AbstractOperator},
+        modal_depth::Integer,
+        rng::Union{Integer,AbstractRNG}
     )::SyntaxTree
         if height == 0
             return SyntaxTree(rand(rng, propositions(alphabet)))
         end
 
+        # TODO: only get modal operators if modal_depth > 0
         op = rand(rng, operators)
 
         return SyntaxTree(
             op,
-            Tuple([_randformulatree(height-1, alphabet, operators; rng=rng)
+            Tuple([_randformulatree(height-1, alphabet, operators, modal_depth, rng)
                 for _ in 1:arity(op)])
         )
     end
@@ -82,7 +85,7 @@ function randformulatree(
 
     rng = (typeof(rng) <: Integer) ? Random.MersenneTwister(rng) : rng
 
-    return _randformulatree(height, alphabet, operators, rng=rng)
+    return _randformulatree(height, alphabet, operators, modal_depth, rng)
 end
 
 #= ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Kripke Structures ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ =#

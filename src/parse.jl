@@ -1,4 +1,3 @@
-using ReadableRegex
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Table of contents ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
@@ -339,6 +338,7 @@ a second argument.
 - `additional_operators::Vector{<:AbstractOperator}:` additional, non-standard operators
     needed to correctly parse the expression; in case of clashing `syntaxstring`'s,
     the provided additional operators will override the base parsable ones.
+    If this is left unset, operators are defaulted to $(repr(BASE_PARSABLE_OPERATORS))
 
 # Keyword Arguments
 - `function_notation::Bool = false`: if set to `true`, the expression is considered
@@ -458,7 +458,7 @@ function parseformulatree(
             if tok isa Symbol || tok isa Proposition
                 push!(stack, tok)
             elseif tok isa AbstractOperator
-                if (arity(tok) == 1 && typeof(stack[end]) <:
+                if (arity(tok) == 1 && stack[end] isa
                     Union{AbstractSyntaxToken, AbstractSyntaxStructure})
                     # If operator arity is 1, then what follows could be a single AST
                     newtok = SyntaxTree(tok, stack[end])
@@ -486,7 +486,7 @@ function parseformulatree(
                     # else an error has to be thrown
 
                     children =
-                        [popped[s] for s in 2:length(popped) if typeof(popped[s]) <:
+                        [popped[s] for s in 2:length(popped) if popped[s] isa
                             Union{AbstractSyntaxToken, AbstractSyntaxStructure}]
                     separators =
                         [s for s in 3:(length(popped)-2) if popped[s] == arg_separator]
@@ -599,4 +599,3 @@ end
 # )
 #     parseformula(expression; additional_operators = operators, kwargs...)
 # end
-

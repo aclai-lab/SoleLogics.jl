@@ -31,13 +31,13 @@ _operators = [NEGATION, CONJUNCTION, IMPLICATION,
     s = syntaxstring(f)
     s == syntaxstring(parseformulatree(s))
 end
- for i in 1:10])
+ for i in 1:1000])
 
 @test all([begin
     f = randformula(4, _alphabet, _operators)
     s = syntaxstring(f; function_notation = true)
     s == syntaxstring(parseformulatree(s; function_notation = true);
         function_notation = true)
-end for i in 1:10])
+end for i in 1:1000])
 
 end
