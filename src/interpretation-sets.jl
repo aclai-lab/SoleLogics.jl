@@ -30,28 +30,31 @@ function check(
     tok::AbstractSyntaxToken,
     d::AbstractInterpretationSet{M},
     i_sample::Integer,
-    args...,
+    args...;
+    kwargs...,
 )::truthtype(M) where {M<:AbstractInterpretation}
-    error("Please, provide method check(::$(typeof(tok)), ::$(typeof(d)), ::Integer, ::$(typeof(args))...).")
+    error("Please, provide method check(::$(typeof(tok)), ::$(typeof(d)), ::Integer, ::$(typeof(args))...; kwargs...).")
 end
 
 function check(
     φ::AbstractFormula,
     d::AbstractInterpretationSet{M},
     i_sample::Integer,
-    args...,
+    args...;
+    kwargs...,
 )::truthtype(M) where {M<:AbstractInterpretation}
-    error("Please, provide method check(::$(typeof(φ)), ::$(typeof(d)), ::Integer, ::$(typeof(args))...).")
+    error("Please, provide method check(::$(typeof(φ)), ::$(typeof(d)), ::Integer, ::$(typeof(args))...; kwargs...).")
 end
 
 # Check on a dataset = map check on the instances
 function check(
     φ::Union{AbstractSyntaxToken,AbstractFormula},
     d::AbstractInterpretationSet{M},
-    args...
+    args...;
+    kwargs...,
 )::Vector{truthtype(M)} where {M<:AbstractInterpretation}
     # TODO normalize before checking, if it is faster!
-    map(i_sample->check(φ, d, i_sample, args...), 1:nsamples(d))
+    map(i_sample->check(φ, d, i_sample, args...; kwargs...), 1:nsamples(d))
 end
 
 ############################################################################################
