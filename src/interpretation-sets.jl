@@ -55,6 +55,8 @@ function check(
     kwargs...,
 )::Vector{truthtype(M)} where {M<:AbstractInterpretation}
     # TODO normalize before checking, if it is faster!
+    # φ = SoleLogics.normalize()
+    # # TODO use get_instance instead?
     map(i_sample->check(
         φ,
         d,
@@ -63,6 +65,15 @@ function check(
         # use_memo = (isnothing(use_memo) ? nothing : use_memo[[i_sample]]),
         kwargs...
     ), 1:nsamples(d))
+    # map(
+    #     i_sample->check(
+    #         formula(c),
+    #         slice_dataset(d, [i_sample]),
+    #         args...;
+    #         use_memo = (isnothing(use_memo) ? nothing : @view use_memo[[i_sample]]),
+    #         kwargs...,
+    #     )[1], 1:nsamples(d)
+    # )
 end
 
 ############################################################################################
