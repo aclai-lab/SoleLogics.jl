@@ -51,10 +51,18 @@ function check(
     φ::Union{AbstractSyntaxToken,AbstractFormula},
     d::AbstractInterpretationSet{M},
     args...;
+    # use_memo::Union{Nothing,AbstractVector} = nothing,
     kwargs...,
 )::Vector{truthtype(M)} where {M<:AbstractInterpretation}
     # TODO normalize before checking, if it is faster!
-    map(i_sample->check(φ, d, i_sample, args...; kwargs...), 1:nsamples(d))
+    map(i_sample->check(
+        φ,
+        d,
+        i_sample,
+        args...;
+        # use_memo = (isnothing(use_memo) ? nothing : use_memo[[i_sample]]),
+        kwargs...
+    ), 1:nsamples(d))
 end
 
 ############################################################################################
