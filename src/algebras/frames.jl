@@ -1,15 +1,4 @@
 
-# TODO remove
-# Fix (not needed from Julia 1.7, see https://github.com/JuliaLang/julia/issues/34674 )
-if length(methods(Base.keys, (Base.Generator,))) == 0
-    Base.keys(g::Base.Generator) = g.iter
-end
-
-# TODO fix these...
-abstract type InitCondition end
-# function initialworld() end
-function initialworldset() end
-
 ############################################################################################
 # Natural relations
 ############################################################################################
@@ -42,6 +31,58 @@ function accessibles(
         )
     )
 end
+
+############################################################################################
+
+# TODO remove
+# Fix (not needed from Julia 1.7, see https://github.com/JuliaLang/julia/issues/34674 )
+if length(methods(Base.keys, (Base.Generator,))) == 0
+    Base.keys(g::Base.Generator) = g.iter
+end
+
+# TODO fix these...
+abstract type InitCondition end
+# function initialworld() end
+function initialworldset() end
+
+# """TODO"""
+# struct AnchoredMultiModalFrame{
+#     N,
+#     W<:AbstractWorld,
+#     T<:TruthValue,
+#     FR<:AbstractMultiModalFrame{N,W,T},
+# } <: AbstractMultiModalFrame{N,W,T}
+
+#     frame::FR
+
+#     initialworld::Union{Nothing,W}
+
+#     function check_initialworld(initialworld, N, W)
+#         @assert isnothing(initialworld) || initialworld isa W "Cannot instantiate" *
+#             " AnchoredMultiModalFrame with initialworld of type $(typeof(initialworld))." *
+#             " Type should be $(W) (dimensionality = $(N))."
+#     end
+
+#     function AnchoredMultiModalFrame{N,W,T}(
+#         fr::AbstractMultiModalFrame{N,W,T},
+#         initialworld = nothing,
+#     ) where {N,W<:AbstractWorld,T<:TruthValue}
+#         new{N,W,T}(fr, initialworld)
+#     end
+
+#     function AnchoredMultiModalFrame(
+#         fr::AbstractMultiModalFrame{N,W,T},
+#         initialworld = nothing,
+#     ) where {N,W<:AbstractWorld,T<:TruthValue}
+#         AnchoredMultiModalFrame{N,W,T}(fr, initialworld)
+#     }
+#     end
+# end
+
+# accessibles(fr::AnchoredMultiModalFrame, args...) = accessibles(fr.frame, args...)
+# allworlds(fr::AnchoredMultiModalFrame, args...) = allworlds(fr.frame, args...)
+# nworlds(fr::AnchoredMultiModalFrame) = nworlds(fr.frame)
+# initialworld(fr::AnchoredMultiModalFrame) = fr.initialworld
 
 ############################################################################################
 

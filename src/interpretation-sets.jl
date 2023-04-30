@@ -23,8 +23,8 @@ atomtype(::Type{AbstractInterpretationSet{M}}) where {M} = atomtype(M)
 atomtype(s::AbstractInterpretationSet) = atomtype(M)
 
 # TODO improve general doc.
-truthtype(::Type{AbstractInterpretationSet{M}}) where {M} = atomtype(M)
-truthtype(s::AbstractInterpretationSet) = atomtype(M)
+truthtype(::Type{AbstractInterpretationSet{M}}) where {M} = truthtype(M)
+truthtype(s::AbstractInterpretationSet) = truthtype(M)
 
 function check(
     tok::AbstractSyntaxToken,

@@ -899,7 +899,7 @@ end
 """
     formulas(g::AbstractGrammar;
         maxdepth::Integer,
-        nformulas::Union{Integer,Nothing} = nothing,
+        nformulas::Union{Nothing,Integer} = nothing,
         args...
     )::Vector{<:SyntaxTree}
 
@@ -917,7 +917,7 @@ See also [`AbstractGrammar`](@ref), [`SyntaxTree`](@ref).
 function formulas(
     g::AbstractGrammar{A,O} where {A,O};
     maxdepth::Integer,
-    nformulas::Union{Integer,Nothing} = nothing,
+    nformulas::Union{Nothing,Integer} = nothing,
     args...
 )::Vector{<:SyntaxTree}
     @assert maxdepth >= 0
@@ -1017,7 +1017,7 @@ end
     formulas(
         g::CompleteFlatGrammar{A,O} where {A,O};
         maxdepth::Integer,
-        nformulas::Union{Integer,Nothing} = nothing
+        nformulas::Union{Nothing,Integer} = nothing
     )::Vector{SyntaxTree}
 
 Generates all formulas with syntax trees shorter than a given `maxdepth`.
@@ -1027,7 +1027,7 @@ See also [`AbstractGrammar`](@ref).
 function formulas(
     g::CompleteFlatGrammar{A,O} where {A,O};
     maxdepth::Integer,
-    nformulas::Union{Integer,Nothing} = nothing,
+    nformulas::Union{Nothing,Integer} = nothing,
 )::Vector{SyntaxTree}
     @assert maxdepth >= 0
     @assert isnothing(nformulas) || nformulas > 0
