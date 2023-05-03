@@ -2,6 +2,15 @@ using Random
 
 #= ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Formulas ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ =#
 
+# TODO cascade of methods:
+# - define interface for sampling from an alphabet: rand(alphabet) & rand(rng, alphabet). if finite, default to rand(rng, propositions(alphabet)).
+# - define interface for sampling from a logic: rand(logic, height) & rand(rng, logic, height). These call randomformula(height, logic[, rng])
+# - randomformula/randformulatree from a custom logic: assert that the grammar is a CompleteFlatGrammar,
+#    then unpack alphabet and operators and delegate to the existing lower-level method.
+
+TODO
+# - in randformulatree, keyword argument alphabet_sample_kwargs that are unpacked upon sampling propositions, as in: StatsBase.sample(rng, a; alphabet_sample_kwargs...). This would allow to sample from infinite alphabets, so when this parameter, !isfinite(alphabet) is allowed!
+
 doc_randformula = """
     randformulatree(
         height::Integer,
@@ -49,43 +58,38 @@ function randformulatree(
     height::Integer,
     alphabet::AbstractAlphabet,
     operators::Vector{<:AbstractOperator};
-    modal_depth::Integer = height,
+    modaldepth::Integer = height,
     rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG
 )::SyntaxTree
 
     function _randformulatree(
         height::Integer,
-        alphabet::AbstractAlphabet,
-        operators::Vector{<:AbstractOperator},
-        modal_depth::Integer,
+        modaldepth::Integer,
         rng::Union{Integer,AbstractRNG}
     )::SyntaxTree
         if height == 0
+            # Sample proposition from alphabet
             return SyntaxTree(rand(rng, propositions(alphabet)))
+        else
+            # Sample operator and generate children
+            # (Note: only allow modal operators if modaldepth > 0)
+            op = rand(rng, (modaldepth > 0 ? operators : filter(!ismodal, operators)))
+            ch = Tuple([
+                    _randformulatree(height-1, modaldepth-(ismodal(op) ? 1 : 0), rng)
+                    for _ in 1:arity(op)])
+            return SyntaxTree(op, ch)
         end
-
-        # TODO: only get modal operators if modal_depth > 0
-        op = rand(rng, operators)
-
-        return SyntaxTree(
-            op,
-            Tuple([_randformulatree(height-1, alphabet, operators, modal_depth, rng)
-                for _ in 1:arity(op)])
-        )
     end
 
-    # # NOTE: a cryptic error message is sometimes thrown when calling this function.
-    # # Momentarily, this error is being ignored.
-    # redirect_stderr(devnull)
-
     # If the alphabet is not iterable, this function should not work.
-    # NOTE: the error message here is the same as in general.jl.
     @assert isfinite(alphabet) "Cannot generate random formulas from" *
         " (infinite) alphabet of type $(typeof(alphabet))!"
 
+    # TODO this pattern is so common that we may want to move this code to a util function,
+    # and move this so that it is the first thing that a randomic function (e.g., randformulatree) does.
     rng = (typeof(rng) <: Integer) ? Random.MersenneTwister(rng) : rng
 
-    return _randformulatree(height, alphabet, operators, modal_depth, rng)
+    return _randformulatree(height, modaldepth, rng)
 end
 
 #= ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Kripke Structures ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ =#

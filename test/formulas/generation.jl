@@ -24,7 +24,7 @@
 
 #     function fxtest_modal(height::Integer, max_modepth::Integer)
 #         root = gen_formula(height, max_modepth = max_modepth).tree
-#         @test SoleLogics.modal_depth(root) <= max_modepth
+#         @test SoleLogics.modaldepth(root) <= max_modepth
 #     end
 
 #     for i = 1:20
@@ -39,7 +39,7 @@
 #         max_modepth::Integer
 #     )
 #         root = tree(gen_formula(height, letters, max_modepth = max_modepth))
-#         @test SoleLogics.modal_depth(root) <= max_modepth
+#         @test SoleLogics.modaldepth(root) <= max_modepth
 #     end
 
 #     for i = 1:25
