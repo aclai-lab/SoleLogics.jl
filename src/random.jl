@@ -2,21 +2,114 @@ using Random
 
 #= ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Formulas ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ =#
 
-# TODO cascade of methods:
-# - define interface for sampling from an alphabet: rand(alphabet) & rand(rng, alphabet). if finite, default to rand(rng, propositions(alphabet)).
-# - define interface for sampling from a logic: rand(logic, height) & rand(rng, logic, height). These call randomformula(height, logic[, rng])
-# - randomformula/randformulatree from a custom logic: assert that the grammar is a CompleteFlatGrammar,
-#    then unpack alphabet and operators and delegate to the existing lower-level method.
+"""
+    function Base.rand(
+        [rng::AbstractRNG = Random.GLOBAL_RNG, ]
+        a::AbstractAlphabet,
+        args...;
+        kwargs...
+    )::Proposition
 
-TODO
-# - in randformulatree, keyword argument alphabet_sample_kwargs that are unpacked upon sampling propositions, as in: StatsBase.sample(rng, a; alphabet_sample_kwargs...). This would allow to sample from infinite alphabets, so when this parameter, !isfinite(alphabet) is allowed!
+Randomly samples a proposition from an alphabet `a`, according to a uniform distribution.
+
+# Implementation
+If the alphabet is finite, the function defaults to `rand(rng, propositions(alphabet))`;
+otherwise, it must be implemented, and additional keyword arguments should be provided
+in order to limit the (otherwise infinite) sampling domain.
+
+See also
+[`FeatCondition`](@ref),
+[`FeatMetaCondition`](@ref),
+[`AbstractAlphabet'](@ref).
+"""
+function Base.rand(a::AbstractAlphabet, args...; kwargs...)
+    Base.rand(Random.GLOBAL_RNG, a, args...; kwargs...)
+end
+
+function Base.rand(
+    rng::AbstractRNG,
+    a::AbstractAlphabet,
+    args...;
+    kwargs...
+)::Proposition
+    if isfinite(a)
+        rand(rng, propositions(a))
+    else
+        error("Please, provide method Base.rand(rng::AbstractRNG, a::$(typeof(a)), args...; kwargs...).")
+    end
+end
+
+
+
+function Base.rand(l::AbstractLogic, args...; kwargs...)
+    Base.rand(Random.GLOBAL_RNG, l, args...; kwargs...)
+end
+
+function Base.rand(
+    rng::AbstractRNG,
+    l::AbstractLogic,
+    args...;
+    kwargs...
+)::AbstractFormula
+    Base.rand(rng, grammar(l), args...; kwargs...)
+end
+
+"""
+    function Base.rand(
+        [rng::AbstractRNG = Random.GLOBAL_RNG, ]
+        g::AbstractGrammar,
+        height::Integer,
+        args...;
+        kwargs...
+    )::AbstractFormula
+
+Randomly samples a logic formula of given `height` from a grammar `g`.
+
+# Implementation
+This method for must be implemented, and additional keyword arguments should be provided
+in order to limit the (otherwise infinite) sampling domain.
+
+See also
+[`FeatCondition`](@ref),
+[`FeatMetaCondition`](@ref),
+[`AbstractAlphabet'](@ref).
+"""
+function Base.rand(g::AbstractGrammar, args...; kwargs...)
+    Base.rand(Random.GLOBAL_RNG, g, args...; kwargs...)
+end
+
+function Base.rand(
+    rng::AbstractRNG,
+    g::AbstractGrammar,
+    height::Integer;
+    kwargs...
+)::AbstractFormula
+    error("Please, provide method Base.rand(rng::AbstractRNG, g::$(typeof(g)), height::Integer; kwargs...).")
+end
+
+#= ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ CompleteFlatGrammar ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ =#
+
+# For the case of a CompleteFlatGrammar, the alphabet and the operators suffice.
+function Base.rand(
+    rng::AbstractRNG,
+    g::CompleteFlatGrammar,
+    height::Integer;
+    kwargs...
+)::AbstractFormula
+    randformula(rng, alphabet(g), operators(g), height; kwargs...)
+end
+
+# TODO
+# - make rng first (optional) argument of randformulatree (see above)
+# - in randformulatree, keyword argument alphabet_sample_kwargs that are unpacked upon sampling propositions, as in: Base.rand(rng, a; alphabet_sample_kwargs...). This would allow to sample from infinite alphabets, so when this parameter, !isfinite(alphabet) is allowed!
+# - Decide whether to keep randformulatree or randformula
 
 doc_randformula = """
     randformulatree(
         height::Integer,
         alphabet::AbstractAlphabet,
         operators::Vector{<:AbstractOperator};
-        rng::Union{Integer,AbstractRNG}=Random.GLOBAL_RNG
+        rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG
     )::SyntaxTree
 
     function randformula(
@@ -31,8 +124,7 @@ Return a pseudo-randomic `SyntaxTree` or `Formula`.
 # Examples
 
 ```julia-repl
-julia> syntaxstring(randformulatree(4,
-    ExplicitAlphabet(Proposition.([1,2])), [NEGATION, CONJUNCTION, IMPLICATION]))
+julia> syntaxstring(randformulatree(4, ExplicitAlphabet(Proposition.([1,2])), [NEGATION, CONJUNCTION, IMPLICATION]))
 "¬((¬(¬(2))) → ((1 → 2) → (1 → 2)))"
 ```
 
@@ -61,11 +153,12 @@ function randformulatree(
     modaldepth::Integer = height,
     rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG
 )::SyntaxTree
+    rng = (rng isa AbstractRNG) ? rng : Random.MersenneTwister(rng)
 
     function _randformulatree(
         height::Integer,
         modaldepth::Integer,
-        rng::Union{Integer,AbstractRNG}
+        rng::AbstractRNG
     )::SyntaxTree
         if height == 0
             # Sample proposition from alphabet
@@ -87,7 +180,6 @@ function randformulatree(
 
     # TODO this pattern is so common that we may want to move this code to a util function,
     # and move this so that it is the first thing that a randomic function (e.g., randformulatree) does.
-    rng = (typeof(rng) <: Integer) ? Random.MersenneTwister(rng) : rng
 
     return _randformulatree(height, modaldepth, rng)
 end
@@ -133,7 +225,7 @@ function fanfan(
     threshold::Float64 = 0.5,
     rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG,
 )
-    rng = (typeof(rng) <: Integer) ? Random.MersenneTwister(rng) : rng
+    rng = (rng isa AbstractRNG) ? rng : Random.MersenneTwister(rng)
     adjs = Adjacents{PointWorld}()
     setindex!(adjs, Worlds{PointWorld}([]), PointWorld(0))  # Ecco qua ad esempio metti un GenericWorld
 
@@ -178,8 +270,9 @@ function _fanin(
     od_queue::PriorityQueue{PointWorld,Int},
     id::Integer,
     od::Integer,
-    rng::AbstractRNG,
+    rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG,
 )
+    rng = (rng isa AbstractRNG) ? rng : Random.MersenneTwister(rng)
     #=
     Find the set S of all vertices that have out-degree < od.
     Compute a subset T of S of size at most id.
@@ -204,7 +297,7 @@ function dispense_alphabet(
     P::LetterAlphabet = SoleLogics.alphabet(MODAL_LOGIC),
     rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG,
 ) where {T<:AbstractWorld}
-    rng = (typeof(rng) <: Integer) ? Random.MersenneTwister(rng) : rng
+    rng = (rng isa AbstractRNG) ? rng : Random.MersenneTwister(rng)
     evals = Dict{T,LetterAlphabet}()
     for w in ws
         evals[w] = sample(P, rand(rng, 0:length(P)), replace = false)
@@ -225,7 +318,7 @@ function gen_kmodel(
     threshold = 0.5,      # needed by fanfan
     rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG,
 )
-    rng = (typeof(rng) <: Integer) ? Random.MersenneTwister(rng) : rng
+    rng = (rng isa AbstractRNG) ? rng : Random.MersenneTwister(rng)
     ws = Worlds{PointWorld}(world_gen(n))
     adjs = fanfan(n, in_degree, out_degree, threshold = threshold, rng = rng)
     evs = dispense_alphabet(ws, P = P, rng = rng)
