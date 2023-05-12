@@ -1,6 +1,7 @@
 # *SoleLogics.jl* – Computational logic in Julia
 
 [![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://aclai-lab.github.io/SoleLogics.jl/stable)
+[![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://aclai-lab.github.io/SoleLogics.jl/dev)
 [![Build Status](https://api.cirrus-ci.com/github/aclai-lab/SoleLogics.jl.svg?branch=main)](https://cirrus-ci.com/github/aclai-lab/SoleLogics.jl)
 [![codecov](https://codecov.io/gh/aclai-lab/SoleLogics.jl/branch/main/graph/badge.svg?token=LT9IYIYNFI)](https://codecov.io/gh/aclai-lab/SoleLogics.jl)
 [![Code Style: Blue](https://img.shields.io/badge/code%20style-blue-4495d1.svg)](https://github.com/invenia/BlueStyle)
