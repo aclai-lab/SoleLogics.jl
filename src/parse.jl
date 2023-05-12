@@ -197,9 +197,9 @@ function _interpret_tokens(
                     op
                 else
                     # If the token is something else -> parse as Proposition and push it
-                    proposition = proposition_parser(st)
-                    @assert proposition isa Proposition string(proposition) *
-                        " is not a proposition. Please, provide a valid proposition_parser."
+                    proposition = Proposition(proposition_parser(st))
+                    # @assert proposition isa Proposition string(proposition) *
+                    #     " is not a proposition. Please, provide a valid proposition_parser."
                     proposition
                 end
             end
@@ -348,7 +348,8 @@ a second argument.
     otherwise, it is considered in
     [infix notation](https://en.wikipedia.org/wiki/Infix_notation) (e.g, `"arg1 ⨁ arg2"`);
 - `proposition_parser::Base.Callable = Proposition{String}`: a callable to be used for
-    parsing `Proposition`s, once they are recognized in the expression;
+    parsing propositions, once they are recognized in the expression. It must return
+    the atom, or the `Proposition` itself;
 - `additional_whitespaces`::Vector{Char} = Char[]: characters to be stripped out from each
     syntax token.
     For example, if `'@' in additional_whitespaces`, "¬@p@" is parsed just as "¬p".
