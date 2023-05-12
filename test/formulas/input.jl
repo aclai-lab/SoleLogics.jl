@@ -82,7 +82,7 @@
 #         rightchild!(c, d)
 #         rightchild!(d, f)
 
-#         @test SoleLogics.modal_depth(a) == 2
+#         @test SoleLogics.modaldepth(a) == 2
 #     end
 
 
