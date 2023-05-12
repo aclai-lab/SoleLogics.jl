@@ -5,7 +5,7 @@ SoleLogics.AbstractSyntaxToken
 
 arity(::Type{<:SoleLogics.AbstractSyntaxToken})
 
-syntaxstring(φ::SoleLogics.AbstractFormula; kwargs...)
+syntaxstring(tok::SoleLogics.AbstractSyntaxToken; kwargs...)
 
 Proposition
 
