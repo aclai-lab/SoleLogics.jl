@@ -1,8 +1,7 @@
-export parseformula, parseformulatree
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Table of contents ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
-#    TODO: Studying this code (which has to be refactored) is not so friendly.
+#    TODO: This code is not so friendly.
 #    A little overview about all the private methods and the workflow involved
 #    in this page could be helpful to future developers.
 
@@ -72,18 +71,21 @@ Base.operator_precedence(::typeof(IMPLICATION)) = LOW_PRECEDENCE
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Input and construction ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-const STACK_TOKEN_TYPE = Union{<:AbstractSyntaxToken, Symbol}
+const STACK_TOKEN_TYPE = Union{<:AbstractSyntaxToken,Symbol}
 
-const _OPENING_BRACKET = "("
-const _CLOSING_BRACKET = ")"
-const _ARG_DELIM       = ","
+const _DEFAULT_OPENING_BRACKET = "("
+const _DEFAULT_CLOSING_BRACKET = ")"
+const _DEFAULT_ARG_DELIM       = ","
 
 
 # Special symbols: syntax tokens cannot contain these:
-const OPENING_BRACKET = Symbol(_OPENING_BRACKET)
-const CLOSING_BRACKET = Symbol(_CLOSING_BRACKET)
-const ARG_DELIM       = Symbol(_ARG_DELIM)
+const DEFAULT_OPENING_BRACKET = Symbol(_DEFAULT_OPENING_BRACKET)
+const DEFAULT_CLOSING_BRACKET = Symbol(_DEFAULT_CLOSING_BRACKET)
+const DEFAULT_ARG_DELIM       = Symbol(_DEFAULT_ARG_DELIM)
 
+"""
+See [`parseformulatree`](@ref).
+"""
 const BASE_PARSABLE_OPERATORS = [
     BASE_PROPOSITIONAL_OPERATORS...,
     BASE_MODAL_OPERATORS...,
@@ -95,7 +97,7 @@ function _check_unary_validity(
     tokens::Vector{STACK_TOKEN_TYPE},
     op::AbstractOperator,
     opening_bracket::Symbol,
-    arg_separator::Union{Symbol,Nothing}
+    arg_separator::Symbol
 )
     # A unary operator is always preceeded by some other operator or a opening_bracket
     if (arity(op) == 1 && !isempty(tokens) &&
@@ -176,7 +178,7 @@ function _interpret_tokens(
     proposition_parser::Base.Callable;
     opening_bracket::Symbol,
     closing_bracket::Symbol,
-    arg_separator::Union{Symbol,Nothing}
+    arg_separator::Symbol
 )
     tokens = STACK_TOKEN_TYPE[]
 
@@ -216,9 +218,9 @@ function tokenizer(
     operators::Vector{<:AbstractOperator},
     proposition_parser::Base.Callable,
     additional_whitespaces::Vector{Char},
-    opening_bracket::Symbol = OPENING_BRACKET,
-    closing_bracket::Symbol = CLOSING_BRACKET,
-    arg_separator::Union{Symbol,Nothing} = nothing
+    opening_bracket::Symbol = DEFAULT_OPENING_BRACKET,
+    closing_bracket::Symbol = DEFAULT_CLOSING_BRACKET,
+    arg_separator::Symbol = DEFAULT_ARG_DELIM,
 )
     # Strip input's whitespaces
     expression = String(
@@ -254,9 +256,10 @@ function tokenizer(
 end
 
 # Rearrange a serie of token, from infix to postfix notation
-function shunting_yard!(tokens::Vector{STACK_TOKEN_TYPE};
-    opening_bracket::Symbol = OPENING_BRACKET,
-    closing_bracket::Symbol = CLOSING_BRACKET)
+function shunting_yard!(
+    tokens::Vector{STACK_TOKEN_TYPE};
+    opening_bracket::Symbol = DEFAULT_OPENING_BRACKET,
+    closing_bracket::Symbol = DEFAULT_CLOSING_BRACKET)
     tokstack = STACK_TOKEN_TYPE[] # support structure
     postfix = AbstractSyntaxToken[] # returned structure: tokens rearranged in postfix
 
@@ -277,7 +280,7 @@ function shunting_yard!(tokens::Vector{STACK_TOKEN_TYPE};
                     end
                 end
             else
-                error("Unexpected special symbol encountered: $(tok).")
+                error("Unexpected special symbol encountered: `$(tok)`.")
             end
 
         elseif tok isa AbstractOperator
@@ -294,7 +297,7 @@ function shunting_yard!(tokens::Vector{STACK_TOKEN_TYPE};
         elseif tok isa Proposition
             push!(postfix, tok)
         else
-            error("Parsing error! Unexpected token type encountered: $(typeof(tok)).")
+            error("Parsing error! Unexpected token type encountered: `$(typeof(tok))`.")
         end
     end
 
@@ -319,47 +322,52 @@ end
         function_notation::Bool = false,
         proposition_parser::Base.Callable = Proposition{String},
         additional_whitespaces::Vector{Char} = Char[],
-        opening_bracket::Symbol = $(repr(OPENING_BRACKET)),
-        closing_bracket::Symbol = $(repr(CLOSING_BRACKET)),
-        arg_separator::Union{Symbol,Nothing} = $(repr(ARG_DELIM))
+        opening_bracket::Union{String,Symbol} = $(repr(DEFAULT_OPENING_BRACKET)),
+        closing_bracket::Union{String,Symbol} = $(repr(DEFAULT_CLOSING_BRACKET)),
+        arg_separator::Union{String,Symbol} = $(repr(DEFAULT_ARG_DELIM))
     )
 
 Returns a `SyntaxTree` which is the result of parsing `expression`
  via [Shunting yard](https://en.wikipedia.org/wiki/Shunting_yard_algorithm).
 By default, this function is only able to parse operators in
 `SoleLogics.BASE_PARSABLE_OPERATORS`; additional operators may be provided as
-parameter `additional_operators`.
+a second argument.
 
 # Arguments
 - `expression::String`: expression to be parsed;
 - `additional_operators::Vector{<:AbstractOperator}:` additional, non-standard operators
-    needed to correctly parse the expression; in case of clashing `syntaxstring`'s,
-    the provided additional operators will override the base parsable ones.
-    If this is left unset, operators are defaulted to $(repr(BASE_PARSABLE_OPERATORS))
+    needed to correctly parse the expression.
+    When left unset, only the following operators are
+    correctly parsed: $(repr(BASE_PARSABLE_OPERATORS));
+    note that, in case of clashing `syntaxstring`'s,
+    the provided additional operators will override these.
 
 # Keyword Arguments
 - `function_notation::Bool = false`: if set to `true`, the expression is considered
-    in function notation (e.g, ⨁(arg1, arg2));
+    in function notation (e.g, `"⨁(arg1, arg2)"`);
     otherwise, it is considered in
-    [infix notation](https://en.wikipedia.org/wiki/Infix_notation) (e.g, arg1 ⨁ arg2);
-- `proposition_parser::Base.Callable = Proposition{String}`: a callable to be used when
+    [infix notation](https://en.wikipedia.org/wiki/Infix_notation) (e.g, `"arg1 ⨁ arg2"`);
+- `proposition_parser::Base.Callable = Proposition{String}`: a callable to be used for
     parsing `Proposition`s, once they are recognized in the expression;
 - `additional_whitespaces`::Vector{Char} = Char[]: characters to be stripped out from each
-    syntax token. For example, if '@' is added, "¬@p@" is parsed just as "¬p".
-- `opening_bracket`::Symbol = $(repr(OPENING_BRACKET)):
-    the string signaling the opening of anexpression block;
-- `closing_bracket`::Symbol = $(repr(CLOSING_BRACKET)):
-    the string signaling the closing of anexpression block;
-- `arg_separator`::Union{Symbol,Nothing} = $(repr(ARG_DELIM)): when `function_notation = true`,
+    syntax token.
+    For example, if `'@' in additional_whitespaces`, "¬@p@" is parsed just as "¬p".
+- `opening_bracket`::Union{String,Symbol} = $(repr(DEFAULT_OPENING_BRACKET)):
+    the string signaling the opening of an expression block;
+- `closing_bracket`::Union{String,Symbol} = $(repr(DEFAULT_CLOSING_BRACKET)):
+    the string signaling the closing of an expression block;
+- `arg_separator`::Union{String,Symbol} = $(repr(DEFAULT_ARG_DELIM)):
+    when `function_notation = true`,
     the string that separates the different arguments of a function call.
 
 !!! warning
     For a proper functioning,
-    operators' `syntaxstring`'s must not be prefixed/suffixed by whitespaces. Essentially,
-    for any operator ⨁, it must hold that `syntaxstring(⨁) == strip(syntaxstring(⨁))`.
-    Also, special symbols (`opening_bracket`, `closing_bracket` and `arg_separator`) must
-    be all different from each other and CAN NOT compare in tokens (e.g, "pro(position" will
-    never be interpreted as an atomic proposition).
+    the `syntaxstring` of any syntax token cannot be prefixed/suffixed by whitespaces.
+    For example, for any operator `⨁`,
+    it should hold that `syntaxstring(⨁) == strip(syntaxstring(⨁))`.
+    Also, `syntaxstring`s cannot contain special symbols
+    (`opening_bracket`, `closing_bracket`, and `arg_separator`) as
+    substrings.
 
 # Examples
 ```julia-repl
@@ -382,14 +390,27 @@ function parseformulatree(
     function_notation::Bool = false,
     proposition_parser::Base.Callable = Proposition{String},
     additional_whitespaces::Vector{Char} = Char[],
-    opening_bracket::Symbol = OPENING_BRACKET,
-    closing_bracket::Symbol = CLOSING_BRACKET,
-    arg_separator::Union{Symbol,Nothing} = ARG_DELIM
+    opening_bracket::Union{String,Symbol} = DEFAULT_OPENING_BRACKET,
+    closing_bracket::Union{String,Symbol} = DEFAULT_CLOSING_BRACKET,
+    arg_separator::Union{String,Symbol} = DEFAULT_ARG_DELIM,
 )
     additional_operators = (
         isnothing(additional_operators) ? AbstractOperator[] : additional_operators)
     operators = unique(
         AbstractOperator[BASE_PARSABLE_OPERATORS..., additional_operators...])
+
+    # TODO: expand special characters to special *sequences* (strings of characters)
+    # TODO: check that no special character is a substring of another one.
+    @assert function_notation ||
+            (allunique(string.([opening_bracket, arg_separator])) ||
+             allunique(string.([closing_bracket, arg_separator]))) "" *
+        "Invalid " *
+        "special characters provided: please, check that both the `opening_bracket`" *
+        " and the `closing_bracket` are not equal to the `arg_separator`."
+
+    opening_bracket = Symbol(opening_bracket)
+    closing_bracket = Symbol(closing_bracket)
+    arg_separator   = Symbol(arg_separator)
 
     # parseformulatree workflow:
     # 1) function_notation = false; _infixbuild -> _postfixbuild
@@ -410,12 +431,13 @@ function parseformulatree(
             elseif tok isa Proposition
                 push!(stack, SyntaxTree(tok))
             else
-                error("Parsing error! Unexpected token type encountered: $(typeof(tok)).")
+                error("Parsing error! Unexpected token type encountered: `$(typeof(tok))`.")
             end
         end
 
         if length(stack) != 1
-            error("Malformed input: expression: `$(expression)`. (postfix: `$(postfix)`).")
+            error("Malformed input when parsing expression: " *
+                "`$(expression)`. (postfix: `$(postfix)`).")
         end
 
         return stack[1]
@@ -477,21 +499,23 @@ function parseformulatree(
                         length(separators) == arity(tok) - 1)
                         push!(stack, SyntaxTree(tok, Tuple(children)))
                     else
-                        error("Malformed expression $(syntaxstring(tok)) followed by " *
-                        "$(popped).")
+                        error("Malformed expression `$(syntaxstring(tok))` followed by `" *
+                        "$(popped)`.")
                     end
                 end
             else
-                error("Unexpected unparsable token: $(tok).")
+                error("Unexpected unparsable token: `$(tok)`.")
             end
         end
 
         if (isempty(stack))
-            error("Malformed expression: parsing stack is empty.")
+            error("Malformed expression: parsing stack is " *
+                "empty when parsing `$(expression)`.")
         end
 
         if (length(stack) > 1)
-            error("Malformed expression: parsing stack could not interpret $(stack).")
+            error("Malformed expression: parsing stack could not interpret " *
+                "`$(stack)` when parsing `$(expression)`.")
         end
 
         return stack[1]
@@ -511,56 +535,46 @@ end
 function parseformulatree(
     expression::String,
     logic::AbstractLogic;
-    function_notation::Bool = false,
-    proposition_parser::Base.Callable = Proposition{String},
-    additional_whitespaces::Vector{Char} = Char[],
-    opening_bracket::Symbol = OPENING_BRACKET,
-    closing_bracket::Symbol = CLOSING_BRACKET,
-    arg_separator::Union{Symbol,Nothing} = nothing
+    kwargs...
 )
-    parseformulatree(
-        expression,
-        operators(logic),
-        function_notation = function_notation,
-        proposition_parser = proposition_parser,
-        additional_whitespaces = additional_whitespaces,
-        opening_bracket = opening_bracket,
-        closing_bracket = closing_bracket,
-        arg_separator = arg_separator,
-    )
+    parseformulatree(expression, operators(logic); kwargs...)
 end
 
-```
-TODO
-```
+"""
+    function parseformula(
+        expression::String,
+        additional_operators::Union{Nothing,Vector{<:AbstractOperator}} = nothing;
+        operators::Union{Nothing,Vector{<:AbstractOperator}},
+        grammar::Union{Nothing,AbstractGrammar} = nothing,
+        algebra::Union{Nothing,AbstractAlgebra} = nothing,
+        kwargs...
+    )
+
+Returns a `Formula` which is the result of parsing `expression`
+ via [Shunting yard](https://en.wikipedia.org/wiki/Shunting_yard_algorithm).
+By default, this function is only able to parse operators in
+`SoleLogics.BASE_PARSABLE_OPERATORS`; additional operators may be provided as
+a second argument.
+
+The `grammar` and `algebra` of the associated logic is inferred using
+the `baseformula` function from the operators encountered
+in the expression, and those in `additional_operators`.
+
+See [`parseformulatree`](@ref), [`baseformula`](@ref).
+"""
 function parseformula(
-    expression::String;
+    expression::String,
+    additional_operators::Union{Nothing,Vector{<:AbstractOperator}} = nothing;
     # TODO add alphabet parameter add custom parser for propositions
     # alphabet::Union{Nothing,Vector,AbstractAlphabet} = nothing,
-    additional_operators::Union{Nothing,Vector{<:AbstractOperator}} = nothing,
     grammar::Union{Nothing,AbstractGrammar} = nothing,
     algebra::Union{Nothing,AbstractAlgebra} = nothing,
-    function_notation::Bool = false,
-    proposition_parser::Base.Callable = Proposition{String},
-    additional_whitespaces::Vector{Char} = Char[],
-    opening_bracket::Union{String, Symbol} = OPENING_BRACKET,
-    closing_bracket::Union{String, Symbol} = CLOSING_BRACKET,
-    arg_separator::Union{String, Symbol,Nothing} = nothing
+    kwargs...
 )
     additional_operators =
         (isnothing(additional_operators) ? AbstractOperator[] : additional_operators)
 
-    opening_bracket = Symbol(opening_bracket)
-    closing_bracket = Symbol(closing_bracket)
-    arg_separator   = Symbol(arg_separator)
-
-    t = parseformulatree(expression, additional_operators;
-        function_notation = function_notation,
-        proposition_parser = proposition_parser,
-        additional_whitespaces = additional_whitespaces,
-        opening_bracket = opening_bracket,
-        closing_bracket = closing_bracket,
-        arg_separator = arg_separator)
+    t = parseformulatree(expression, additional_operators; kwargs...)
     baseformula(t;
         # additional_operators = unique(AbstractOperator[operators..., SoleLogics.operators(t)...]),
         additional_operators = length(additional_operators) == 0 ? nothing :
@@ -580,10 +594,10 @@ function parseformula(
     Formula(logic, parseformulatree(expression, operators(logic); kwargs...))
 end
 
-function parseformula(
-    expression::String,
-    operators::Union{Nothing,Vector{<:AbstractOperator}};
-    kwargs...,
-)
-    parseformula(expression; additional_operators = operators, kwargs...)
-end
+# function parseformula(
+#     expression::String;
+#     operators::Union{Nothing,Vector{<:AbstractOperator}} = nothing,
+#     kwargs...,
+# )
+#     parseformula(expression; additional_operators = operators, kwargs...)
+# end

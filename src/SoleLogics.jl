@@ -68,6 +68,10 @@ export Interval, Interval2D, OneWorld
 
 include("modal-logic.jl")
 
+export LeftmostLinearForm, LeftmostConjunctiveForm, LeftmostDisjunctiveForm, Literal
+
+include("syntax-forms.jl")
+
 export subformulas, normalize
 
 include("check.jl")
@@ -77,8 +81,6 @@ include("interpretation-sets.jl")
 export parseformula, parseformulatree
 
 include("parse.jl")
-
-include("syntax-forms.jl")
 
 export randformula, randformulatree
 

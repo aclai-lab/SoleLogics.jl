@@ -3,6 +3,9 @@
 # using Test
 # using SoleLogics
 
+using SoleLogics: Literal, complement, LeftmostConjunctiveForm, LeftmostDisjunctiveForm
+using SoleLogics: CNF, DNF
+
 # @testset "General" begin
 
 p1 = @test_nowarn Proposition(1)
@@ -187,8 +190,8 @@ f3_int = f_int(⊥ ∨ (p1 ∧ p100 ∧ p2 ∧ ⊤))
 @test_nowarn TruthDict()
 @test_nowarn TruthDict([])
 @test_nowarn TruthDict((2,3),)
-@test_nowarn TruthDict((p1,true),)
-@test_nowarn TruthDict([(p1,true),])
+@test_nowarn TruthDict((p1, true),)
+@test_nowarn TruthDict([(p1, true),])
 @test_nowarn TruthDict(p1 => true)
 @test_nowarn TruthDict([p1 => true])
 @test_nowarn TruthDict(Dict([p1 => true]))
@@ -227,3 +230,37 @@ emptylogic = @test_nowarn propositionallogic(; operators = SoleLogics.AbstractOp
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 include("check/propositional.jl")
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Literal ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+l1 = @test_nowarn Literal(true, p1)
+l1_neg = @test_nowarn Literal(false, p1)
+
+l2 = @test_nowarn Literal(true, p2)
+l2_neg = @test_nowarn complement(l2)
+
+l100 = @test_nowarn Literal(true, p100)
+l100_neg = @test_nowarn Literal(false, p100)
+
+l1_float = @test_nowarn Literal(true, p1_float)
+l1_float_neg = @test_nowarn complement(l1_float)
+
+l1_number_float = @test_nowarn Literal(true, p1_number_float)
+l1_number_float_neg = @test_nowarn Literal(false, p1_number_float)
+
+l1_number = @test_nowarn Literal(true, p1_number)
+l1_number_neg = @test_nowarn complement(l1_number)
+
+l_string = @test_nowarn Literal(true, p_string)
+l_string_neg = @test_nowarn Literal(false, p_string)
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Syntax Forms ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+lfcf1 = @test_nowarn LeftmostConjunctiveForm{Literal}([l1, l2_neg, l1_float])
+lfcf2 = @test_nowarn LeftmostConjunctiveForm{Literal}([l2, l100_neg, l1_number_neg])
+
+lfdf1 = @test_nowarn LeftmostDisjunctiveForm{Literal}([l1_number_float, l_string_neg])
+lfdf2 = @test_nowarn LeftmostDisjunctiveForm{Literal}([l1_number_float, l_string_neg])
+
+cnf1 = CNF{Literal}([lfdf1, lfdf2])
+dnf1 = DNF{Literal}([lfcf1, lfcf2])

@@ -50,7 +50,7 @@ t1 = @test_nowarn TruthDict([1 => true, 2 => false, 3 => true])
 t2 = @test_nowarn TruthDict(Pair{Real,Bool}[1.0 => true, 2 => true, 3 => true])
 @test haskey(t2, Proposition(1))
 @test !xor(haskey(t2, Proposition(1)), isequal(1,1.0)) # Weird, but is consistent with the behavior: isequal(1,1.0)
-# [isequal(Proposition(1.0),k) for k in keys(t2)]
+# [isequal(Proposition(1.0), k) for k in keys(t2)]
 @test haskey(t2, Proposition(1.0))
 @test haskey(t2, Proposition(2))
 @test haskey(t2, 1.0)

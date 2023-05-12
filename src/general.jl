@@ -76,14 +76,17 @@ In particular, for the case of `Proposition`s, the function calls itself on the 
 
     syntaxstring(p::Proposition; kwargs...) = syntaxstring(atom(p); kwargs...)
 
-Then, the syntaxstring for a given atom can be defined. For example, with `String atoms,
+Then, the syntaxstring for a given atom can be defined. For example, with `String` atoms,
 the function can simply be:
 
     syntaxstring(atom::String; kwargs...) = atom
 
 !!! warning
     The `syntaxstring` for syntax tokens (e.g., propositions, operators) should not be
-    prefixed/suffixed by whitespaces, as this may cause ambiguities upon parsing.
+    prefixed/suffixed by whitespaces, as this may cause ambiguities upon *parsing*.
+    For similar reasons, `syntaxstring`s should not contain parenthesis (`'('`, `')'`),
+    and, when parsing in function notation, commas (`','`).
+    See also [`parseformula`](@ref).
 
 """
 function syntaxstring(tok::AbstractSyntaxToken; kwargs...)::String
@@ -567,7 +570,7 @@ Counts all tokens appearing in a tree.
 See also [`tokens`](@ref), [`AbstractSyntaxToken`](@ref).
 """
 function ntokens(t::SyntaxTree)::Integer
-    length(children(t)) == 0 ? 1 : 1 + sum(ntoken(c) for c in children(t))
+    length(children(t)) == 0 ? 1 : 1 + sum(ntokens(c) for c in children(t))
 end
 
 """
@@ -609,7 +612,7 @@ end
 # Useful for checking formulas on interpretations.
 function Base.isequal(a::SyntaxTree, b::SyntaxTree)
     return Base.isequal(token(a), token(b)) &&
-        all(((c1,c2),)->Base.isequal(c1,c2), zip(children(a), children(b)))
+        all(((c1,c2),)->Base.isequal(c1, c2), zip(children(a), children(b)))
 end
 Base.hash(a::SyntaxTree) = Base.hash(syntaxstring(a))
 
@@ -673,12 +676,49 @@ tree(t::SyntaxTree) = t
     abstract type AbstractAlphabet{A} end
 
 Abstract type for representing an alphabet of propositions with atoms of type `A`.
-An alphabet (or propositional alphabet) is assumed to be a
-[countable](https://en.wikipedia.org/wiki/Countable_set) set of propositions.
+An alphabet (or *propositional alphabet*) is a set of propositions, and it is assumed to be
+[countable](https://en.wikipedia.org/wiki/Countable_set).
 
 See also [`ExplicitAlphabet`](@ref), [`AlphabetOfAny`](@ref),
 [`propositionstype`](@ref), [`atomtype`](@ref),
 [`Proposition`](@ref), [`AbstractGrammar`](@ref).
+
+# Examples
+
+```julia-repl
+julia> Proposition(1) in ExplicitAlphabet(Proposition.(1:10))
+true
+
+julia> Proposition(1) in AlphabetOfAny{String}()
+false
+
+julia> Proposition("mystring") in AlphabetOfAny{String}()
+true
+
+julia> "mystring" in AlphabetOfAny{String}()
+┌ Warning: Please, use Base.in(Proposition(mystring), alphabet::AlphabetOfAny{String}) instead of Base.in(mystring, alphabet::AlphabetOfAny{String})
+└ @ SoleLogics ...
+true
+```
+
+# Extended help
+
+When implementing a new alphabet type `MyAlphabet`, you should provide a method for
+establishing whether a proposition belongs to it or not;
+while, in general, this method should be:
+
+    function Base.in(p::Proposition, a::MyAlphabet)::Bool
+
+in the case of *finite* alphabets, it suffices to define a method:
+
+    function propositions(a::AbstractAlphabet)::AbstractVector{propositionstype(a)}
+
+By default, an alphabet is considered finite:
+
+    Base.isfinite(::Type{<:AbstractAlphabet}) = true
+    Base.isfinite(a::AbstractAlphabet) = Base.isfinite(typeof(a))
+    Base.in(p::Proposition, a::AbstractAlphabet) = Base.isfinite(a) ? Base.in(p, propositions(a)) : error(...)
+
 """
 abstract type AbstractAlphabet{A} end
 
@@ -688,20 +728,31 @@ propositionstype(a::AbstractAlphabet) = propositionstype(typeof(a))
 atomtype(a::Type{<:AbstractAlphabet}) = atomtype(propositionstype(a))
 atomtype(a::AbstractAlphabet) = atomtype(propositionstype(a))
 
-"""
-Each alphabet must provide a method for establishing whether
-a proposition belongs or not to it:
+# Default behavior
+Base.isfinite(::Type{<:AbstractAlphabet}) = true
+Base.isfinite(a::AbstractAlphabet) = Base.isfinite(typeof(a))
 
-    Base.in(p::Proposition, a::AbstractAlphabet)::Bool
-
-See also [`AbstractAlphabet`](@ref), [`Proposition`](@ref).
 """
-function Base.in(p::Proposition, a::AbstractAlphabet)::Bool
-    if atomtype(p) <: eltype(a)
-        return error("Please, provide method Base.in(::Proposition, ::$(typeof(a))).")
+    propositions(a::AbstractAlphabet)::AbstractVector{propositionstype(a)}
+
+Provides access to the propositions of a *finite* alphabet.
+
+See also [`AbstractAlphabet`](@ref), [`Base.isfinite`](@ref).
+"""
+function propositions(a::AbstractAlphabet)::AbstractVector{propositionstype(a)}
+    if Base.isfinite(a)
+        return error("Please, provide method propositions(::$(typeof(a))).")
     else
-        return error("Cannot establish whether proposition $(p) of type $(typeof(p)) is" *
-                     " in alphabet $(a) of type $(typeof(a)) and eltype $(eltype(a)).")
+        return error("Cannot list propositions of (infinite) alphabet of type $(typeof(a)).")
+    end
+end
+
+function Base.in(p::Proposition, a::AbstractAlphabet)::Bool
+    if Base.isfinite(a)
+        Base.in(p, propositions(a))
+    else
+        return error("Cannot establish whether a proposition belongs to " *
+            "(infinite) alphabet of type $(typeof(a)).")
     end
 end
 
@@ -712,66 +763,26 @@ function Base.in(atom::Union{String,Number}, a::AbstractAlphabet)
     Base.in(Proposition(atom), a)
 end
 
-doc_iterable = """
-Each alphabet must specify whether it is *iterable* or not.
-An alphabet is iterable if it provides the (two) `iterate` methods required by the
-[iteration interface](https://docs.julialang.org/en/v1/manual/interfaces/#man-interface-iteration).
-
-By default, an alphabet is considered iterable:
-
-    Base.isiterable(::Type{<:AbstractAlphabet}) = true
-    Base.isiterable(a::AbstractAlphabet) = Base.isiterable(typeof(a))
-    Base.iterate(a::AbstractAlphabet) = error(...)
-    Base.iterate(a::AbstractAlphabet, state) = error(...)
-
-See also [`AbstractAlphabet`](@ref), [`Proposition`](@ref).
-"""
-
-"""$(doc_iterable)"""
-Base.isiterable(::Type{<:AbstractAlphabet}) = true
-Base.isiterable(a::AbstractAlphabet) = Base.isiterable(typeof(a))
-"""$(doc_iterable)"""
-function Base.iterate(a::AbstractAlphabet)
-    if isiterable(a)
-        return error("Please, provide method Base.iterate(::$(typeof(a)))," *
-                     " or define Base.isiterable(::$(typeof(a))) = false.")
+function Base.length(a::AbstractAlphabet)
+    if isfinite(a)
+        return Base.length(propositions(a))
     else
-        return error("Cannot iterate infinite alphabet of type $(typeof(a)).")
+        return error("Cannot compute length of (infinite) alphabet of type $(typeof(a)).")
+    end
+end
+
+function Base.iterate(a::AbstractAlphabet)
+    if isfinite(a)
+        return Base.iterate(propositions(a))
+    else
+        return error("Cannot iterate (infinite) alphabet of type $(typeof(a)).")
     end
 end
 function Base.iterate(a::AbstractAlphabet, state)
-    if isiterable(a)
-        return error("Please, provide method Base.iterate(::$(typeof(a)), state)," *
-                     " or define Base.isiterable(::$(typeof(a))) = false.")
-    else
-        return error("Cannot iterate infinite alphabet of type $(typeof(a)).")
-    end
-end
-
-doc_finite = """
-Each alphabet must specify whether it is finite.
-An alphabet is finite if and only if it provides the `length` method.
-
-By default, an alphabet is considered finite:
-
-    Base.isfinite(::Type{<:AbstractAlphabet}) = true
-    Base.isfinite(a::AbstractAlphabet) = Base.isfinite(typeof(a))
-    Base.length(a::AbstractAlphabet) = error(...)
-
-See also [`AbstractAlphabet`](@ref), [`Proposition`](@ref).
-"""
-
-"""$(doc_finite)"""
-Base.isfinite(::Type{<:AbstractAlphabet}) = true
-Base.isfinite(a::AbstractAlphabet) = Base.isfinite(typeof(a))
-
-"""$(doc_finite)"""
-function Base.length(a::AbstractAlphabet)
     if isfinite(a)
-        return error("Please, provide method Base.length(::$(typeof(a)))," *
-                     " or define Base.isfinite(::$(typeof(a))) = false.")
+        return Base.iterate(propositions(a), state)
     else
-        return error("Cannot compute length of alphabet of type $(typeof(a)).")
+        return error("Cannot iterate (infinite) alphabet of type $(typeof(a)).")
     end
 end
 
@@ -779,41 +790,6 @@ end
 function Base.IteratorSize(::Type{A}) where {A<:AbstractAlphabet}
     return Base.isfinite(A) ? Base.HasLength() : Base.IsInfinite()
 end
-
-"""
-    propositions(a::AbstractAlphabet)::AbstractVector{propositionstype(a)}
-
-Provides access to the propositions of an iterable alphabet.
-If the alphabet is finite, the default behavior is `collect`ing all the propositions.
-If it is not finite, a method for enumerating the propositions should be provided.
-
-An alphabet can also implement an extended version of this function:
-
-    propositions(a::AbstractAlphabet, args...)::AbstractVector{propositionstype(a)}
-
-that only returns propositions satisfying a given constraint.
-This is especially useful when dealing with infinite alphabets.
-
-See also [`AbstractAlphabet`](@ref), [`isiterable`](@ref), [`Base.isfinite`](@ref).
-"""
-function propositions(a::AbstractAlphabet)::AbstractVector{propositionstype(a)}
-    if isiterable(a)
-        if Base.isfinite(a)
-            return collect(a)
-        else
-            return error("Please, provide method propositions(::$(typeof(a)))." *
-                         " Note: attempting at iterating through an infinite alphabet.")
-        end
-    else
-        return error("Cannot list propositions of an alphabet of type $(typeof(a)).")
-    end
-end
-
-function propositions(a::AbstractAlphabet, args...)::AbstractVector{propositionstype(a)}
-    return error("Please, provide method propositions(::$(typeof(a)), args...) for" *
-                 " a bounded iteration through an infinite alphabet.")
-end
-
 
 """
     struct ExplicitAlphabet{A} <: AbstractAlphabet{A}
@@ -839,10 +815,7 @@ struct ExplicitAlphabet{A} <: AbstractAlphabet{A}
         return ExplicitAlphabet{A}(Proposition.(collect(propositions)))
     end
 end
-Base.in(p::Proposition, a::ExplicitAlphabet) = Base.in(p, a.propositions)
-Base.iterate(a::ExplicitAlphabet) = Base.iterate(a.propositions)
-Base.iterate(a::ExplicitAlphabet, state) = Base.iterate(a.propositions, state)
-Base.length(a::ExplicitAlphabet) = length(a.propositions)
+propositions(a::ExplicitAlphabet) = a.propositions
 
 """
     struct AlphabetOfAny{A} <: AbstractAlphabet{A} end
@@ -852,9 +825,8 @@ An implicit, infinite alphabet that includes all propositions with atoms of a su
 See also [`AbstractAlphabet`](@ref).
 """
 struct AlphabetOfAny{A} <: AbstractAlphabet{A} end
-Base.in(::Proposition{PA}, ::AlphabetOfAny{AA}) where {PA,AA} = (PA <: AA)
 Base.isfinite(::Type{<:AlphabetOfAny}) = false
-Base.isiterable(::Type{<:AlphabetOfAny}) = false
+Base.in(::Proposition{PA}, ::AlphabetOfAny{AA}) where {PA,AA} = (PA <: AA)
 
 ############################################################################################
 
@@ -929,7 +901,7 @@ end
         maxdepth::Integer,
         nformulas::Union{Integer,Nothing} = nothing,
         args...
-    )::Vector{<:SyntaxTree
+    )::Vector{<:SyntaxTree}
 
 Each grammar with a finite and iterable alphabet must provide a method for
 enumerating its formulas, encoded as `SyntaxTree`s.
@@ -950,15 +922,12 @@ function formulas(
 )::Vector{<:SyntaxTree}
     @assert maxdepth >= 0
     @assert nformulas > 0
-    fin = isfinite(alphabet(g))
-    ite = isiterable(alphabet(g))
-    if fin && ite
+    if isfinite(alphabet(g))
         return error("Please, provide method formulas(::$(typeof(g)), maxdepth," *
                      " nformulas, args...).")
     else
-        return error("Cannot enumerate formulas of $(!fin ?
-            "infinite" * (!ite ? " and uniterable" : "") :
-            (!ite ? "uniterable" : "")) alphabet ($(typeof(alphabet(g)))).")
+        return error("Cannot enumerate formulas of (infinite)" *
+            " alphabet of type $(typeof(alphabet(g))).")
     end
 end
 
@@ -1362,13 +1331,13 @@ on interpretations of the same logic. Note that, here, the logic is represented 
 
 Upon construction, the logic can be passed either directly, or via a RefValue.
 Additionally, the following keyword arguments may be specified:
-- `check_propositions`: whether to perform or not a check that the propositions
+- `check_propositions::Bool = false`: whether to perform or not a check that the propositions
     belong to the alphabet of the logic;
-- `check_tree`: whether to perform or not a check that the formula's syntactic structure
+- `check_tree::Bool = false`: whether to perform or not a check that the formula's syntactic structure
     honors the grammar (includes the check performed with `check_propositions = true`) (TODO);
 
 *Cool feature*: a `Formula` can be used for instating other formulas of the same logic.
-See examples
+See the examples.
 
 # Examples
 ```julia-repl
@@ -1398,7 +1367,7 @@ See also
 """
 struct Formula{L<:AbstractLogic} <: AbstractFormula
     _logic::Base.RefValue{L}
-    synstruct::AbstractSyntaxStructure # SyntaxTree{FT} where {FT<:tokenstype(_logic[])}
+    synstruct::AbstractSyntaxStructure
 
     _l(l::AbstractLogic) = Base.RefValue(l)
     _l(l::Base.RefValue) = l
