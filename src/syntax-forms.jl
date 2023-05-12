@@ -210,9 +210,9 @@ const LeftmostConjunctiveForm{SS<:AbstractSyntaxStructure} = LeftmostLinearForm{
 const LeftmostDisjunctiveForm{SS<:AbstractSyntaxStructure} = LeftmostLinearForm{typeof(∨),SS}
 
 """$(doc_lmlf)"""
-const CNF{SS<:AbstractSyntaxStructure} = LeftmostLinearForm{typeof(∧),LeftmostLinearForm{typeof(∨),SS}}
+const CNF{SS<:AbstractSyntaxStructure} = LeftmostConjunctiveForm{LeftmostDisjunctiveForm{SS}}
 """$(doc_lmlf)"""
-const DNF{SS<:AbstractSyntaxStructure} = LeftmostLinearForm{typeof(∨),LeftmostLinearForm{typeof(∧),SS}}
+const DNF{SS<:AbstractSyntaxStructure} = LeftmostDisjunctiveForm{LeftmostConjunctiveForm{SS}}
 
 conjuncts(m::Union{LeftmostConjunctiveForm,CNF}) = children(m)
 nconjuncts(m::Union{LeftmostConjunctiveForm,CNF}) = nchildren(m)

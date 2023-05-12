@@ -335,7 +335,7 @@ a second argument.
 
 # Arguments
 - `expression::String`: expression to be parsed;
-- `additional_operators::Vector{<:AbstractOperator}:` additional, non-standard operators
+- `additional_operators::Vector{<:AbstractOperator}`: additional, non-standard operators
     needed to correctly parse the expression; in case of clashing `syntaxstring`'s,
     the provided additional operators will override the base parsable ones.
     If this is left unset, operators are defaulted to $(repr(BASE_PARSABLE_OPERATORS))
