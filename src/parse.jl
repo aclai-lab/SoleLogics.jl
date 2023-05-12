@@ -336,9 +336,11 @@ a second argument.
 # Arguments
 - `expression::String`: expression to be parsed;
 - `additional_operators::Vector{<:AbstractOperator}:` additional, non-standard operators
-    needed to correctly parse the expression; in case of clashing `syntaxstring`'s,
-    the provided additional operators will override the base parsable ones.
-    If this is left unset, operators are defaulted to $(repr(BASE_PARSABLE_OPERATORS))
+    needed to correctly parse the expression.
+    When left unset, only the following operators are
+    correctly parsed: $(repr(BASE_PARSABLE_OPERATORS));
+    note that, in case of clashing `syntaxstring`'s,
+    the provided additional operators will override these.
 
 # Keyword Arguments
 - `function_notation::Bool = false`: if set to `true`, the expression is considered
