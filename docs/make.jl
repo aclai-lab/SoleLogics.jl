@@ -11,7 +11,7 @@ BaseDocs = [
 ]
 
 const PAGES = [
-    "Julia Documentation" => "index.md",
+    "SoleLogics" => "index.md",
     "Base" => BaseDocs,
 ]
 

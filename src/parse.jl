@@ -128,7 +128,7 @@ function _recognize_tokens(
         splitter_found = false
 
         for splitter in splitters
-            # Here, splitter might be a special character (a Symbol, see above)
+            # Here, splitter might be a special sequence (a Symbol, see above)
             #  but we need to operate over string types here.
             splitter = string(splitter)
             # The longest correct splitter starting at index `i` is found (if possible)
@@ -400,13 +400,13 @@ function parseformulatree(
     operators = unique(
         AbstractOperator[BASE_PARSABLE_OPERATORS..., additional_operators...])
 
-    # TODO: expand special characters to special *sequences* (strings of characters)
-    # TODO: check that no special character is a substring of another one.
+    # TODO: expand special sequences to special *sequences* (strings of characters)
+    # TODO: check that no special sequence is a substring of another one.
     @assert function_notation ||
             (allunique(string.([opening_bracket, arg_separator])) ||
              allunique(string.([closing_bracket, arg_separator]))) "" *
         "Invalid " *
-        "special characters provided: please, check that both the `opening_bracket`" *
+        "special sequences provided: please, check that both the `opening_bracket`" *
         " and the `closing_bracket` are not equal to the `arg_separator`."
 
     opening_bracket = Symbol(opening_bracket)

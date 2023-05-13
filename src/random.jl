@@ -153,12 +153,15 @@ function randformulatree(
     modaldepth::Integer = height,
     rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG
 )::SyntaxTree
+    # TODO this pattern is so common that we may want to move this code to a util function,
+    # and move this so that it is the first thing that a randomic function (e.g., randformulatree) does.
     rng = (rng isa AbstractRNG) ? rng : Random.MersenneTwister(rng)
 
     function _randformulatree(
         height::Integer,
         modaldepth::Integer,
-        rng::AbstractRNG
+        rng::AbstractRNG,
+        nonmodal_operators::Union{Nothing,Vector{<:AbstractOperator}} = nothing
     )::SyntaxTree
         if height == 0
             # Sample proposition from alphabet
@@ -166,20 +169,29 @@ function randformulatree(
         else
             # Sample operator and generate children
             # (Note: only allow modal operators if modaldepth > 0)
-            op = rand(rng, (modaldepth > 0 ? operators : filter(!ismodal, operators)))
+            ops = begin
+                if modaldepth > 0
+                    operators
+                else
+                    if isnothing(nonmodal_operators)
+                        nonmodal_operators = filter(!ismodal, operators)
+                    end
+                    nonmodal_operators
+                end
+            end
+            op = rand(rng, ops)
             ch = Tuple([
-                    _randformulatree(height-1, modaldepth-(ismodal(op) ? 1 : 0), rng)
+                    _randformulatree(height-1, modaldepth-(ismodal(op) ? 1 : 0), rng, nonmodal_operators)
                     for _ in 1:arity(op)])
             return SyntaxTree(op, ch)
         end
     end
 
     # If the alphabet is not iterable, this function should not work.
-    @assert isfinite(alphabet) "Cannot generate random formulas from" *
-        " (infinite) alphabet of type $(typeof(alphabet))!"
-
-    # TODO this pattern is so common that we may want to move this code to a util function,
-    # and move this so that it is the first thing that a randomic function (e.g., randformulatree) does.
+    if !isfinite(alphabet)
+        @warn "Attempting to generate random formulas from" *
+            " (infinite) alphabet of type $(typeof(alphabet))!"
+    end
 
     return _randformulatree(height, modaldepth, rng)
 end
