@@ -28,4 +28,7 @@ makedocs(;
     pages = PAGES
 )
 
-deploydocs(; repo = "github.com/aclai-lab/SoleLogics.jl")
+deploydocs(;
+    repo = "github.com/aclai-lab/SoleLogics.jl",
+    devbranch="dev",
+)
