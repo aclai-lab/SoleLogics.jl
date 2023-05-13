@@ -11,13 +11,13 @@ BaseDocs = [
 ]
 
 const PAGES = [
-    "SoleLogics" => "index.md",
+    "Home" => "index.md",
     "Base" => BaseDocs,
 ]
 
 makedocs(;
     modules = [SoleLogics],
-    authors = "Mauro MILELLA, Giovanni PAGLIARINI, Eduard I. STAN",
+    authors = "Mauro Milella, Giovanni Pagliarini, Eduard I. Stan",
     repo = "https://github.com/aclai-lab/SoleLogics.jl/blob/{commit}{path}#{line}",
     sitename = "SoleLogics.jl",
     format = Documenter.HTML(;
