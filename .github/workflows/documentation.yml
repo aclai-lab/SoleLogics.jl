@@ -11,7 +11,8 @@ jobs:
   build:
     permissions:
       contents: write
-    runs-on: ubuntu-latest
+    # runs-on: ubuntu-latest
+    runs-on: macOS-latest
     steps:
       - uses: actions/checkout@v3
       - uses: julia-actions/setup-julia@v1
