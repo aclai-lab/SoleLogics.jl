@@ -197,9 +197,9 @@ function _interpret_tokens(
                     op
                 else
                     # If the token is something else -> parse as Proposition and push it
-                    proposition = proposition_parser(st)
-                    @assert proposition isa Proposition string(proposition) *
-                        " is not a proposition. Please, provide a valid proposition_parser."
+                    proposition = Proposition(proposition_parser(st))
+                    # @assert proposition isa Proposition string(proposition) *
+                    #     " is not a proposition. Please, provide a valid proposition_parser."
                     proposition
                 end
             end
