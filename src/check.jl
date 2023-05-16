@@ -20,7 +20,7 @@ julia> syntaxstring.(SoleLogics.subformulas(parseformula("◊((p∧q)→r)")))
 See also
 [`SyntaxTree`](@ref), [`Formula`](@ref), [`AbstractFormula`](@ref).
 """
-subformulas(lf::LeftmostLinearForm) = subformulas(tree(lf))
+subformulas(f::AbstractSyntaxStructure; kwargs...) = subformulas(tree(f); kwargs...)
 subformulas(f::Formula; kwargs...) = f.(subformulas(tree(f); kwargs...))
 function subformulas(t::SyntaxTree; sorted=true)
     # function _subformulas(_t::SyntaxTree)
@@ -85,6 +85,7 @@ julia> syntaxstring(SoleLogics.normalize(f; allow_proposition_flipping = false))
 See also
 [`SyntaxTree`](@ref), [`Formula`](@ref), [`AbstractFormula`](@ref).
 """
+normalize(f::AbstractSyntaxStructure; kwargs...) = normalize(tree(f); kwargs...)
 normalize(f::Formula; kwargs...) = f(normalize(tree(f); kwargs...))
 function normalize(
     t::SyntaxTree;

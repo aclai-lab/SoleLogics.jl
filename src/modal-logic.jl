@@ -83,8 +83,9 @@ can provide an initial world.
 
 See also [`allworlds`](@ref), [`nworlds`](@ref), [`AbstractFrame`](@ref).
 """
-function initialworld(fr::AbstractFrame{W})::W where {W<:AbstractWorld}
-    error("Please, provide method initialworld(frame::$(typeof(fr))).")
+function initialworld(fr::AbstractFrame{W})::Union{Nothing,W} where {W<:AbstractWorld}
+    error("Please, provide method" *
+        " initialworld(frame::$(typeof(fr)))::Union{Nothing,$(worldtype(fr))}.")
 end
 
 ############################################################################################
