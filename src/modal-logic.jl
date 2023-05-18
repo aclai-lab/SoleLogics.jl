@@ -596,7 +596,7 @@ Returns whether it is known that an `AbstractOperator` is a box (i.e., universal
 # Examples
 ```julia-repl
 julia> SoleLogics.isbox(◊)
-true
+false
 
 julia> SoleLogics.isbox(∧)
 false
@@ -607,6 +607,9 @@ true
 """
 isbox(::Type{<:AbstractOperator})::Bool = false
 isbox(o::AbstractOperator)::Bool = isbox(typeof(o))
+
+isdiamond(O::Type{<:AbstractOperator})::Bool = ismodal(O) && !isbox(O)
+isdiamond(o::AbstractOperator)::Bool = isdiamond(typeof(o))
 
 doc_DIAMOND = """
     const DIAMOND = NamedOperator{:◊}()
