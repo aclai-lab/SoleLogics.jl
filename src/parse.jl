@@ -17,7 +17,7 @@ end
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Precedence ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 doc_precedence = """
-    const MAX_PRECEDENCE  = Base.operator_precedence(:,)
+    const MAX_PRECEDENCE  = Base.operator_precedence(:(::))
     const HIGH_PRECEDENCE = Base.operator_precedence(:^)
     const BASE_PRECEDENCE = Base.operator_precedence(:*)
     const LOW_PRECEDENCE  = Base.operator_precedence(:+)
@@ -27,8 +27,9 @@ operators with high values take precedence over operators with lower values.
 This is needed to establish unambiguous implementations of parsing-related algorithms.
 
 By default, all operators are assigned a `BASE_PRECEDENCE`, except for:
+- nullary operators (e.g., ⊤, ⊥), that are assigned a `MAX_PRECEDENCE`;
 - unary operators (e.g., ¬, ◊), that are assigned a `HIGH_PRECEDENCE`;
-- the implication (→), that are assigned a `LOW_PRECEDENCE`.
+- the implication (→), that is assigned a `LOW_PRECEDENCE`.
 
 In case of tie, operators are evaluated in the left-to-right order.
 
@@ -48,7 +49,7 @@ See also [`parseformulatree`](@ref).
 """
 
 """$(doc_precedence)"""
-const MAX_PRECEDENCE = 127
+const MAX_PRECEDENCE = Base.operator_precedence(:(::))
 """$(doc_precedence)"""
 const HIGH_PRECEDENCE = Base.operator_precedence(:^)
 """$(doc_precedence)"""
@@ -435,9 +436,12 @@ function parseformulatree(
             end
         end
 
-        if length(stack) != 1
-            error("Malformed input when parsing expression: " *
-                "`$(expression)`. (postfix: `$(postfix)`).")
+        stacklen = length(stack)
+        if stacklen != 1
+            (stacklen == 0) ?
+                error("Input is empty") :
+                error("Malformed input when parsing expression: " *
+                    "`$(expression)`. (postfix: `$(postfix)`).")
         end
 
         return stack[1]
