@@ -16,13 +16,8 @@ end
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Precedence ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-# At least 3 levels of operator precedence can be distinguished:
-#
-# HIGH_PRECEDENCE = 15 (this value is Base.operator_precedence(:^))
-# BASE_PRECEDENCE = 12 (this value is Base.operator_precedence(:*))
-# LOW_PRECEDENCE  = 11 (this value is Base.operator_precedence(:+))
-
 doc_precedence = """
+    const MAX_PRECEDENCE  = Base.operator_precedence(:,)
     const HIGH_PRECEDENCE = Base.operator_precedence(:^)
     const BASE_PRECEDENCE = Base.operator_precedence(:*)
     const LOW_PRECEDENCE  = Base.operator_precedence(:+)
@@ -53,6 +48,8 @@ See also [`parseformulatree`](@ref).
 """
 
 """$(doc_precedence)"""
+const MAX_PRECEDENCE = 127
+"""$(doc_precedence)"""
 const HIGH_PRECEDENCE = Base.operator_precedence(:^)
 """$(doc_precedence)"""
 const BASE_PRECEDENCE = Base.operator_precedence(:*)
@@ -62,6 +59,8 @@ const LOW_PRECEDENCE  = Base.operator_precedence(:+)
 function Base.operator_precedence(op::AbstractOperator)
     if isunary(op)
         HIGH_PRECEDENCE
+    elseif isnullary(op)
+        MAX_PRECEDENCE
     else
         BASE_PRECEDENCE
     end
