@@ -13,7 +13,7 @@ abstract type GeometricalRelation <: AbstractRelation end
 """
     istopological(r::GeometricalRelation)
 
-Returns whether it is known that a given geometrical relation is topological
+Return whether it is known that a given geometrical relation is topological
 (i.e., invariant under homeomorphisms,
  see [here](https://en.wikipedia.org/wiki/Topological_property))
 

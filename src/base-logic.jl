@@ -5,7 +5,7 @@
         t::NTuple{N,T},
     )::T where {N,T<:TruthValue}
 
-Returns the truth value of a composed formula op(φ1, ..., φN), given the `N`
+Return the truth value of a composed formula op(φ1, ..., φN), given the `N`
 truth values of its immediate sub-formulas.
 An algebra must provide a `collatetruth` method for each operator that can be
 interpreted on it.
@@ -148,8 +148,8 @@ _iscommutative(::Type{typeof(∨)}) = true
 """
     struct BooleanAlgebra <: AbstractAlgebra{Bool} end
 
-[Boolean algebra](https://en.wikipedia.org/wiki/Boolean_algebra) is defined on the values
-`true` (top) and `false` (bottom). For this algebra, the basic operators negation,
+A [boolean algebra](https://en.wikipedia.org/wiki/Boolean_algebra), defined on the values
+`true` (for top) and `false` (for bottom). For this algebra, the basic operators negation,
 conjunction and disjunction (stylized as ¬, ∧, ∨) can be defined as the complement, minimum
 and maximum, respectively.
 
@@ -173,19 +173,19 @@ end
 
 
 # Bool values -> Boolean algebra
-tops(t::Bool)::Bool = (t == true)
-bottoms(t::Bool)::Bool = (t == false)
+istop(t::Bool)::Bool = (t == true)
+isbottom(t::Bool)::Bool = (t == false)
 default_algebra(::Type{Bool}) = BooleanAlgebra{Bool}()
 
 # # With dense, discrete algebras, floats can be used.
-# tops(t::AbstractFloat)::Bool = isone(t)
-# bottoms(t::AbstractFloat)::Bool = iszero(t)
+# istop(t::AbstractFloat)::Bool = isone(t)
+# isbottom(t::AbstractFloat)::Bool = iszero(t)
 
 # # TODO idea: use full range for numbers!
-# # tops(t::AbstractFloat)::Bool = t == typemax(typeof(t))
-# # bottoms(t::AbstractFloat)::Bool = t == typemin(typeof(t))
-# tops(t::Integer)::Bool = t == typemax(typeof(t))
-# bottoms(t::Integer)::Bool = t == typemin(typeof(t))
+# # istop(t::AbstractFloat)::Bool = t == typemax(typeof(t))
+# # isbottom(t::AbstractFloat)::Bool = t == typemin(typeof(t))
+# istop(t::Integer)::Bool = t == typemax(typeof(t))
+# isbottom(t::Integer)::Bool = t == typemin(typeof(t))
 
 # TODO:
 # struct DiscreteChainAlgebra{T} <: AbstractAlgebra{T} domain::Vector{T} end
@@ -207,7 +207,7 @@ default_algebra(::Type{Bool}) = BooleanAlgebra{Bool}()
         algebra::A
     end
 
-Basic logic type based on a grammar and an algebra, where both the grammar and the algebra
+A basic logic based on a grammar and an algebra, where both the grammar and the algebra
 are instantiated.
 
 See also [`grammar`](@ref), [`algebra`](@ref),
@@ -336,7 +336,7 @@ end
         kwargs...,
     )
 
-Attempts at instantiating a `Formula` from a syntax token/formula,
+Attempt at instantiating a `Formula` from a syntax token/formula,
 by inferring the logic it belongs to. If `infer_logic` is true, then 
 a canonical logic (e.g., propositional logic with all the `BASE_PROPOSITIONAL_OPERATORS`) is
 inferred; if it's false, then a logic with exactly the operators appearing in the syntax tree,

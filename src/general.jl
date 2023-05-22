@@ -21,7 +21,7 @@ abstract type AbstractSyntaxToken end
     arity(::Type{<:AbstractSyntaxToken})::Integer
     arity(tok::AbstractSyntaxToken)::Integer = arity(typeof(tok))
 
-Provides the `arity` of a syntax token. The arity of a syntax token is an integer
+Return the `arity` of a syntax token. The arity of a syntax token is an integer
 representing the number of allowed children in a `SyntaxTree`. Tokens with `arity` equal
 to 0, 1 or 2 are called `nullary`, `unary` and `binary`, respectively.
 
@@ -62,7 +62,7 @@ julia> syntaxstring((parseformula("◊((p∧s)→q)")); function_notation = true
 See also [`parseformula`](@ref), [`parseformulatree`](@ref),
 [`SyntaxTree`](@ref), [`AbstractSyntaxToken`](@ref).
 
-# Extended help
+# Implementation
 
 In the case of a syntax tree, `syntaxstring` is a recursive function that calls
 itself on the syntax children of each node. For a correct functioning, the `syntaxstring`
@@ -153,7 +153,7 @@ Base.hash(a::Proposition) = Base.hash(atom(a))
 """
     negation(p::Proposition)
 
-Returns a proposition with inverted semantics with respect to `p` (i.e., negation of `p`).
+Return a proposition with inverted semantics with respect to `p` (i.e., negation of `p`).
 In a crisp propositional logic, for example, the negation
 is the proposition which is true whenever `p` is false, and viceversa.
 
@@ -187,6 +187,15 @@ Since operators display very different algorithmic behaviors,
 all `struct`s that are subtypes of `AbstractOperator` must
 be parametric singleton types, which can be dispatched upon.
 
+# Implementation
+
+When implementing a new type for a *commutative* operator `O` with arity higher than 1,
+please provide a method `_iscommutative`, such as:
+
+    _iscommutative(::Type{O}) = true
+
+This can help model checking operations.
+
 See also [`AbstractSyntaxToken`](@ref), [`NamedOperator`](@ref), [`check`](@ref).
 """
 abstract type AbstractOperator <: AbstractSyntaxToken end
@@ -198,7 +207,7 @@ doc_iscommutative = """
     iscommutative(::Type{AbstractOperator}) = false
     iscommutative(o::AbstractOperator) = iscommutative(typeof(o))
 
-Returns whether it is known that an `AbstractOperator` is commutative.
+Return whether it is known that an `AbstractOperator` is commutative.
 
 # Examples
 ```julia-repl
@@ -218,12 +227,6 @@ this function is actually implemented as:
     iscommutative(O::Type{<:AbstractOperator}) = isnullary(O) || isunary(O) || _iscommutative(O)
     iscommutative(o::AbstractOperator) = iscommutative(typeof(o))
     _iscommutative(::Type{<:AbstractOperator}) = false
-
-When defining new operators `O`, provide a method `_iscommutative`, such as:
-
-    _iscommutative(::Type{typeof(∧)}) = true
-    # TODO example with xor?
-
 """
 
 """$(doc_iscommutative)"""
@@ -243,6 +246,23 @@ which truth can be evaluated on interpretations (or models) of the logic.
 Its syntactic component is canonically encoded via a syntax tree (see [`SyntaxTree`](@ref)),
 and it can be anchored to a logic (see [`Formula`](@ref)).
 
+# Implementation
+
+When implementing a new formula type `MyCustomFormulaType`, please provide the method
+for extracting its syntax tree representation:
+
+    function tree(f::MyCustomFormulaType)::SyntaxTree
+        ...
+    end
+
+As well as the one used for composing formulas:
+
+    function (op::AbstractOperator)(
+        children::NTuple{N,Union{AbstractSyntaxToken,MyCustomFormulaType}},
+    )::AbstractFormula where {N}
+        # Composed formula
+    end
+
 See also
 [`Formula`](@ref), [`SyntaxTree`](@ref),
 [`AbstractSyntaxStructure`](@ref), [`AbstractLogic`](@ref).
@@ -255,8 +275,8 @@ abstract type AbstractFormula end
         ::NTuple{N,F}
     )::F where {N,F<:AbstractFormula}
 
-Returns a new formula of type `F` by composing `N` formulas of the same type
-via an operator `op`. This function provides a limited way for composing formulas,
+Return a new formula of type `F` by composing `N` formulas of the same type
+via an operator `op`. This function provides a way for composing formulas,
 but it allows to use operators for a more flexible composition; see the examples
 (and more in the extended help).
 
@@ -269,7 +289,7 @@ julia> p = Proposition("p");
 julia> syntaxstring(∧(f, p))
 "(◊(p → q)) ∧ p"
 
-julia> syntaxstring(f ∧ ¬p)
+julia> syntaxstring(f ∧ ¬p) # Leverage infix notation ;)
 "(◊(p → q)) ∧ (¬(p))"
 
 julia> syntaxstring(∧(f, p, ¬p))
@@ -365,7 +385,7 @@ abstract type AbstractSyntaxStructure <: AbstractFormula end
 """
     Base.in(tok::AbstractSyntaxToken, f::AbstractFormula)::Bool
 
-Returns whether a syntax token appears in the  a formula.
+Return whether a syntax token appears in a formula.
 
 See also [`AbstractSyntaxToken`](@ref).
 """
@@ -383,11 +403,11 @@ doc_tokopprop = """
     operators(f::AbstractFormula)::AbstractVector{<:AbstractOperator}
     propositions(f::AbstractFormula)::AbstractVector{<:Proposition}
     ntokens(f::AbstractFormula)::Integer
+    noperators(f::AbstractFormula)::Integer
     npropositions(f::AbstractFormula)::Integer
 
-A formula can provide a method for extracting its tokens/operators/propositions.
-The fallbacks extract the tokens/operators/propositions
-appearing in its syntax tree representation.
+Return the list or the number of (unique) syntax
+tokens/operators/propositions appearing in a formula.
 
 See also [`AbstractSyntaxStructure`](@ref).
 """
@@ -519,7 +539,7 @@ end
 """
     Base.in(tok::AbstractSyntaxToken, tree::SyntaxTree)::Bool
 
-Returns whether a token appears in a tree or not.
+Return whether a token appears in a syntax tree or not.
 
 See also [`tokens`](@ref), [`SyntaxTree`](@ref).
 """
@@ -530,7 +550,7 @@ end
 """
     tokens(t::SyntaxTree)::AbstractVector{AbstractSyntaxToken}
 
-Enumerates all tokens appearing in a tree.
+List all tokens appearing in a syntax tree.
 
 See also [`ntokens`](@ref), [`operators`](@ref), [`propositions`](@ref), [`AbstractSyntaxToken`](@ref).
 """
@@ -541,7 +561,7 @@ end
 """
     operators(t::SyntaxTree)::AbstractVector{AbstractOperator}
 
-Enumerates all operators appearing in a tree.
+List all operators appearing in a syntax tree.
 
 See also [`noperators`](@ref), [`propositions`](@ref), [`tokens`](@ref), [`AbstractOperator`](@ref).
 """
@@ -553,7 +573,7 @@ end
 """
     propositions(t::SyntaxTree)::AbstractVector{Proposition}
 
-Enumerates all propositions appearing in a tree.
+List all propositions appearing in a syntax tree.
 
 See also [`npropositions`](@ref), [`operators`](@ref), [`tokens`](@ref), [`Proposition`](@ref).
 """
@@ -565,7 +585,7 @@ end
 """
     ntokens(t::SyntaxTree)::Integer
 
-Counts all tokens appearing in a tree.
+Return the count of all tokens appearing in a syntax tree.
 
 See also [`tokens`](@ref), [`AbstractSyntaxToken`](@ref).
 """
@@ -576,7 +596,7 @@ end
 """
     noperators(t::SyntaxTree)::Integer
 
-Counts all operators appearing in a tree.
+Return the count of all operators appearing in a syntax tree.
 
 See also [`operaters`](@ref), [`AbstractSyntaxToken`](@ref).
 """
@@ -588,7 +608,7 @@ end
 """
     npropositions(t::SyntaxTree)::Integer
 
-Counts all propositions appearing in a tree.
+Return the count of all propositions appearing in a syntax tree.
 
 See also [`propositions`](@ref), [`AbstractSyntaxToken`](@ref).
 """
@@ -600,7 +620,7 @@ end
 """
     height(t::SyntaxTree)::Integer
 
-Computes the height of a tree.
+Return the height of a syntax tree.
 
 See also [`tokens`](@ref), [`AbstractSyntaxToken`](@ref).
 """
@@ -655,8 +675,8 @@ end
 """
     tree(f::AbstractFormula)::SyntaxTree
 
-Extracts the `SyntaxTree` representation of a formula.
-This equivalent to calling `Base.convert(SyntaxTree, f)`.
+Extract the `SyntaxTree` representation of a formula
+(equivalent to `Base.convert(SyntaxTree, f)`).
 
 See also
 [`SyntaxTree`](@ref),
@@ -701,7 +721,7 @@ julia> "mystring" in AlphabetOfAny{String}()
 true
 ```
 
-# Extended help
+# Implementation
 
 When implementing a new alphabet type `MyAlphabet`, you should provide a method for
 establishing whether a proposition belongs to it or not;
@@ -735,7 +755,7 @@ Base.isfinite(a::AbstractAlphabet) = Base.isfinite(typeof(a))
 """
     propositions(a::AbstractAlphabet)::AbstractVector{propositionstype(a)}
 
-Provides access to the propositions of a *finite* alphabet.
+List the propositions of a *finite* alphabet.
 
 See also [`AbstractAlphabet`](@ref), [`Base.isfinite`](@ref).
 """
@@ -852,7 +872,7 @@ alphabettype(::AbstractGrammar{A,O}) where {A,O} = A
 """
     alphabet(g::AbstractGrammar{A} where {A})::A
 
-Returns the propositional alphabet of a grammar.
+Return the propositional alphabet of a grammar.
 
 See also [`AbstractAlphabet`](@ref), [`AbstractGrammar`](@ref).
 """
@@ -862,19 +882,6 @@ end
 propositionstype(g::AbstractGrammar) = eltype(alphabet(g))
 tokenstype(g::AbstractGrammar) = Union{operatorstype(g),propositionstype(g)}
 
-"""
-    Base.in(tok::AbstractSyntaxToken, g::AbstractGrammar)::Bool
-
-Each grammar must provide methods for establishing whether a syntax token belongs to
-it, that is, whether it is a legal token in the grammar's formulas.
-
-These two fallbacks are defined:
-
-    Base.in(p::Proposition, g::AbstractGrammar) = Base.in(p, alphabet(g))
-    Base.in(op::AbstractOperator, g::AbstractGrammar) = op <: operatorstype(O)
-
-See also [`AbstractGrammar`](@ref).
-"""
 function Base.in(tok::AbstractSyntaxToken, g::AbstractGrammar)
     return error("Please, provide method Base.in(::$(typeof(tok)), ::$(typeof(g))).")
 end
@@ -887,8 +894,8 @@ Base.in(op::AbstractOperator, g::AbstractGrammar) = (op <: operatorstype(g))
 """
     Base.in(t::SyntaxTree, g::AbstractGrammar)::Bool
 
-Each grammar must provide a method for establishing whether a formula,
-encoded as a `SyntaxTree`, belongs to it.
+Return whether a formula,
+encoded as a `SyntaxTree`, belongs to a grammar.
 
 See also [`AbstractGrammar`](@ref), [`SyntaxTree`](@ref).
 """
@@ -897,14 +904,16 @@ function Base.in(::SyntaxTree, g::AbstractGrammar)::Bool
 end
 
 """
-    formulas(g::AbstractGrammar;
+    formulas(
+        g::AbstractGrammar;
         maxdepth::Integer,
         nformulas::Union{Nothing,Integer} = nothing,
         args...
     )::Vector{<:SyntaxTree}
 
-Each grammar with a finite and iterable alphabet must provide a method for
-enumerating its formulas, encoded as `SyntaxTree`s.
+Enumerate the formulas produced by a given grammar with a finite and iterable alphabet.
+
+# Implementation
 
 Additional `args` can be used to model the function's behavior.
 At least these two arguments should be covered:
@@ -944,7 +953,7 @@ Base.hash(a::AbstractGrammar) = Base.hash(alphabet(a)) + Base.hash(operatorstype
         operators::Vector{<:O}
     end
 
-Grammar that generates all well-formed formulas obtained by the arity-complying composition
+A grammar of all well-formed formulas obtained by the arity-complying composition
 of propositions of an alphabet of type `A`, and all operators in `operators`.
 With n operators, this grammar has exactly n+1 production rules.
 For example, with `operators = [⊥,∧,∨]`, the grammar (in Backus-Naur form) is:
@@ -1020,7 +1029,7 @@ end
         nformulas::Union{Nothing,Integer} = nothing
     )::Vector{SyntaxTree}
 
-Generates all formulas with syntax trees shorter than a given `maxdepth`.
+Generate all formulas with syntax trees that are not taller than a given `maxdepth`.
 
 See also [`AbstractGrammar`](@ref).
 """
@@ -1067,40 +1076,42 @@ In the crisp case, `Bool` values are used. In the fuzzy case, other values can b
 For example, `AbstractFloat`s can be used with chain algebras,
 and 0.0 and 1.0 are the `bottom` and `top`.
 
-See also [`top`](@ref), [`bottom`](@ref), [`tops`](@ref), [`bottoms`](@ref), [`Algebra`](@ref).
+See also [`top`](@ref), [`bottom`](@ref), [`istop`](@ref), [`isbottom`](@ref), [`Algebra`](@ref).
 """
 const TruthValue = Any
 
-# TODO tops->istop, bottoms->isbottom
-
 """
-    tops(::TruthValue)::Bool
+    istop(::TruthValue)::Bool
 
-Returns true if the truth value is the top of its algebra.
+Return true if the truth value is the top of its algebra.
 For example, in the crisp case, with `Bool` truth values, it is:
 
-    tops(t::Bool)::Bool = (t == true)
+    istop(t::Bool)::Bool = (t == true)
 
-See also [`bottoms`](@ref), [`TruthValue`](@ref).
+See also [`isbottom`](@ref), [`TruthValue`](@ref).
 """
-tops(t::TruthValue)::Bool = error("Please, provide method tops(truthvalue::$(typeof(t))).")
+istop(t::TruthValue)::Bool = error("Please, provide method istop(truthvalue::$(typeof(t))).")
 
 """
-    bottoms(::TruthValue)::Bool
+    isbottom(::TruthValue)::Bool
 
-Returns true if the truth value is the bottom of its algebra.
+Return true if the truth value is the bottom of its algebra.
 For example, in the crisp case, with `Bool` truth values, it is:
 
-    bottoms(t::Bool)::Bool = (t == false)
+    isbottom(t::Bool)::Bool = (t == false)
 
-See also [`tops`](@ref), [`TruthValue`](@ref).
+See also [`istop`](@ref), [`TruthValue`](@ref).
 """
-bottoms(t::TruthValue)::Bool = error("Please, provide method bottoms(truthvalue::$(typeof(t))).")
+isbottom(t::TruthValue)::Bool = error("Please, provide method isbottom(truthvalue::$(typeof(t))).")
 
 """
    default_algebra(::Type{T})::AbstractAlgebra{<:T} where {T<:TruthValue}
 
-In order to check syntax trees without algebras, each truth value should provide
+Return the fallback algebra for a given truth value type.
+
+# Implementation
+
+In order to check syntax trees without algebras, truth values should provide
 a default algebra it works with.
 """
 function default_algebra(::Type{T})::AbstractAlgebra{<:T} where {T<:TruthValue}
@@ -1189,6 +1200,11 @@ and *bottom* (or minimum). Each node in the lattice represents a truth value
 that a proposition or a formula can have on an interpretation, and the
 semantics of operators is given in terms of operations between truth values.
 
+# Implementation
+
+When implementing a new algebra type, the methods `domain`,
+`top`, and `bottom` should be implemented.
+
 See also [`domain`](@ref), [`top`](@ref), [`bottom`](@ref),
 [`truthtype`](@ref), [`iscrisp`](@ref),
 [``BooleanAlgebra`](@ref), [`AbstractOperator`](@ref), [`collatetruth`](@ref).
@@ -1209,7 +1225,7 @@ truthtype(a::AbstractAlgebra) = truthtype(typeof(a))
 """
     domain(a::AbstractAlgebra)
 
-Each algebra must provide a method for accessing its `domain`.
+Access the `domain` of a given algebra.
 
 See also [`AbstractAlgebra`](@ref).
 """
@@ -1223,7 +1239,7 @@ end
 """
     top(a::AbstractAlgebra)
 
-Each algebra must provide a method for accessing its `top`.
+Access the `top` of a given algebra.
 
 See also [`AbstractAlgebra`](@ref).
 """
@@ -1234,7 +1250,7 @@ end
 """
     bottom(a::AbstractAlgebra)
 
-Each algebra must provide a method for accessing its `bottom`.
+Access the `bottom` of a given algebra.
 
 See also [`AbstractAlgebra`](@ref).
 """
@@ -1262,6 +1278,11 @@ iscrisp(a::AbstractAlgebra) = iscrisp(typeof(a))
 Abstract type of a logic, which comprehends a context-free grammar (*syntax*) and
 an algebra (*semantics*).
 
+# Implementation
+
+When implementing a new logic type,
+the methods `grammar` and `algebra` should be implemented.
+
 See also [`AbstractGrammar`](@ref), [`AbstractAlgebra`](@ref).
 """
 abstract type AbstractLogic{G<:AbstractGrammar,A<:AbstractAlgebra} end
@@ -1269,7 +1290,7 @@ abstract type AbstractLogic{G<:AbstractGrammar,A<:AbstractAlgebra} end
 """
     grammar(l::AbstractLogic{G})::G where {G<:AbstractGrammar}
 
-A logic must provide a method for accessing its grammar.
+Access the `grammar` of a given logic.
 
 See also [`grammar`](@ref), [`algebra`](@ref),
 [`operators`](@ref), [`alphabet`](@ref),
@@ -1296,7 +1317,7 @@ Base.in(p::Proposition, l::AbstractLogic) = Base.in(p, alphabet(l))
 """
     algebra(l::AbstractLogic{G,A})::A where {G,A}
 
-A logic must provide a method for accessing its algebra.
+Access the `algebra` of a given logic.
 
 See also [`AbstractAlgebra`](@ref), [`AbstractLogic`](@ref).
 """
@@ -1358,7 +1379,6 @@ julia> @assert ◊ in operators(logic(f2))
 julia> @assert ◊ isa operatorstype(logic(f2))
 
 ```
-
 
 See also
 [`tree`](@ref), [`logic`](@ref),
@@ -1494,7 +1514,7 @@ truthtype(::AbstractInterpretation{A,T}) where {A,T} = T
         args...
     )::T where {A,T<:TruthValue}
 
-Checks a formula on a logical interpretation (or model), returning a truth value.
+Check a formula on a logical interpretation (or model), returning a truth value.
 This process is referred to as
 [model checking](https://en.wikipedia.org/wiki/Model_checking), and there are many
 algorithms for it, typically depending on the complexity of the logic.

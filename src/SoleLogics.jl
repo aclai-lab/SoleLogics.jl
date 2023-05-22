@@ -31,7 +31,7 @@ export arity, atomtype, tokentype, tokenstype,
 export check
 export atom, token, children, alphabet, formulas
 export domain, top, bottom, grammar, algebra, logic, tree
-export tops, bottoms
+export istop, isbottom
 
 export tokens, operators, propositions
 

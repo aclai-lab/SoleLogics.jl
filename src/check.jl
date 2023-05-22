@@ -2,7 +2,7 @@
 """
     subformulas(f::AbstractFormula; sorted=true)
 
-Returns all sub-formulas (sorted by size when `sorted=true`)
+Return all sub-formulas (sorted by size when `sorted=true`)
 of a given formula.
 
 # Examples
@@ -53,7 +53,7 @@ end
         allow_proposition_flipping = true,
     )
 
-Returns a modified version of a given formula, that has the same semantics
+Return a modified version of a given formula, that has the same semantics
 but different syntax. This is useful when dealing with the truth of many
 (possibly similar) formulas; for example, when performing
 [model checking](https://en.wikipedia.org/wiki/Model_checking).
@@ -249,7 +249,7 @@ end
 """
     isglobal(f::AbstractFormula)::Bool
 
-Returns `true` if the formula is global, that is, if it can be inferred from its syntactic
+Return `true` if the formula is global, that is, if it can be inferred from its syntactic
 structure that, given any frame-based model, the truth value of the formula is the same
 on every world.
 
@@ -282,8 +282,8 @@ isglobal(t::SyntaxTree)::Bool =
         t::NTuple{N,WorldSetType},
     )::AbstractWorldSet{<:W} where {N,W<:AbstractWorld,WorldSetType<:AbstractWorldSet}
 
-On a crisp frame (`truthtype == Bool`),
-returns the set of worlds where a composed formula op(φ1, ..., φN) is true, given the `N`
+For a given crisp frame (`truthtype == Bool`),
+return the set of worlds where a composed formula op(φ1, ..., φN) is true, given the `N`
 sets of worlds where the each immediate sub-formula is true.
 
 See also [`check`](@ref), [`iscrisp`](@ref),

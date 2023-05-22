@@ -327,7 +327,7 @@ end
         arg_separator::Union{String,Symbol} = $(repr(DEFAULT_ARG_DELIM))
     )
 
-Returns a `SyntaxTree` which is the result of parsing `expression`
+Return a `SyntaxTree` which is the result of parsing `expression`
  via [Shunting yard](https://en.wikipedia.org/wiki/Shunting_yard_algorithm).
 By default, this function is only able to parse operators in
 `SoleLogics.BASE_PARSABLE_OPERATORS`; additional operators may be provided as
@@ -549,9 +549,9 @@ end
         grammar::Union{Nothing,AbstractGrammar} = nothing,
         algebra::Union{Nothing,AbstractAlgebra} = nothing,
         kwargs...
-    )
+    )::Formula
 
-Returns a `Formula` which is the result of parsing `expression`
+Return a `Formula` which is the result of parsing `expression`
  via [Shunting yard](https://en.wikipedia.org/wiki/Shunting_yard_algorithm).
 By default, this function is only able to parse operators in
 `SoleLogics.BASE_PARSABLE_OPERATORS`; additional operators may be provided as
