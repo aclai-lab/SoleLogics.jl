@@ -69,8 +69,8 @@ itself on the syntax children of each node. For a correct functioning, the `synt
 must be defined (including `kwargs...`) for every newly defined
 `AbstractSyntaxToken` (e.g., operators and `Proposition`s),
 in a way that it produces a
-unique string representation, since `Base.hash` and `Base.isequal` for `SyntaxTree`s
-rely on it.
+*unique* string representation, since `Base.hash` and `Base.isequal`, at least for
+`SyntaxTree`s, rely on it.
 
 In particular, for the case of `Proposition`s, the function calls itself on the atom:
 
