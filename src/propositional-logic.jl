@@ -12,10 +12,9 @@ const BasePropositionalLogic = AbstractLogic{G,A} where {ALP,G<:AbstractGrammar{
         algebra = BooleanAlgebra(),
     )
 
-Instantiates a [propositional logic](https://simple.wikipedia.org/wiki/Propositional_logic)
+Instantiate a [propositional logic](https://simple.wikipedia.org/wiki/Propositional_logic)
 given a grammar and an algebra. Alternatively, an alphabet and a set of operators
 can be specified instead of the grammar.
-
 
 # Examples
 ```julia-repl
@@ -65,7 +64,7 @@ abstract type AbstractAssignment{A,T<:TruthValue} <: AbstractInterpretation{A,T}
 """
     Base.getindex(i::AbstractAssignment{AA,T}, p::Proposition, args...)::T where {AA,T<:TruthValue}
 
-Returns the truth value of a proposition, given an assignment.
+Return the truth value of a proposition, given an assignment.
 
 See also [`AbstractInterpretation`](@ref).
 """
@@ -83,7 +82,7 @@ end
 """
     Base.haskey(::Proposition{A}, i::AbstractAssignment{A})::Bool where {A}
 
-Returns whether an assigment has a truth value for a given proposition.
+Return whether an assigment has a truth value for a given proposition.
 
 See also [`AbstractInterpretation`](@ref).
 """
@@ -125,8 +124,8 @@ end
         args...
     )::T where {A,T<:TruthValue}
 
-Checks a logical formula on an assigment.
-It returns a truth value of the assigment.
+Check a logical formula on an assigment.
+This function returns a truth value of the assigment.
 
 See also
 [`TruthDict`](@ref),
@@ -134,6 +133,7 @@ See also
 [`AbstractAlgebra`](@ref), [`AbstractInterpretation`](@ref).
 
 # Extended help
+
 The fallback method extracts the formula's syntax tree and checks it using the logic's
 algebra.
 

@@ -2,7 +2,7 @@
 """
     subformulas(f::AbstractFormula; sorted=true)
 
-Returns all sub-formulas (sorted by size when `sorted=true`)
+Return all sub-formulas (sorted by size when `sorted=true`)
 of a given formula.
 
 # Examples
@@ -43,6 +43,8 @@ function subformulas(t::SyntaxTree; sorted=true)
 end
 
 # TODO move to utils and rename "normalize" -> "transform"/"reshape"/"simplify"
+# TODO \to diventano \lor
+# TODO explain profile's and other parameters
 """
     normalize(
         f::AbstractFormula;
@@ -51,7 +53,7 @@ end
         allow_proposition_flipping = true,
     )
 
-Returns a modified version of a given formula, that has the same semantics
+Return a modified version of a given formula, that has the same semantics
 but different syntax. This is useful when dealing with the truth of many
 (possibly similar) formulas; for example, when performing
 [model checking](https://en.wikipedia.org/wiki/Model_checking).
@@ -73,13 +75,16 @@ BEWARE: it currently assumes the underlying algebra is Boolean!
 
 # Examples
 ```julia-repl
-julia> f = parseformula("¬□¬((p∧¬q)→r)"; operators = SoleLogics.BASE_MODAL_OPERATORS);
+julia> f = parseformula("□¬((p∧¬q)→r)∧⊤");
 
 julia> syntaxstring(f)
-"(¬(□(¬(p ∧ (¬(q)))))) → r"
+"(□(¬((p ∧ (¬(q))) → r))) ∧ ⊤"
 
-julia> syntaxstring(SoleLogics.normalize(f; allow_proposition_flipping = false))
-"(◊(p ∧ (¬(q)))) → r"
+julia> syntaxstring(SoleLogics.normalize(f; profile = :modelchecking, allow_proposition_flipping = false))
+"¬(◊(((¬(p)) ∨ q) ∧ r))"
+
+julia> syntaxstring(SoleLogics.normalize(f; profile = :readability, allow_proposition_flipping = false))
+"□((p ∧ (¬(q))) ∨ (¬(r)))"
 ```
 
 See also
@@ -89,78 +94,162 @@ normalize(f::AbstractSyntaxStructure; kwargs...) = normalize(tree(f); kwargs...)
 normalize(f::Formula; kwargs...) = f(normalize(tree(f); kwargs...))
 function normalize(
     t::SyntaxTree;
-    remove_boxes = true,
-    reduce_negations = true,
-    allow_proposition_flipping = true,
+    profile = :readability,
+    remove_boxes = nothing,
+    reduce_negations = nothing,
+    simplify_constants = nothing,
+    allow_proposition_flipping = nothing,
+    forced_negation_removal = nothing,
 )
+    if profile == :readability
+        if isnothing(remove_boxes)               remove_boxes = false end
+        if isnothing(reduce_negations)           reduce_negations = true end
+        if isnothing(simplify_constants)         simplify_constants = true end
+        if isnothing(allow_proposition_flipping) allow_proposition_flipping = true end
+        # TODO leave \to's instead of replacing them with \lor's...
+    elseif profile == :modelchecking
+        if isnothing(remove_boxes)               remove_boxes = true end
+        if isnothing(reduce_negations)           reduce_negations = true end
+        if isnothing(simplify_constants)         simplify_constants = true end
+        if isnothing(allow_proposition_flipping) allow_proposition_flipping = true end
+    else
+        error("Unknown normalization profile: $(repr(profile))")
+    end
+
+    if isnothing(forced_negation_removal)
+        if isnothing(allow_proposition_flipping)
+            forced_negation_removal = true
+        else
+            forced_negation_removal = false
+        end
+    end
+
     # TODO we're currently assuming Boolean algebra!!! Very wrong.
 
-    _normalize = x->normalize(x;
+    _normalize = t->normalize(t;
+        profile = profile,
         remove_boxes = remove_boxes,
         reduce_negations = reduce_negations,
+        simplify_constants = simplify_constants,
         allow_proposition_flipping = allow_proposition_flipping,
+        forced_negation_removal = forced_negation_removal,
     )
 
     # TODO @Mauro introduce rotate_commutatives parameter and use rotate_commutatives && iscommutative for normalizing the structure of commutative operators.
     tok, ch = token(t), children(t)
-    if remove_boxes && tok isa BoxRelationalOperator && arity(tok) == 1
+    newt = begin
+        if tok isa AbstractOperator && (
+            tok in [∨, ∧, →]
+            || SoleLogics.isbox(tok)
+            || SoleLogics.isdiamond(tok)
+        )
+            normch = _normalize.(ch)
+            if simplify_constants
+                if (tok == ∨) && arity(tok) == 2
+                    if     token(normch[1]) == ⊥  normch[2]
+                    elseif token(normch[2]) == ⊥  normch[1]
+                    elseif token(normch[1]) == ⊤  SyntaxTree(⊤)
+                    elseif token(normch[2]) == ⊤  SyntaxTree(⊤)
+                    else                          SyntaxTree(tok, normch)
+                    end
+                elseif (tok == ∧) && arity(tok) == 2
+                    if     token(normch[1]) == ⊥  SyntaxTree(⊥)
+                    elseif token(normch[2]) == ⊥  SyntaxTree(⊥)
+                    elseif token(normch[1]) == ⊤  normch[2]
+                    elseif token(normch[2]) == ⊤  normch[1]
+                    else                          SyntaxTree(tok, normch)
+                    end
+                elseif (tok == →) && arity(tok) == 2
+                    if     token(normch[1]) == ⊥  SyntaxTree(⊥)
+                    elseif token(normch[2]) == ⊥  SyntaxTree(⊥)
+                    elseif token(normch[1]) == ⊤  normch[2]
+                    elseif token(normch[2]) == ⊤  normch[1]
+                    else                          SyntaxTree(∨, _normalize(¬normch[1]), normch[2])
+                    end
+                elseif SoleLogics.isbox(tok) && arity(tok) == 1
+                    if     token(normch[1]) == ⊤  SyntaxTree(⊤)
+                    else                          SyntaxTree(tok, normch)
+                    end
+                elseif SoleLogics.isdiamond(tok) && arity(tok) == 1
+                    if     token(normch[1]) == ⊥  SyntaxTree(⊥)
+                    else                          SyntaxTree(tok, normch)
+                    end
+                else
+                    error("Internal error in normalize(..., simplify_constants = $(simplify_constants))")
+                end
+            else
+                SyntaxTree(tok, normch)
+            end
+        elseif (tok == ¬) && arity(tok) == 1
+            child = ch[1]
+            chtok, grandchildren = token(child), children(child)
+            if reduce_negations && (chtok == ¬) && arity(chtok) == 1
+                _normalize(grandchildren[1])
+            elseif reduce_negations && (chtok == ∨) && arity(chtok) == 2
+                ∧(_normalize(¬(grandchildren[1])), _normalize(¬(grandchildren[2])))
+                # TODO use implication, maybe it's more interpretable?
+            elseif reduce_negations && (chtok == ∧) && arity(chtok) == 2
+                ∨(_normalize(¬(grandchildren[1])), _normalize(¬(grandchildren[2])))
+            elseif reduce_negations && (chtok == →) && arity(chtok) == 2
+                # _normalize(∨(¬(grandchildren[1]), grandchildren[2]))
+                ∨(_normalize(grandchildren[1]), _normalize(¬(grandchildren[2])))
+            elseif reduce_negations && chtok isa Proposition
+                if allow_proposition_flipping
+                    SyntaxTree(negation(chtok))
+                else
+                    ¬(_normalize(child))
+                end
+            # elseif reduce_negations && chtok isa SoleLogics.AbstractRelationalOperator && arity(chtok) == 1
+            #     dual_op = dual(chtok)
+            #     if remove_boxes && dual_op isa SoleLogics.BoxRelationalOperator
+            #         ¬(_normalize(child))
+            #     else
+            #         dual_op(_normalize(¬(grandchildren[1])))
+            #     end
+            elseif reduce_negations && ismodal(chtok) && arity(chtok) == 1
+                dual_op = dual(chtok)
+                # if remove_boxes && SoleLogics.isbox(dual_op)
+                #     ¬(_normalize(child))
+                # else
+                dual_op(_normalize(¬(grandchildren[1])))
+                # end
+            elseif (reduce_negations || simplify_constants) && chtok == ⊤ && arity(chtok) == 1
+                SyntaxTree(⊥)
+            elseif (reduce_negations || simplify_constants) && chtok == ⊥ && arity(chtok) == 1
+                SyntaxTree(⊤)
+            elseif !forced_negation_removal
+                SyntaxTree(tok, _normalize.(ch))
+            else
+                error("Unknown chtok when removing negations: $(chtok) (type = $(typeof(chtok)))")
+            end
+        else
+            SyntaxTree(tok, _normalize.(ch))
+        end
+    end
+
+    tok, ch = token(newt), children(newt)
+    if remove_boxes && tok isa AbstractOperator && SoleLogics.isbox(tok) && arity(tok) == 1
         # remove_boxes -> substitute every [X]φ with ¬⟨X⟩¬φ
-        childtok = ch[1]
+        child = ch[1]
         dual_op = dual(tok)
-        ¬(dual_op(_normalize(¬childtok)))
+        ¬(dual_op(_normalize(¬child)))
         # TODO remove
         # if relation(tok) == globalrel
         #     # Special case: [G]φ -> ⟨G⟩φ
-        #     dual_op(_normalize(childtok))
+        #     dual_op(_normalize(child))
         # else
-        #     ¬(dual_op(_normalize(¬childtok)))
+        #     ¬(dual_op(_normalize(¬child)))
         # end
-    elseif reduce_negations && (tok == ¬) && arity(tok) == 1
-        # reduce_negations
-        childtok = ch[1]
-        grandchildren = children(childtok)
-        if (token(childtok) == ∨) && arity(token(childtok)) == 2
-            ∧(_normalize(¬(grandchildren[1])), _normalize(¬(grandchildren[2])))
-            # TODO use implication, maybe it's more interpretable?
-        elseif (token(childtok) == ∧) && arity(token(childtok)) == 2
-            ∨(_normalize(¬(grandchildren[1])), _normalize(¬(grandchildren[2])))
-        elseif (token(childtok) == →) && arity(token(childtok)) == 2
-            # _normalize(∨(¬(grandchildren[1]), grandchildren[2]))
-            ∨(_normalize(grandchildren[1]), _normalize(¬(grandchildren[2])))
-        elseif (token(childtok) == ¬) && arity(token(childtok)) == 1
-            _normalize(grandchildren[1])
-        elseif token(childtok) isa Proposition
-            if allow_proposition_flipping
-                SyntaxTree(negation(token(childtok)))
-            else
-                ¬(_normalize(childtok))
-            end
-        elseif token(childtok) isa SoleLogics.AbstractRelationalOperator && arity(token(childtok)) == 1
-            dual_op = dual(token(childtok))
-            if remove_boxes && dual_op isa SoleLogics.BoxRelationalOperator
-                ¬(_normalize(childtok))
-            else
-                dual_op(_normalize(¬(grandchildren[1])))
-            end
-        elseif ismodal(token(childtok)) && arity(token(childtok)) == 1
-            dual_op = dual(token(childtok))
-            if remove_boxes && SoleLogics.isbox(dual_op)
-                ¬(_normalize(childtok))
-            else
-                dual_op(_normalize(¬(grandchildren[1])))
-            end
-        else
-            error("Unknown token(childtok) when removing negations: $(token(childtok)) (type = $(typeof(token(childtok))))")
-        end
     else
-        SyntaxTree(tok, _normalize.(ch))
+        newt
     end
+
 end
 
 """
     isglobal(f::AbstractFormula)::Bool
 
-Returns `true` if the formula is global, that is, if it can be inferred from its syntactic
+Return `true` if the formula is global, that is, if it can be inferred from its syntactic
 structure that, given any frame-based model, the truth value of the formula is the same
 on every world.
 
@@ -193,8 +282,8 @@ isglobal(t::SyntaxTree)::Bool =
         t::NTuple{N,WorldSetType},
     )::AbstractWorldSet{<:W} where {N,W<:AbstractWorld,WorldSetType<:AbstractWorldSet}
 
-On a crisp frame (`truthtype == Bool`),
-returns the set of worlds where a composed formula op(φ1, ..., φN) is true, given the `N`
+For a given crisp frame (`truthtype == Bool`),
+return the set of worlds where a composed formula op(φ1, ..., φN) is true, given the `N`
 sets of worlds where the each immediate sub-formula is true.
 
 See also [`check`](@ref), [`iscrisp`](@ref),

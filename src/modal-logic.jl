@@ -4,9 +4,14 @@ using NamedArrays
 """
     abstract type AbstractWorld end
 
-Abstract type for the nodes of an annotated accessibility graph (Kripke structure).
+Abstract type for the nodes of an annotated accessibility graph (Kripke model).
 This is used, for example, in modal logic, where the truth of
 formulas is relativized to *worlds*, that is, nodes of a graph.
+
+# Implementing
+
+When implementing a new world type, the logical semanticsu
+should be defined via `accessibles` methods; refer to the help for `accessibles`.
 
 See also [`AbstractKripkeStructure`](@ref), [`AbstractFrame`](@ref).
 """
@@ -18,7 +23,7 @@ include("algebras/worlds.jl")
     abstract type AbstractFrame{W<:AbstractWorld,T<:TruthValue} end
 
 Abstract type for an accessibility graph (Kripke frame), that gives the structure to
-[Kripke structures](https://en.wikipedia.org/wiki/Kripke_structure_(model_checking))'s).
+[Kripke models](https://en.wikipedia.org/wiki/Kripke_structure_(model_checking))'s).
 
 See also [`truthtype`](@ref), [`worldtype`](@ref),
 [`allworlds`](@ref), [`nworlds`](@ref), [`initialworld`](@ref),
@@ -30,7 +35,7 @@ abstract type AbstractFrame{W<:AbstractWorld,T<:TruthValue} end
     truthtype(::Type{<:AbstractFrame{W,T}}) where {W<:AbstractWorld,T<:TruthValue} = T
     truthtype(fr::AbstractFrame) = truthtype(typeof(fr))
 
-Returns the truth type for the relation(s) in the frame.
+Return the truth type for the relation(s) in the frame.
 
 See also [`AbstractFrame`](@ref).
 """
@@ -46,7 +51,7 @@ iscrisp(fr::AbstractFrame) = iscrisp(typeof(fr))
     worldtype(::Type{<:AbstractFrame{W,T}}) where {W<:AbstractWorld,T<:TruthValue} = W
     worldtype(fr::AbstractFrame) = worldtype(typeof(fr))
 
-Returns the world type of the frame.
+Return the world type of the frame.
 
 See also [`AbstractFrame`](@ref).
 """
@@ -56,7 +61,7 @@ worldtype(fr::AbstractFrame) = worldtype(typeof(fr))
 """
     allworlds(fr::AbstractFrame{W})::AbstractVector{<:W} where {W<:AbstractWorld}
 
-Returns all worlds within the frame.
+Return all worlds within the frame.
 
 See also [`nworlds`](@ref), [`initialworld`](@ref), [`AbstractFrame`](@ref).
 """
@@ -67,7 +72,7 @@ end
 """
     nworlds(fr::AbstractFrame)::Integer
 
-Returns the number of worlds within the frame.
+Return the number of worlds within the frame.
 
 See also [`nworlds`](@ref), [`AbstractFrame`](@ref).
 """
@@ -78,7 +83,7 @@ end
 """
     initialworld(fr::AbstractFrame{W})::W
 
-Returns the initial world of the frame. Note that not all frame types
+Return the initial world of the frame. Note that not all frame types
 can provide an initial world.
 
 See also [`allworlds`](@ref), [`nworlds`](@ref), [`AbstractFrame`](@ref).
@@ -98,7 +103,7 @@ end
         T<:TruthValue
     } <: AbstractFrame{W,T} end
 
-Frame of a modal logic based on a single (implicit) accessibility relation.
+A frame of a modal logic based on a single (implicit) accessibility relation.
 
 See also [`AbstractMultiModalFrame`](@ref), [`AbstractFrame`](@ref).
 """
@@ -107,7 +112,7 @@ abstract type AbstractUniModalFrame{W<:AbstractWorld,T<:TruthValue} <: AbstractF
 """
     accessibles(fr::AbstractUniModalFrame{W}, w::W)::Vector{W} where {W<:AbstractWorld}
 
-Returns the worlds in frame `fr` that are accessible from world `w`.
+Return the worlds in frame `fr` that are accessible from world `w`.
 
 See also [`AbstractWorld`](@ref), [`AbstractUniModalFrame`](@ref).
 """
@@ -136,7 +141,7 @@ end
     abstract type AbstractRelation end
 
 Abstract type for the relations of a multi-modal
-annotated accessibility graph (Kripke structure).
+annotated accessibility graph (Kripke model).
 Two noteworthy relations are `identityrel` and `globalrel`, which
 access the current world and all worlds, respectively.
 
@@ -147,6 +152,26 @@ julia> fr = SoleLogics.FullDimensionalFrame((10,),);
 julia> Interval(8,11) in (accessibles(fr, Interval(2,5), IA_L))
 true
 ```
+
+# Implementation
+
+When implementing a new relation type `R`, please provide the methods:
+
+    arity(::Type{R})::Int = ...
+    syntaxstring(::R)::String = ...
+
+If the relation is symmetric relation, please specify its converse relation `CR` with:
+
+    hasconverse(::Type{R}) = true
+    converse(::Type{R}) = CR
+
+If the relation is reflexive or transitive, flag it with:
+
+    isreflexive(::Type{R}) = true
+    istransitive(::Type{R}) = true
+
+Most importantly, the logical semantics for `R` should be defined via `accessibles` methods;
+refer to the help for `accessibles`.
 
 See also
 [`issymmetric`](@ref),
@@ -169,15 +194,9 @@ abstract type AbstractRelation end
     arity(::Type{<:AbstractRelation})::Integer
     arity(t::AbstractRelation)::Integer = arity(typeof(t))
 
-Returns the `arity` of the relation.
+Return the `arity` of the relation.
 
 See also [`AbstractRelation`](@ref).
-
-# Extended help
-
-When defining a new relation type `R` with arity `2`, please provide the method:
-
-    arity(::Type{R}) = 2
 """
 arity(R::Type{<:AbstractRelation})::Integer = error("Please, provide method arity(::$(typeof(R))).")
 arity(r::AbstractRelation)::Integer = arity(typeof(r))
@@ -189,25 +208,26 @@ doc_conv_rel = """
     converse(R::Type{<:AbstractRelation})::Type{<:AbstractRelation}
     converse(r::AbstractRelation)::AbstractRelation = converse(typeof(r))()
 
-If it exists, returns the converse relation (type) of a given relation (type)
+If it exists, return the converse relation (type) of a given relation (type).
 
 See also [`issymmetric`](@ref), [`isreflexive`](@ref), [`istransitive`](@ref), [`AbstractRelation`](@ref).
 
-# Extended help
-
-This trait is implemented as:
-
-    hasconverse(R::Type{<:AbstractRelation})::Bool = false
-    hasconverse(r::AbstractRelation)::Bool = hasconverse(typeof(r))
-
-    converse(R::Type{<:AbstractRelation})::Type{<:AbstractRelation} = error("Please, provide method converse(::\$(typeof(R))).")
-    converse(r::AbstractRelation)::AbstractRelation = converse(typeof(r))()
-
-When defining a new symmetric relation `R` with converse `CR`, please define the two methods:
-
-    hasconverse(R::Type{R}) = true
-    converse(R::Type{R}) = CR
 """
+
+# # Extended help
+
+# This trait is implemented as:
+
+#     hasconverse(R::Type{<:AbstractRelation})::Bool = false
+#     hasconverse(r::AbstractRelation)::Bool = hasconverse(typeof(r))
+
+#     converse(R::Type{<:AbstractRelation})::Type{<:AbstractRelation} = error("Please, provide method converse(::\$(typeof(R))).")
+#     converse(r::AbstractRelation)::AbstractRelation = converse(typeof(r))()
+
+# When defining a new symmetric relation `R` with converse `CR`, please define the two methods:
+
+#     hasconverse(R::Type{R}) = true
+#     converse(R::Type{R}) = CR
 
 """$(doc_conv_rel)"""
 hasconverse(R::Type{<:AbstractRelation})::Bool = false
@@ -221,7 +241,7 @@ converse(r::AbstractRelation)::AbstractRelation = converse(typeof(r))()
 """
     issymmetric(::AbstractRelation) = hasconverse(r) ? converse(r) == r : false
 
-Returns whether it is known that a relation is symmetric.
+Return whether it is known that a relation is symmetric.
 
 See also [`hasconverse`](@ref), [`converse`](@ref),
 [`isreflexive`](@ref), [`istransitive`](@ref), [`AbstractRelation`](@ref).
@@ -231,7 +251,7 @@ issymmetric(r::AbstractRelation) = hasconverse(r) ? converse(r) == r : false
 """
     isreflexive(::AbstractRelation)
 
-Returns whether it is known that a relation is reflexive.
+Return whether it is known that a relation is reflexive.
 
 See also
 [`issymmetric`](@ref), [`istransitive`](@ref), [`AbstractRelation`](@ref).
@@ -241,7 +261,7 @@ isreflexive(::AbstractRelation) = false
 """
     istransitive(::AbstractRelation)
 
-Returns whether it is known that a relation is transitive.
+Return whether it is known that a relation is transitive.
 
 See also
 [`isreflexive`](@ref), [`issymmetric`](@ref), [`AbstractRelation`](@ref).
@@ -258,8 +278,13 @@ include("algebras/relations.jl")
         T<:TruthValue,
     } <: AbstractFrame{W,T} end
 
-Frame of a multi-modal logic, that is, a modal logic based on a set
+A frame of a multi-modal logic, that is, a modal logic based on a set
 of accessibility relations.
+
+# Implementation
+
+When implementing a new multi-modal frame type, the logical semantics for the frame
+should be defined via `accessibles` methods; refer to the help for `accessibles`.
 
 See also [`AbstractUniModalFrame`](@ref), [`AbstractFrame`](@ref).
 """
@@ -276,7 +301,7 @@ abstract type AbstractMultiModalFrame{
         r::AbstractRelation
     ) where {W<:AbstractWorld}
 
-Returns the worlds in frame `fr` that are accessible from world `w`
+Return the worlds in frame `fr` that are accessible from world `w`
 via relation `r`.
 
 # Examples
@@ -298,13 +323,10 @@ julia> Interval(8,11) in collect(accessibles(fr, Interval(2,5), IA_L))
 true
 ```
 
-See also [`AbstractWorld`](@ref),
-[`AbstractRelation`](@ref), [`AbstractMultiModalFrame`](@ref).
-
-# Extended help
+# Implementation
 
 Since `accessibles` always returns an iterator of worlds of the same type `W`,
-the current implementation of `accessibles` delegates the enumeration
+the current implementation of `accessibles` for multi-modal frames delegates the enumeration
 to a lower level `_accessibles` function, which returns an iterator of parameter tuples that are,
 then, fed to the world constructor the using IterTools generators, as in:
 
@@ -356,6 +378,9 @@ a custom `accessibles` method by providing these three methods:
 
 In general, it should be true that
 `collect(accessibles(fr, w, r)) isa AbstractVector{W}`.
+
+See also [`AbstractWorld`](@ref),
+[`AbstractRelation`](@ref), [`AbstractMultiModalFrame`](@ref).
 """
 function accessibles(
     fr::AbstractMultiModalFrame{W},
@@ -377,7 +402,7 @@ end
         frames::D
     end
 
-Multi-modal frame that is the superposition of many uni-modal frames.
+A multi-modal frame that is the superposition of many uni-modal frames.
 It uses a single `AbstractUniModalFrame` for
 each of relations.
 
@@ -460,7 +485,7 @@ abstract type AbstractModalAssignment{W<:AbstractWorld,A,T<:TruthValue} end
     } <: AbstractInterpretation{A,T} end
 
 Abstract type for representing
-[Kripke structures](https://en.wikipedia.org/wiki/Kripke_structure_(model_checking))'s).
+[Kripke models](https://en.wikipedia.org/wiki/Kripke_structure_(model_checking))'s).
 It comprehends a directed graph structure (Kripke frame), where nodes are referred to as
 *worlds*, and the binary relation between them is referred to as the
 *accessibility relation*. Additionally, each world is associated with a mapping from
@@ -536,9 +561,8 @@ initialworld(i::AbstractKripkeStructure) = initialworld(frame(i))
         assignment::AS
     end
 
-
-Structure for representing
-[Kripke structures](https://en.wikipedia.org/wiki/Kripke_structure_(model_checking))'s).
+Type for representing
+[Kripke models](https://en.wikipedia.org/wiki/Kripke_structure_(model_checking))'s).
 explicitly; it wraps a `frame`, and an abstract dictionary that assigns an interpretation to
 each world.
 """
@@ -574,7 +598,7 @@ end
     ismodal(::Type{<:AbstractOperator})::Bool = false
     ismodal(o::AbstractOperator)::Bool = ismodal(typeof(o))
 
-Returns whether it is known that an `AbstractOperator` is modal.
+Return whether it is known that an `AbstractOperator` is modal.
 
 # Examples
 ```julia-repl
@@ -591,12 +615,12 @@ ismodal(o::AbstractOperator)::Bool = ismodal(typeof(o))
     isbox(::Type{<:AbstractOperator})::Bool = false
     isbox(o::AbstractOperator)::Bool = isbox(typeof(o))
 
-Returns whether it is known that an `AbstractOperator` is a box (i.e., universal) operator.
+Return whether it is known that an `AbstractOperator` is a box (i.e., universal) operator.
 
 # Examples
 ```julia-repl
 julia> SoleLogics.isbox(◊)
-true
+false
 
 julia> SoleLogics.isbox(∧)
 false
@@ -607,6 +631,9 @@ true
 """
 isbox(::Type{<:AbstractOperator})::Bool = false
 isbox(o::AbstractOperator)::Bool = isbox(typeof(o))
+
+isdiamond(O::Type{<:AbstractOperator})::Bool = ismodal(O) && !isbox(O)
+isdiamond(o::AbstractOperator)::Bool = isdiamond(typeof(o))
 
 doc_DIAMOND = """
     const DIAMOND = NamedOperator{:◊}()
@@ -650,7 +677,7 @@ arity(::Type{typeof(□)}) = 1
     dual(op::DiamondRelationalOperator) = BoxRelationalOperator{relationtype(op)}()
     dual(op::BoxRelationalOperator)     = DiamondRelationalOperator{relationtype(op)}()
 
-Returns the modal operator with dual semantics (existential<->universal).
+Return the modal operator with dual semantics (existential<->universal).
 
 See also
 [`DiamondRelationalOperator`](@ref), [`BoxRelationalOperator`](@ref).
@@ -672,7 +699,7 @@ const BaseModalOperators = Union{typeof.(BASE_MODAL_OPERATORS)...}
         algebra = BooleanAlgebra(),
     )
 
-Instantiates a [modal logic](https://simple.wikipedia.org/wiki/Modal_logic)
+Instantiate a [modal logic](https://simple.wikipedia.org/wiki/Modal_logic)
 given a grammar and an algebra. Alternatively, an alphabet and a set of operators
 can be specified instead of the grammar.
 
@@ -743,7 +770,7 @@ doc_op_rel = """
     relationtype(::AbstractRelationalOperator{R}) where {R<:AbstractRelation} = R
     relation(op::AbstractRelationalOperator) = relationtype(op)()
 
-Returns the underlying relation (and relation type) of the relational operator.
+Return the underlying relation (and relation type) of the relational operator.
 
 See also [`AbstractFrame`](@ref).
 """
@@ -800,7 +827,7 @@ syntaxstring(op::BoxRelationalOperator; kwargs...)     = "[$(syntaxstring(relati
     dual(op::DiamondRelationalOperator) = BoxRelationalOperator{relationtype(op)}()
     dual(op::BoxRelationalOperator)     = DiamondRelationalOperator{relationtype(op)}()
 
-Returns the modal operator with dual semantics (existential<->universal).
+Return the modal operator with dual semantics (existential<->universal).
 
 See also
 [`DiamondRelationalOperator`](@ref), [`BoxRelationalOperator`](@ref).
