@@ -4,7 +4,7 @@ using NamedArrays
 """
     abstract type AbstractWorld end
 
-Abstract type for the nodes of an annotated accessibility graph (Kripke structure).
+Abstract type for the nodes of an annotated accessibility graph (Kripke model).
 This is used, for example, in modal logic, where the truth of
 formulas is relativized to *worlds*, that is, nodes of a graph.
 
@@ -23,7 +23,7 @@ include("algebras/worlds.jl")
     abstract type AbstractFrame{W<:AbstractWorld,T<:TruthValue} end
 
 Abstract type for an accessibility graph (Kripke frame), that gives the structure to
-[Kripke structures](https://en.wikipedia.org/wiki/Kripke_structure_(model_checking))'s).
+[Kripke models](https://en.wikipedia.org/wiki/Kripke_structure_(model_checking))'s).
 
 See also [`truthtype`](@ref), [`worldtype`](@ref),
 [`allworlds`](@ref), [`nworlds`](@ref), [`initialworld`](@ref),
@@ -141,7 +141,7 @@ end
     abstract type AbstractRelation end
 
 Abstract type for the relations of a multi-modal
-annotated accessibility graph (Kripke structure).
+annotated accessibility graph (Kripke model).
 Two noteworthy relations are `identityrel` and `globalrel`, which
 access the current world and all worlds, respectively.
 
@@ -485,7 +485,7 @@ abstract type AbstractModalAssignment{W<:AbstractWorld,A,T<:TruthValue} end
     } <: AbstractInterpretation{A,T} end
 
 Abstract type for representing
-[Kripke structures](https://en.wikipedia.org/wiki/Kripke_structure_(model_checking))'s).
+[Kripke models](https://en.wikipedia.org/wiki/Kripke_structure_(model_checking))'s).
 It comprehends a directed graph structure (Kripke frame), where nodes are referred to as
 *worlds*, and the binary relation between them is referred to as the
 *accessibility relation*. Additionally, each world is associated with a mapping from
@@ -562,7 +562,7 @@ initialworld(i::AbstractKripkeStructure) = initialworld(frame(i))
     end
 
 Type for representing
-[Kripke structures](https://en.wikipedia.org/wiki/Kripke_structure_(model_checking))'s).
+[Kripke models](https://en.wikipedia.org/wiki/Kripke_structure_(model_checking))'s).
 explicitly; it wraps a `frame`, and an abstract dictionary that assigns an interpretation to
 each world.
 """

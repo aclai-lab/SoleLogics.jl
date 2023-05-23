@@ -318,7 +318,7 @@ function dispense_alphabet(
 end
 
 # NOTE: read the other gen_kmodel dispatch below as it's signature is more flexible.
-# Generate and return a kripke model.
+# Generate and return a Kripke model.
 # This utility uses `fanfan` and `dispense_alphabet` default methods
 # to define `adjacents` and `evaluations` but one could create its model
 # piece by piece and then calling KripkeModel constructor.
@@ -337,7 +337,7 @@ function gen_kmodel(
     return KripkeModel{PointWorld}(ws, adjs, evs)
 end
 
-# Generate and return a kripke model.
+# Generate and return a Kripke model.
 # Example of valid calls:
 # gen_kmodel(15, MODAL_LOGIC, :erdos_renyi, 0.42)
 # gen_kmodel(10, MODAL_LOGIC, :fanin_fanout, 3, 4)
