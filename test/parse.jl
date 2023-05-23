@@ -2,7 +2,7 @@ import SoleLogics: arity
 
 @testset "Parsing" begin
 
-@test_throws parseformulatree("")
+@test_throws ErrorException parseformulatree("")
 @test_nowarn parseformulatree("p")
 @test_nowarn parseformulatree("⊤")
 
