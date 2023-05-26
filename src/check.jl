@@ -255,8 +255,7 @@ on every world.
 
 # Examples
 ```julia-repl
-julia> f = parseformula("⟨G⟩p → [G]q"); # TODO Mauro fix this, and also allow propositions that are Regex strings \\w?
-julia> f = →(BoxRelationalOperator(globalrel)(Proposition("p")), DiamondRelationalOperator(globalrel)(Proposition("q"))); # Temporary fix
+julia> f = parseformula("⟨G⟩p → [G]q");
 
 julia> syntaxstring(f)
 "([G](p)) → (⟨G⟩(q))"
