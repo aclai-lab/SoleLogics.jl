@@ -135,7 +135,6 @@ function normalize(
         forced_negation_removal = forced_negation_removal,
     )
 
-    # TODO @Mauro introduce rotate_commutatives parameter and use rotate_commutatives && iscommutative for normalizing the structure of commutative operators.
     tok, ch = token(t), children(t)
     newt = begin
         if tok isa AbstractOperator && (
@@ -228,21 +227,28 @@ function normalize(
     end
 
     tok, ch = token(newt), children(newt)
-    if remove_boxes && tok isa AbstractOperator && SoleLogics.isbox(tok) && arity(tok) == 1
-        # remove_boxes -> substitute every [X]φ with ¬⟨X⟩¬φ
-        child = ch[1]
-        dual_op = dual(tok)
-        ¬(dual_op(_normalize(¬child)))
-        # TODO remove
-        # if relation(tok) == globalrel
-        #     # Special case: [G]φ -> ⟨G⟩φ
-        #     dual_op(_normalize(child))
-        # else
-        #     ¬(dual_op(_normalize(¬child)))
-        # end
-    else
-        newt
+    newt = begin
+        if remove_boxes && tok isa AbstractOperator && SoleLogics.isbox(tok) && arity(tok) == 1
+            # remove_boxes -> substitute every [X]φ with ¬⟨X⟩¬φ
+            child = ch[1]
+            dual_op = dual(tok)
+            ¬(dual_op(_normalize(¬child)))
+            # TODO remove
+            # if relation(tok) == globalrel
+            #     # Special case: [G]φ -> ⟨G⟩φ
+            #     dual_op(_normalize(child))
+            # else
+            #     ¬(dual_op(_normalize(¬child)))
+            # end
+        else
+            newt
+        end
     end
+
+    # TODO @Mauro introduce rotate_commutatives parameter and use rotate_commutatives && isoperator, iscommutative && arity(op) > 1 for normalizing the structure of commutative operators.
+    # function _isless(st1::SyntaxTree, st2::SyntaxTree)
+    #     isless(Base.hash(st1), Base.hash(st2))
+    # end
 
 end
 
