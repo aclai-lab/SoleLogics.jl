@@ -18,8 +18,8 @@ otherwise, it must be implemented, and additional keyword arguments should be pr
 in order to limit the (otherwise infinite) sampling domain.
 
 See also
-[`FeatCondition`](@ref),
-[`FeatMetaCondition`](@ref),
+[`ScalarCondition`](@ref),
+[`ScalarMetaCondition`](@ref),
 [`AbstractAlphabet'](@ref).
 """
 function Base.rand(a::AbstractAlphabet, args...; kwargs...)
@@ -70,8 +70,8 @@ This method for must be implemented, and additional keyword arguments should be 
 in order to limit the (otherwise infinite) sampling domain.
 
 See also
-[`FeatCondition`](@ref),
-[`FeatMetaCondition`](@ref),
+[`ScalarCondition`](@ref),
+[`ScalarMetaCondition`](@ref),
 [`AbstractAlphabet'](@ref).
 """
 function Base.rand(g::AbstractGrammar, args...; kwargs...)

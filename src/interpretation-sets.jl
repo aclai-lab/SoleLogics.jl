@@ -19,29 +19,12 @@ See also [`atomtype`](@ref), [`truthtype`](@ref),
 abstract type AbstractInterpretationSet{M<:AbstractInterpretation} <: AbstractDataset end
 
 # TODO improve general doc.
-atomtype(::Type{AbstractInterpretationSet{M}}) where {M<:AbstractKripkeStructure} = atomtype(M)
-atomtype(s::AbstractInterpretationSet) = atomtype(typeof(M))
+atomtype(::Type{AbstractInterpretationSet{M}}) where {M} = atomtype(M)
+atomtype(s::AbstractInterpretationSet) = atomtype(typeof(s))
 
 # TODO improve general doc.
-truthtype(::Type{AbstractInterpretationSet{M}}) where {M<:AbstractKripkeStructure} = truthtype(M)
-truthtype(s::AbstractInterpretationSet) = truthtype(typeof(M))
-
-# Helpers for (Multi-)modal logics
-worldtype(::Type{AbstractInterpretationSet{M}}) where {M<:AbstractKripkeStructure} = worldtype(M)
-worldtype(s::AbstractInterpretationSet) = worldtype(typeof(M))
-
-# Helpers for (Multi-)modal logics
-frametype(::Type{AbstractInterpretationSet{M}}) where {M<:AbstractKripkeStructure} = frametype(M)
-frametype(s::AbstractInterpretationSet) = frametype(typeof(M))
-
-# Helpers for (Multi-)modal logics
-function frame(X::AbstractInterpretationSet{M}, i_sample) where {M<:AbstractKripkeStructure}
-    error("Please, provide method frame(::$(typeof(X)), ::$(typeof(i_sample))).")
-end
-accessibles(X::AbstractInterpretationSet, i_sample, args...) = accessibles(frame(X, i_sample), args...)
-allworlds(X::AbstractInterpretationSet, i_sample, args...) = allworlds(frame(X, i_sample), args...)
-nworlds(X::AbstractInterpretationSet, i_sample) = nworlds(frame(X, i_sample))
-
+truthtype(::Type{AbstractInterpretationSet{M}}) where {M} = truthtype(M)
+truthtype(s::AbstractInterpretationSet) = truthtype(typeof(s))
 
 function check(
     tok::AbstractSyntaxToken,
@@ -138,3 +121,30 @@ end
 # end
 
 # Base.getindex(ks::UniqueFrameSet, i_sample) = ks.frame
+
+############################################################################################
+############################# Helpers for (Multi-)modal logics #############################
+############################################################################################
+
+worldtype(::Type{AbstractInterpretationSet{M}}) where {M<:AbstractKripkeStructure} = worldtype(M)
+worldtype(s::AbstractInterpretationSet) = worldtype(typeof(s))
+
+frametype(::Type{AbstractInterpretationSet{M}}) where {M<:AbstractKripkeStructure} = frametype(M)
+frametype(s::AbstractInterpretationSet) = frametype(typeof(s))
+
+function alphabet(X::AbstractInterpretationSet{M}) where {M<:AbstractKripkeStructure}
+    error("Please, provide method alphabet(::$(typeof(X))).")
+end
+
+function relations(X::AbstractInterpretationSet{M}) where {M<:AbstractKripkeStructure}
+    error("Please, provide method relations(::$(typeof(X))).")
+end
+
+
+function frame(X::AbstractInterpretationSet{M}, i_sample) where {M<:AbstractKripkeStructure}
+    error("Please, provide method frame(::$(typeof(X)), ::$(typeof(i_sample))).")
+end
+accessibles(X::AbstractInterpretationSet, i_sample, args...) = accessibles(frame(X, i_sample), args...)
+allworlds(X::AbstractInterpretationSet, i_sample, args...) = allworlds(frame(X, i_sample), args...)
+nworlds(X::AbstractInterpretationSet, i_sample) = nworlds(frame(X, i_sample))
+
