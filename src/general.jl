@@ -1228,7 +1228,7 @@ truthtype(a::AbstractAlgebra) = truthtype(typeof(a))
 """
     domain(a::AbstractAlgebra)
 
-Access the `domain` of a given algebra.
+Return the `domain` of a given algebra.
 
 See also [`AbstractAlgebra`](@ref).
 """
@@ -1242,7 +1242,7 @@ end
 """
     top(a::AbstractAlgebra)
 
-Access the `top` of a given algebra.
+Return the `top` of a given algebra.
 
 See also [`AbstractAlgebra`](@ref).
 """
@@ -1253,7 +1253,7 @@ end
 """
     bottom(a::AbstractAlgebra)
 
-Access the `bottom` of a given algebra.
+Return the `bottom` of a given algebra.
 
 See also [`AbstractAlgebra`](@ref).
 """
@@ -1293,7 +1293,7 @@ abstract type AbstractLogic{G<:AbstractGrammar,A<:AbstractAlgebra} end
 """
     grammar(l::AbstractLogic{G})::G where {G<:AbstractGrammar}
 
-Access the `grammar` of a given logic.
+Return the `grammar` of a given logic.
 
 See also [`grammar`](@ref), [`algebra`](@ref),
 [`operators`](@ref), [`alphabet`](@ref),
@@ -1320,7 +1320,7 @@ Base.in(p::Proposition, l::AbstractLogic) = Base.in(p, alphabet(l))
 """
     algebra(l::AbstractLogic{G,A})::A where {G,A}
 
-Access the `algebra` of a given logic.
+Return the `algebra` of a given logic.
 
 See also [`AbstractAlgebra`](@ref), [`AbstractLogic`](@ref).
 """
