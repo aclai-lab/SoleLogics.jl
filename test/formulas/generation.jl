@@ -47,8 +47,8 @@
 #     end
 # end
 
-alphabet = ExplicitAlphabet(["p", "q"])
-operators = [⊥,∧,∨]
-gr = SoleLogics.CompleteFlatGrammar(alphabet, operators)
+alp = ExplicitAlphabet(["p", "q"])
+ops = [⊥,∧,∨]
+gr = SoleLogics.CompleteFlatGrammar(alp, ops)
 
 @test length(formulas(gr; maxdepth=3)) == 1631721

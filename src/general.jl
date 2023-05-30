@@ -709,6 +709,9 @@ See also [`ExplicitAlphabet`](@ref), [`AlphabetOfAny`](@ref),
 julia> Proposition(1) in ExplicitAlphabet(Proposition.(1:10))
 true
 
+julia> Proposition(1) in ExplicitAlphabet(1:10)
+true
+
 julia> Proposition(1) in AlphabetOfAny{String}()
 false
 

@@ -124,7 +124,7 @@ Return a pseudo-randomic `SyntaxTree` or `Formula`.
 # Examples
 
 ```julia-repl
-julia> syntaxstring(randformulatree(4, ExplicitAlphabet(Proposition.([1,2])), [NEGATION, CONJUNCTION, IMPLICATION]))
+julia> syntaxstring(randformulatree(4, ExplicitAlphabet([1,2]), [NEGATION, CONJUNCTION, IMPLICATION]))
 "¬((¬(¬(2))) → ((1 → 2) → (1 → 2)))"
 ```
 

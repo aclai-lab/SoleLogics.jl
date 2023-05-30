@@ -434,10 +434,8 @@ function parseformulatree(
 
         stacklen = length(stack)
         if stacklen != 1
-            (stacklen == 0) ?
-                error("Input is empty") :
-                error("Malformed input when parsing expression: " *
-                    "`$(expression)`. (postfix: `$(postfix)`).")
+            error("Malformed input when parsing expression: " *
+                "`$(expression)`. (postfix: `$(postfix), stacklen = $(stacklen)`).")
         end
 
         return stack[1]

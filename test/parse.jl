@@ -163,17 +163,17 @@ f = parseformulatree("⟨G⟩(((¬(⟨G⟩((q ∧ p) → (¬(q))))) ∧ (((¬(q 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ custom operator ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-const TERNOP = SoleLogics.NamedOperator{:⇶}()
+TERNOP = SoleLogics.NamedOperator{:⇶}()
 SoleLogics.arity(::Type{typeof(TERNOP)}) = 3
 
-const QUATERNOP = SoleLogics.NamedOperator{:⩰}()
+QUATERNOP = SoleLogics.NamedOperator{:⩰}()
 SoleLogics.arity(::Type{typeof(QUATERNOP)}) = 4
 
-@test_throws parseformulatree("⇶(p, q, r)", [TERNOP]; function_notation=true)
-@test_throws parseformulatree("⇶(p1, q1, ⇶(p2, q2, r2))", [TERNOP]; function_notation=true)
+@test_nowarn parseformulatree("⇶(p, q, r)", [TERNOP]; function_notation=true)
+@test_nowarn parseformulatree("⇶(p1, q1, ⇶(p2, q2, r2))", [TERNOP]; function_notation=true)
 
-@test_throws parseformulatree("⩰(p, q, r, s)", [QUATERNOP]; function_notation=true)
-@test_throws parseformulatree("⩰(p1, q1, r1, ⩰(p2, q2, r2, s2))",
+@test_nowarn parseformulatree("⩰(p, q, r, s)", [QUATERNOP]; function_notation=true)
+@test_nowarn parseformulatree("⩰(p1, q1, r1, ⩰(p2, q2, r2, s2))",
     [QUATERNOP]; function_notation=true)
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ custom relation ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
