@@ -1,6 +1,8 @@
+import SoleLogics: arity
 
 @testset "Parsing" begin
 
+@test_throws ErrorException parseformulatree("")
 @test_nowarn parseformulatree("p")
 @test_nowarn parseformulatree("⊤")
 
@@ -40,7 +42,7 @@
 @test alphabet(logic(parseformula("p→q"))) == AlphabetOfAny{String}()
 
 
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ function notation ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ function notation ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 @test syntaxstring(parseformulatree("p∧q"); function_notation = true) == "∧(p, q)"
 @test syntaxstring(parseformulatree("p→q"); function_notation = true) == "→(p, q)"
@@ -161,6 +163,21 @@ f = parseformulatree("⟨G⟩(((¬(⟨G⟩((q ∧ p) → (¬(q))))) ∧ (((¬(q 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ custom operator ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+const TERNOP = SoleLogics.NamedOperator{:⇶}()
+SoleLogics.arity(::Type{typeof(TERNOP)}) = 3
+
+const QUATERNOP = SoleLogics.NamedOperator{:⩰}()
+SoleLogics.arity(::Type{typeof(QUATERNOP)}) = 4
+
+@test_throws parseformulatree("⇶(p, q, r)", [TERNOP]; function_notation=true)
+@test_throws parseformulatree("⇶(p1, q1, ⇶(p2, q2, r2))", [TERNOP]; function_notation=true)
+
+@test_throws parseformulatree("⩰(p, q, r, s)", [QUATERNOP]; function_notation=true)
+@test_throws parseformulatree("⩰(p1, q1, r1, ⩰(p2, q2, r2, s2))",
+    [QUATERNOP]; function_notation=true)
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ custom relation ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 struct _TestRel <: AbstractRelation end;
 testrel  = _TestRel();
 SoleLogics.arity(::Type{_TestRel}) = 2
@@ -216,6 +233,16 @@ _f = parseformulatree("{Gp ∧ ¬{G}q", [CurlyRelationalOperator(globalrel)])
     [BoxRelationalOperator(testrel), DiamondRelationalOperator(testrel)]
 )
 end
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ parseformula ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+@test_throws ErrorException parseformula("")
+@test_nowarn parseformula("⊤")
+@test_nowarn parseformula("⊤ ∧ ⊤")
+@test_nowarn parseformula("⊤ ∧ p")
+@test_nowarn parseformula("⊥ ∧ □¬((p∧¬q)→r)")
+@test_nowarn parseformula("□¬((p∧¬q)→r) ∧ ⊤")
+@test_nowarn parseformula("⊤ ∧ (⊥∧¬⊤→⊤)")
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ stress tests ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

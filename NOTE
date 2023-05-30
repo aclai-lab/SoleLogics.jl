@@ -14,22 +14,15 @@
         FullUnbounded       # 4 parameters are combined using product
                             #but A is infinite (thresholds are needed to enumerate things)
 
-
-# rand(Grammar, rng) dispatch to generate a new valid formula
-# rand(Logic, rng) dispatch to generate a new valid formula
-
-Example: XOR in the docs.
-
 * formula normalization heuristic (can be done using precedence for letters, and precedence + hashing for operators)
 
 * fan-in fan-out method to generate pseudorandom Kripke Frames
 
-# Todo refine worlds and relations
 * `generate()` to generate pseudo random Kripke Frames
 
 
 
-<!-- 
+<!-- Draft README.md 
 # Usage
 
 ## Parsing Formulas

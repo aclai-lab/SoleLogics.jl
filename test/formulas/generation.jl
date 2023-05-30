@@ -46,3 +46,9 @@
 #         fxtest_modal(i, letters, i - rand(1:i))
 #     end
 # end
+
+alphabet = ExplicitAlphabet(["p", "q"])
+operators = [⊥,∧,∨]
+gr = SoleLogics.CompleteFlatGrammar(alphabet, operators)
+
+@test length(formulas(gr; maxdepth=3)) == 1631721
