@@ -7,8 +7,6 @@ using Random
 using Reexport
 using Lazy
 
-import SoleBase: frame
-
 include("utils.jl")
 
 export iscrisp, isfinite, isnullary, isunary, isbinary

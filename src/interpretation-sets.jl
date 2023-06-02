@@ -1,5 +1,5 @@
 using SoleBase: AbstractDataset
-using SoleBase: nsamples
+using SoleBase: ninstances
 
 import Base: getindex
 
@@ -9,7 +9,7 @@ import Base: getindex
 Abstract type for ordered sets of interpretations.
 A set of interpretations, also referred to as a *dataset* in this context,
 is a collection of *instances*, each of which is an interpretation, and is 
-identified by an index i_sample::Integer.
+identified by an index i_instance::Integer.
 These structures are especially useful when performing 
 [model checking](https://en.wikipedia.org/wiki/Model_checking).
 
@@ -29,7 +29,7 @@ truthtype(s::AbstractInterpretationSet) = truthtype(typeof(s))
 function check(
     tok::AbstractSyntaxToken,
     d::AbstractInterpretationSet{M},
-    i_sample::Integer,
+    i_instance::Integer,
     args...;
     kwargs...,
 )::truthtype(M) where {M<:AbstractInterpretation}
@@ -39,7 +39,7 @@ end
 function check(
     φ::AbstractFormula,
     d::AbstractInterpretationSet{M},
-    i_sample::Integer,
+    i_instance::Integer,
     args...;
     kwargs...,
 )::truthtype(M) where {M<:AbstractInterpretation}
@@ -57,22 +57,22 @@ function check(
     # TODO normalize before checking, if it is faster!
     # φ = SoleLogics.normalize()
     # # TODO use get_instance instead?
-    map(i_sample->check(
+    map(i_instance->check(
         φ,
         d,
-        i_sample,
+        i_instance,
         args...;
-        # use_memo = (isnothing(use_memo) ? nothing : use_memo[[i_sample]]),
+        # use_memo = (isnothing(use_memo) ? nothing : use_memo[[i_instance]]),
         kwargs...
-    ), 1:nsamples(d))
+    ), 1:ninstances(d))
     # map(
-    #     i_sample->check(
+    #     i_instance->check(
     #         formula(c),
-    #         slice_dataset(d, [i_sample]),
+    #         slice_dataset(d, [i_instance]),
     #         args...;
-    #         use_memo = (isnothing(use_memo) ? nothing : @view use_memo[[i_sample]]),
+    #         use_memo = (isnothing(use_memo) ? nothing : @view use_memo[[i_instance]]),
     #         kwargs...,
-    #     )[1], 1:nsamples(d)
+    #     )[1], 1:ninstances(d)
     # )
 end
 
@@ -91,14 +91,14 @@ struct InterpretationSet{M<:AbstractInterpretation} <: AbstractInterpretationSet
     instances::Vector{M}
 end
 
-Base.getindex(ms::InterpretationSet, i_sample) = Base.getindex(ms.instances, i_sample)
+Base.getindex(ms::InterpretationSet, i_instance) = Base.getindex(ms.instances, i_instance)
 function check(
     f::Union{AbstractSyntaxToken,AbstractFormula},
     is::InterpretationSet,
-    i_sample::Integer,
+    i_instance::Integer,
     args...
 )
-    check(f, is[i_sample], args...)
+    check(f, is[i_instance], args...)
 end
 
 ############################################################################################
@@ -106,7 +106,7 @@ end
 # TODO
 # abstract type AbstractFrameSet{FR<:AbstractFrame} end
 
-# function Base.getindex(::AbstractFrameSet{FR}, i_sample)::FR where {FR<:AbstractFrame}
+# function Base.getindex(::AbstractFrameSet{FR}, i_instance)::FR where {FR<:AbstractFrame}
 #     error("Please, provide ...")
 # end
 
@@ -114,13 +114,13 @@ end
 #     frames::Vector{FR}
 # end
 
-# Base.getindex(ks::FrameSet, i_sample) = Base.getindex(ks.frames, i_sample)
+# Base.getindex(ks::FrameSet, i_instance) = Base.getindex(ks.frames, i_instance)
 
 # struct UniqueFrameSet{FR<:AbstractFrame} <: AbstractFrameSet{FR}
 #     frame::FR
 # end
 
-# Base.getindex(ks::UniqueFrameSet, i_sample) = ks.frame
+# Base.getindex(ks::UniqueFrameSet, i_instance) = ks.frame
 
 ############################################################################################
 ############################# Helpers for (Multi-)modal logics #############################
@@ -141,10 +141,10 @@ function relations(X::AbstractInterpretationSet{M}) where {M<:AbstractKripkeStru
 end
 
 
-function frame(X::AbstractInterpretationSet{M}, i_sample) where {M<:AbstractKripkeStructure}
-    error("Please, provide method frame(::$(typeof(X)), ::$(typeof(i_sample))).")
+function frame(X::AbstractInterpretationSet{M}, i_instance) where {M<:AbstractKripkeStructure}
+    error("Please, provide method frame(::$(typeof(X)), ::$(typeof(i_instance))).")
 end
-accessibles(X::AbstractInterpretationSet, i_sample, args...) = accessibles(frame(X, i_sample), args...)
-allworlds(X::AbstractInterpretationSet, i_sample, args...) = allworlds(frame(X, i_sample), args...)
-nworlds(X::AbstractInterpretationSet, i_sample) = nworlds(frame(X, i_sample))
+accessibles(X::AbstractInterpretationSet, i_instance, args...) = accessibles(frame(X, i_instance), args...)
+allworlds(X::AbstractInterpretationSet, i_instance, args...) = allworlds(frame(X, i_instance), args...)
+nworlds(X::AbstractInterpretationSet, i_instance) = nworlds(frame(X, i_instance))
 
