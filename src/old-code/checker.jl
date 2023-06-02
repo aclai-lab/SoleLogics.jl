@@ -162,7 +162,7 @@ function _check_unary(km::KripkeStructure, ψ::FNode)
     right_key = fhash(rightchild(ψ))
 
     # Ad-hoc negation case
-    if typeof(token(ψ)) == SoleLogics.UnaryOperator{:¬}
+    if token(ψ) isa SoleLogics.UnaryOperator{:¬}
         # NOTE: why is casting to MemoValueType needed here?
         setindex!(memo(km), NEGATION(worlds(km), memo(km, right_key)), key)
     elseif is_modal_operator(token(ψ))
