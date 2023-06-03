@@ -4,8 +4,7 @@ using IterTools
     abstract type AbstractDimensionalFrame{
         N,
         W<:AbstractWorld,
-        T<:TruthValue
-    } <: AbstractMultiModalFrame{W,T} end
+    } <: AbstractMultiModalFrame{W} end
 
 Abstract type for dimensional frames. Given a `N`-dimensional array of size (X, Y, Z, ...)
 the corresponding dimensional frame is a graph where each vertex is an
@@ -17,10 +16,10 @@ See also
 [`IntervalRelation`](@ref),
 [`AbstractDimensionalFrame`](@ref), [`AbstractMultiModalFrame`](@ref).
 """
-abstract type AbstractDimensionalFrame{N,W<:AbstractWorld,T<:TruthValue} <: AbstractMultiModalFrame{W,T} end
+abstract type AbstractDimensionalFrame{N,W<:AbstractWorld} <: AbstractMultiModalFrame{W} end
 
 """
-    struct FullDimensionalFrame{N,W<:AbstractWorld,T<:TruthValue} <: AbstractDimensionalFrame{N,W,T}
+    struct FullDimensionalFrame{N,W<:AbstractWorld} <: AbstractDimensionalFrame{N,W}
         channel_size::NTuple{N,Int}
     end
 
@@ -64,27 +63,27 @@ See also
 [`accessibles`](@ref),
 [`AbstractDimensionalFrame`](@ref), [`AbstractMultiModalFrame`](@ref).
 """
-struct FullDimensionalFrame{N,W<:AbstractWorld,T<:TruthValue} <: AbstractDimensionalFrame{N,W,T}
+struct FullDimensionalFrame{N,W<:AbstractWorld} <: AbstractDimensionalFrame{N,W}
     
     channel_size::NTuple{N,Int}
     
-    function FullDimensionalFrame{N,W,T}(channel_size::NTuple{N,Int}) where
-            {N,W<:AbstractWorld,T<:TruthValue}
-        new{N,W,T}(channel_size)
+    function FullDimensionalFrame{N,W}(channel_size::NTuple{N,Int}) where
+            {N,W<:AbstractWorld}
+        new{N,W}(channel_size)
     end
-    function FullDimensionalFrame{N,W,T}(channel_size::Vararg{Int,N}) where
-            {N,W<:AbstractWorld,T<:TruthValue}
-        FullDimensionalFrame{N,W,T}(channel_size)
+    function FullDimensionalFrame{N,W}(channel_size::Vararg{Int,N}) where
+            {N,W<:AbstractWorld}
+        FullDimensionalFrame{N,W}(channel_size)
     end
     
     function FullDimensionalFrame(channel_size::Tuple{})
-        FullDimensionalFrame{0,OneWorld,Bool}(channel_size)
+        FullDimensionalFrame{0,OneWorld}(channel_size)
     end
     function FullDimensionalFrame(channel_size::Tuple{Int})
-        FullDimensionalFrame{1,Interval{Int},Bool}(channel_size)
+        FullDimensionalFrame{1,Interval{Int}}(channel_size)
     end
     function FullDimensionalFrame(channel_size::Tuple{Int,Int})
-        FullDimensionalFrame{2,Interval2D{Int},Bool}(channel_size)
+        FullDimensionalFrame{2,Interval2D{Int}}(channel_size)
     end
     function FullDimensionalFrame(channel_size...)
         FullDimensionalFrame(channel_size)
@@ -113,9 +112,9 @@ intervals2D_in(a1::Integer, a2::Integer, b1::Integer, b2::Integer) = IterTools.i
 
 # _accessibles(fr::Full0DFrame, ::OneWorld, ::IdentityRel) = [OneWorld()]
 
-const Full0DFrame = FullDimensionalFrame{0,OneWorld,Bool}
-const Full1DFrame = FullDimensionalFrame{1,Interval{Int},Bool}
-const Full2DFrame = FullDimensionalFrame{2,Interval2D{Int},Bool}
+const Full0DFrame = FullDimensionalFrame{0,OneWorld}
+const Full1DFrame = FullDimensionalFrame{1,Interval{Int}}
+const Full2DFrame = FullDimensionalFrame{2,Interval2D{Int}}
 
 ############################################################################################
 

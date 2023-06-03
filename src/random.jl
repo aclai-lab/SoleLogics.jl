@@ -216,7 +216,7 @@ end
 function generate_kripke_frame(
     n::Integer
 )
-    # ws = WorldSet{AbstractWorld}([SoleLogics.NamedWorld(i) for i in 1:n])
+    # ws = WorldSet{AbstractWorld}([SoleLogics.World(i) for i in 1:n])
 end
 
 #= Deprecated overlay code

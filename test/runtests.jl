@@ -28,6 +28,7 @@ test_suites = [
 
     ("Algebras", [
         "algebras/worlds.jl",
+        "algebras/frames.jl",
     ]),
 ]
 

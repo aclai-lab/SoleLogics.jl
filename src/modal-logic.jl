@@ -1,5 +1,5 @@
 using DataStructures: OrderedDict
-using NamedArrays
+using Graphs.SimpleGraphs
 
 """
     abstract type AbstractWorld end
@@ -20,7 +20,7 @@ abstract type AbstractWorld end
 include("algebras/worlds.jl")
 
 """
-    abstract type AbstractFrame{W<:AbstractWorld,T<:TruthValue} end
+    abstract type AbstractFrame{W<:AbstractWorld} end
 
 Abstract type for an accessibility graph (Kripke frame), that gives the structure to
 [Kripke models](https://en.wikipedia.org/wiki/Kripke_structure_(model_checking))'s).
@@ -29,33 +29,17 @@ See also [`truthtype`](@ref), [`worldtype`](@ref),
 [`allworlds`](@ref), [`nworlds`](@ref), [`initialworld`](@ref),
 [`AbstractKripkeStructure`](@ref), [`AbstractWorld`](@ref).
 """
-abstract type AbstractFrame{W<:AbstractWorld,T<:TruthValue} end
+abstract type AbstractFrame{W<:AbstractWorld} end
 
 """
-    truthtype(::Type{<:AbstractFrame{W,T}}) where {W<:AbstractWorld,T<:TruthValue} = T
-    truthtype(fr::AbstractFrame) = truthtype(typeof(fr))
-
-Return the truth type for the relation(s) in the frame.
-
-See also [`AbstractFrame`](@ref).
-"""
-truthtype(::Type{<:AbstractFrame{W,T}}) where {W<:AbstractWorld,T<:TruthValue} = T
-truthtype(fr::AbstractFrame) = truthtype(typeof(fr))
-
-# TODO this is actually a trait (see iscrisp(::AbstractAlgebra)).
-# Move somewhere else, properly.
-iscrisp(FR::Type{<:AbstractFrame}) = (truthtype(FR) == Bool)
-iscrisp(fr::AbstractFrame) = iscrisp(typeof(fr))
-
-"""
-    worldtype(::Type{<:AbstractFrame{W,T}}) where {W<:AbstractWorld,T<:TruthValue} = W
+    worldtype(::Type{<:AbstractFrame{W}}) where {W<:AbstractWorld} = W
     worldtype(fr::AbstractFrame) = worldtype(typeof(fr))
 
 Return the world type of the frame.
 
 See also [`AbstractFrame`](@ref).
 """
-worldtype(::Type{<:AbstractFrame{W,T}}) where {W<:AbstractWorld,T<:TruthValue} = W
+worldtype(::Type{<:AbstractFrame{W}}) where {W<:AbstractWorld} = W
 worldtype(fr::AbstractFrame) = worldtype(typeof(fr))
 
 """
@@ -100,14 +84,13 @@ end
 """
     abstract type AbstractUniModalFrame{
         W<:AbstractWorld,
-        T<:TruthValue
-    } <: AbstractFrame{W,T} end
+    } <: AbstractFrame{W} end
 
 A frame of a modal logic based on a single (implicit) accessibility relation.
 
 See also [`AbstractMultiModalFrame`](@ref), [`AbstractFrame`](@ref).
 """
-abstract type AbstractUniModalFrame{W<:AbstractWorld,T<:TruthValue} <: AbstractFrame{W,T} end
+abstract type AbstractUniModalFrame{W<:AbstractWorld} <: AbstractFrame{W} end
 
 """
     accessibles(fr::AbstractUniModalFrame{W}, w::W)::Vector{W} where {W<:AbstractWorld}
@@ -126,12 +109,29 @@ end
 # TODO Mauro
 # Association "(w1,w2) => truth_value". Not recommended in sparse scenarios.
 # """
-# struct AdjMatModalFrame{W<:AbstractWorld,T<:TruthValue} <: AbstractUniModalFrame{W,T}
+# struct AdjMatUniModalFrame{W<:AbstractWorld,T<:TruthValue} <: AbstractUniModalFrame{W}
 #     adjacents::NamedMatrix{T,Matrix{T},Tuple{OrderedDict{W,Int64},OrderedDict{W,Int64}}}
+# end
 # Upon construction, check that the type is not "OneWorld"
 # end
 # Add an example in the above docstring for accessibles
 # accessibles(...) = ...
+
+# TODO move truth value out of frame (frame is passive, perhaps it is relations that have a truth value)
+"""
+TODO
+"""
+struct ExplicitCrispUniModalFrame{
+    W<:AbstractWorld,
+    G<:SimpleGraphs.AbstractSimpleGraph,
+} <: AbstractUniModalFrame{W}
+    worlds::Vector{W}
+    graph::G
+end
+accessibles(fr::ExplicitCrispUniModalFrame, w::AbstractWorld) = neighbors(fr.graph, findfirst(==(w), fr.worlds))
+allworlds(fr::ExplicitCrispUniModalFrame) = fr.worlds
+nworlds(fr::ExplicitCrispUniModalFrame) = length(fr.worlds)
+
 
 ############################################################################################
 #################################### Multi-modal logic #####################################
@@ -275,8 +275,7 @@ include("algebras/relations.jl")
 """
     abstract type AbstractMultiModalFrame{
         W<:AbstractWorld,
-        T<:TruthValue,
-    } <: AbstractFrame{W,T} end
+    } <: AbstractFrame{W} end
 
 A frame of a multi-modal logic, that is, a modal logic based on a set
 of accessibility relations.
@@ -290,8 +289,7 @@ See also [`AbstractUniModalFrame`](@ref), [`AbstractFrame`](@ref).
 """
 abstract type AbstractMultiModalFrame{
     W<:AbstractWorld,
-    T<:TruthValue,
-} <: AbstractFrame{W,T} end
+} <: AbstractFrame{W} end
 
 
 """
@@ -396,9 +394,8 @@ end
 """
     struct WrapperMultiModalFrame{
         W<:AbstractWorld,
-        T<:TruthValue,
-        D<:AbstractDict{<:AbstractRelation,<:AbstractUniModalFrame{W,T}}
-    } <: AbstractMultiModalFrame{W,T}
+        D<:AbstractDict{<:AbstractRelation,<:AbstractUniModalFrame{W}}
+    } <: AbstractMultiModalFrame{W}
         frames::D
     end
 
@@ -410,9 +407,8 @@ See also [`AbstractRelation`](@ref), [`AbstractUniModalFrame`](@ref).
 """
 struct WrapperMultiModalFrame{
     W<:AbstractWorld,
-    T<:TruthValue,
-    D<:AbstractDict{<:AbstractRelation,<:AbstractUniModalFrame{W,T}}
-} <: AbstractMultiModalFrame{W,T}
+    D<:AbstractDict{<:AbstractRelation,<:AbstractUniModalFrame{W}}
+} <: AbstractMultiModalFrame{W}
     frames::D
 end
 function accessibles(
@@ -440,10 +436,17 @@ end
 # """
 # TODO
 # """
-# struct AdjMatMultiModalFrame{W<:AbstractWorld,T<:TruthValue} <: AbstractMultiModalFrame{W,T}
-#     adjacents::NamedArray{W,3}
+# struct AdjMatCrispMultiModalFrame{
+#     W<:AbstractWorld
+# } <: AbstractMultiModalFrame{W}
+#     worlds::Vector{W}
+#     adjacents::Vector{W,Dict{R,Vector{W,3}}}
 # end
-# # accessibles(...) = ...
+# accessibles(fr::AdjMatMultiModalFrame) = ...
+
+# allworlds(fr::AdjMatMultiModalFrame) = fr.worlds
+# nworlds(fr::AdjMatMultiModalFrame) = length(fr)
+
 
 include("algebras/frames.jl")
 
@@ -481,7 +484,7 @@ abstract type AbstractModalAssignment{W<:AbstractWorld,A,T<:TruthValue} end
         W<:AbstractWorld,
         A,
         T<:TruthValue,
-        FR<:AbstractFrame{W,T},
+        FR<:AbstractFrame{W},
     } <: AbstractInterpretation{A,T} end
 
 Abstract type for representing
@@ -497,7 +500,7 @@ abstract type AbstractKripkeStructure{
     W<:AbstractWorld,
     A,
     T<:TruthValue,
-    FR<:AbstractFrame{W,T},
+    FR<:AbstractFrame{W},
 } <: AbstractInterpretation{A,T} end
 
 function check(
@@ -516,7 +519,7 @@ function check(
     error("Please, provide ...")
 end
 
-function frame(i::AbstractKripkeStructure{W,A,T,FR})::FR where {W<:AbstractWorld,A,T<:TruthValue,FR<:AbstractFrame{W,T}}
+function frame(i::AbstractKripkeStructure{W,A,T,FR})::FR where {W<:AbstractWorld,A,T<:TruthValue,FR<:AbstractFrame{W}}
     return error("Please, provide method frame(i::$(typeof(i))).")
 end
 
@@ -554,7 +557,7 @@ initialworld(i::AbstractKripkeStructure) = initialworld(frame(i))
         W<:AbstractWorld,
         A,
         T<:TruthValue,
-        FR<:AbstractFrame{W,T},
+        FR<:AbstractFrame{W},
         AS<:AbstractModalAssignment{W,A,T}
     } <: AbstractKripkeStructure{W,A,T,FR}
         frame::FR
@@ -570,7 +573,7 @@ struct KripkeStructure{
     W<:AbstractWorld,
     A,
     T<:TruthValue,
-    FR<:AbstractFrame{W,T},
+    FR<:AbstractFrame{W},
     AS<:AbstractModalAssignment{W,A,T}
 } <: AbstractKripkeStructure{W,A,T,FR}
     frame::FR

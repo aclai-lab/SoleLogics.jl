@@ -282,7 +282,7 @@ isglobal(t::SyntaxTree)::Bool =
 
 """
     function collateworlds(
-        fr::AbstractFrame{W,Bool},
+        fr::AbstractFrame{W},
         op::AbstractOperator,
         t::NTuple{N,WorldSetType},
     )::AbstractWorldSet{<:W} where {N,W<:AbstractWorld,WorldSetType<:AbstractWorldSet}
@@ -295,7 +295,7 @@ See also [`check`](@ref), [`iscrisp`](@ref),
 [`AbstractOperator`](@ref), [`AbstractFrame`](@ref).
 """
 function collateworlds(
-    fr::AbstractFrame{W,Bool},
+    fr::AbstractFrame{W},
     op::AbstractOperator,
     t::NTuple{N,<:AbstractWorldSet},
 )::AbstractWorldSet{<:W} where {N,W<:AbstractWorld}
@@ -309,16 +309,16 @@ function collateworlds(
 end
 
 # I know, these exceed 92 characters. But they look nicer like this!! :D
-collateworlds(fr::AbstractFrame{W,Bool}, ::typeof(⊤), ::NTuple{0,<:AbstractWorldSet}) where {W<:AbstractWorld} = allworlds(fr)
-collateworlds(::AbstractFrame{W,Bool}, ::typeof(⊥), ::NTuple{0,<:AbstractWorldSet}) where {W<:AbstractWorld} = W[]
+collateworlds(fr::AbstractFrame{W}, ::typeof(⊤), ::NTuple{0,<:AbstractWorldSet}) where {W<:AbstractWorld} = allworlds(fr)
+collateworlds(::AbstractFrame{W}, ::typeof(⊥), ::NTuple{0,<:AbstractWorldSet}) where {W<:AbstractWorld} = W[]
 
-collateworlds(fr::AbstractFrame{W,Bool}, ::typeof(¬), (ws,)::NTuple{1,<:AbstractWorldSet}) where {W<:AbstractWorld} = setdiff(allworlds(fr), ws)
-collateworlds(::AbstractFrame{W,Bool}, ::typeof(∧), (ws1, ws2)::NTuple{2,<:AbstractWorldSet}) where {W<:AbstractWorld} = intersect(ws1, ws2)
-collateworlds(::AbstractFrame{W,Bool}, ::typeof(∨), (ws1, ws2)::NTuple{2,<:AbstractWorldSet}) where {W<:AbstractWorld} = union(ws1, ws2)
-collateworlds(fr::AbstractFrame{W,Bool}, ::typeof(→), (ws1, ws2)::NTuple{2,<:AbstractWorldSet}) where {W<:AbstractWorld} = union(setdiff(allworlds(fr), ws1), ws2)
+collateworlds(fr::AbstractFrame{W}, ::typeof(¬), (ws,)::NTuple{1,<:AbstractWorldSet}) where {W<:AbstractWorld} = setdiff(allworlds(fr), ws)
+collateworlds(::AbstractFrame{W}, ::typeof(∧), (ws1, ws2)::NTuple{2,<:AbstractWorldSet}) where {W<:AbstractWorld} = intersect(ws1, ws2)
+collateworlds(::AbstractFrame{W}, ::typeof(∨), (ws1, ws2)::NTuple{2,<:AbstractWorldSet}) where {W<:AbstractWorld} = union(ws1, ws2)
+collateworlds(fr::AbstractFrame{W}, ::typeof(→), (ws1, ws2)::NTuple{2,<:AbstractWorldSet}) where {W<:AbstractWorld} = union(setdiff(allworlds(fr), ws1), ws2)
 
 function collateworlds(
-    fr::AbstractMultiModalFrame{W,Bool},
+    fr::AbstractMultiModalFrame{W},
     op::DiamondRelationalOperator,
     (ws,)::NTuple{1,<:AbstractWorldSet},
 ) where {W<:AbstractWorld}
@@ -341,7 +341,7 @@ function collateworlds(
 end
 
 function collateworlds(
-    fr::AbstractMultiModalFrame{W,Bool},
+    fr::AbstractMultiModalFrame{W},
     op::BoxRelationalOperator,
     (ws,)::NTuple{1,<:AbstractWorldSet},
 ) where {W<:AbstractWorld}

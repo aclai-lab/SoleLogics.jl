@@ -56,7 +56,6 @@ function check(
 )::Vector{truthtype(M)} where {M<:AbstractInterpretation}
     # TODO normalize before checking, if it is faster!
     # φ = SoleLogics.normalize()
-    # # TODO use get_instance instead?
     map(i_instance->check(
         φ,
         d,
@@ -91,7 +90,7 @@ struct InterpretationSet{M<:AbstractInterpretation} <: AbstractInterpretationSet
     instances::Vector{M}
 end
 
-Base.getindex(ms::InterpretationSet, i_instance) = Base.getindex(ms.instances, i_instance)
+Base.getindex(ms::InterpretationSet, i_instance::Integer) = Base.getindex(ms.instances, i_instance)
 function check(
     f::Union{AbstractSyntaxToken,AbstractFormula},
     is::InterpretationSet,
@@ -106,7 +105,7 @@ end
 # TODO
 # abstract type AbstractFrameSet{FR<:AbstractFrame} end
 
-# function Base.getindex(::AbstractFrameSet{FR}, i_instance)::FR where {FR<:AbstractFrame}
+# function Base.getindex(::AbstractFrameSet{FR}, i_instance::Integer)::FR where {FR<:AbstractFrame}
 #     error("Please, provide ...")
 # end
 
@@ -114,13 +113,13 @@ end
 #     frames::Vector{FR}
 # end
 
-# Base.getindex(ks::FrameSet, i_instance) = Base.getindex(ks.frames, i_instance)
+# Base.getindex(ks::FrameSet, i_instance::Integer) = Base.getindex(ks.frames, i_instance::Integer)
 
 # struct UniqueFrameSet{FR<:AbstractFrame} <: AbstractFrameSet{FR}
 #     frame::FR
 # end
 
-# Base.getindex(ks::UniqueFrameSet, i_instance) = ks.frame
+# Base.getindex(ks::UniqueFrameSet, i_instance::Integer) = ks.frame
 
 ############################################################################################
 ############################# Helpers for (Multi-)modal logics #############################
@@ -141,10 +140,10 @@ function relations(X::AbstractInterpretationSet{M}) where {M<:AbstractKripkeStru
 end
 
 
-function frame(X::AbstractInterpretationSet{M}, i_instance) where {M<:AbstractKripkeStructure}
+function frame(X::AbstractInterpretationSet{M}, i_instance::Integer) where {M<:AbstractKripkeStructure}
     error("Please, provide method frame(::$(typeof(X)), ::$(typeof(i_instance))).")
 end
-accessibles(X::AbstractInterpretationSet, i_instance, args...) = accessibles(frame(X, i_instance), args...)
-allworlds(X::AbstractInterpretationSet, i_instance, args...) = allworlds(frame(X, i_instance), args...)
-nworlds(X::AbstractInterpretationSet, i_instance) = nworlds(frame(X, i_instance))
+accessibles(X::AbstractInterpretationSet, i_instance::Integer, args...) = accessibles(frame(X, i_instance), args...)
+allworlds(X::AbstractInterpretationSet, i_instance::Integer, args...) = allworlds(frame(X, i_instance), args...)
+nworlds(X::AbstractInterpretationSet, i_instance::Integer) = nworlds(frame(X, i_instance))
 

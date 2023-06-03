@@ -27,7 +27,7 @@ true
 
 ```
 
-See also [`OneWorld`](@ref), [`NamedWorld`](@ref), [`Interval`](@ref), [`Interval2D`](@ref),
+See also [`OneWorld`](@ref), [`World`](@ref), [`Interval`](@ref), [`Interval2D`](@ref),
 [`GeometricalWorld`](@ref), [`AbstractWorld`](@ref).
 """
 goeswithdim(w::AbstractWorld, d) = goeswithdim(typeof(w), d)
@@ -58,7 +58,7 @@ goeswithdim(::Type{OneWorld}, ::Val{0}) = true
 ############################################################################################
 
 """
-    struct NamedWorld{T} <: AbstractWorld
+    struct World{T} <: AbstractWorld
         name::T
     end
 
@@ -68,13 +68,13 @@ in an explicit way.
 
 See also [`OneWorld`](@ref), [`AbstractWorld`](@ref).
 """
-struct NamedWorld{T} <: AbstractWorld
+struct World{T} <: AbstractWorld
     name::T
 end
 
-name(w::NamedWorld) = w.name
+name(w::World) = w.name
 
-Base.show(io::IO, w::NamedWorld) = print(io, name(w))
+Base.show(io::IO, w::World) = print(io, name(w))
 
 ############################################################################################
 
