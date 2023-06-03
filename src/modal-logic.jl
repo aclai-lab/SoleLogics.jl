@@ -158,7 +158,7 @@ true
 When implementing a new relation type `R`, please provide the methods:
 
     arity(::Type{R})::Int = ...
-    syntaxstring(::R)::String = ...
+    syntaxstring(::R; kwargs...)::String = ...
 
 If the relation is symmetric relation, please specify its converse relation `CR` with:
 
@@ -580,7 +580,7 @@ end
 function check(f::AbstractFormula, i::KripkeStructure{W,A,T}, w::W)::T where {W<:AbstractWorld,A,T<:TruthValue} end
 
 function check(f::AbstractFormula, i::KripkeStructure{W,A,T})::T where {W<:AbstractWorld,A,T<:TruthValue}
-    check(f, i, initial(i))
+    check(f, i, initialworld(i))
 end
 
 function check(p::Proposition{A}, i::KripkeStructure{W,A}, w::W) where {W<:AbstractWorld,A}
