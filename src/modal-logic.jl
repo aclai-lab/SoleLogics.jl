@@ -1,5 +1,5 @@
 using DataStructures: OrderedDict
-using Graphs.SimpleGraphs
+using Graphs
 
 """
     abstract type AbstractWorld end
@@ -123,12 +123,12 @@ TODO
 """
 struct ExplicitCrispUniModalFrame{
     W<:AbstractWorld,
-    G<:SimpleGraphs.AbstractSimpleGraph,
+    G<:Graphs.SimpleGraphs.AbstractSimpleGraph,
 } <: AbstractUniModalFrame{W}
     worlds::Vector{W}
     graph::G
 end
-accessibles(fr::ExplicitCrispUniModalFrame, w::AbstractWorld) = neighbors(fr.graph, findfirst(==(w), fr.worlds))
+accessibles(fr::ExplicitCrispUniModalFrame, w::AbstractWorld) = fr.worlds[neighbors(fr.graph, findfirst(==(w), fr.worlds))]
 allworlds(fr::ExplicitCrispUniModalFrame) = fr.worlds
 nworlds(fr::ExplicitCrispUniModalFrame) = length(fr.worlds)
 

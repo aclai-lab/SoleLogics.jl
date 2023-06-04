@@ -318,6 +318,22 @@ collateworlds(::AbstractFrame{W}, ::typeof(∨), (ws1, ws2)::NTuple{2,<:Abstract
 collateworlds(fr::AbstractFrame{W}, ::typeof(→), (ws1, ws2)::NTuple{2,<:AbstractWorldSet}) where {W<:AbstractWorld} = union(setdiff(allworlds(fr), ws1), ws2)
 
 function collateworlds(
+    fr::AbstractFrame{W},
+    op::typeof(◊),
+    (ws,)::NTuple{1,<:AbstractWorldSet},
+) where {W<:AbstractWorld}
+    filter(w1->intersects(ws, accessibles(fr, w1)), collect(allworlds(fr)))
+end
+
+function collateworlds(
+    fr::AbstractFrame{W},
+    op::typeof(□),
+    (ws,)::NTuple{1,<:AbstractWorldSet},
+) where {W<:AbstractWorld}
+    filter(w1->issubset(accessibles(fr, w1), ws), collect(allworlds(fr)))
+end
+
+function collateworlds(
     fr::AbstractMultiModalFrame{W},
     op::DiamondRelationalOperator,
     (ws,)::NTuple{1,<:AbstractWorldSet},
