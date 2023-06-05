@@ -100,18 +100,21 @@ function normalize(
     simplify_constants = nothing,
     allow_proposition_flipping = nothing,
     forced_negation_removal = nothing,
+    remove_identities = nothing,
 )
     if profile == :readability
         if isnothing(remove_boxes)               remove_boxes = false end
         if isnothing(reduce_negations)           reduce_negations = true end
         if isnothing(simplify_constants)         simplify_constants = true end
         if isnothing(allow_proposition_flipping) allow_proposition_flipping = true end
+        if isnothing(remove_identities)          remove_identities = false end
         # TODO leave \to's instead of replacing them with \lor's...
     elseif profile == :modelchecking
         if isnothing(remove_boxes)               remove_boxes = true end
         if isnothing(reduce_negations)           reduce_negations = true end
         if isnothing(simplify_constants)         simplify_constants = true end
         if isnothing(allow_proposition_flipping) allow_proposition_flipping = true end
+        if isnothing(remove_identities)          remove_identities = true end
     else
         error("Unknown normalization profile: $(repr(profile))")
     end
@@ -135,51 +138,23 @@ function normalize(
         forced_negation_removal = forced_negation_removal,
     )
 
-    tok, ch = token(t), children(t)
+    newt = t
+
+    # Remove modal operators based on the identity relation
     newt = begin
-        if tok isa AbstractOperator && (
-            tok in [∨, ∧, →]
-            || SoleLogics.isbox(tok)
-            || SoleLogics.isdiamond(tok)
-        )
-            normch = _normalize.(ch)
-            if simplify_constants
-                if (tok == ∨) && arity(tok) == 2
-                    if     token(normch[1]) == ⊥  normch[2]
-                    elseif token(normch[2]) == ⊥  normch[1]
-                    elseif token(normch[1]) == ⊤  SyntaxTree(⊤)
-                    elseif token(normch[2]) == ⊤  SyntaxTree(⊤)
-                    else                          SyntaxTree(tok, normch)
-                    end
-                elseif (tok == ∧) && arity(tok) == 2
-                    if     token(normch[1]) == ⊥  SyntaxTree(⊥)
-                    elseif token(normch[2]) == ⊥  SyntaxTree(⊥)
-                    elseif token(normch[1]) == ⊤  normch[2]
-                    elseif token(normch[2]) == ⊤  normch[1]
-                    else                          SyntaxTree(tok, normch)
-                    end
-                elseif (tok == →) && arity(tok) == 2
-                    if     token(normch[1]) == ⊥  SyntaxTree(⊥)
-                    elseif token(normch[2]) == ⊥  SyntaxTree(⊥)
-                    elseif token(normch[1]) == ⊤  normch[2]
-                    elseif token(normch[2]) == ⊤  normch[1]
-                    else                          SyntaxTree(∨, _normalize(¬normch[1]), normch[2])
-                    end
-                elseif SoleLogics.isbox(tok) && arity(tok) == 1
-                    if     token(normch[1]) == ⊤  SyntaxTree(⊤)
-                    else                          SyntaxTree(tok, normch)
-                    end
-                elseif SoleLogics.isdiamond(tok) && arity(tok) == 1
-                    if     token(normch[1]) == ⊥  SyntaxTree(⊥)
-                    else                          SyntaxTree(tok, normch)
-                    end
-                else
-                    error("Internal error in normalize(..., simplify_constants = $(simplify_constants))")
-                end
-            else
-                SyntaxTree(tok, normch)
-            end
-        elseif (tok == ¬) && arity(tok) == 1
+        tok, ch = token(newt), children(newt)
+        if remove_identities && tok isa AbstractRelationalOperator &&
+            relation(tok) == identityrel && arity(tok) == 1
+            SyntaxTree(token(ch[1]))
+        else
+            newt
+        end
+    end
+
+    # Simplify
+    newt = begin
+        tok, ch = token(newt), children(newt)
+        if (tok == ¬) && arity(tok) == 1
             child = ch[1]
             chtok, grandchildren = token(child), children(child)
             if reduce_negations && (chtok == ¬) && arity(chtok) == 1
@@ -226,8 +201,54 @@ function normalize(
         end
     end
 
-    tok, ch = token(newt), children(newt)
+    # Simplify constants
     newt = begin
+        tok, ch = token(newt), children(newt)
+        if simplify_constants && tok isa AbstractOperator
+            if (tok == ∨) && arity(tok) == 2
+                if     token(ch[1]) == ⊥  ch[2]
+                elseif token(ch[2]) == ⊥  ch[1]
+                elseif token(ch[1]) == ⊤  SyntaxTree(⊤)
+                elseif token(ch[2]) == ⊤  SyntaxTree(⊤)
+                else                      SyntaxTree(tok, ch)
+                end
+            elseif (tok == ∧) && arity(tok) == 2
+                if     token(ch[1]) == ⊥  SyntaxTree(⊥)
+                elseif token(ch[2]) == ⊥  SyntaxTree(⊥)
+                elseif token(ch[1]) == ⊤  ch[2]
+                elseif token(ch[2]) == ⊤  ch[1]
+                else                      SyntaxTree(tok, ch)
+                end
+            elseif (tok == →) && arity(tok) == 2
+                if     token(ch[1]) == ⊥  SyntaxTree(⊥)
+                elseif token(ch[2]) == ⊥  SyntaxTree(⊥)
+                elseif token(ch[1]) == ⊤  ch[2]
+                elseif token(ch[2]) == ⊤  ch[1]
+                else                      SyntaxTree(∨, _normalize(¬ch[1]), ch[2])
+                end
+            elseif (tok == ¬) && arity(tok) == 1
+                if     token(ch[1]) == ⊤  SyntaxTree(⊥)
+                elseif token(ch[1]) == ⊥  SyntaxTree(⊤)
+                else                      SyntaxTree(tok, ch)
+                end
+            elseif SoleLogics.isbox(tok) && arity(tok) == 1
+                if     token(ch[1]) == ⊤  SyntaxTree(⊤)
+                else                      SyntaxTree(tok, ch)
+                end
+            elseif SoleLogics.isdiamond(tok) && arity(tok) == 1
+                if     token(ch[1]) == ⊥  SyntaxTree(⊥)
+                else                      SyntaxTree(tok, ch)
+                end
+            else
+                SyntaxTree(tok, ch)
+            end
+        else
+            SyntaxTree(tok, ch)
+        end
+    end
+
+    newt = begin
+        tok, ch = token(newt), children(newt)
         if remove_boxes && tok isa AbstractOperator && SoleLogics.isbox(tok) && arity(tok) == 1
             # remove_boxes -> substitute every [X]φ with ¬⟨X⟩¬φ
             child = ch[1]
