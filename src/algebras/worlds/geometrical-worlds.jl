@@ -39,8 +39,8 @@ struct Point{N,T} <: GeometricalWorld
     Point(w::Point) = Point(w.xyz)
     
     Point{N,T}(xyz::NTuple{N,T}) where {N,T} = new{N,T}(xyz)
-    Point() = error("Cannot instantiate Point in a 0-dimensional space." *
-        " Please, consider using `OneWorld` instead.")
+    Point() = error("Cannot instantiate Point in a 0-dimensional space. " *
+        "Please, consider using `OneWorld` instead.")
     Point(xyz::NTuple{N,T}) where {N,T} = Point{N,T}(xyz)
     Point((xyz,)::Tuple{NTuple{N,T}}) where {N,T} = Point{N,T}(xyz)
     Point(xyz::Vararg) = Point(xyz)

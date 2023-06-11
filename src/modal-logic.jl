@@ -73,8 +73,8 @@ can provide an initial world.
 See also [`allworlds`](@ref), [`nworlds`](@ref), [`AbstractFrame`](@ref).
 """
 function initialworld(fr::AbstractFrame{W})::Union{Nothing,W} where {W<:AbstractWorld}
-    error("Please, provide method" *
-        " initialworld(frame::$(typeof(fr)))::Union{Nothing,$(worldtype(fr))}.")
+    error("Please, provide method " *
+        "initialworld(frame::$(typeof(fr)))::Union{Nothing,$(worldtype(fr))}.")
 end
 
 ############################################################################################
@@ -735,8 +735,8 @@ function modallogic(;
     default_operators = BASE_MODAL_OPERATORS,
 )
     if !isnothing(operators) && length(setdiff(operators, BASE_PROPOSITIONAL_OPERATORS)) == 0
-        @warn "Instantiating modal logic (via `modallogic`) with solely" *
-            " propositional operators ($(operators)). Consider using propositionallogic instead."
+        @warn "Instantiating modal logic (via `modallogic`) with solely " *
+            "propositional operators ($(operators)). Consider using propositionallogic instead."
     end
     _baselogic(
         alphabet = alphabet,

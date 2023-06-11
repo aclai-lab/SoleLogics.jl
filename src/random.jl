@@ -189,8 +189,8 @@ function randformulatree(
 
     # If the alphabet is not iterable, this function should not work.
     if !isfinite(alphabet)
-        @warn "Attempting to generate random formulas from" *
-            " (infinite) alphabet of type $(typeof(alphabet))!"
+        @warn "Attempting to generate random formulas from " *
+            "(infinite) alphabet of type $(typeof(alphabet))!"
     end
 
     return _randformulatree(height, modaldepth, rng)

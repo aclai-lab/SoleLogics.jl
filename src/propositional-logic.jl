@@ -73,10 +73,10 @@ function Base.getindex(
     ::Proposition,
     args...
 )::T where {AA,T<:TruthValue}
-    return error("Please, provide method" *
-                 " Base.getindex(::$(typeof(i))," *
-                 " ::Proposition," *
-                 " args::$(typeof(args))::$(truthtype(i)).")
+    return error("Please, provide method " *
+                 "Base.getindex(::$(typeof(i)), " *
+                 "::Proposition, " *
+                 "args...::$(typeof(args))::$(truthtype(i)).")
 end
 
 """
@@ -87,9 +87,9 @@ Return whether an assigment has a truth value for a given proposition.
 See also [`AbstractInterpretation`](@ref).
 """
 function Base.haskey(i::AbstractAssignment{AA}, ::Proposition)::Bool where {AA}
-    return error("Please, provide method" *
-                 " Base.haskey(::$(typeof(i))," *
-                 " ::Proposition)::Bool.")
+    return error("Please, provide method " *
+                 "Base.haskey(::$(typeof(i)), " *
+                 "::Proposition)::Bool.")
 end
 
 # Helpers
@@ -104,7 +104,7 @@ function Base.getindex(
     #     return error("Please, provide method" *
     #                  " Base.getindex(::$(typeof(i))," *
     #                  " a," *
-    #                  " args::$(typeof(args))::$(truthtype(i)).")
+    #                  " args...::$(typeof(args))::$(truthtype(i)).")
     # end
 end
 function Base.haskey(i::AbstractAssignment, a)::Bool
@@ -158,8 +158,8 @@ function check(
         ts = Tuple([check(a, childtree, i, args...) for childtree in children(tree)])
         return collatetruth(a, token(tree), ts)
     else
-        return error("Unknown token type encountered when checking formula" *
-                     " on interpretation of type $(typeof(i)): $(typeof(token(tree))).")
+        return error("Unknown token type encountered when checking formula " *
+                     "on interpretation of type $(typeof(i)): $(typeof(token(tree))).")
     end
 end
 

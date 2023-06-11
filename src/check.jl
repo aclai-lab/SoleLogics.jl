@@ -321,11 +321,11 @@ function collateworlds(
     t::NTuple{N,<:AbstractWorldSet},
 )::AbstractWorldSet{<:W} where {N,W<:AbstractWorld}
     if arity(op) != length(t)
-        return error("Cannot collate $(length(t)) truth values for" *
-                     " operator $(typeof(op)) with arity $(arity(op))).")
+        return error("Cannot collate $(length(t)) truth values for " *
+                     "operator $(typeof(op)) with arity $(arity(op))).")
     else
-        return error("Please, provide method collateworlds(::$(typeof(fr))," *
-                     " ::$(typeof(op)), ::NTuple{$(arity(op)), $(AbstractWorldSet{W})}.")
+        return error("Please, provide method collateworlds(::$(typeof(fr)), " *
+                     "::$(typeof(op)), ::NTuple{$(arity(op)), $(AbstractWorldSet{W})}.")
     end
 end
 

@@ -118,8 +118,8 @@ struct Proposition{A} <: AbstractSyntaxToken
     atom::A
 
     function Proposition{A}(atom::A) where {A}
-        @assert !(atom isa Union{AbstractSyntaxToken,AbstractFormula}) "Illegal nesting." *
-            " Cannot instantiate Proposition with atom of type $(typeof(atom))"
+        @assert !(atom isa Union{AbstractSyntaxToken,AbstractFormula}) "Illegal nesting. " *
+            "Cannot instantiate Proposition with atom of type $(typeof(atom))"
         new{A}(atom)
     end
     function Proposition(atom::A) where {A}
@@ -169,8 +169,8 @@ See also [`Proposition`](@ref), [`check`](@ref).
 negation(p::Proposition) = Proposition(negation(atom(p)))
 
 function negation(atom::Any)
-    return error("Please, provide method" *
-        " SoleLogics.negation(::$(typeof(atom))).")
+    return error("Please, provide method " *
+        "SoleLogics.negation(::$(typeof(atom))).")
 end
 
 ############################################################################################
@@ -348,8 +348,8 @@ See also
 [`AbstractOperator`](@ref).
 """
 function joinformulas(op::AbstractOperator, ::NTuple{N,F})::F where {N,F<:AbstractFormula}
-    return error("Please, provide method" *
-        " joinformulas(op::AbstractOperator, children::NTuple{N,$(F)}) where {N}.")
+    return error("Please, provide method " *
+        "joinformulas(op::AbstractOperator, children::NTuple{N,$(F)}) where {N}.")
 end
 
 function joinformulas(op::AbstractOperator, children::Vararg{F,N})::F where {N,F<:AbstractFormula}
@@ -481,8 +481,8 @@ struct SyntaxTree{
     children::NTuple{N,SyntaxTree} where {N}
 
     function _aritycheck(N, T, token, children)
-        @assert arity(token) == N "Cannot instantiate SyntaxTree{$(T)} with token" *
-                                  " $(token) of arity $(arity(token)) and $(N) children."
+        @assert arity(token) == N "Cannot instantiate SyntaxTree{$(T)} with token " *
+                                  "$(token) of arity $(arity(token)) and $(N) children."
         return nothing
     end
 
@@ -781,8 +781,8 @@ end
 
 # Helper
 function Base.in(atom::Union{String,Number}, a::AbstractAlphabet)
-    @warn "Please, use Base.in(Proposition($(atom)), alphabet::$(typeof(a))) instead of" *
-        " Base.in($(atom), alphabet::$(typeof(a)))"
+    @warn "Please, use Base.in(Proposition($(atom)), alphabet::$(typeof(a))) instead of " *
+        "Base.in($(atom), alphabet::$(typeof(a)))"
     Base.in(Proposition(atom), a)
 end
 
@@ -935,11 +935,11 @@ function formulas(
     @assert maxdepth >= 0
     @assert nformulas > 0
     if isfinite(alphabet(g))
-        return error("Please, provide method formulas(::$(typeof(g)), maxdepth," *
-                     " nformulas, args...).")
+        return error("Please, provide method formulas(::$(typeof(g)), maxdepth, " *
+                     "nformulas, args...).")
     else
-        return error("Cannot enumerate formulas of (infinite)" *
-            " alphabet of type $(typeof(alphabet(g))).")
+        return error("Cannot enumerate formulas of (infinite) " *
+            "alphabet of type $(typeof(alphabet(g))).")
     end
 end
 
@@ -1118,8 +1118,8 @@ In order to check syntax trees without algebras, truth values should provide
 a default algebra it works with.
 """
 function default_algebra(::Type{T})::AbstractAlgebra{<:T} where {T<:TruthValue}
-    return error("Please, provide method" *
-                 " default_algebra(::$(typeof(T)))::AbstractAlgebra{<:$(T)}.")
+    return error("Please, provide method " *
+                 "default_algebra(::$(typeof(T)))::AbstractAlgebra{<:$(T)}.")
 end
 
 ############################################################################################
@@ -1410,16 +1410,16 @@ struct Formula{L<:AbstractLogic} <: AbstractFormula
         # Check that the propositions belong to the alphabet of the logic
         if !check_tree && check_propositions
             @assert all([p in alphabet(_logic[])
-                         for p in propositions(synstruct)]) "Cannot" *
-                           " instantiate Formula{$(L)} with illegal propositions:" *
-                           " $(filter((p)->!(p in alphabet(_logic[])), propositions(synstruct)))"
+                         for p in propositions(synstruct)]) "Cannot " *
+                           "instantiate Formula{$(L)} with illegal propositions: " *
+                           "$(filter((p)->!(p in alphabet(_logic[])), propositions(synstruct)))"
         end
 
         # Check that the token types of the tree are a subset of the tokens
         #  allowed by the logic
-        @assert tokenstype(synstruct) <: tokenstype(_logic[]) "Cannot" *
-                             " instantiate Formula{$(L)} with illegal token types $(tokenstype(synstruct))." *
-                             " Token types should be <: $(tokenstype(_logic[]))."
+        @assert tokenstype(synstruct) <: tokenstype(_logic[]) "Cannot " *
+                             "instantiate Formula{$(L)} with illegal token types $(tokenstype(synstruct)). " *
+                             "Token types should be <: $(tokenstype(_logic[]))."
 
         return new{L}(_logic, synstruct)
     end
@@ -1457,12 +1457,12 @@ end
 #  the resulting formula may be of a different logic.
 function joinformulas(op::AbstractOperator, children::NTuple{N,Formula}) where {N}
     ls = unique(logic.(children)) # Uses Base.isequal
-    @assert length(ls) == 1 "Cannot" *
-                " build formula by combination of formulas with different logics: $(ls)."
+    @assert length(ls) == 1 "Cannot " *
+                "build formula by combination of formulas with different logics: $(ls)."
     l = first(ls)
     # "TODO expand logic's set of operators (op is not in it: $(typeof(op)) ∉ $(operatorstype(l)))."
-    @assert typeof(op) <: operatorstype(l) "Can't join $(N) formulas via operator $(op):" *
-        " this operator does not belong to the logic. $(typeof(op)) <: $(operatorstype(l)) should hold!"
+    @assert typeof(op) <: operatorstype(l) "Can't join $(N) formulas via operator $(op): " *
+        "this operator does not belong to the logic. $(typeof(op)) <: $(operatorstype(l)) should hold!"
     return Formula(l, joinformulas(op, map(synstruct, children)))
 end
 
@@ -1530,9 +1530,9 @@ function check(
     m::AbstractInterpretation{A,T},
     args...,
 )::T where {A,T<:TruthValue}
-    return error("Please, provide method" *
-                 " check(f::$(typeof(f)), m::$(typeof(m))," *
-                 " args::$(typeof(args))::$(truthtype(m)).")
+    return error("Please, provide method " *
+                 "check(f::$(typeof(f)), m::$(typeof(m)), " *
+                 "args...::$(typeof(args))::$(truthtype(m)).")
 end
 
 # Helper: use default algebra when checking on an abstract syntax tree
@@ -1546,8 +1546,8 @@ end
 
 # We provide an extra safety layer by complementing Base.in with syntax tokens/trees and alphabets.
 function Base.in(t::Union{AbstractSyntaxToken,AbstractSyntaxStructure}, a::AbstractAlphabet)
-    return error("Attempting Base.in($(typeof(t)), ::$(typeof(a)))," *
-                 " but objects of type $(typeof(t)) cannot belong to alphabets.")
+    return error("Attempting Base.in($(typeof(t)), ::$(typeof(a))), " *
+                 "but objects of type $(typeof(t)) cannot belong to alphabets.")
 end
 
 """

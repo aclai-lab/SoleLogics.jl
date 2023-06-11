@@ -229,8 +229,8 @@ function tokenizer(
     invalidops = filter(o -> syntaxstring(o) !=
         strip_whitespaces(syntaxstring(o), additional_whitespaces = additional_whitespaces),
         operators)
-    @assert length(invalidops) == 0 "Cannot safely parse operators that are" *
-        " prefixed/suffixed by whitespaces: " * join(invalidops, ", ")
+    @assert length(invalidops) == 0 "Cannot safely parse operators that are " *
+        "prefixed/suffixed by whitespaces: " * join(invalidops, ", ")
 
     # Each parsing method has to know which symbols represent opening/closing a context;
     #  additionaly, parsing in function notation needs to know how arguments are separated.
@@ -402,8 +402,8 @@ function parseformulatree(
             (allunique(string.([opening_bracket, arg_delim])) ||
              allunique(string.([closing_bracket, arg_delim]))) "" *
         "Invalid " *
-        "special sequences provided: please, check that both the `opening_bracket`" *
-        " and the `closing_bracket` are not equal to the `arg_delim`."
+        "special sequences provided: please, check that both the `opening_bracket` " *
+        "and the `closing_bracket` are not equal to the `arg_delim`."
 
     opening_bracket = Symbol(opening_bracket)
     closing_bracket = Symbol(closing_bracket)

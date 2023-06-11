@@ -18,14 +18,14 @@ function collatetruth(
     t::NTuple{N,T},
 )::T where {N,T<:TruthValue}
     if truthtype(a) != T
-        return error("Cannot collate $(length(t)) truth values of type $(T)" *
-                     " with algebra $(typeof(a)) with truth type $(truthtype(a))).")
+        return error("Cannot collate $(length(t)) truth values of type $(T) " *
+                     "with algebra $(typeof(a)) with truth type $(truthtype(a))).")
     elseif arity(op) != length(t)
-        return error("Cannot collate $(length(t)) truth values for" *
-                     " operator $(typeof(op)) with arity $(arity(op))).")
+        return error("Cannot collate $(length(t)) truth values for " *
+                     "operator $(typeof(op)) with arity $(arity(op))).")
     else
-        return error("Please, provide method collatetruth(::$(typeof(a)), ::$(typeof(op))," *
-                     " ::NTuple{$(arity(op)),$(truthtype(a))}.")
+        return error("Please, provide method collatetruth(::$(typeof(a)), ::$(typeof(op)), " *
+                     "::NTuple{$(arity(op)),$(truthtype(a))}.")
     end
 end
 
@@ -305,8 +305,8 @@ function _baselogic(;
                         default_operators
                     else
                         if length(setdiff(operators, default_operators)) > 0
-                            @warn "Instantiating $(logictypename) with operators not in" *
-                                " $(default_operators): " *
+                            @warn "Instantiating $(logictypename) with operators not in " *
+                                "$(default_operators): " *
                                 join(", ", setdiff(operators, default_operators)) * "."
                         end
                         operators
