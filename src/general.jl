@@ -398,6 +398,11 @@ function syntaxstring(f::AbstractFormula; kwargs...)
     syntaxstring(tree(f); kwargs...)
 end
 
+function Base.show(io::IO, f::AbstractFormula)
+    print(io, "$(typeof(f))\nsyntaxstring: $(syntaxstring(f))")
+end
+
+
 doc_tokopprop = """
     tokens(f::AbstractFormula)::AbstractVector{<:AbstractSyntaxToken}
     operators(f::AbstractFormula)::AbstractVector{<:AbstractOperator}
