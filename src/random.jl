@@ -196,6 +196,22 @@ function randformulatree(
     return _randformulatree(height, modaldepth, rng)
 end
 
+function randformula(
+    rng::AbstractRNG,
+    args...;
+    kwargs...
+)
+    randformula(args...; rng = Random.GLOBAL_RNG, kwargs...)
+end
+
+function randformulatree(
+    rng::AbstractRNG,
+    args...;
+    kwargs...
+)
+    randformulatree(args...; rng = Random.GLOBAL_RNG, kwargs...)
+end
+
 #= ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Kripke Structures ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ =#
 
 function fanfan()

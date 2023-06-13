@@ -198,10 +198,10 @@ Return the `arity` of the relation.
 
 See also [`AbstractRelation`](@ref).
 """
-arity(R::Type{<:AbstractRelation})::Integer = error("Please, provide method arity(::$(typeof(R))).")
+arity(R::Type{<:AbstractRelation})::Integer = error("Please, provide method arity(::$(Type{R})).")
 arity(r::AbstractRelation)::Integer = arity(typeof(r))
 
-syntaxstring(R::Type{<:AbstractRelation}; kwargs...)::String = error("Please, provide method syntaxstring(::$(typeof(R)); kwargs...).")
+syntaxstring(R::Type{<:AbstractRelation}; kwargs...)::String = error("Please, provide method syntaxstring(::$(Type{R}); kwargs...).")
 syntaxstring(r::AbstractRelation; kwargs...)::String = syntaxstring(typeof(r); kwargs...)
 
 doc_conv_rel = """
@@ -221,7 +221,7 @@ See also [`issymmetric`](@ref), [`isreflexive`](@ref), [`istransitive`](@ref), [
 #     hasconverse(R::Type{<:AbstractRelation})::Bool = false
 #     hasconverse(r::AbstractRelation)::Bool = hasconverse(typeof(r))
 
-#     converse(R::Type{<:AbstractRelation})::Type{<:AbstractRelation} = error("Please, provide method converse(::\$(typeof(R))).")
+#     converse(R::Type{<:AbstractRelation})::Type{<:AbstractRelation} = error("Please, provide method converse(::\$(Type{R})).")
 #     converse(r::AbstractRelation)::AbstractRelation = converse(typeof(r))()
 
 # When defining a new symmetric relation `R` with converse `CR`, please define the two methods:
@@ -234,7 +234,7 @@ hasconverse(R::Type{<:AbstractRelation})::Bool = false
 hasconverse(r::AbstractRelation)::Bool = hasconverse(typeof(r))
 
 """$(doc_conv_rel)"""
-converse(R::Type{<:AbstractRelation})::Type{<:AbstractRelation} = error("Please, provide method converse(::$(typeof(R))).")
+converse(R::Type{<:AbstractRelation})::Type{<:AbstractRelation} = error("Please, provide method converse(::$(Type{R})).")
 converse(r::AbstractRelation)::AbstractRelation = converse(typeof(r))()
 
 

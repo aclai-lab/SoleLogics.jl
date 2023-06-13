@@ -27,7 +27,7 @@ to 0, 1 or 2 are called `nullary`, `unary` and `binary`, respectively.
 
 See also [`AbstractSyntaxToken`](@ref).
 """
-arity(T::Type{<:AbstractSyntaxToken})::Integer = error("Please, provide method arity(::$(typeof(T))).")
+arity(T::Type{<:AbstractSyntaxToken})::Integer = error("Please, provide method arity(::$(Type{T})).")
 arity(t::AbstractSyntaxToken)::Integer = arity(typeof(t))
 
 # Helpers: TODO move to SoleBase?
