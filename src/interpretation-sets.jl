@@ -68,7 +68,7 @@ function check(
     # map(
     #     i_instance->check(
     #         formula(c),
-    #         slice_dataset(d, [i_instance]),
+    #         slicedataset(d, [i_instance]),
     #         args...;
     #         use_memo = (isnothing(use_memo) ? nothing : @view use_memo[[i_instance]]),
     #         kwargs...,
