@@ -12,6 +12,9 @@ accessibles(fr::AbstractMultiModalFrame, S::AbstractWorldSet, ::IdentityRel) = S
 # Shortcut: when enumerating accessibles through global relation, delegate to `allworlds`
 accessibles(fr::AbstractMultiModalFrame, ::GlobalRel) = allworlds(fr)
 
+accessibles(fr::AbstractUniModalFrame, w::AbstractWorld,    ::IdentityRel) = [w] # TODO try IterTools.imap(identity, [w])
+accessibles(fr::AbstractUniModalFrame, ::GlobalRel) = allworlds(fr)
+
 ############################################################################################
 
 # It is convenient to define methods for `accessibles` that take a world set instead of a
