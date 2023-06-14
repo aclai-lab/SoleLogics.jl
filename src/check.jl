@@ -145,7 +145,7 @@ function normalize(
         tok, ch = token(newt), children(newt)
         if remove_identities && tok isa AbstractRelationalOperator &&
             relation(tok) == identityrel && arity(tok) == 1
-            SyntaxTree(token(ch[1]))
+            SyntaxTree(token(ch[1]), children(ch[1]))
         else
             newt
         end
@@ -166,7 +166,7 @@ function normalize(
                 ∨(_normalize(¬(grandchildren[1])), _normalize(¬(grandchildren[2])))
             elseif reduce_negations && (chtok == →) && arity(chtok) == 2
                 # _normalize(∨(¬(grandchildren[1]), grandchildren[2]))
-                ∨(_normalize(grandchildren[1]), _normalize(¬(grandchildren[2])))
+                ∧(_normalize(grandchildren[1]), _normalize(¬(grandchildren[2])))
             elseif reduce_negations && chtok isa Proposition
                 if allow_proposition_flipping
                     SyntaxTree(negation(chtok))
@@ -354,8 +354,9 @@ function collateworlds(
     filter(w1->issubset(accessibles(fr, w1), ws), collect(allworlds(fr)))
 end
 
+# TODO: use AbstractMultiModalFrame
 function collateworlds(
-    fr::AbstractMultiModalFrame{W},
+    fr::AbstractFrame{W},
     op::DiamondRelationalOperator,
     (ws,)::NTuple{1,<:AbstractWorldSet},
 ) where {W<:AbstractWorld}
@@ -377,8 +378,9 @@ function collateworlds(
     end
 end
 
+# TODO: use AbstractMultiModalFrame
 function collateworlds(
-    fr::AbstractMultiModalFrame{W},
+    fr::AbstractFrame{W},
     op::BoxRelationalOperator,
     (ws,)::NTuple{1,<:AbstractWorldSet},
 ) where {W<:AbstractWorld}
