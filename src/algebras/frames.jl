@@ -52,9 +52,8 @@ function initialworldset() end
 # struct AnchoredMultiModalFrame{
 #     N,
 #     W<:AbstractWorld,
-#     T<:TruthValue,
-#     FR<:AbstractMultiModalFrame{N,W,T},
-# } <: AbstractMultiModalFrame{N,W,T}
+#     FR<:AbstractMultiModalFrame{N,W},
+# } <: AbstractMultiModalFrame{N,W}
 
 #     frame::FR
 
@@ -66,18 +65,18 @@ function initialworldset() end
 #             " Type should be $(W) (dimensionality = $(N))."
 #     end
 
-#     function AnchoredMultiModalFrame{N,W,T}(
-#         fr::AbstractMultiModalFrame{N,W,T},
+#     function AnchoredMultiModalFrame{N,W}(
+#         fr::AbstractMultiModalFrame{N,W},
 #         initialworld = nothing,
-#     ) where {N,W<:AbstractWorld,T<:TruthValue}
-#         new{N,W,T}(fr, initialworld)
+#     ) where {N,W<:AbstractWorld}
+#         new{N,W}(fr, initialworld)
 #     end
 
 #     function AnchoredMultiModalFrame(
-#         fr::AbstractMultiModalFrame{N,W,T},
+#         fr::AbstractMultiModalFrame{N,W},
 #         initialworld = nothing,
-#     ) where {N,W<:AbstractWorld,T<:TruthValue}
-#         AnchoredMultiModalFrame{N,W,T}(fr, initialworld)
+#     ) where {N,W<:AbstractWorld}
+#         AnchoredMultiModalFrame{N,W}(fr, initialworld)
 #     }
 #     end
 # end
