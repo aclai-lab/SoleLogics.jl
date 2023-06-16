@@ -3,8 +3,8 @@
 ############################################################################################
 
 doc_rectangle_rel = """
-    const _IABase = Union{IntervalRelation,IdentityRel,GlobalRel}
-    struct RectangleRelation{R1<:_IABase,R2<:_IABase} <: GeometricalRelation
+    const IABase = Union{IntervalRelation,IdentityRel,GlobalRel}
+    struct RectangleRelation{R1<:IABase,R2<:IABase} <: GeometricalRelation
         x :: R1
         y :: R2
     end
@@ -32,24 +32,36 @@ See also [`Interval`](@ref), [`Interval2D`](@ref),
 """
 
 """$(doc_rectangle_rel)"""
-const _IABase = Union{IntervalRelation,IdentityRel,GlobalRel}
+const IABase = Union{IntervalRelation,IdentityRel,GlobalRel}
 """$(doc_rectangle_rel)"""
-struct RectangleRelation{R1<:_IABase,R2<:_IABase} <: GeometricalRelation
+struct RectangleRelation{R1<:IABase,R2<:IABase} <: GeometricalRelation
     x :: R1
     y :: R2
+
+    function RectangleRelation{R1,R2}(x::R1, y::R2) where {R1<:IABase,R2<:IABase}
+        new{R1,R2}(x, y)
+    end
+
+    function RectangleRelation{R1,R2}() where {R1<:IABase,R2<:IABase}
+        RectangleRelation{R1,R2}(R1(), R2())
+    end
+
+    function RectangleRelation(x::R1, y::R2) where {R1<:IABase,R2<:IABase}
+        RectangleRelation{R1,R2}(x, y)
+    end
 end
 
 arity(::Type{<:RectangleRelation}) = 2
 hasconverse(::Type{<:RectangleRelation}) = true
 
-function syntaxstring(::Type{R}; kwargs...) where {_XR<:_IABase,_YR<:_IABase,R<:RectangleRelation{_XR,_YR}}
+function syntaxstring(::Type{R}; kwargs...) where {_XR<:IABase,_YR<:IABase,R<:RectangleRelation{_XR,_YR}}
     "$(syntaxstring(_XR; kwargs...)),$(syntaxstring(_YR; kwargs...))"
 end
 
 # Properties
-converse(r::Type{RectangleRelation{R1,R2}})  where {R1<:_IABase,R2<:_IABase} = RectangleRelation{converse(R1),converse(R2)}
-istransitive(r::RectangleRelation{R1,R2})  where {R1<:_IABase,R2<:_IABase} = istransitive(R1)  && istransitive(R2)
-istopological(r::RectangleRelation{R1,R2}) where {R1<:_IABase,R2<:_IABase} = istopological(R1) && istopological(R2)
+converse(r::Type{RectangleRelation{R1,R2}})  where {R1<:IABase,R2<:IABase} = RectangleRelation{converse(R1),converse(R2)}
+istransitive(r::RectangleRelation{R1,R2})  where {R1<:IABase,R2<:IABase} = istransitive(R1)  && istransitive(R2)
+istopological(r::RectangleRelation{R1,R2}) where {R1<:IABase,R2<:IABase} = istopological(R1) && istopological(R2)
 
 ############################################################################################
 

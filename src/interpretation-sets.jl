@@ -27,16 +27,6 @@ truthtype(::Type{AbstractInterpretationSet{M}}) where {M} = truthtype(M)
 truthtype(s::AbstractInterpretationSet) = truthtype(typeof(s))
 
 function check(
-    tok::AbstractSyntaxToken,
-    d::AbstractInterpretationSet{M},
-    i_instance::Integer,
-    args...;
-    kwargs...,
-)::truthtype(M) where {M<:AbstractInterpretation}
-    error("Please, provide method check(::$(typeof(tok)), ::$(typeof(d)), ::Integer, ::$(typeof(args))...; kwargs...).")
-end
-
-function check(
     φ::AbstractFormula,
     d::AbstractInterpretationSet{M},
     i_instance::Integer,
@@ -48,7 +38,7 @@ end
 
 # Check on a dataset = map check on the instances
 function check(
-    φ::Union{AbstractSyntaxToken,AbstractFormula},
+    φ::AbstractFormula,
     d::AbstractInterpretationSet{M},
     args...;
     # use_memo::Union{Nothing,AbstractVector} = nothing,
@@ -92,7 +82,7 @@ end
 
 Base.getindex(ms::InterpretationSet, i_instance::Integer) = Base.getindex(ms.instances, i_instance)
 function check(
-    f::Union{AbstractSyntaxToken,AbstractFormula},
+    f::AbstractFormula,
     is::InterpretationSet,
     i_instance::Integer,
     args...
