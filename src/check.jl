@@ -107,7 +107,7 @@ function normalize(
         if isnothing(remove_boxes)               remove_boxes = false end
         if isnothing(reduce_negations)           reduce_negations = true end
         if isnothing(simplify_constants)         simplify_constants = true end
-        if isnothing(allow_proposition_flipping) allow_proposition_flipping = true end
+        if isnothing(allow_proposition_flipping) allow_proposition_flipping = false end
         if isnothing(remove_identities)          remove_identities = false end
         if isnothing(rotate_commutatives)        rotate_commutatives = true end
         # TODO leave \to's instead of replacing them with \lor's...
@@ -115,7 +115,7 @@ function normalize(
         if isnothing(remove_boxes)               remove_boxes = true end
         if isnothing(reduce_negations)           reduce_negations = true end
         if isnothing(simplify_constants)         simplify_constants = true end
-        if isnothing(allow_proposition_flipping) allow_proposition_flipping = true end
+        if isnothing(allow_proposition_flipping) allow_proposition_flipping = false end
         if isnothing(remove_identities)          remove_identities = true end
         if isnothing(rotate_commutatives)        rotate_commutatives = true end
     else
@@ -149,7 +149,7 @@ function normalize(
         tok, ch = token(newt), children(newt)
         if remove_identities && tok isa AbstractRelationalOperator &&
             relation(tok) == identityrel && arity(tok) == 1
-            SyntaxTree(token(ch[1]))
+            first(ch)
         else
             newt
         end
@@ -214,14 +214,14 @@ function normalize(
                 elseif token(ch[2]) == ⊥  ch[1]
                 elseif token(ch[1]) == ⊤  SyntaxTree(⊤)
                 elseif token(ch[2]) == ⊤  SyntaxTree(⊤)
-                else                      SyntaxTree(tok, ch)
+                else                      newt
                 end
             elseif (tok == ∧) && arity(tok) == 2
                 if     token(ch[1]) == ⊥  SyntaxTree(⊥)
                 elseif token(ch[2]) == ⊥  SyntaxTree(⊥)
                 elseif token(ch[1]) == ⊤  ch[2]
                 elseif token(ch[2]) == ⊤  ch[1]
-                else                      SyntaxTree(tok, ch)
+                else                      newt
                 end
             elseif (tok == →) && arity(tok) == 2
                 if     token(ch[1]) == ⊥  SyntaxTree(⊥)
@@ -233,21 +233,21 @@ function normalize(
             elseif (tok == ¬) && arity(tok) == 1
                 if     token(ch[1]) == ⊤  SyntaxTree(⊥)
                 elseif token(ch[1]) == ⊥  SyntaxTree(⊤)
-                else                      SyntaxTree(tok, ch)
+                else                      newt
                 end
             elseif SoleLogics.isbox(tok) && arity(tok) == 1
                 if     token(ch[1]) == ⊤  SyntaxTree(⊤)
-                else                      SyntaxTree(tok, ch)
+                else                      newt
                 end
             elseif SoleLogics.isdiamond(tok) && arity(tok) == 1
                 if     token(ch[1]) == ⊥  SyntaxTree(⊥)
-                else                      SyntaxTree(tok, ch)
+                else                      newt
                 end
             else
-                SyntaxTree(tok, ch)
+                newt
             end
         else
-            SyntaxTree(tok, ch)
+            newt
         end
     end
 
