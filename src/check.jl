@@ -101,6 +101,7 @@ function normalize(
     allow_proposition_flipping = nothing,
     forced_negation_removal = nothing,
     remove_identities = nothing,
+    rotate_commutatives = nothing
 )
     if profile == :readability
         if isnothing(remove_boxes)               remove_boxes = false end
@@ -108,6 +109,7 @@ function normalize(
         if isnothing(simplify_constants)         simplify_constants = true end
         if isnothing(allow_proposition_flipping) allow_proposition_flipping = true end
         if isnothing(remove_identities)          remove_identities = false end
+        if isnothing(rotate_commutatives)        rotate_commutatives = true end
         # TODO leave \to's instead of replacing them with \lor's...
     elseif profile == :modelchecking
         if isnothing(remove_boxes)               remove_boxes = true end
@@ -115,6 +117,7 @@ function normalize(
         if isnothing(simplify_constants)         simplify_constants = true end
         if isnothing(allow_proposition_flipping) allow_proposition_flipping = true end
         if isnothing(remove_identities)          remove_identities = true end
+        if isnothing(rotate_commutatives)        rotate_commutatives = true end
     else
         error("Unknown normalization profile: $(repr(profile))")
     end
@@ -136,6 +139,7 @@ function normalize(
         simplify_constants = simplify_constants,
         allow_proposition_flipping = allow_proposition_flipping,
         forced_negation_removal = forced_negation_removal,
+        rotate_commutatives = rotate_commutatives
     )
 
     newt = t
@@ -266,9 +270,43 @@ function normalize(
         end
     end
 
-    # TODO @Mauro introduce rotate_commutatives parameter and use rotate_commutatives && isoperator, iscommutative && arity(op) > 1 for normalizing the structure of commutative operators.
-    # function _isless(st1::SyntaxTree, st2::SyntaxTree)
-    #     isless(Base.hash(st1), Base.hash(st2))
+    # TODO @Mauro introduce rotate_commutatives parameter and use
+    # rotate_commutatives && isoperator, iscommutative && arity(op) > 1
+    # for normalizing the structure of commutative operators.
+
+    function _isless(st1::SyntaxTree, st2::SyntaxTree)
+        isless(Base.hash(st1), Base.hash(st2))
+    end
+
+    # WORK IN PROGRESS
+    function _rotate_commutatives(t::SyntaxTree)
+        tok, ch = token(t), children(t)
+
+        if (!isoperator(tok))
+            return
+        end
+
+        if (iscommutative(tok) && arity(tok) > 1)
+            # This is where childrens are sorted; unfortunately, this simple action
+            # is actually trickier than you may think.
+            # TODO: find a way to sort childrens
+
+            # #1 idea: children is not mutable (and I can't define a "children!" setter)
+            # t.children = Tuple(x for x in sort([children(t)...], by=Base.hash))
+
+            # #2 idea: using TupleTools sort (https://jutho.github.io/TupleTools.jl/latest/)
+            #          doesn't work
+            # TupleTools.sort(children(a), lt=_isless)
+        end
+
+        for ch in children(t)
+            _rotate_commutative_operators(c)
+        end
+    end
+
+    # Rotate commutative operators - WORK IN PROGRESS (see `_rotate_commutatives` method)
+    # newt = begin
+    #     _rotate_commutative_operators(newt)
     # end
 
 end
