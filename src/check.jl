@@ -270,45 +270,18 @@ function normalize(
         end
     end
 
-    # TODO @Mauro introduce rotate_commutatives parameter and use
-    # rotate_commutatives && isoperator, iscommutative && arity(op) > 1
-    # for normalizing the structure of commutative operators.
-
     function _isless(st1::SyntaxTree, st2::SyntaxTree)
         isless(Base.hash(st1), Base.hash(st2))
     end
 
-    # WORK IN PROGRESS
-    function _rotate_commutatives(t::SyntaxTree)
+    # Rotate commutatives
+    newt = begin
         tok, ch = token(t), children(t)
-
-        if (!isoperator(tok))
-            return
+        if tok isa AbstractOperator && iscommutative(tok) && arity(tok) > 1
+            ch = Tuple(sort(collect(ch), lt=_isless))
         end
-
-        if (iscommutative(tok) && arity(tok) > 1)
-            # This is where childrens are sorted; unfortunately, this simple action
-            # is actually trickier than you may think.
-            # TODO: find a way to sort childrens
-
-            # #1 idea: children is not mutable (and I can't define a "children!" setter)
-            # t.children = Tuple(x for x in sort([children(t)...], by=Base.hash))
-
-            # #2 idea: using TupleTools sort (https://jutho.github.io/TupleTools.jl/latest/)
-            #          doesn't work
-            # TupleTools.sort(children(a), lt=_isless)
-        end
-
-        for ch in children(t)
-            _rotate_commutative_operators(c)
-        end
+        SyntaxTree(tok, _normalize.(ch))
     end
-
-    # Rotate commutative operators - WORK IN PROGRESS (see `_rotate_commutatives` method)
-    # newt = begin
-    #     _rotate_commutative_operators(newt)
-    # end
-
 end
 
 """

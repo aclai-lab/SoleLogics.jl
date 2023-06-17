@@ -203,24 +203,6 @@ abstract type AbstractOperator <: AbstractSyntaxToken end
 # Since, in general, operators are singletons, we show them via their syntaxstring
 Base.show(io::IO, o::AbstractOperator) = print(io, syntaxstring(o))
 
-doc_isoperator = """
-    isoperator(::AbstractOperator) = true
-    isoperator(::Any) = false
-
-Return wheter it is known that a variable is an `AbstractOperator`.
-
-# Examples
-
-```julia-repl
-julia> isoperator(CONJUNCTION)
-true
-julia> notop = "!"; isoperator(notop)
-false
-```
-"""
-isoperator(::AbstractOperator) = true
-isoperator(::Any) = false
-
 doc_iscommutative = """
     iscommutative(::Type{AbstractOperator}) = false
     iscommutative(o::AbstractOperator) = iscommutative(typeof(o))
