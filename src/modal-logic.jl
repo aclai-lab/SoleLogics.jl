@@ -214,7 +214,7 @@ See also [`issymmetric`](@ref), [`isreflexive`](@ref), [`istransitive`](@ref), [
 
 """
 
-# # Extended help
+# # Implementation
 
 # This trait is implemented as:
 
