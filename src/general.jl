@@ -190,11 +190,7 @@ be parametric singleton types, which can be dispatched upon.
 # Implementation
 
 When implementing a new type for a *commutative* operator `O` with arity higher than 1,
-please provide a method `_iscommutative`, such as:
-
-    _iscommutative(::Type{O}) = true
-
-This can help model checking operations.
+please provide a method `iscommutative(::Type{O})`. This can help model checking operations.
 
 See also [`AbstractSyntaxToken`](@ref), [`NamedOperator`](@ref), [`check`](@ref).
 """
@@ -204,7 +200,7 @@ abstract type AbstractOperator <: AbstractSyntaxToken end
 Base.show(io::IO, o::AbstractOperator) = print(io, syntaxstring(o))
 
 doc_iscommutative = """
-    iscommutative(::Type{AbstractOperator}) = false
+    iscommutative(::Type{AbstractOperator})
     iscommutative(o::AbstractOperator) = iscommutative(typeof(o))
 
 Return whether it is known that an `AbstractOperator` is commutative.
@@ -217,23 +213,27 @@ julia> iscommutative(→)
 false
 ```
 
-See also [`isunary`](@ref), [`isnullary`](@ref).
+Note that nullary and unary operators are considered commutative.
 
-# Extended help
+See also [`AbstractOperator`](@ref).
 
-Since nullary and unary operators are always commutative,
-this function is actually implemented as:
+# Implementation
 
-    iscommutative(O::Type{<:AbstractOperator}) = isnullary(O) || isunary(O) || _iscommutative(O)
-    iscommutative(o::AbstractOperator) = iscommutative(typeof(o))
-    _iscommutative(::Type{<:AbstractOperator}) = false
+When implementing a new type for a *commutative* operator `O` with arity higher than 1,
+please provide a method `iscommutative(::Type{O})`. This can help model checking operations.
 """
 
 """$(doc_iscommutative)"""
-iscommutative(O::Type{<:AbstractOperator}) = isnullary(O) || isunary(O) || _iscommutative(O)
+function iscommutative(O::Type{<:AbstractOperator})
+    if arity(O) <= 1
+        return true
+    else
+        return false
+        # return error("Please, provide method iscommutative(O::Type{$(O)}).")
+    end
+end
+
 iscommutative(o::AbstractOperator) = iscommutative(typeof(o))
-"""$(doc_iscommutative)"""
-_iscommutative(::Type{<:AbstractOperator}) = false
 
 ############################################################################################
 
@@ -296,7 +296,7 @@ julia> syntaxstring(∧(f, p, ¬p))
 "(◊(p → q)) ∧ (p ∧ (¬(p)))"
 ```
 
-# Extended help
+# Implementation
 
 Upon `joinformulas` lies a more flexible way of using operators for composing
 formulas and syntax tokens (e.g., propositions), given by following definitions:

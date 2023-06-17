@@ -137,9 +137,8 @@ function DISJUNCTION(
     return DISJUNCTION(c1, DISJUNCTION(c2, c3, cs...))
 end
 
-# TODO example _iscommutative(::Type{typeof(xor)}) = true
-_iscommutative(::Type{typeof(∧)}) = true
-_iscommutative(::Type{typeof(∨)}) = true
+iscommutative(::Type{typeof(∧)}) = true
+iscommutative(::Type{typeof(∨)}) = true
 
 ############################################################################################
 ########################################## ALGEBRA #########################################
