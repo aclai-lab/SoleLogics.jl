@@ -20,7 +20,7 @@ abstract type AbstractDimensionalFrame{N,W<:AbstractWorld} <: AbstractMultiModal
 
 """
     struct FullDimensionalFrame{N,W<:AbstractWorld} <: AbstractDimensionalFrame{N,W}
-        channel_size::NTuple{N,Int}
+        channelsize::NTuple{N,Int}
     end
 
 Abstract type for full dimensional frames.
@@ -65,28 +65,28 @@ See also
 """
 struct FullDimensionalFrame{N,W<:AbstractWorld} <: AbstractDimensionalFrame{N,W}
     
-    channel_size::NTuple{N,Int}
+    channelsize::NTuple{N,Int}
     
-    function FullDimensionalFrame{N,W}(channel_size::NTuple{N,Int}) where
+    function FullDimensionalFrame{N,W}(channelsize::NTuple{N,Int}) where
             {N,W<:AbstractWorld}
-        new{N,W}(channel_size)
+        new{N,W}(channelsize)
     end
-    function FullDimensionalFrame{N,W}(channel_size::Vararg{Int,N}) where
+    function FullDimensionalFrame{N,W}(channelsize::Vararg{Int,N}) where
             {N,W<:AbstractWorld}
-        FullDimensionalFrame{N,W}(channel_size)
+        FullDimensionalFrame{N,W}(channelsize)
     end
     
-    function FullDimensionalFrame(channel_size::Tuple{})
-        FullDimensionalFrame{0,OneWorld}(channel_size)
+    function FullDimensionalFrame(channelsize::Tuple{})
+        FullDimensionalFrame{0,OneWorld}(channelsize)
     end
-    function FullDimensionalFrame(channel_size::Tuple{Int})
-        FullDimensionalFrame{1,Interval{Int}}(channel_size)
+    function FullDimensionalFrame(channelsize::Tuple{Int})
+        FullDimensionalFrame{1,Interval{Int}}(channelsize)
     end
-    function FullDimensionalFrame(channel_size::Tuple{Int,Int})
-        FullDimensionalFrame{2,Interval2D{Int}}(channel_size)
+    function FullDimensionalFrame(channelsize::Tuple{Int,Int})
+        FullDimensionalFrame{2,Interval2D{Int}}(channelsize)
     end
-    function FullDimensionalFrame(channel_size...)
-        FullDimensionalFrame(channel_size)
+    function FullDimensionalFrame(channelsize...)
+        FullDimensionalFrame(channelsize)
     end
 end
 
@@ -94,8 +94,8 @@ end
 # Utils
 ############################################################################################
 
-channel_size(fr::FullDimensionalFrame) = fr.channel_size
-Base.getindex(fr::FullDimensionalFrame, i::Integer) = channel_size(fr)[i]
+channelsize(fr::FullDimensionalFrame) = fr.channelsize
+Base.getindex(fr::FullDimensionalFrame, i::Integer) = channelsize(fr)[i]
 
 # Shorthands
 X(fr::FullDimensionalFrame) = fr[1]
