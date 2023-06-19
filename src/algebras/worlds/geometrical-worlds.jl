@@ -33,7 +33,7 @@ See also [`goeswithdim`](@ref), [`Interval`](@ref),
 struct Point{N,T} <: GeometricalWorld
     xyz :: NTuple{N,T}
     # TODO check x<=N but only in debug mode
-    # Point(x) = x<=N ... ? new(x) : throw_n_log("Can't instantiate Point(x={$x})")
+    # Point(x) = x<=N ... ? new(x) : throw_n_log("Cannot instantiate Point(x={$x})")
     
     # TODO needed?
     Point(w::Point) = Point(w.xyz)
@@ -98,7 +98,7 @@ struct Interval{T} <: GeometricalWorld
     Interval{T}(x::T,y::T) where {T} = new{T}(x,y)
     Interval(x::T,y::T) where {T} = Interval{T}(x,y)
     # TODO: perhaps check x<y (and  x<=N, y<=N ?), but only in debug mode.
-    # Interval(x,y) = x>0 && y>0 && x < y ? new(x,y) : throw_n_log("Can't instantiate Interval(x={$x},y={$y})")
+    # Interval(x,y) = x>0 && y>0 && x < y ? new(x,y) : throw_n_log("Cannot instantiate Interval(x={$x},y={$y})")
 end
 
 Base.show(io::IO, w::Interval) = print(io, "($(w.x)−$(w.y))")

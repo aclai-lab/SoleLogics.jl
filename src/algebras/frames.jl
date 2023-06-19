@@ -37,18 +37,30 @@ end
 
 ############################################################################################
 
+"""
+Return an empty world (e.g., `Interval(-1,0)`).
+"""
+function emptyworld(fr::AbstractMultiModalFrame)
+    error("Please, provide method emptyworld(::$(typeof(fr))).")
+end
+
+"""
+Return the world at the *center* of the frame;
+note that this does not always exist.
+"""
+function centeredworld(fr::AbstractMultiModalFrame)
+    error("Please, provide method centeredworld(::$(typeof(fr))).")
+end
+
+############################################################################################
+
 # TODO remove
 # Fix (not needed from Julia 1.7, see https://github.com/JuliaLang/julia/issues/34674 )
 if length(methods(Base.keys, (Base.Generator,))) == 0
     Base.keys(g::Base.Generator) = g.iter
 end
 
-# TODO fix these...
-abstract type InitCondition end
-# function initialworld() end
-function initialworldset() end
-
-# """TODO"""
+# """TODO remove"""
 # struct AnchoredMultiModalFrame{
 #     N,
 #     W<:AbstractWorld,

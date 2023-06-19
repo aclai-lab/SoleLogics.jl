@@ -26,7 +26,7 @@ Abstract type for an accessibility graph (Kripke frame), that gives the structur
 [Kripke models](https://en.wikipedia.org/wiki/Kripke_structure_(model_checking))'s).
 
 See also [`truthtype`](@ref), [`worldtype`](@ref),
-[`allworlds`](@ref), [`nworlds`](@ref), [`initialworld`](@ref),
+[`allworlds`](@ref), [`nworlds`](@ref),
 [`AbstractKripkeStructure`](@ref), [`AbstractWorld`](@ref).
 """
 abstract type AbstractFrame{W<:AbstractWorld} end
@@ -47,7 +47,7 @@ worldtype(fr::AbstractFrame) = worldtype(typeof(fr))
 
 Return all worlds within the frame.
 
-See also [`nworlds`](@ref), [`initialworld`](@ref), [`AbstractFrame`](@ref).
+See also [`nworlds`](@ref), [`AbstractFrame`](@ref).
 """
 function allworlds(fr::AbstractFrame{W})::AbstractVector{<:W} where {W<:AbstractWorld}
     error("Please, provide method allworlds(frame::$(typeof(fr))).")
