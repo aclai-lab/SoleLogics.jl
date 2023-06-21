@@ -275,13 +275,17 @@ function normalize(
     end
 
     # Rotate commutatives
-    newt = begin
-        tok, ch = token(t), children(t)
-        if tok isa AbstractOperator && iscommutative(tok) && arity(tok) > 1
-            ch = Tuple(sort(collect(ch), lt=_isless))
+    if rotate_commutatives
+        newt = begin
+            tok, ch = token(newt), children(newt)
+            if tok isa AbstractOperator && iscommutative(tok) && arity(tok) > 1
+                ch = Tuple(sort(collect(_normalize.(ch)), lt=_isless))
+            end
+            SyntaxTree(tok, ch)
         end
-        SyntaxTree(tok, _normalize.(ch))
     end
+
+    return newt
 end
 
 """
