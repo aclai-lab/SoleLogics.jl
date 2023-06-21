@@ -82,4 +82,14 @@ t2 = @test_nowarn TruthDict(Pair{Real,Bool}[1.0 => true, 2 => true, 3 => true])
 @test !check(parseformula("a ∧ ¬b"), DefaultedTruthDict(["a", "b"]))
 @test check(parseformula("a ∧ ¬b"), DefaultedTruthDict(["a"]))
 
+# Normalization tests - rotate commutatives
+cnf1 = "((d ∧ c) ∧ ((e ∧ f) ∧ (g ∧ h))) ∧ (b ∧ a)"
+syntaxstring(parseformulatree("(a∧b)∧(c∧d)∧(e∧f)∧(g∧h)") |> normalize) == cnf1
+syntaxstring(parseformulatree("(c∧d)∧(b∧a)∧(f∧e)∧(g∧h)") |> normalize) == cnf1
+syntaxstring(parseformulatree("(a∧b)∧(f∧e)∧(d∧c)∧(g∧h)") |> normalize) == cnf1
+syntaxstring(parseformulatree("(b∧a)∧(h∧g)∧(d∧c)∧(f∧e)") |> normalize) == cnf1
+syntaxstring(parseformulatree("(b∧a)∧(c∧d)∧(f∧e)∧(g∧h)") |> normalize) == cnf1
+syntaxstring(parseformulatree("(a∧b)∧(d∧c)∧(f∧e)∧(g∧h)") |> normalize) == cnf1
+syntaxstring(parseformulatree("(b∧a)∧(d∧c)∧(f∧e)∧(h∧g)") |> normalize) == cnf1
+
 end
