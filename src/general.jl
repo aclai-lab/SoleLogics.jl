@@ -1027,6 +1027,8 @@ function Base.in(t::SyntaxTree, g::CompleteFlatGrammar)::Bool
         else
             all([Base.in(c, g) for c in children(t)])
         end
+    else
+        false
     end
 end
 
@@ -1053,7 +1055,7 @@ function formulas(
     # Stop as soon as `maxdepth` is reached or `nformulas` have been generated.
     depth = 0
     cur_formulas = convert.(SyntaxTree, terminals(g))
-    all_formulas = cur_formulas
+    all_formulas = SyntaxTree[cur_formulas...]
     while depth < maxdepth && (isnothing(nformulas) || length(all_formulas) < nformulas)
         _nformulas = length(all_formulas)
         cur_formulas = []
@@ -1316,7 +1318,7 @@ operators(l::AbstractLogic) = operators(grammar(l))
 alphabet(l::AbstractLogic) = alphabet(grammar(l))
 propositionstype(l::AbstractLogic) = propositionstype(alphabet(l))
 tokenstype(l::AbstractLogic) = tokenstype(grammar(l))
-formulas(l::AbstractLogic; args...) = formulas(grammar(l); args...)
+formulas(l::AbstractLogic, args...; kwargs...) = formulas(grammar(l), args...; kwargs...)
 
 Base.in(op::AbstractOperator, l::AbstractLogic) = Base.in(op, grammar(l))
 Base.in(t::SyntaxTree, l::AbstractLogic) = Base.in(t, grammar(l))

@@ -64,7 +64,7 @@ doc_NEGATION = """
     const ¬ = NEGATION
     arity(::Type{typeof(¬)}) = 1
 
-Logical negation.
+Logical negation (also referred to as complement).
 
 See also [`NamedOperator`](@ref), [`AbstractOperator`](@ref).
 """

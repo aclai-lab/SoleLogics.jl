@@ -96,7 +96,7 @@ function Base.rand(
     height::Integer;
     kwargs...
 )::AbstractFormula
-    randformula(rng, alphabet(g), operators(g), height; kwargs...)
+    randformula(alphabet(g), operators(g), height; rng = rng, kwargs...)
 end
 
 # TODO

@@ -194,7 +194,7 @@ propositionstype(::Literal{T}) where {T} = T
 
 tree(l::Literal) = ispos(l) ? SyntaxTree(l.prop) : ¬(SyntaxTree(l.prop))
 
-complement(l::Literal) = Literal(!ispos(l), prop(l))
+negation(l::Literal) = Literal(!ispos(l), prop(l))
 
 function Base.show(io::IO, l::Literal)
     println(io,
