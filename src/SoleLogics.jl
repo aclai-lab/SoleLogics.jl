@@ -71,7 +71,7 @@ include("modal-logic.jl")
 
 export LeftmostLinearForm, LeftmostConjunctiveForm, LeftmostDisjunctiveForm, Literal
 
-include("syntax-forms.jl")
+include("syntax-utils.jl")
 
 export subformulas, normalize
 

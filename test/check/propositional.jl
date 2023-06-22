@@ -84,12 +84,26 @@ t2 = @test_nowarn TruthDict(Pair{Real,Bool}[1.0 => true, 2 => true, 3 => true])
 
 # Normalization tests - rotate commutatives
 cnf1 = "((d ∧ c) ∧ ((e ∧ f) ∧ (g ∧ h))) ∧ (b ∧ a)"
-syntaxstring(parseformulatree("(a∧b)∧(c∧d)∧(e∧f)∧(g∧h)") |> normalize) == cnf1
-syntaxstring(parseformulatree("(c∧d)∧(b∧a)∧(f∧e)∧(g∧h)") |> normalize) == cnf1
-syntaxstring(parseformulatree("(a∧b)∧(f∧e)∧(d∧c)∧(g∧h)") |> normalize) == cnf1
-syntaxstring(parseformulatree("(b∧a)∧(h∧g)∧(d∧c)∧(f∧e)") |> normalize) == cnf1
-syntaxstring(parseformulatree("(b∧a)∧(c∧d)∧(f∧e)∧(g∧h)") |> normalize) == cnf1
-syntaxstring(parseformulatree("(a∧b)∧(d∧c)∧(f∧e)∧(g∧h)") |> normalize) == cnf1
-syntaxstring(parseformulatree("(b∧a)∧(d∧c)∧(f∧e)∧(h∧g)") |> normalize) == cnf1
+@test syntaxstring(parseformulatree("(a∧b)∧(c∧d)∧(e∧f)∧(g∧h)") |> normalize) == cnf1
+@test syntaxstring(parseformulatree("(c∧d)∧(b∧a)∧(f∧e)∧(g∧h)") |> normalize) == cnf1
+@test syntaxstring(parseformulatree("(a∧b)∧(f∧e)∧(d∧c)∧(g∧h)") |> normalize) == cnf1
+@test syntaxstring(parseformulatree("(b∧a)∧(h∧g)∧(d∧c)∧(f∧e)") |> normalize) == cnf1
+@test syntaxstring(parseformulatree("(b∧a)∧(c∧d)∧(f∧e)∧(g∧h)") |> normalize) == cnf1
+@test syntaxstring(parseformulatree("(a∧b)∧(d∧c)∧(f∧e)∧(g∧h)") |> normalize) == cnf1
+@test syntaxstring(parseformulatree("(b∧a)∧(d∧c)∧(f∧e)∧(h∧g)") |> normalize) == cnf1
+
+f1 = parseformulatree("(a∧b)∧(c∧d)∧(e∧f)∧(g∧h)")
+f2 = parseformulatree("(c∧d)∧(b∧a)∧(f∧e)∧(g∧h)")
+f3 = parseformulatree("(a∧b)∧(f∧e)∧(d∧c)∧(g∧h)")
+f4 = parseformulatree("(b∧a)∧(h∧g)∧(d∧c)∧(f∧e)")
+
+
+f1 = parseformulatree("a∧b∧c∧d∧e∧f∧g∧h")
+f2 = parseformulatree("g∧d∧a∧b∧c∧f∧e∧h")
+
+
+f1 = parseformulatree("a∧b∧c∧d∧((p∧¬q)→r)∧f∧g∧h")
+f2 = parseformulatree("g∧d∧a∧b∧c∧f∧((p∧¬q)→r)∧h")
+
 
 end

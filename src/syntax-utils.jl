@@ -223,3 +223,78 @@ ndisjuncts(m::Union{LeftmostDisjunctiveForm,DNF}) = nchildren(m)
 # nconjuncts(m::DNF) = map(d->nconjuncts(d), disjuncts(m))
 # disjuncts(m::CNF) = map(d->disjuncts(d), conjuncts(m))
 # ndisjuncts(m::CNF) = map(d->ndisjuncts(d), conjuncts(m))
+
+############################################################################################
+
+subtrees(tree::SyntaxTree) = [Iterators.flatten(_subtrees.(children(tree)))...]
+_subtrees(tree::SyntaxTree) = [tree, Iterators.flatten(_subtrees.(children(tree)))...]
+
+"""
+    function treewalk(
+        st::SyntaxTree,
+        args...;
+        rng::AbstractRNG = Random.GLOBAL_RNG,
+        criterion::Function = ntokens,
+        toleaf::Bool = true,
+        returnnode::Bool = false,
+        transformnode::Function = nothing,
+    )::SyntaxTree
+
+Return a subtree from passed SyntaxTree by following options:
+ - `criterion`: function used to calculate the probability of stopping at a random node;
+ - `returnnode`: true if only the subtree is to be returned;
+ - `transformnode`: function that will be applied to the chosen subtree.
+"""
+function treewalk(
+    st::SyntaxTree,
+    args...;
+    rng::AbstractRNG = Random.GLOBAL_RNG,
+    criterion::Function = c->true,
+    returnnode::Bool = false,
+    transformnode::Union{Function,Nothing} = nothing,
+)
+    chs = children(st)
+
+    return length(chs) == 0 ? begin
+        isnothing(transformnode) ? st : transformnode(st, args...)
+    end : begin
+        c_chsub = map(c->length(filter(criterion, tokens(c))), chs)
+        c_father = criterion(token(st)) ? 1 : 0
+
+        @assert [c_chsub..., c_father] isa AbstractVector{<:Integer} "Not all values " *
+        "calculated as criterion are integers, double check the passed function used for " *
+        "calculating these; values: $([c_chsub..., c_father])"
+
+        w_nodes = [c_chsub..., c_father]/sum([c_chsub..., c_father])
+        idx_randnode = sample(rng, 1:length(w_nodes), Weights(w_nodes))
+
+        if idx_randnode == length(w_nodes)
+            isnothing(transformnode) ? st : transformnode(st, args...)
+        else
+            returnnode ?
+                treewalk(
+                    chs[idx_randnode],
+                    args...;
+                    rng=rng,
+                    criterion=criterion,
+                    returnnode=returnnode,
+                    transformnode=transformnode,
+                ) :
+                SyntaxTree(
+                    token(st),
+                    (
+                        chs[1:(idx_randnode-1)]...,
+                        treewalk(
+                            chs[idx_randnode],
+                            args...;
+                            rng=rng,
+                            criterion=criterion,
+                            returnnode=returnnode,
+                            transformnode=transformnode,
+                        ),
+                        chs[(idx_randnode+1):end]...
+                    )
+                )
+        end
+    end
+end
