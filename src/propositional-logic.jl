@@ -132,7 +132,7 @@ See also
 [`SyntaxTree`](@ref), [`AbstractFormula`](@ref),
 [`AbstractAlgebra`](@ref), [`AbstractInterpretation`](@ref).
 
-# Extended help
+# Implementation
 
 The fallback method extracts the formula's syntax tree and checks it using the logic's
 algebra.

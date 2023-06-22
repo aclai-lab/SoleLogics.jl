@@ -6,6 +6,7 @@ using Dictionaries
 using Random
 using Reexport
 using Lazy
+using TupleTools
 
 include("utils.jl")
 
