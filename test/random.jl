@@ -6,8 +6,10 @@ import SoleLogics: arity
 
 _alphabet = ExplicitAlphabet(["p", "q", "r", "s"])
 _operators = [NEGATION, CONJUNCTION, IMPLICATION]
+w = [10,1,1]
 
 @test_nowarn [randformulatree(i, _alphabet, _operators) for i in 1:15]
+@test_nowarn [randformulatree(i, _alphabet, _operators, opweights=w) for i in 1:10]
 
 end
 
@@ -22,6 +24,7 @@ SoleLogics.arity(::Type{typeof(QUATERNOP)}) = 4
 _alphabet = ExplicitAlphabet(["p", "q", "r", "s"])
 _operators = [NEGATION, CONJUNCTION, IMPLICATION,
     DiamondRelationalOperator(globalrel), BoxRelationalOperator(globalrel)]
+w = [5,1,1,1,1,1,1]
 
 @test all([begin
         f = randformula(i%5, _alphabet, _operators)

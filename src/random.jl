@@ -1,4 +1,5 @@
 using Random
+using StatsBase
 
 #= ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Formulas ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ =#
 
@@ -151,17 +152,28 @@ function randformulatree(
     alphabet::AbstractAlphabet,
     operators::Vector{<:AbstractOperator};
     modaldepth::Integer = height,
-    rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG
+    rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG,
+    opweights::Union{AbstractWeights,AbstractVector{<:Real},Nothing} = nothing
 )::SyntaxTree
     # TODO this pattern is so common that we may want to move this code to a util function,
     # and move this so that it is the first thing that a randomic function (e.g., randformulatree) does.
     rng = (rng isa AbstractRNG) ? rng : Random.MersenneTwister(rng)
 
+    @assert isnothing(opweights) ||
+        length(opweights) == length(operators) "Mismatching numbers of operators " *
+            "($(length(operators))) and opweights ($(length(opweights)))."
+
+    if (isnothing(opweights))
+        opweights = StatsBase.uweights(length(operators))
+    elseif (opweights isa AbstractVector)
+        opweights = StatsBase.weights(opweights)
+    end
+
+    nonmodal_operators = findall(!ismodal, operators)
+
     function _randformulatree(
         height::Integer,
-        modaldepth::Integer,
-        rng::AbstractRNG,
-        nonmodal_operators::Union{Nothing,Vector{<:AbstractOperator}} = nothing
+        modaldepth::Integer
     )::SyntaxTree
         if height == 0
             # Sample proposition from alphabet
@@ -169,19 +181,18 @@ function randformulatree(
         else
             # Sample operator and generate children
             # (Note: only allow modal operators if modaldepth > 0)
-            ops = begin
+            ops, ops_w = begin
                 if modaldepth > 0
-                    operators
+                    operators, opweights
                 else
-                    if isnothing(nonmodal_operators)
-                        nonmodal_operators = filter(!ismodal, operators)
-                    end
-                    nonmodal_operators
+                    operators[nonmodal_operators], opweights[nonmodal_operators]
                 end
             end
-            op = rand(rng, ops)
+
+            # op = rand(rng, ops)
+            op = sample(rng, ops, ops_w)
             ch = Tuple([
-                    _randformulatree(height-1, modaldepth-(ismodal(op) ? 1 : 0), rng, nonmodal_operators)
+                    _randformulatree(height-1, modaldepth-(ismodal(op) ? 1 : 0))
                     for _ in 1:arity(op)])
             return SyntaxTree(op, ch)
         end
@@ -193,7 +204,7 @@ function randformulatree(
             "(infinite) alphabet of type $(typeof(alphabet))!"
     end
 
-    return _randformulatree(height, modaldepth, rng)
+    return _randformulatree(height, modaldepth)
 end
 
 function randformula(
