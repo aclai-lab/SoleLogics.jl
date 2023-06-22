@@ -279,9 +279,12 @@ function normalize(
         newt = begin
             tok, ch = token(newt), children(newt)
             if tok isa AbstractOperator && iscommutative(tok) && arity(tok) > 1
+                ch = children(LeftmostLinearForm(newt, tok))
                 ch = Tuple(sort(collect(_normalize.(ch)), lt=_isless))
+                tree(LeftmostLinearForm(tok, ch))
+            else
+                SyntaxTree(tok, ch)
             end
-            SyntaxTree(tok, ch)
         end
     end
 

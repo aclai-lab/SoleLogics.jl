@@ -52,7 +52,7 @@ w = [5,1,1,1,1,1,1]
 
 end
 
-
+# TODO
 alph = ExplicitAlphabet(1:5)
 g = SoleLogics.CompleteFlatGrammar(alph, [∧,¬])
 Base.rand(g, 4)

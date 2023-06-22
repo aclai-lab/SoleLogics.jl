@@ -81,6 +81,20 @@ struct LeftmostLinearForm{O<:AbstractOperator, SS<:AbstractSyntaxStructure} <: A
     )
         LeftmostLinearForm(typeof(op), children)
     end
+
+    function LeftmostLinearForm(
+        tree::SyntaxTree,
+        operator::Union{<:SoleLogics.AbstractOperator,Nothing} = nothing
+    )
+        # Check operator correctness; it should not be nothing (thus, auto inferred) if
+        # tree root contains something that is not an AbstractOperator
+        if (!(token(tree) isa AbstractOperator) && !isnothing(operator))
+            #...
+        end
+
+        # Get a vector of SyntaxTree. Let's say it is called c;
+        # then, call LeftMostLinearForm(operator, c)
+    end
 end
 
 children(lf::LeftmostLinearForm) = lf.children
