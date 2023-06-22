@@ -64,7 +64,7 @@ doc_NEGATION = """
     const ¬ = NEGATION
     arity(::Type{typeof(¬)}) = 1
 
-Logical negation.
+Logical negation (also referred to as complement).
 
 See also [`NamedOperator`](@ref), [`AbstractOperator`](@ref).
 """
@@ -137,9 +137,8 @@ function DISJUNCTION(
     return DISJUNCTION(c1, DISJUNCTION(c2, c3, cs...))
 end
 
-# TODO example _iscommutative(::Type{typeof(xor)}) = true
-_iscommutative(::Type{typeof(∧)}) = true
-_iscommutative(::Type{typeof(∨)}) = true
+iscommutative(::Type{typeof(∧)}) = true
+iscommutative(::Type{typeof(∨)}) = true
 
 ############################################################################################
 ########################################## ALGEBRA #########################################
@@ -284,13 +283,14 @@ function _baselogic(;
     default_operators::Vector{<:AbstractOperator},
     logictypename::String,
 )
-    @assert isnothing(grammar) || (isnothing(alphabet) && isnothing(operators)) ||
-            "Cannot instantiate $(logictypename) by specifing a grammar together with parameter(s):
-            $(join([
+    if !(isnothing(grammar) || (isnothing(alphabet) && isnothing(operators)))
+        error("Cannot instantiate $(logictypename) by specifing a grammar " *
+            "together with argument(s): " * join([
                 (!isnothing(alphabet) ? ["alphabet"] : [])...,
                 (!isnothing(operators) ? ["operators"] : [])...,
                 (!isnothing(grammar) ? ["grammar"] : [])...,
-                ], ", "))."
+                ], ", ") * ".")
+    end
     grammar = begin
         if isnothing(grammar)
             # @show alphabet
