@@ -51,3 +51,12 @@ w = [5,1,1,1,1,1,1]
     end for i in 1:1000])
 
 end
+
+
+alph = ExplicitAlphabet(1:5)
+g = SoleLogics.CompleteFlatGrammar(alph, [∧,¬])
+Base.rand(g, 4)
+Base.rand(Random.MersenneTwister(1), g, 4)
+Base.randformula(g, 4)
+Base.randformula(Random.MersenneTwister(1), g, 4)
+Base.randformula(g, 4; rng = Random.MersenneTwister(1))

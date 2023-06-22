@@ -4,9 +4,9 @@ import Base: show
 using DataStructures
 using Dictionaries
 using Random
+using StatsBase
 using Reexport
 using Lazy
-using TupleTools
 
 include("utils.jl")
 

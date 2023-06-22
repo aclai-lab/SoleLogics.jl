@@ -1,6 +1,9 @@
 using Random
 using StatsBase
 
+import Random: rand
+import StatsBase: sample
+
 #= ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Formulas ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ =#
 
 """
@@ -11,7 +14,7 @@ using StatsBase
         kwargs...
     )::Proposition
 
-Randomly samples a proposition from an alphabet `a`, according to a uniform distribution.
+Randomly sample a proposition from an alphabet `a`, according to a uniform distribution.
 
 # Implementation
 If the alphabet is finite, the function defaults to `rand(rng, propositions(alphabet))`;
@@ -32,31 +35,47 @@ function Base.rand(
     a::AbstractAlphabet,
     args...;
     kwargs...
-)::Proposition
+)
     if isfinite(a)
-        rand(rng, propositions(a))
+        Base.rand(rng, propositions(a), args...; kwargs...)
     else
         error("Please, provide method Base.rand(rng::AbstractRNG, a::$(typeof(a)), args...; kwargs...).")
     end
 end
 
-
-
-function Base.rand(l::AbstractLogic, args...; kwargs...)
-    Base.rand(Random.GLOBAL_RNG, l, args...; kwargs...)
+function StatsBase.sample(a::AbstractAlphabet, args...; kwargs...)
+    StatsBase.sample(Random.GLOBAL_RNG, a, args...; kwargs...)
 end
 
-function Base.rand(
+function StatsBase.sample(
+    rng::AbstractRNG,
+    a::AbstractAlphabet,
+    args...;
+    kwargs...
+)
+    if isfinite(a)
+        StatsBase.sample(rng, propositions(a), args...; kwargs...)
+    else
+        error("Please, provide method StatsBase.sample(rng::AbstractRNG, a::$(typeof(a)), args...; kwargs...).")
+    end
+end
+
+
+function StatsBase.sample(l::AbstractLogic, args...; kwargs...)
+    StatsBase.sample(Random.GLOBAL_RNG, l, args...; kwargs...)
+end
+
+function StatsBase.sample(
     rng::AbstractRNG,
     l::AbstractLogic,
     args...;
     kwargs...
-)::AbstractFormula
-    Base.rand(rng, grammar(l), args...; kwargs...)
+)
+    StatsBase.sample(rng, grammar(l), args...; kwargs...)
 end
 
 """
-    function Base.rand(
+    function StatsBase.sample(
         [rng::AbstractRNG = Random.GLOBAL_RNG, ]
         g::AbstractGrammar,
         height::Integer,
@@ -64,7 +83,7 @@ end
         kwargs...
     )::AbstractFormula
 
-Randomly samples a logic formula of given `height` from a grammar `g`.
+Randomly sample a logic formula of given `height` from a grammar `g`.
 
 # Implementation
 This method for must be implemented, and additional keyword arguments should be provided
@@ -75,17 +94,17 @@ See also
 [`ScalarMetaCondition`](@ref),
 [`AbstractAlphabet'](@ref).
 """
-function Base.rand(g::AbstractGrammar, args...; kwargs...)
-    Base.rand(Random.GLOBAL_RNG, g, args...; kwargs...)
+function StatsBase.sample(g::AbstractGrammar, args...; kwargs...)
+    StatsBase.sample(Random.GLOBAL_RNG, g, args...; kwargs...)
 end
 
-function Base.rand(
+function StatsBase.sample(
     rng::AbstractRNG,
     g::AbstractGrammar,
     height::Integer;
     kwargs...
-)::AbstractFormula
-    error("Please, provide method Base.rand(rng::AbstractRNG, g::$(typeof(g)), height::Integer; kwargs...).")
+)
+    error("Please, provide method StatsBase.sample(rng::AbstractRNG, g::$(typeof(g)), height::Integer; kwargs...).")
 end
 
 #= ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ CompleteFlatGrammar ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ =#
@@ -96,7 +115,7 @@ function Base.rand(
     g::CompleteFlatGrammar,
     height::Integer;
     kwargs...
-)::AbstractFormula
+)
     randformula(alphabet(g), operators(g), height; rng = rng, kwargs...)
 end
 
