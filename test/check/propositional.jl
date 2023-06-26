@@ -82,28 +82,45 @@ t2 = @test_nowarn TruthDict(Pair{Real,Bool}[1.0 => true, 2 => true, 3 => true])
 @test !check(parseformula("a ∧ ¬b"), DefaultedTruthDict(["a", "b"]))
 @test check(parseformula("a ∧ ¬b"), DefaultedTruthDict(["a"]))
 
-# Normalization tests - rotate commutatives
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ normalization: rotate commutatives ~~~~~~~~~~~~~~~~~~~~~~~~~~
 cnf1 = "((d ∧ c) ∧ ((e ∧ f) ∧ (g ∧ h))) ∧ (b ∧ a)"
-@test syntaxstring(parseformulatree("(a∧b)∧(c∧d)∧(e∧f)∧(g∧h)") |> normalize) == cnf1
-@test syntaxstring(parseformulatree("(c∧d)∧(b∧a)∧(f∧e)∧(g∧h)") |> normalize) == cnf1
-@test syntaxstring(parseformulatree("(a∧b)∧(f∧e)∧(d∧c)∧(g∧h)") |> normalize) == cnf1
-@test syntaxstring(parseformulatree("(b∧a)∧(h∧g)∧(d∧c)∧(f∧e)") |> normalize) == cnf1
-@test syntaxstring(parseformulatree("(b∧a)∧(c∧d)∧(f∧e)∧(g∧h)") |> normalize) == cnf1
-@test syntaxstring(parseformulatree("(a∧b)∧(d∧c)∧(f∧e)∧(g∧h)") |> normalize) == cnf1
-@test syntaxstring(parseformulatree("(b∧a)∧(d∧c)∧(f∧e)∧(h∧g)") |> normalize) == cnf1
+for f in [
+    parseformulatree("(a∧b)∧(c∧d)∧(e∧f)∧(g∧h)")
+    parseformulatree("(c∧d)∧(b∧a)∧(f∧e)∧(g∧h)")
+    parseformulatree("(a∧b)∧(f∧e)∧(d∧c)∧(g∧h)")
+    parseformulatree("(b∧a)∧(h∧g)∧(d∧c)∧(f∧e)")
+    parseformulatree("(b∧a)∧(c∧d)∧(f∧e)∧(g∧h)")
+    parseformulatree("(a∧b)∧(d∧c)∧(f∧e)∧(g∧h)")
+    parseformulatree("(b∧a)∧(d∧c)∧(f∧e)∧(h∧g)")
+]
+    @test syntaxstring(f |> normalize) == cnf1
+end
 
-f1 = parseformulatree("(a∧b)∧(c∧d)∧(e∧f)∧(g∧h)")
-f2 = parseformulatree("(c∧d)∧(b∧a)∧(f∧e)∧(g∧h)")
-f3 = parseformulatree("(a∧b)∧(f∧e)∧(d∧c)∧(g∧h)")
-f4 = parseformulatree("(b∧a)∧(h∧g)∧(d∧c)∧(f∧e)")
+_to_normalize_with_commutatives = [
+    parseformulatree(_normalized_with_commutatives),
+    parseformulatree("(c∧d)∧(b∧a)∧(f∧e)∧(g∧h)"),
+    parseformulatree("(a∧b)∧(f∧e)∧(d∧c)∧(g∧h)"),
+    parseformulatree("(b∧a)∧(h∧g)∧(d∧c)∧(f∧e)"),
+]
 
+for f in [
+    parseformulatree("(c∧d)∧(b∧a)∧(f∧e)∧(g∧h)"),
+    parseformulatree("(a∧b)∧(f∧e)∧(d∧c)∧(g∧h)"),
+    parseformulatree("(b∧a)∧(h∧g)∧(d∧c)∧(f∧e)")
+]
+    @test syntaxstring(f |> normalize) == "(a∧b)∧(c∧d)∧(e∧f)∧(g∧h)"
+end
 
-f1 = parseformulatree("a∧b∧c∧d∧e∧f∧g∧h")
-f2 = parseformulatree("g∧d∧a∧b∧c∧f∧e∧h")
+for f in [
+    parseformulatree("a∧b∧c∧d∧e∧f∧g∧h"),
+    parseformulatree("g∧d∧a∧b∧c∧f∧e∧h")
+]
+    @test syntaxstring(f |> normalize) == "b∧a∧d∧c∧e∧f∧h∧g"
+end
 
-
-f1 = parseformulatree("a∧b∧c∧d∧((p∧¬q)→r)∧f∧g∧h")
-f2 = parseformulatree("g∧d∧a∧b∧c∧f∧((p∧¬q)→r)∧h")
-
-
+for f in [
+    parseformulatree("a∧b∧c∧d∧((p∧¬q)→r)∧f∧g∧h"),
+    parseformulatree("g∧d∧a∧b∧c∧f∧((p∧¬q)→r)∧h")
+]
+    @test syntaxstring(f |> normalize) == "g∧c∧f∧((p∧¬q)→r)∧h∧d∧a∧b"
 end

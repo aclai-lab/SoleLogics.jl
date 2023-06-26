@@ -89,11 +89,29 @@ struct LeftmostLinearForm{O<:AbstractOperator, SS<:AbstractSyntaxStructure} <: A
         # Check operator correctness; it should not be nothing (thus, auto inferred) if
         # tree root contains something that is not an AbstractOperator
         if (!(token(tree) isa AbstractOperator) && !isnothing(operator))
-            #...
+            error("Syntax tree cannot be converted to a LeftmostLinearForm:" *
+                "tree root is $(token(tree))")
         end
 
-        # Get a vector of SyntaxTree. Let's say it is called c;
-        # then, call LeftMostLinearForm(operator, c)
+        if isnothing(operator)
+            # TODO auto infer operator
+            error("Implement operator inferation.")
+        end
+
+        # Get a vector of `SyntaxTree`s, having `operator` as common ancestor, then,
+        # call LeftmostLinearForm constructor.
+        _children = AbstractSyntaxStructure[]
+
+        function _dig_and_retrieve(tree::SyntaxTree, operator::SoleLogics.AbstractOperator)
+            token(tree) != operator ?
+            push!(_children, tree) :    # Lexical scope
+            for c in children(tree)
+                _dig_and_retrieve(c, operator)
+            end
+        end
+        _dig_and_retrieve(tree, operator)
+
+        LeftmostLinearForm(operator, _children)
     end
 end
 
