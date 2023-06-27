@@ -94,8 +94,7 @@ struct LeftmostLinearForm{O<:AbstractOperator, SS<:AbstractSyntaxStructure} <: A
         end
 
         if isnothing(operator)
-            # TODO auto infer operator
-            error("Implement operator inferation.")
+            operator = token(tree)
         end
 
         # Get a vector of `SyntaxTree`s, having `operator` as common ancestor, then,

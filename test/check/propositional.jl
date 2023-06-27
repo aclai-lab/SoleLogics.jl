@@ -83,7 +83,8 @@ t2 = @test_nowarn TruthDict(Pair{Real,Bool}[1.0 => true, 2 => true, 3 => true])
 @test check(parseformula("a ∧ ¬b"), DefaultedTruthDict(["a"]))
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ normalization: rotate commutatives ~~~~~~~~~~~~~~~~~~~~~~~~~~
-cnf1 = "((d ∧ c) ∧ ((e ∧ f) ∧ (g ∧ h))) ∧ (b ∧ a)"
+
+_test_rot_comm1 = normalize(parseformulatree("((d ∧ c) ∧ ((e ∧ f) ∧ (g ∧ h))) ∧ (b ∧ a)"))
 for f in [
     parseformulatree("(a∧b)∧(c∧d)∧(e∧f)∧(g∧h)")
     parseformulatree("(c∧d)∧(b∧a)∧(f∧e)∧(g∧h)")
@@ -93,34 +94,33 @@ for f in [
     parseformulatree("(a∧b)∧(d∧c)∧(f∧e)∧(g∧h)")
     parseformulatree("(b∧a)∧(d∧c)∧(f∧e)∧(h∧g)")
 ]
-    @test syntaxstring(f |> normalize) == cnf1
+    @test syntaxstring(f |> normalize) == syntaxstring(_test_rot_comm1)
 end
 
-_to_normalize_with_commutatives = [
-    parseformulatree(_normalized_with_commutatives),
-    parseformulatree("(c∧d)∧(b∧a)∧(f∧e)∧(g∧h)"),
-    parseformulatree("(a∧b)∧(f∧e)∧(d∧c)∧(g∧h)"),
-    parseformulatree("(b∧a)∧(h∧g)∧(d∧c)∧(f∧e)"),
-]
-
+_test_rot_comm2 = normalize(parseformulatree("(a∧b)∧(c∧d)∧(e∧f)∧(g∧h)"))
 for f in [
     parseformulatree("(c∧d)∧(b∧a)∧(f∧e)∧(g∧h)"),
     parseformulatree("(a∧b)∧(f∧e)∧(d∧c)∧(g∧h)"),
     parseformulatree("(b∧a)∧(h∧g)∧(d∧c)∧(f∧e)")
 ]
-    @test syntaxstring(f |> normalize) == "(a∧b)∧(c∧d)∧(e∧f)∧(g∧h)"
+    @test syntaxstring(f |> normalize) == syntaxstring(_test_rot_comm2)
 end
 
+_test_rot_comm3 = normalize(parseformulatree("b∧a∧d∧c∧e∧f∧h∧g"))
 for f in [
     parseformulatree("a∧b∧c∧d∧e∧f∧g∧h"),
     parseformulatree("g∧d∧a∧b∧c∧f∧e∧h")
 ]
-    @test syntaxstring(f |> normalize) == "b∧a∧d∧c∧e∧f∧h∧g"
+    @test syntaxstring(f |> normalize) == syntaxstring(_test_rot_comm3)
+
 end
 
+_test_rot_comm4 = normalize(parseformulatree("g∧c∧f∧((p∧¬q)→r)∧h∧d∧a∧b"))
 for f in [
     parseformulatree("a∧b∧c∧d∧((p∧¬q)→r)∧f∧g∧h"),
     parseformulatree("g∧d∧a∧b∧c∧f∧((p∧¬q)→r)∧h")
 ]
-    @test syntaxstring(f |> normalize) == "g∧c∧f∧((p∧¬q)→r)∧h∧d∧a∧b"
+    @test syntaxstring(f |> normalize) == syntaxstring(_test_rot_comm4)
+end
+
 end

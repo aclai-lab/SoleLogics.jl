@@ -61,5 +61,3 @@ g = SoleLogics.CompleteFlatGrammar(alph, [∧,¬])
 @test_nowarn Base.rand(Random.MersenneTwister(1), 4, g)
 @test_nowarn randformula(4, g)
 @test_nowarn randformula(4, g; rng = Random.MersenneTwister(1))
-
-# randformula(Random.MersenneTwister(1), 4, g) # Another dispatch using rng is useless
