@@ -30,5 +30,8 @@ makedocs(;
 
 deploydocs(;
     repo = "github.com/aclai-lab/SoleLogics.jl",
-    devbranch="dev",
+    devbranch = "main",
+    target = "build",
+    branch = "gh-pages",
+    versions = ["stable" => "v^", "v#.#"],
 )
