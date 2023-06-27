@@ -43,12 +43,12 @@ Notes for Giovanni;
 3) As stated in AbstractSyntaxStructure docstring, classically a logical formula is implemented using a tree structure (an AST) but other representations may exist: I guess we could add a "randnormalform" method
 
 ## Generating random interpretations
-Kripke models generation is provided by gen_kmodel interface. As you can see from the documentation, internally it builds up a random directed graph structure (using some, possibly custom algorithm). The adjacency list obtained is enriched with informations to obtain a so called Kripke frame; this is done by taking each vertex in the list and
+Kripke structures generation is provided by gen_kstructure interface. As you can see from the documentation, internally it builds up a random directed graph structure (using some, possibly custom algorithm). The adjacency list obtained is enriched with informations to obtain a so called Kripke frame; this is done by taking each vertex in the list and
 
 - converting it into a World structure;
 - defining which worlds are accessible from this following a specific relation (I'm trying to summarize both the concept of binary accessiblity relation R and the accessibles method...).
 
-Finally, pairing each world in the Kripke frame with a list of propositional letters (this goes undeer the name of world valuation function), a Kripke model is returned by gen_kmodel.
+Finally, pairing each world in the Kripke frame with a list of propositional letters (this goes undeer the name of world valuation function), a Kripke structure is returned by gen_kstructure.
 
 ## Model checking
 
