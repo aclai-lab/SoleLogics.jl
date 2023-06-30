@@ -275,9 +275,7 @@ uuid = "6462fe0b-24de-5631-8697-dd941f90decc"
 
 [[deps.SoleBase]]
 deps = ["IterTools", "Logging", "Random"]
-git-tree-sha1 = "e1f35229983481bb66040122b8943f2832fef074"
-repo-rev = "dev-v0.9"
-repo-url = "https://github.com/aclai-lab/SoleBase.jl"
+git-tree-sha1 = "4f941f62f7864f253e9063256dcef0fab72a44f4"
 uuid = "4475fa32-7023-44a0-aa70-4813b230e492"
 version = "0.9.1"
 
