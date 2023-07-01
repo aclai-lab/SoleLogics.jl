@@ -100,8 +100,8 @@ end
 
 function StatsBase.sample(
     rng::AbstractRNG,
+    height::Integer,
     g::AbstractGrammar,
-    height::Integer;
     kwargs...
 )
     error("Please, provide method StatsBase.sample(rng::AbstractRNG, g::$(typeof(g)), height::Integer; kwargs...).")
@@ -111,12 +111,20 @@ end
 
 # For the case of a CompleteFlatGrammar, the alphabet and the operators suffice.
 function Base.rand(
-    rng::AbstractRNG,
+    height::Integer,
     g::CompleteFlatGrammar,
-    height::Integer;
     kwargs...
 )
-    randformula(alphabet(g), operators(g), height; rng = rng, kwargs...)
+    randformula(height, alphabet(g), operators(g), rng = Random.GLOBAL_RNG, kwargs...)
+end
+
+function Base.rand(
+    rng::AbstractRNG,
+    height::Integer,
+    g::CompleteFlatGrammar,
+    kwargs...
+)
+    randformula(height, alphabet(g), operators(g); rng = rng, kwargs...)
 end
 
 # TODO
@@ -131,6 +139,12 @@ doc_randformula = """
         operators::Vector{<:AbstractOperator};
         rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG
     )::SyntaxTree
+
+    function randformula(
+        height::Integer,
+        g::AbstractGrammar;
+        rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG
+    )::Formula
 
     function randformula(
         height::Integer,
@@ -150,6 +164,21 @@ julia> syntaxstring(randformulatree(4, ExplicitAlphabet([1,2]), [NEGATION, CONJU
 
 See also [`randformula`](@ref), [`SyntaxTree`](@ref).
 """
+
+"""$(doc_randformula)"""
+function randformula(
+    height::Integer,
+    g::AbstractGrammar;
+    rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG
+)::Formula
+    _alphabet = alphabet(g)
+    _operators = operators(g)
+    baseformula(
+        randformulatree(height, _alphabet, _operators; rng = rng);
+        alphabet = _alphabet,
+        additional_operators = _operators
+    )
+end
 
 """$(doc_randformula)"""
 function randformula(

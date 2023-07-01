@@ -1,6 +1,6 @@
 import SoleLogics: arity
 
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ random ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ random logic ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 @testset "Random" begin
 
@@ -52,11 +52,12 @@ w = [5,1,1,1,1,1,1]
 
 end
 
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ random interfaces ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 alph = ExplicitAlphabet(1:5)
 g = SoleLogics.CompleteFlatGrammar(alph, [∧,¬])
-Base.rand(g, 4)
-Base.rand(Random.MersenneTwister(1), g, 4)
-Base.randformula(g, 4)
-Base.randformula(Random.MersenneTwister(1), g, 4)
-Base.randformula(g, 4; rng = Random.MersenneTwister(1))
+
+@test_nowarn Base.rand(4, g)
+@test_nowarn Base.rand(Random.MersenneTwister(1), 4, g)
+@test_nowarn randformula(4, g)
+@test_nowarn randformula(4, g; rng = Random.MersenneTwister(1))
