@@ -29,7 +29,7 @@ using SoleLogics
 ### Parsing and manipulating Formulas
 
 ```julia
-julia> φ1 = parseformulatree("¬p∧q∧(¬s∧¬z)");
+julia> φ1 = parseformula("¬p∧q∧(¬s∧¬z)");
 
 julia> φ1 isa SyntaxTree
 true
@@ -50,13 +50,13 @@ julia> syntaxstring(φ2)
 ### Generating random formulas
 
 ```julia-repl
-julia> parseformulatree("")
+julia> parseformula("")
 ```
 
 ### Generating random interpretations
 
 ```julia-repl
-julia> parseformulatree("")
+julia> parseformula("")
 ```
 
 ### Model checking

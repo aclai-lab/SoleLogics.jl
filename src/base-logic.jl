@@ -344,7 +344,7 @@ plus the `additional_operators` is instantiated.
 
 # Examples
 ```julia-repl
-julia> t = parseformulatree("◊((p∧q)→r)");
+julia> t = parseformula("◊((p∧q)→r)");
 
 julia> operators(logic(SoleLogics.baseformula(t)))
 3-element Vector{Union{SoleLogics.NamedOperator{:→}, SoleLogics.NamedOperator{:◊}, SoleLogics.NamedOperator{:∧}}}:
@@ -395,7 +395,8 @@ function baseformula(
                 kwargs...,
             )
         else
-            error("Could not infer logic from object of type $(typeof(tokf)): $(t). operators = $(ops).")
+            unknown_ops = setdiff(ops, BASE_PROPOSITIONAL_OPERATORS, BASE_MODAL_OPERATORS, BASE_MULTIMODAL_OPERATORS)
+            error("Could not infer logic from object of type $(typeof(tokf)): $(t). Unknown operators: $(unknown_ops).")
         end
     end
     Formula(logic, t)

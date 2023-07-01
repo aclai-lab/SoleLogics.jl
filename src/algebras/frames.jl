@@ -41,7 +41,7 @@ end
 Return an empty world (e.g., `Interval(-1,0)`).
 """
 function emptyworld(fr::AbstractMultiModalFrame)
-    error("Please, provide method emptyworld(::$(typeof(fr))).")
+    return error("Please, provide method emptyworld(::$(typeof(fr))).")
 end
 
 """
@@ -49,7 +49,7 @@ Return the world at the *center* of the frame;
 note that this does not always exist.
 """
 function centeredworld(fr::AbstractMultiModalFrame)
-    error("Please, provide method centeredworld(::$(typeof(fr))).")
+    return error("Please, provide method centeredworld(::$(typeof(fr))).")
 end
 
 ############################################################################################

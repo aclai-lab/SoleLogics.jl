@@ -1,3 +1,38 @@
+import Base: parse
+
+function Base.parse(
+    F::Type{<:AbstractFormula},
+    str::AbstractString,
+    args...;
+    kwargs...
+)
+    return parseformula(F, str, args...; kwargs...)
+end
+
+"""
+
+    function parseformula(
+        F::Type{<:AbstractFormula},
+        str::AbstractString,
+        args...;
+        kwargs...
+    )
+
+Parses a formula of type `F` from a string. When `F` is not specified, it defaults to
+    `SyntaxTree` and [`parsetree`](@ref) is called.
+
+See also [`parsetree`](@ref), [`parsebaseformula`](@ref).
+"""
+function parseformula(
+    F::Type{<:AbstractFormula},
+    str::AbstractString,
+    args...;
+    kwargs...
+)
+    return error("Please, provide method parseformula(::Type{$(F)}, str, ::$(typeof(args))...; ::$(typeof(kwargs))...).")
+end
+
+parseformula(str, args...; kwargs...) = parseformula(SyntaxTree, str, args...; kwargs...)
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Table of contents ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
@@ -35,17 +70,17 @@ In case of tie, operators are evaluated in the left-to-right order.
 
 # Examples
 ```julia-repl
-julia> syntaxstring(parseformulatree("¬a ∧ b ∧ c"))
+julia> syntaxstring(parseformula("¬a ∧ b ∧ c"))
 "(¬(a)) ∧ (b ∧ c)"
 
-julia> syntaxstring(parseformulatree("¬a → b ∧ c"))
+julia> syntaxstring(parseformula("¬a → b ∧ c"))
 "(¬(a)) → (b ∧ c)"
 
-julia> syntaxstring(parseformulatree("a∧b → c∧d"))
+julia> syntaxstring(parseformula("a∧b → c∧d"))
 "(a ∧ b) → (c ∧ d)"
 ```
 
-See also [`parseformulatree`](@ref).
+See also [`parseformula`](@ref).
 """
 
 """$(doc_precedence)"""
@@ -80,7 +115,7 @@ const DEFAULT_ARG_DELIM       = ","
 
 
 """
-See [`parseformulatree`](@ref).
+See [`parsetree`](@ref).
 """
 const BASE_PARSABLE_OPERATORS = [
     BASE_PROPOSITIONAL_OPERATORS...,
@@ -312,7 +347,7 @@ function shunting_yard!(
 end
 
 """
-    parseformulatree(
+    parsetree(
         expression::String,
         additional_operators::Union{Nothing,Vector{<:AbstractOperator}} = nothing;
         function_notation::Bool = false,
@@ -368,20 +403,23 @@ a second argument.
 
 # Examples
 ```julia-repl
-julia> syntaxstring(parseformulatree("¬p∧q∧(¬s∧¬z)"))
+julia> syntaxstring(parsetree("¬p∧q∧(¬s∧¬z)"))
 "(¬(p)) ∧ (q ∧ ((¬(s)) ∧ (¬(z))))"
 
-julia> syntaxstring(parseformulatree("∧(¬p,∧(q,∧(¬s,¬z)))", function_notation=true))
+julia> syntaxstring(parsetree("∧(¬p,∧(q,∧(¬s,¬z)))", function_notation=true))
 "(¬(p)) ∧ (q ∧ ((¬(s)) ∧ (¬(z))))"
 
-julia> syntaxstring(parseformulatree("¬1→0";
+julia> syntaxstring(parsetree("¬1→0";
     proposition_parser = (x -> Proposition{Float64}(parse(Float64, x)))))
 "(¬(1.0)) → 0.0"
 ```
 
 See also [`SyntaxTree`](@ref), [`syntaxstring`](@ref).
 """
-function parseformulatree(
+parsetree(str, args...; kwargs...) = parseformula(SyntaxTree, str, args...; kwargs...)
+
+function parseformula(
+    ::Type{SyntaxTree},
     expression::String,
     additional_operators::Union{Nothing,Vector{<:AbstractOperator}} = nothing;
     function_notation::Bool = false,
@@ -409,7 +447,7 @@ function parseformulatree(
     closing_bracket = Symbol(closing_bracket)
     arg_delim       = Symbol(arg_delim)
 
-    # parseformulatree workflow:
+    # parsetree workflow:
     # 1) function_notation = false; _infixbuild -> _postfixbuild
     # 2) function_notation = true;  _fxbuild    -> _prefixbuild
 
@@ -530,16 +568,17 @@ function parseformulatree(
     return (function_notation ? _fxbuild() : _infixbuild())
 end
 
-function parseformulatree(
+function parseformula(
+    F::Type{SyntaxTree},
     expression::String,
     logic::AbstractLogic;
     kwargs...
 )
-    parseformulatree(expression, operators(logic); kwargs...)
+    parseformula(F, expression, operators(logic); kwargs...)
 end
 
 """
-    function parseformula(
+    function parsebaseformula(
         expression::String,
         additional_operators::Union{Nothing,Vector{<:AbstractOperator}} = nothing;
         operators::Union{Nothing,Vector{<:AbstractOperator}},
@@ -558,9 +597,12 @@ The `grammar` and `algebra` of the associated logic is inferred using
 the `baseformula` function from the operators encountered
 in the expression, and those in `additional_operators`.
 
-See [`parseformulatree`](@ref), [`baseformula`](@ref).
+See [`parsetree`](@ref), [`baseformula`](@ref).
 """
+parsebaseformula(str, args...; kwargs...) = parseformula(Formula, str, args...; kwargs...)
+
 function parseformula(
+    ::Type{Formula},
     expression::String,
     additional_operators::Union{Nothing,Vector{<:AbstractOperator}} = nothing;
     # TODO add alphabet parameter add custom parser for propositions
@@ -572,7 +614,7 @@ function parseformula(
     additional_operators =
         (isnothing(additional_operators) ? AbstractOperator[] : additional_operators)
 
-    t = parseformulatree(expression, additional_operators; kwargs...)
+    t = parsetree(expression, additional_operators; kwargs...)
     baseformula(t;
         # additional_operators = unique(AbstractOperator[operators..., SoleLogics.operators(t)...]),
         additional_operators = length(additional_operators) == 0 ? nothing :
@@ -585,17 +627,18 @@ function parseformula(
 end
 
 function parseformula(
+    ::Type{Formula},
     expression::String,
     logic::AbstractLogic;
     kwargs...,
 )
-    Formula(logic, parseformulatree(expression, operators(logic); kwargs...))
+    Formula(logic, parsetree(expression, operators(logic); kwargs...))
 end
 
-# function parseformula(
+# function parsebaseformula(
 #     expression::String;
 #     operators::Union{Nothing,Vector{<:AbstractOperator}} = nothing,
 #     kwargs...,
 # )
-#     parseformula(expression; additional_operators = operators, kwargs...)
+#     parsebaseformula(expression; additional_operators = operators, kwargs...)
 # end

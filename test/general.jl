@@ -18,7 +18,7 @@ p1_number = @test_nowarn Proposition{Number}(1)
 p_string = @test_nowarn Proposition{String}("1")
 
 @test Proposition(Proposition(1)) == Proposition(1)
-@test_throws AssertionError Proposition(parseformulatree("¬p"))
+@test_throws AssertionError Proposition(parsetree("¬p"))
 @test_throws AssertionError Proposition(¬)
 
 @test arity(p1) == 0

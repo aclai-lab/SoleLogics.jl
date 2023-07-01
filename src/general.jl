@@ -52,14 +52,14 @@ See [here](https://en.wikipedia.org/wiki/Infix_notation).
 
 # Examples
 ```julia-repl
-julia> syntaxstring((parseformula("◊((p∧s)→q)")))
+julia> syntaxstring((parsebaseformula("◊((p∧s)→q)")))
 "(◊(p ∧ s)) → q"
 
-julia> syntaxstring((parseformula("◊((p∧s)→q)")); function_notation = true)
+julia> syntaxstring((parsebaseformula("◊((p∧s)→q)")); function_notation = true)
 "→(◊(∧(p, s)), q)"
 ```
 
-See also [`parseformula`](@ref), [`parseformulatree`](@ref),
+See also [`parsebaseformula`](@ref), [`parsetree`](@ref),
 [`SyntaxTree`](@ref), [`AbstractSyntaxToken`](@ref).
 
 # Implementation
@@ -86,11 +86,11 @@ the function can simply be:
     prefixed/suffixed by whitespaces, as this may cause ambiguities upon *parsing*.
     For similar reasons, `syntaxstring`s should not contain parenthesis (`'('`, `')'`),
     and, when parsing in function notation, commas (`','`).
-    See also [`parseformula`](@ref).
+    See also [`parsebaseformula`](@ref).
 
 """
 function syntaxstring(tok::AbstractSyntaxToken; kwargs...)::String
-    error("Please, provide method syntaxstring(::$(typeof(tok)); kwargs...).")
+    return error("Please, provide method syntaxstring(::$(typeof(tok)); kwargs...).")
 end
 
 # Helper
@@ -142,6 +142,8 @@ atomtype(::Type{Proposition{A}}) where {A} = A
 # Helpers
 Base.convert(::Type{P}, p::Proposition) where {P<:Proposition} = P(p)
 Base.convert(::Type{P}, a) where {P<:Proposition} = P(a)
+# Base.promote_rule(::Type{Union{String,Number}}, ::Type{<:Proposition}) = Proposition
+# Base.promote_rule(::Type{<:Proposition}, ::Type{Union{String,Number}}) = Proposition
 
 syntaxstring(p::Proposition; kwargs...) = syntaxstring(atom(p); kwargs...)
 
@@ -282,7 +284,7 @@ but it allows to use operators for a more flexible composition; see the examples
 
 # Examples
 ```
-julia> f = parseformulatree("◊(p→q)");
+julia> f = parseformula("◊(p→q)");
 
 julia> p = Proposition("p");
 
@@ -299,15 +301,12 @@ julia> syntaxstring(∧(f, p, ¬p))
 # Implementation
 
 Upon `joinformulas` lies a more flexible way of using operators for composing
-formulas and syntax tokens (e.g., propositions), given by following definitions:
+formulas and syntax tokens (e.g., propositions), given methods like the following:
 
     function (op::AbstractOperator)(
         children::NTuple{N,Union{AbstractSyntaxToken,AbstractFormula}},
     ) where {N}
         ...
-    end
-    function (op::AbstractOperator)(children::Union{AbstractSyntaxToken,AbstractFormula}...)
-        return op(children)
     end
 
 These allow composing formulas as in `∧(f, ¬p)`, and in order to access this composition
@@ -1242,7 +1241,7 @@ Return the `domain` of a given algebra.
 See also [`AbstractAlgebra`](@ref).
 """
 function domain(a::AbstractAlgebra{T} where {T<:TruthValue})::AbstractVector{T}
-    error("Please, provide method domain(::$(typeof(a))).")
+    return error("Please, provide method domain(::$(typeof(a))).")
 end
 
 # Note: maybe one day this will have a use?
@@ -1374,9 +1373,9 @@ See the examples.
 
 # Examples
 ```julia-repl
-julia> f = parseformula("◊(p→q)");
+julia> f = parsebaseformula("◊(p→q)");
 
-julia> f2 = f(parseformulatree("p"));
+julia> f2 = f(parseformula("p"));
 
 julia> syntaxstring(f)
 "◊(→(p, q))"

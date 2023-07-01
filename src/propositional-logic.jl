@@ -209,7 +209,7 @@ Dict{Proposition{String}, Bool} with 3 entries:
   Proposition{String}("a") => 1
 
 
-julia> check(parseformula("a ∨ b"), t2)
+julia> check(parsebaseformula("a ∨ b"), t2)
 true
 
 ```
@@ -329,10 +329,10 @@ Dict{Proposition{String}, Bool} with 5 entries:
   Proposition{String}("5") => 0
 
 
-julia> check(parseformula("1 ∨ 2"), t1)
+julia> check(parsebaseformula("1 ∨ 2"), t1)
 true
 
-julia> check(parseformula("1 ∧ 5"), t1)
+julia> check(parsebaseformula("1 ∧ 5"), t1)
 false
 
 ```

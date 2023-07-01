@@ -79,11 +79,11 @@ include("check.jl")
 
 include("interpretation-sets.jl")
 
-export parseformula, parseformulatree
+export parsebaseformula, parseformula, parsetree
 
 include("parse.jl")
 
-export randformula, randformulatree
+export randbaseformula, randformula
 
 include("random.jl")
 

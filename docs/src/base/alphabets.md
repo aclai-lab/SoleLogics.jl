@@ -1,4 +1,4 @@
-# Alphabet
+# Alphabets
 
 ```@docs
 SoleLogics.AbstractAlphabet

@@ -50,7 +50,7 @@ Return all worlds within the frame.
 See also [`nworlds`](@ref), [`AbstractFrame`](@ref).
 """
 function allworlds(fr::AbstractFrame{W})::AbstractVector{<:W} where {W<:AbstractWorld}
-    error("Please, provide method allworlds(frame::$(typeof(fr))).")
+    return error("Please, provide method allworlds(frame::$(typeof(fr))).")
 end
 
 """
@@ -61,7 +61,7 @@ Return the number of worlds within the frame.
 See also [`nworlds`](@ref), [`AbstractFrame`](@ref).
 """
 function nworlds(fr::AbstractFrame)::Integer
-    error("Please, provide method nworlds(frame::$(typeof(fr))).")
+    return error("Please, provide method nworlds(frame::$(typeof(fr))).")
 end
 
 """
@@ -73,7 +73,7 @@ can provide an initial world.
 See also [`allworlds`](@ref), [`nworlds`](@ref), [`AbstractFrame`](@ref).
 """
 function initialworld(fr::AbstractFrame{W})::Union{Nothing,W} where {W<:AbstractWorld}
-    error("Please, provide method " *
+    return error("Please, provide method " *
         "initialworld(frame::$(typeof(fr)))::Union{Nothing,$(worldtype(fr))}.")
 end
 
@@ -100,7 +100,7 @@ Return the worlds in frame `fr` that are accessible from world `w`.
 See also [`AbstractWorld`](@ref), [`AbstractUniModalFrame`](@ref).
 """
 function accessibles(fr::AbstractUniModalFrame{W}, w::W)::Vector{W} where {W<:AbstractWorld}
-    error("Please, provide method accessibles(fr::$(typeof(f)), w::$(typeof(w)))::Vector{$(W)}.")
+    return error("Please, provide method accessibles(fr::$(typeof(f)), w::$(typeof(w)))::Vector{$(W)}.")
 end
 
 ############################################################################################
@@ -469,7 +469,7 @@ abstract type AbstractModalAssignment{W<:AbstractWorld,A,T<:TruthValue} end
 # TODO
 # """
 # function check(::Proposition{A}, ::AbstractModalAssignment{W,A,T}, ::W)::T where {W<:AbstractWorld,A,T<:TruthValue}
-#     error("Please, provide ...")
+#     return error("Please, provide ...")
 # end
 
 # struct GenericExplicitAssignment{W<:AbstractWorld,A,T<:TruthValue} <: AbstractModalAssignment{W,A,T}
@@ -508,7 +508,7 @@ function check(
     ::AbstractKripkeStructure{W,A,T},
     ::W,
 )::T where {W<:AbstractWorld,A,T<:TruthValue}
-    error("Please, provide ...")
+    return error("Please, provide ...")
 end
 
 function check(
@@ -516,7 +516,7 @@ function check(
     ::AbstractKripkeStructure{W,A,T},
     ::W,
 )::T where {W<:AbstractWorld,A,T<:TruthValue}
-    error("Please, provide ...")
+    return error("Please, provide ...")
 end
 
 function frame(i::AbstractKripkeStructure{W,A,T,FR})::FR where {W<:AbstractWorld,A,T<:TruthValue,FR<:AbstractFrame{W}}

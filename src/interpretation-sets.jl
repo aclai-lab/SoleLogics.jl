@@ -33,7 +33,7 @@ function check(
     args...;
     kwargs...,
 )::truthtype(M) where {M<:AbstractInterpretation}
-    error("Please, provide method check(::$(typeof(φ)), ::$(typeof(d)), ::Integer, ::$(typeof(args))...; kwargs...).")
+    return error("Please, provide method check(::$(typeof(φ)), ::$(typeof(d)), ::Integer, ::$(typeof(args))...; kwargs...).")
 end
 
 # Check on a dataset = map check on the instances
@@ -96,7 +96,7 @@ end
 # abstract type AbstractFrameSet{FR<:AbstractFrame} end
 
 # function Base.getindex(::AbstractFrameSet{FR}, i_instance::Integer)::FR where {FR<:AbstractFrame}
-#     error("Please, provide ...")
+#     return error("Please, provide ...")
 # end
 
 # struct FrameSet{FR<:AbstractFrame} <: AbstractFrameSet{FR}
@@ -122,16 +122,16 @@ frametype(::Type{AbstractInterpretationSet{M}}) where {M<:AbstractKripkeStructur
 frametype(s::AbstractInterpretationSet) = frametype(typeof(s))
 
 function alphabet(X::AbstractInterpretationSet{M}) where {M<:AbstractKripkeStructure}
-    error("Please, provide method alphabet(::$(typeof(X))).")
+    return error("Please, provide method alphabet(::$(typeof(X))).")
 end
 
 function relations(X::AbstractInterpretationSet{M}) where {M<:AbstractKripkeStructure}
-    error("Please, provide method relations(::$(typeof(X))).")
+    return error("Please, provide method relations(::$(typeof(X))).")
 end
 
 
 function frame(X::AbstractInterpretationSet{M}, i_instance::Integer) where {M<:AbstractKripkeStructure}
-    error("Please, provide method frame(::$(typeof(X)), ::$(typeof(i_instance))).")
+    return error("Please, provide method frame(::$(typeof(X)), ::$(typeof(i_instance))).")
 end
 accessibles(X::AbstractInterpretationSet, i_instance::Integer, args...) = accessibles(frame(X, i_instance), args...)
 allworlds(X::AbstractInterpretationSet, i_instance::Integer, args...) = allworlds(frame(X, i_instance), args...)
