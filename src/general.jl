@@ -695,6 +695,8 @@ Base.convert(::Type{SyntaxTree}, f::AbstractFormula) = tree(f)
 
 tree(t::SyntaxTree) = t
 
+tree(t::AbstractSyntaxToken) = SyntaxTree(t)
+
 ############################################################################################
 
 """
@@ -1580,10 +1582,11 @@ end
 function (op::AbstractOperator)(
     children::NTuple{N,Union{AbstractSyntaxToken,AbstractFormula}},
 ) where {N}
-    if Base.promote_type((typeof.(children))...) <: AbstractSyntaxToken
-        return joinformulas(op, children)
-    elseif Base.promote_type((typeof.(children))...) <: Union{AbstractSyntaxStructure}
-        return SyntaxTree(op, children) # Force SyntaxTree: TODO actually use joinformulas
+    T = Base.promote_type((typeof.(children))...)
+    if T <: Union{SyntaxTree,AbstractSyntaxToken}
+        return joinformulas(op, tree.(children))
+    elseif T <: AbstractSyntaxStructure
+        return joinformulas(op, children) # Force SyntaxTree?
         # return joinformulas(op, Base.promote(children...))
         # println(typeof.(children))
         # println(typeof.(Base.promote(children...)))

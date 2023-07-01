@@ -205,7 +205,7 @@ IA32IARelations(::_IA_I)          = [
     IA_Ai, IA_Oi, IA_Di, IA_Bi, IA_Ei
 ]
 
-syntaxstring(r::Union{_IA_AorO,_IA_DorBorE,_IA_AiorOi,_IA_DiorBiorEi}; kwargs...) = join(map(_r->syntaxstring(_r; kwargs...), IA72IARelations(r)), "∨")
+syntaxstring(r::Type{<:Union{_IA_AorO,_IA_DorBorE,_IA_AiorOi,_IA_DiorBiorEi}}; kwargs...) = join(map(_r->syntaxstring(_r; kwargs...), IA72IARelations(r())), "∨")
 syntaxstring(::Type{_IA_I}; kwargs...)          = "I"
 
 ############################################################################################
