@@ -22,7 +22,7 @@ Lazy = "0.15"
 NamedArrays = "0.9"
 Reexport = "1"
 Revise = "3"
-SoleBase = "0.9.1"
+SoleBase = "0.9.2"
 julia = "1"
 
 [extras]
