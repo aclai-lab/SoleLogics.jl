@@ -128,7 +128,7 @@ Check a logical formula on an assigment.
 This function returns a truth value of the assigment.
 
 See also
-[`TruthDict`](@ref),
+[`TruthTable`](@ref),
 [`SyntaxTree`](@ref), [`AbstractFormula`](@ref),
 [`AbstractAlgebra`](@ref), [`AbstractInterpretation`](@ref).
 
@@ -169,7 +169,7 @@ check(p::Proposition, i::AbstractAssignment{AA}, args...) where {AA} = Base.geti
 ############################################################################################
 
 """
-    struct TruthDict{
+    struct TruthTable{
         A,
         T<:TruthValue,
         D<:AbstractDict{<:Proposition{<:A},T}
@@ -183,31 +183,19 @@ If prompted for the value of an unknown proposition, it throws an error.
 
 # Examples
 ```julia-repl
-julia> TruthDict(1:4)
-TruthDict wrapping:
-Dict{Proposition{Int64}, Bool} with 4 entries:
-  Proposition{Int64}(4) => 1
-  Proposition{Int64}(2) => 1
-  Proposition{Int64}(3) => 1
-  Proposition{Int64}(1) => 1
+julia> TruthTable(1:4)
+│ Proposition{Int64}(4)│ Proposition{Int64}(2)│ Proposition{Int64}(3)│ Proposition{Int64}(1)│
+│         true         │         true         │         true         │         true         │
 
 
-julia> t1 = TruthDict(1:4, false); t1[5] = true; t1
-TruthDict wrapping:
-Dict{Proposition{Int64}, Bool} with 4 entries:
-  Proposition{Int64}(5) => 1
-  Proposition{Int64}(4) => 0
-  Proposition{Int64}(2) => 0
-  Proposition{Int64}(3) => 0
-  Proposition{Int64}(1) => 0
+julia> t1 = TruthTable(1:4, false); t1[5] = true; t1
+│ Proposition{Int64}(5)│ Proposition{Int64}(4)│ Proposition{Int64}(2)│ Proposition{Int64}(3)│ Proposition{Int64}(1)│
+│         true         │         false        │         false        │         false        │         false        │
 
 
-julia> t2 = TruthDict(["a" => true, "b" => false, "c" => true])
-TruthDict wrapping:
-Dict{Proposition{String}, Bool} with 3 entries:
-  Proposition{String}("c") => 1
-  Proposition{String}("b") => 0
-  Proposition{String}("a") => 1
+julia> t2 = TruthTable(["a" => true, "b" => false, "c" => true])
+│ Proposition{String}("c")│ Proposition{String}("b")│ Proposition{String}("a")│
+│           true          │           false         │           true          │
 
 
 julia> check(parsebaseformula("a ∨ b"), t2)
@@ -216,10 +204,10 @@ true
 ```
 
 See also
-[`DefaultedTruthDict`](@ref),
+[`DefaultedTruthTable`](@ref),
 [`AbstractAssignment`](@ref), [`AbstractInterpretation`](@ref).
 """
-struct TruthDict{
+struct TruthTable{
     A,
     T<:TruthValue,
     D<:AbstractDict{<:Proposition{<:A},T}
@@ -227,7 +215,7 @@ struct TruthDict{
 
     truth::D
 
-    function TruthDict{A,T,D}(
+    function TruthTable{A,T,D}(
         d::D,
     ) where {
         A,
@@ -236,64 +224,75 @@ struct TruthDict{
     }
         return new{A,T,D}(d)
     end
-    function TruthDict{A,T}(d::AbstractDict{<:Proposition,T}) where {A,T<:TruthValue}
-        return TruthDict{A,T,typeof(d)}(d)
+    function TruthTable{A,T}(d::AbstractDict{<:Proposition,T}) where {A,T<:TruthValue}
+        return TruthTable{A,T,typeof(d)}(d)
     end
-    function TruthDict{A}(d::AbstractDict{<:Proposition,T}) where {A,T<:TruthValue}
-        return TruthDict{A,T,typeof(d)}(d)
+    function TruthTable{A}(d::AbstractDict{<:Proposition,T}) where {A,T<:TruthValue}
+        return TruthTable{A,T,typeof(d)}(d)
     end
-    function TruthDict(d::AbstractDict{<:Proposition,T}) where {T<:TruthValue}
+    function TruthTable(d::AbstractDict{<:Proposition,T}) where {T<:TruthValue}
         # A = Union{atomtype.(keys(d))...}
         # P = Union{[Proposition{_A} for _A in atomtype.(keys(d))]...}
         # println(A)
         # println(d)
         A = typejoin(atomtype.(keys(d))...)
         d = Dict{Proposition{A},T}(d)
-        return TruthDict{A,T,typeof(d)}(d)
+        return TruthTable{A,T,typeof(d)}(d)
     end
-    function TruthDict(d::AbstractDict{A,T}) where {A,T<:TruthValue}
-        return TruthDict(Dict{Proposition{A},T}([(Proposition{A}(a),v) for (a,v) in d]))
+    function TruthTable(d::AbstractDict{A,T}) where {A,T<:TruthValue}
+        return TruthTable(Dict{Proposition{A},T}([(Proposition{A}(a),v) for (a,v) in d]))
     end
-    function TruthDict(v::AbstractVector, truth_value = true)
+    function TruthTable(v::AbstractVector, truth_value = true)
         if length(v) == 0
-            return TruthDict()
+            return TruthTable()
         else
-            return TruthDict(Dict([k => truth_value for k in v]))
+            return TruthTable(Dict([k => truth_value for k in v]))
         end
     end
-    function TruthDict(v::AbstractVector{<:Union{Tuple,Pair}})
+    function TruthTable(v::AbstractVector{<:Union{Tuple,Pair}})
         if length(v) == 0
-            return TruthDict()
+            return TruthTable()
         else
-            return TruthDict(Dict(v))
+            return TruthTable(Dict(v))
         end
     end
-    function TruthDict(p::Pair)
-        return TruthDict([p])
+    function TruthTable(p::Pair)
+        return TruthTable([p])
     end
-    function TruthDict(t::Tuple)
-        return TruthDict(Pair(t...))
+    function TruthTable(t::Tuple)
+        return TruthTable(Pair(t...))
     end
-    function TruthDict()
+    function TruthTable()
         d = Dict{Proposition{Any},TruthValue}([])
-        return TruthDict{Any,TruthValue,typeof(d)}(d)
+        return TruthTable{Any,TruthValue,typeof(d)}(d)
     end
 end
 
-Base.getindex(i::TruthDict{AA}, p::Proposition) where {AA} = Base.getindex(i.truth, p)
-Base.haskey(i::TruthDict{AA}, p::Proposition) where {AA} = Base.haskey(i.truth, p)
+Base.getindex(i::TruthTable{AA}, p::Proposition) where {AA} = Base.getindex(i.truth, p)
+Base.haskey(i::TruthTable{AA}, p::Proposition) where {AA} = Base.haskey(i.truth, p)
+
+using Printf
 
 function Base.show(
     io::IO,
-    i::TruthDict{A,T,D},
+    i::TruthTable{A,T,D},
 ) where {A,T<:TruthValue,D<:AbstractDict{<:Proposition{<:A},T}}
-    # println(io, "TruthDict{$(A),$(T),$(D)} wrapping:")
-    println(io, "TruthDict wrapping:")
-    Base.display(i.truth)
+    sep = "│"
+
+    [print("$sep $k") for k in keys(i.truth)]
+    println(sep)
+    for (k, v) in zip(keys(i.truth), values(i.truth))
+        kreprlen = length(repr(k))
+        vlen = length(v)
+        content = lpad(rpad(v, div(kreprlen,2)+vlen*2), div(kreprlen, 2, RoundDown)*2) *
+            " "^(Int(kreprlen%2 == 1))
+        print("$sep $content")
+    end
+    print(sep)
 end
 
 # Helpers
-@forward TruthDict.truth (
+@forward TruthTable.truth (
     Base.length, Base.setindex!, Base.iterate,
     Base.IteratorSize, Base.IteratorEltype,
     Base.firstindex, Base.lastindex,
@@ -304,7 +303,7 @@ end
 ############################################################################################
 
 """
-    struct DefaultedTruthDict{
+    struct DefaultedTruthTable{
         A,
         T<:TruthValue,
         D<:AbstractDict{<:Proposition{<:A},T}
@@ -320,8 +319,8 @@ it returns `default_truth`.
 
 # Examples
 ```julia-repl
-julia> t1 = DefaultedTruthDict(string.(1:4), false); t1["5"] = false; t1
-DefaultedTruthDict with default truth `false` wrapping:
+julia> t1 = DefaultedTruthTable(string.(1:4), false); t1["5"] = false; t1
+DefaultedTruthTable with default truth `false` wrapping:
 Dict{Proposition{String}, Bool} with 5 entries:
   Proposition{String}("1") => 1
   Proposition{String}("2") => 1
@@ -339,10 +338,10 @@ false
 ```
 
 See also
-[`TruthDict`](@ref),
+[`TruthTable`](@ref),
 [`AbstractAssignment`](@ref), [`AbstractInterpretation`](@ref).
 """
-struct DefaultedTruthDict{
+struct DefaultedTruthTable{
     A,
     T<:TruthValue,
     D<:AbstractDict{<:Proposition{<:A},T}
@@ -352,7 +351,7 @@ struct DefaultedTruthDict{
 
     default_truth::T
 
-    function DefaultedTruthDict{A,T,D}(
+    function DefaultedTruthTable{A,T,D}(
         d::D,
         default_truth::T = false,
     ) where {
@@ -363,18 +362,18 @@ struct DefaultedTruthDict{
         return new{A,T,D}(d, default_truth)
     end
 
-    function DefaultedTruthDict(
-        d::TruthDict{A,T,D},
+    function DefaultedTruthTable(
+        d::TruthTable{A,T,D},
         default_truth::T = false,
     ) where {
         A,
         T<:TruthValue,
         D<:AbstractDict{<:Proposition{<:A},T}
     }
-        return DefaultedTruthDict{A,T,D}(d.truth, default_truth)
+        return DefaultedTruthTable{A,T,D}(d.truth, default_truth)
     end
 
-    function DefaultedTruthDict(
+    function DefaultedTruthTable(
         a::Union{
             AbstractDict{<:Proposition,T},
             AbstractDict{A,T},
@@ -386,36 +385,36 @@ struct DefaultedTruthDict{
         default_truth::T = false,
     ) where {A,T<:TruthValue}
         if length(a) == 0
-            return DefaultedTruthDict(default_truth)
+            return DefaultedTruthTable(default_truth)
         else
-            return DefaultedTruthDict(TruthDict(a), default_truth)
+            return DefaultedTruthTable(TruthTable(a), default_truth)
         end
     end
 
-    function DefaultedTruthDict(
+    function DefaultedTruthTable(
         default_truth::T = false,
     ) where {T<:TruthValue}
         d = Dict{Proposition{Any},T}([])
-        return DefaultedTruthDict{Any,T,typeof(d)}(d, default_truth)
+        return DefaultedTruthTable{Any,T,typeof(d)}(d, default_truth)
     end
 end
 
-function Base.getindex(i::DefaultedTruthDict{AA}, p::Proposition) where {AA}
+function Base.getindex(i::DefaultedTruthTable{AA}, p::Proposition) where {AA}
     return Base.haskey(i.truth, p) ? Base.getindex(i.truth, p) : i.default_truth
 end
-Base.haskey(i::DefaultedTruthDict{AA}, p::Proposition) where {AA} = true
+Base.haskey(i::DefaultedTruthTable{AA}, p::Proposition) where {AA} = true
 
 function Base.show(
     io::IO,
-    i::DefaultedTruthDict{A,T,D},
+    i::DefaultedTruthTable{A,T,D},
 ) where {A,T<:TruthValue,D<:AbstractDict{<:Proposition{<:A},T}}
-    # println(io, "DefaultedTruthDict{$(A),$(T),$(D)} with default truth `$(i.default_truth)` wrapping:")
-    println(io, "DefaultedTruthDict with default truth `$(i.default_truth)` wrapping:")
+    # println(io, "DefaultedTruthTable{$(A),$(T),$(D)} with default truth `$(i.default_truth)` wrapping:")
+    println(io, "DefaultedTruthTable with default truth `$(i.default_truth)` wrapping:")
     Base.display(i.truth)
 end
 
 # Helpers
-@forward DefaultedTruthDict.truth (
+@forward DefaultedTruthTable.truth (
     Base.setindex!, Base.iterate,
     Base.firstindex, Base.lastindex,
     Base.keys,
@@ -438,13 +437,13 @@ function check(
 end
 
 # A dictionary is interpreted as the map from propositions to truth values
-convert(::Type{AbstractInterpretation}, i::AbstractDict) = TruthDict(i)
+convert(::Type{AbstractInterpretation}, i::AbstractDict) = TruthTable(i)
 # Base.getindex(i::AbstractDict, p::Proposition) = i[atom(p)]
 Base.haskey(p::Proposition, i::AbstractDict) = (atom(p) in keys(i))
 check(p::Proposition, i::AbstractDict) = Base.getindex(i, p)
 
 # A vector is interpreted as the set of true propositions
-convert(::Type{AbstractInterpretation}, i::AbstractVector) = DefaultedTruthDict(i, false)
+convert(::Type{AbstractInterpretation}, i::AbstractVector) = DefaultedTruthTable(i, false)
 # Base.getindex(i::AbstractVector, p::Proposition) = (atom(p) in i)
 # Base.in(p::Proposition, i::AbstractVector) = true
 check(p::Proposition, i::AbstractVector) = (p in i)

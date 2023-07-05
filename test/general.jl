@@ -187,30 +187,30 @@ f3_int = f_int(⊥ ∨ (p1 ∧ p100 ∧ p2 ∧ ⊤))
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ checking ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-@test_nowarn TruthDict()
-@test_nowarn TruthDict([])
-@test_nowarn TruthDict((2,3),)
-@test_nowarn TruthDict((p1, true),)
-@test_nowarn TruthDict([(p1, true),])
-@test_nowarn TruthDict(p1 => true)
-@test_nowarn TruthDict([p1 => true])
-@test_nowarn TruthDict(Dict([p1 => true]))
+@test_nowarn TruthTable()
+@test_nowarn TruthTable([])
+@test_nowarn TruthTable((2,3),)
+@test_nowarn TruthTable((p1, true),)
+@test_nowarn TruthTable([(p1, true),])
+@test_nowarn TruthTable(p1 => true)
+@test_nowarn TruthTable([p1 => true])
+@test_nowarn TruthTable(Dict([p1 => true]))
 
 for i in 1:10
-    _tdict = TruthDict(Dict([p => rand([true, false]) for p in propositions(f3_int)]))
+    _tdict = TruthTable(Dict([p => rand([true, false]) for p in propositions(f3_int)]))
     check(f3_int, _tdict) && @test all(collect(values(_tdict.truth)))
     !check(f3_int, _tdict) && @test !all(collect(values(_tdict.truth)))
 end
 
-tdict = TruthDict(Dict([p => true for p in propositions(f3_int)]))
+tdict = TruthTable(Dict([p => true for p in propositions(f3_int)]))
 @test check(f3_int, tdict)
 
-tdict = TruthDict(Dict([p => false for p in propositions(f3_int)]))
+tdict = TruthTable(Dict([p => false for p in propositions(f3_int)]))
 @test !check(f3_int, tdict)
 
-@test check(f3_int, DefaultedTruthDict([], true))
-@test check(f3_int, DefaultedTruthDict(true))
-@test !check(f3_int, DefaultedTruthDict(false))
+@test check(f3_int, DefaultedTruthTable([], true))
+@test check(f3_int, DefaultedTruthTable(true))
+@test !check(f3_int, DefaultedTruthTable(false))
 
 @test_nowarn propositionallogic(; operators = SoleLogics.AbstractOperator[])
 emptylogic = @test_nowarn propositionallogic(; operators = SoleLogics.AbstractOperator[], alphabet = ExplicitAlphabet([]))

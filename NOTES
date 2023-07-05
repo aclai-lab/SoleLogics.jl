@@ -48,22 +48,22 @@ DONE: 1) rename parentheses in parentheses, and parenthesis in paranthesis.
 	2.2) testing both with allparantheses=false (default) and true)
 
 3) propositional-logic:
-	julia> t2 = TruthDict(["a" => true, "b" => false, "c" => true])
-	TruthDict wrapping:
+	julia> t2 = TruthTable(["a" => true, "b" => false, "c" => true, "d" => false, "e" => true, "f" => true])
+	TruthTable wrapping:
 	Dict{Proposition{String}, Bool} with 3 entries:
 		Proposition{String}("c") => 1
 		Proposition{String}("b") => 0
 		Proposition{String}("a") => 1
 
-	* rename TruthDict in TruthTable
+	* rename TruthTable in TruthTable
 	then, change 
 
 	function Base.show(
 		io::IO,
-		i::TruthDict{A,T,D},
+		i::TruthTable{A,T,D},
 	) where {A,T<:TruthValue,D<:AbstractDict{<:Proposition{<:A},T}}
-		# println(io, "TruthDict{$(A),$(T),$(D)} wrapping:")
-		println(io, "TruthDict wrapping:")
+		# println(io, "TruthTable{$(A),$(T),$(D)} wrapping:")
+		println(io, "TruthTable wrapping:")
 		Base.display(i.truth)
 	end
 
