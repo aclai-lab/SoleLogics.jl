@@ -281,6 +281,7 @@ function Base.show(
 
     [print("$sep $k") for k in keys(i.truth)]
     println(sep)
+
     for (k, v) in zip(keys(i.truth), values(i.truth))
         kreprlen = length(repr(k))
         vlen = length(v)
@@ -288,6 +289,7 @@ function Base.show(
             " "^(Int(kreprlen%2 == 1))
         print("$sep $content")
     end
+
     print(sep)
 end
 
