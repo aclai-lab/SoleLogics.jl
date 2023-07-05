@@ -1,3 +1,5 @@
+The following file is just a scratchpad, and can be ignored.
+
 <!-- Draft README.md 
 # Usage
 
@@ -33,48 +35,41 @@ Finally, pairing each world in the Kripke frame with a list of propositional let
 
  -->
 
-
-propositional-logic: 
-
-julia> t2 = TruthDict(["a" => true, "b" => false, "c" => true])
-TruthDict wrapping:
-Dict{Proposition{String}, Bool} with 3 entries:
-  Proposition{String}("c") => 1
-  Proposition{String}("b") => 0
-  Proposition{String}("a") => 1
-
-1) rename TruthDict in TruthTable
-then, change 
-
-function Base.show(
-    io::IO,
-    i::TruthDict{A,T,D},
-) where {A,T<:TruthValue,D<:AbstractDict{<:Proposition{<:A},T}}
-    # println(io, "TruthDict{$(A),$(T),$(D)} wrapping:")
-    println(io, "TruthDict wrapping:")
-    Base.display(i.truth)
-end
-
-to be 
-
-" | p | q | r | s | "
-
 -------------------------------------------------------------------------------------------
 
 syntaxstring:
 
-DONE: 0) clonare e istanziare in dev-v0.9.1 (e tenerlo checkouttato lì) SoleBase e SoleData.
+DONE: 0) clone, instantiate and checkout in dev-v0.9.1 the following packages: SoleBase, SoleData.
 
-1) rinominare parentheses in parentheses, e parenthesis in paranthesis.
-	Questo va fatto in SoleLogics (dev-v0.9.1), e SoleModels (dev-v0.9.1)
+DONE: 1) rename parentheses in parentheses, and parenthesis in paranthesis.
 
-2) rendere più leggibile syntaxstring (di default, NON è allparentheses.)
-	2.1) scegliere con parametro "allparentheses"
-	2.2) TESTARE (cioè, vedere che i test girino già come sono adesso)
-	2.3) testare anche, ovviamente, con allparentheses=true
+2) make syntaxstring more readable (by default, not all parentheses are displayed.)
+	2.1) optional parameter "allparentheses"
+	2.2) testing both with allparantheses=false (default) and true)
 
-3) vedi propositional-logic sopra
+3) propositional-logic:
+	julia> t2 = TruthDict(["a" => true, "b" => false, "c" => true])
+	TruthDict wrapping:
+	Dict{Proposition{String}, Bool} with 3 entries:
+		Proposition{String}("c") => 1
+		Proposition{String}("b") => 0
+		Proposition{String}("a") => 1
 
-4) Leggere documentazione SoleData (controllare anche grammatica) e vedere se ho capito
-e cosa trasporterei in SoleLogics. 
-	4.1) Eventualmente fare un branch personale
+	* rename TruthDict in TruthTable
+	then, change 
+
+	function Base.show(
+		io::IO,
+		i::TruthDict{A,T,D},
+	) where {A,T<:TruthValue,D<:AbstractDict{<:Proposition{<:A},T}}
+		# println(io, "TruthDict{$(A),$(T),$(D)} wrapping:")
+		println(io, "TruthDict wrapping:")
+		Base.display(i.truth)
+	end
+
+	to be 
+
+	" | p | q | r | s | "
+
+4) Read SoleData documentation
+	4.1) Eventually, make a custom branch
