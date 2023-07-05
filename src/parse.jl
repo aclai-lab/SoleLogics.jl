@@ -109,8 +109,8 @@ Base.operator_precedence(::typeof(IMPLICATION)) = LOW_PRECEDENCE
 const STACK_TOKEN_TYPE = Union{<:AbstractSyntaxToken,Symbol}
 
 # Special symbols: syntax tokens cannot contain these:
-const DEFAULT_OPENING_BRACKET = "("
-const DEFAULT_CLOSING_BRACKET = ")"
+const DEFAULT_OPENING_PARENTHESIS = "("
+const DEFAULT_CLOSING_PARENTHESIS = ")"
 const DEFAULT_ARG_DELIM       = ","
 
 
@@ -127,12 +127,12 @@ const BASE_PARSABLE_OPERATORS = [
 function _check_unary_validity(
     tokens::Vector{STACK_TOKEN_TYPE},
     op::AbstractOperator,
-    opening_bracket::Symbol,
+    opening_parenthesis::Symbol,
     arg_delim::Symbol
 )
-    # A unary operator is always preceeded by some other operator or a opening_bracket
+    # A unary operator is always preceeded by some other operator or a opening_parenthesis
     if (arity(op) == 1 && !isempty(tokens) &&
-        (tokens[end] !== opening_bracket && tokens[end] !== arg_delim &&
+        (tokens[end] !== opening_parenthesis && tokens[end] !== arg_delim &&
         !(tokens[end] isa AbstractOperator))
     )
         error("Malformed input: operator `" * syntaxstring(op) *
@@ -207,8 +207,8 @@ function _interpret_tokens(
     raw_tokens::Vector{String},
     string_to_op::Dict{String,AbstractOperator},
     proposition_parser::Base.Callable;
-    opening_bracket::Symbol,
-    closing_bracket::Symbol,
+    opening_parenthesis::Symbol,
+    closing_parenthesis::Symbol,
     arg_delim::Symbol
 )
     tokens = STACK_TOKEN_TYPE[]
@@ -216,7 +216,7 @@ function _interpret_tokens(
     i = 1
     while i <= length(raw_tokens)
         tok = begin
-            if (Symbol(raw_tokens[i]) in [opening_bracket, closing_bracket, arg_delim])
+            if (Symbol(raw_tokens[i]) in [opening_parenthesis, closing_parenthesis, arg_delim])
                 # If the token is a special symbol -> push it as is
                 Symbol(raw_tokens[i])
             else
@@ -224,7 +224,7 @@ function _interpret_tokens(
                 if (st in keys(string_to_op))
                     # If the token is an operator -> perform check and push it as is
                     op = string_to_op[st]
-                    _check_unary_validity(tokens, op, opening_bracket, arg_delim)
+                    _check_unary_validity(tokens, op, opening_parenthesis, arg_delim)
                     op
                 else
                     # If the token is something else -> parse as Proposition and push it
@@ -249,8 +249,8 @@ function tokenizer(
     operators::Vector{<:AbstractOperator},
     proposition_parser::Base.Callable,
     additional_whitespaces::Vector{Char},
-    opening_bracket::Symbol = Symbol(DEFAULT_OPENING_BRACKET),
-    closing_bracket::Symbol = Symbol(DEFAULT_CLOSING_BRACKET),
+    opening_parenthesis::Symbol = Symbol(DEFAULT_OPENING_PARENTHESIS),
+    closing_parenthesis::Symbol = Symbol(DEFAULT_CLOSING_PARENTHESIS),
     arg_delim::Symbol = Symbol(DEFAULT_ARG_DELIM),
 )
     # Strip input's whitespaces
@@ -269,7 +269,7 @@ function tokenizer(
 
     # Each parsing method has to know which symbols represent opening/closing a context;
     #  additionaly, parsing in function notation needs to know how arguments are separated.
-    special_delimiters = vcat(opening_bracket, closing_bracket)
+    special_delimiters = vcat(opening_parenthesis, closing_parenthesis)
     if !(isnothing(arg_delim))
         push!(special_delimiters, arg_delim)
     end
@@ -282,29 +282,29 @@ function tokenizer(
 
     # Interpret each raw token
     return _interpret_tokens(raw_tokens, string_to_op, proposition_parser;
-        opening_bracket = opening_bracket, closing_bracket = closing_bracket,
+        opening_parenthesis = opening_parenthesis, closing_parenthesis = closing_parenthesis,
         arg_delim = arg_delim)
 end
 
 # Rearrange a serie of token, from infix to postfix notation
 function shunting_yard!(
     tokens::Vector{STACK_TOKEN_TYPE};
-    opening_bracket::Symbol = Symbol(DEFAULT_OPENING_BRACKET),
-    closing_bracket::Symbol = Symbol(DEFAULT_CLOSING_BRACKET))
+    opening_parenthesis::Symbol = Symbol(DEFAULT_OPENING_PARENTHESIS),
+    closing_parenthesis::Symbol = Symbol(DEFAULT_CLOSING_PARENTHESIS))
     tokstack = STACK_TOKEN_TYPE[] # support structure
     postfix = AbstractSyntaxToken[] # returned structure: tokens rearranged in postfix
 
     for tok in tokens
         if tok isa Symbol
             # If tok is a Symbol, then it might be a special parsing symbol
-            if tok === opening_bracket
+            if tok === opening_parenthesis
                 # Start a new "context" in the expression
                 push!(tokstack, tok)
-            elseif tok === closing_bracket
+            elseif tok === closing_parenthesis
                 # `tokstack` shrinks and postfix vector is filled
                 while !isempty(tokstack)
                     popped = pop!(tokstack)
-                    if popped !== opening_bracket
+                    if popped !== opening_parenthesis
                         push!(postfix, popped)
                     else
                         break
@@ -336,9 +336,9 @@ function shunting_yard!(
     while !isempty(tokstack)
         popped = pop!(tokstack)
 
-        # Starting expression is not well formatted, or a opening_bracket is found
+        # Starting expression is not well formatted, or a opening_parenthesis is found
         if !(popped isa AbstractOperator)
-            error("Parsing error! Mismatching brackets detected.")
+            error("Parsing error! Mismatching parentheses detected.")
         end
         push!(postfix, popped)
     end
@@ -353,8 +353,8 @@ end
         function_notation::Bool = false,
         proposition_parser::Base.Callable = Proposition{String},
         additional_whitespaces::Vector{Char} = Char[],
-        opening_bracket::String = $(repr(DEFAULT_OPENING_BRACKET)),
-        closing_bracket::String = $(repr(DEFAULT_CLOSING_BRACKET)),
+        opening_parenthesis::String = $(repr(DEFAULT_OPENING_PARENTHESIS)),
+        closing_parenthesis::String = $(repr(DEFAULT_CLOSING_PARENTHESIS)),
         arg_delim::String = $(repr(DEFAULT_ARG_DELIM))
     )
 
@@ -384,9 +384,9 @@ a second argument.
 - `additional_whitespaces`::Vector{Char} = Char[]: characters to be stripped out from each
     syntax token.
     For example, if `'@' in additional_whitespaces`, "¬@p@" is parsed just as "¬p".
-- `opening_bracket`::String = $(repr(DEFAULT_OPENING_BRACKET)):
+- `opening_parenthesis`::String = $(repr(DEFAULT_OPENING_PARENTHESIS)):
     the string signaling the opening of an expression block;
-- `closing_bracket`::String = $(repr(DEFAULT_CLOSING_BRACKET)):
+- `closing_parenthesis`::String = $(repr(DEFAULT_CLOSING_PARENTHESIS)):
     the string signaling the closing of an expression block;
 - `arg_delim`::String = $(repr(DEFAULT_ARG_DELIM)):
     when `function_notation = true`,
@@ -398,7 +398,7 @@ a second argument.
     For example, for any operator `⨁`,
     it should hold that `syntaxstring(⨁) == strip(syntaxstring(⨁))`.
     Also, `syntaxstring`s cannot contain special symbols
-    (`opening_bracket`, `closing_bracket`, and `arg_delim`) as
+    (`opening_parenthesis`, `closing_parenthesis`, and `arg_delim`) as
     substrings.
 
 # Examples
@@ -425,8 +425,8 @@ function parseformula(
     function_notation::Bool = false,
     proposition_parser::Base.Callable = Proposition{String},
     additional_whitespaces::Vector{Char} = Char[],
-    opening_bracket::String = DEFAULT_OPENING_BRACKET,
-    closing_bracket::String = DEFAULT_CLOSING_BRACKET,
+    opening_parenthesis::String = DEFAULT_OPENING_PARENTHESIS,
+    closing_parenthesis::String = DEFAULT_CLOSING_PARENTHESIS,
     arg_delim::String = DEFAULT_ARG_DELIM,
 )
     additional_operators = (
@@ -437,14 +437,14 @@ function parseformula(
     # TODO: expand special sequences to special *sequences* (strings of characters)
     # TODO: check that no special sequence is a substring of another one.
     @assert function_notation ||
-            (allunique(string.([opening_bracket, arg_delim])) ||
-             allunique(string.([closing_bracket, arg_delim]))) "" *
+            (allunique(string.([opening_parenthesis, arg_delim])) ||
+             allunique(string.([closing_parenthesis, arg_delim]))) "" *
         "Invalid " *
-        "special sequences provided: please, check that both the `opening_bracket` " *
-        "and the `closing_bracket` are not equal to the `arg_delim`."
+        "special sequences provided: please, check that both the `opening_parenthesis` " *
+        "and the `closing_parenthesis` are not equal to the `arg_delim`."
 
-    opening_bracket = Symbol(opening_bracket)
-    closing_bracket = Symbol(closing_bracket)
+    opening_parenthesis = Symbol(opening_parenthesis)
+    closing_parenthesis = Symbol(closing_parenthesis)
     arg_delim       = Symbol(arg_delim)
 
     # parsetree workflow:
@@ -452,7 +452,7 @@ function parseformula(
     # 2) function_notation = true;  _fxbuild    -> _prefixbuild
 
     # Build a formula starting from its postfix notation, preprocessed with shunting yard.
-    #  In other words, all special symbols (e.g. opening_bracket) are already filtered
+    #  In other words, all special symbols (e.g. opening_parenthesis) are already filtered
     #  out and only AbstractSyntaxToken are considered.
     function _postfixbuild(postfix::Vector{<:AbstractSyntaxToken})
 
@@ -483,9 +483,9 @@ function parseformula(
     # actually this is a preprocessing who fallbacks into `_postfixbuild`
     function _infixbuild()
         tokens = tokenizer(expression, operators, proposition_parser,
-            additional_whitespaces, opening_bracket, closing_bracket)
+            additional_whitespaces, opening_parenthesis, closing_parenthesis)
         return _postfixbuild(shunting_yard!(tokens,
-            opening_bracket = opening_bracket, closing_bracket = closing_bracket))
+            opening_parenthesis = opening_parenthesis, closing_parenthesis = closing_parenthesis))
     end
 
     # Build a formula starting from its function notation;
@@ -504,8 +504,8 @@ function parseformula(
                     push!(stack, newtok)
                 elseif (length(stack) >= (1 + 2*arity(tok)))
                     # Else, follow this general procedure;
-                    # consider 1 opening bracket, `arity` AbstractSyntaxToken,
-                    # `arity`-1 delims and 1 closing bracket for a total of
+                    # consider 1 opening parenthesis, `arity` AbstractSyntaxToken,
+                    # `arity`-1 delims and 1 closing parenthesis for a total of
                     # 1 + (arity) + (arity-1) + 1 = (1 + 2*arity) tokens to read.
                     #
                     #   (           T      ,     T   ,   ...     ,     T        )
@@ -517,8 +517,8 @@ function parseformula(
                     stack = stack[1:(length(stack) - 1 - 2*arity(tok))]
 
                     # The following conditions must hold
-                    # stack[1] == OPENING BRACKET
-                    # stack[end] == CLOSING BRACKET
+                    # stack[1] == OPENING PARENTHESIS
+                    # stack[end] == CLOSING PARENTHESIS
                     # stack[even indexes] <: AbstractSyntaxTree
                     # stack[odd indexes after 1 and before length(stack)] == SEP
                     # else an error has to be thrown
@@ -529,8 +529,8 @@ function parseformula(
                     delims =
                         [s for s in 3:(length(popped)-2) if popped[s] == arg_delim]
 
-                    if (popped[1] == opening_bracket &&
-                        popped[end] == closing_bracket &&
+                    if (popped[1] == opening_parenthesis &&
+                        popped[end] == closing_parenthesis &&
                         length(children) == arity(tok) &&
                         length(delims) == arity(tok) - 1)
                         push!(stack, SyntaxTree(tok, Tuple(children)))
@@ -561,7 +561,7 @@ function parseformula(
     # actually this is a preprocessing who fallbacks into `_prefixbuild`
     function _fxbuild()
         tokens = tokenizer(expression, operators, proposition_parser,
-            additional_whitespaces, opening_bracket, closing_bracket, arg_delim)
+            additional_whitespaces, opening_parenthesis, closing_parenthesis, arg_delim)
         return _prefixbuild(tokens)
     end
 

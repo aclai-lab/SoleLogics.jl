@@ -63,9 +63,9 @@ to be
 
 syntaxstring:
 
-0) clonare e istanziare in dev-v0.9.1 (e tenerlo checkouttato lì) SoleBase e SoleData.
+DONE: 0) clonare e istanziare in dev-v0.9.1 (e tenerlo checkouttato lì) SoleBase e SoleData.
 
-1) rinominare brackets in parentheses, e bracket in paranthesis.
+1) rinominare parentheses in parentheses, e parenthesis in paranthesis.
 	Questo va fatto in SoleLogics (dev-v0.9.1), e SoleModels (dev-v0.9.1)
 
 2) rendere più leggibile syntaxstring (di default, NON è allparentheses.)

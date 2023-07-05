@@ -19,9 +19,9 @@ import SoleLogics: arity
 @test_nowarn parsetree("¬p∧q∧(¬s∧¬z)", [NEGATION, CONJUNCTION])
 @test_nowarn parsetree("¬p∧q∧(¬s∧¬z)", [NEGATION])
 @test_nowarn parsetree("¬p∧q∧{¬s∧¬z}",
-    opening_bracket="{", closing_bracket="}")
+    opening_parenthesis="{", closing_parenthesis="}")
 @test_nowarn parsetree("¬p∧q∧ A ¬s∧¬z    B",
-    opening_bracket="A", closing_bracket="B")
+    opening_parenthesis="A", closing_parenthesis="B")
 
 @test operatorstype(
         logic(parsebaseformula("¬p∧q∧(¬s∧¬z)", [BOX]))) <: SoleLogics.BaseModalOperators
@@ -54,7 +54,7 @@ import SoleLogics: arity
 @test_nowarn parsetree("→(∧(¬p; q); ∧(¬s; ¬z))",
     function_notation=true, arg_delim = ";")
 @test_nowarn parsetree("→{∧{¬p; q}; ∧{¬s; ¬z}}", function_notation=true,
-    opening_bracket = "{", closing_bracket = "}",
+    opening_parenthesis = "{", closing_parenthesis = "}",
     arg_delim = ";")
 
 
@@ -62,8 +62,8 @@ import SoleLogics: arity
     function_notation = true)) == "→(∧(¬(p),q),∧(¬(s),¬(z)))"
 @test filter(!isspace, syntaxstring(
     parsetree("¬p∧q→A¬s∧¬zB",
-        opening_bracket = "A",
-        closing_bracket = "B");
+        opening_parenthesis = "A",
+        closing_parenthesis = "B");
     function_notation = true)) == "→(∧(¬(p),q),∧(¬(s),¬(z)))"
 @test_nowarn parsetree("¬p∧q→     (¬s∧¬z)")
 @test parsetree("□p∧   q∧(□s∧◊z)", [BOX]) == parsetree("□p∧   q∧(□s∧◊z)")
@@ -119,14 +119,14 @@ f = parsetree("⟨G⟩(((¬(⟨G⟩((q ∧ p) → (¬(q))))) ∧ (((¬(q → q))
     function_notation = true)
 @test_throws ErrorException parsetree("¬[[G]]p"; function_notation = true)
 
-@test_throws ErrorException parsetree("¬p∧q∧(¬s∧¬z)", opening_bracket="{")
+@test_throws ErrorException parsetree("¬p∧q∧(¬s∧¬z)", opening_parenthesis="{")
 @test_throws ErrorException parsetree("¬p∧q∧{¬s∧¬z)",
-    opening_bracket="{", closing_bracket="}")
+    opening_parenthesis="{", closing_parenthesis="}")
 @test_throws ErrorException parsetree("¬p∧q∧ C ¬s∧¬z    B",
-    opening_bracket="A", closing_bracket="B")
+    opening_parenthesis="A", closing_parenthesis="B")
 
 @test_throws ErrorException parsetree("¬p∧q→ |¬s∧¬z|",
-    opening_bracket = "|", closing_bracket = "|")
+    opening_parenthesis = "|", closing_parenthesis = "|")
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ parsing propositions ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -202,15 +202,15 @@ SoleLogics.syntaxstring(op::CurlyRelationalOperator; kwargs...) =
 struct MyCustomRelationalOperator{R<:AbstractRelation} <: AbstractRelationalOperator{R} end
 (MyCustomRelationalOperator)(r::AbstractRelation) = MyCustomRelationalOperator{typeof(r)}()
 SoleLogics.syntaxstring(op::MyCustomRelationalOperator; kwargs...) =
-    "LEFT CUSTOM BRACKET $(syntaxstring(relationtype(op);  kwargs...)) RIGHT CUSTOM BRACKET"
-f = parsetree("LEFT CUSTOM BRACKET G RIGHT CUSTOM BRACKET p ∧ ¬" *
-    "LEFT CUSTOM BRACKET G RIGHT CUSTOM BRACKET q", [MyCustomRelationalOperator(globalrel)])
+    "LEFT CUSTOM PARENTHESIS $(syntaxstring(relationtype(op);  kwargs...)) RIGHT CUSTOM PARENTHESIS"
+f = parsetree("LEFT CUSTOM PARENTHESIS G RIGHT CUSTOM PARENTHESIS p ∧ ¬" *
+    "LEFT CUSTOM PARENTHESIS G RIGHT CUSTOM PARENTHESIS q", [MyCustomRelationalOperator(globalrel)])
 
 @test_nowarn parsetree("🌅G🌄p ∧ ¬🌅G🌄q", [SoleRelationalOperator(globalrel)])
 @test_nowarn parsetree("∧(🌅G🌄p,¬🌅G🌄q)", [SoleRelationalOperator(globalrel)];
     function_notation = true)
 @test_nowarn parsetree("∧[🌅G🌄p DELIM ¬🌅G🌄q)", [SoleRelationalOperator(globalrel)];
-    function_notation = true, opening_bracket = "[", arg_delim = "DELIM")
+    function_notation = true, opening_parenthesis = "[", arg_delim = "DELIM")
 
 @test_nowarn parsetree("|G|p   ∧ ¬|G|q", [PipeRelationalOperator(globalrel)])
 @test_nowarn parsetree("∧(|G|p,  ¬|G|q)", [PipeRelationalOperator(globalrel)];
