@@ -224,7 +224,7 @@ struct TruthDict{
     T<:TruthValue,
     D<:AbstractDict{<:Proposition{<:A},T}
 } <: AbstractAssignment{A,T}
-    
+
     truth::D
 
     function TruthDict{A,T,D}(
@@ -347,7 +347,7 @@ struct DefaultedTruthDict{
     T<:TruthValue,
     D<:AbstractDict{<:Proposition{<:A},T}
 } <: AbstractAssignment{A,T}
-    
+
     truth::D
 
     default_truth::T

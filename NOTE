@@ -32,3 +32,49 @@ Finally, pairing each world in the Kripke frame with a list of propositional let
 ## Interpretation sets
 
  -->
+
+
+propositional-logic: 
+
+julia> t2 = TruthDict(["a" => true, "b" => false, "c" => true])
+TruthDict wrapping:
+Dict{Proposition{String}, Bool} with 3 entries:
+  Proposition{String}("c") => 1
+  Proposition{String}("b") => 0
+  Proposition{String}("a") => 1
+
+1) rename TruthDict in TruthTable
+then, change 
+
+function Base.show(
+    io::IO,
+    i::TruthDict{A,T,D},
+) where {A,T<:TruthValue,D<:AbstractDict{<:Proposition{<:A},T}}
+    # println(io, "TruthDict{$(A),$(T),$(D)} wrapping:")
+    println(io, "TruthDict wrapping:")
+    Base.display(i.truth)
+end
+
+to be 
+
+" | p | q | r | s | "
+
+-------------------------------------------------------------------------------------------
+
+syntaxstring:
+
+0) clonare e istanziare in dev-v0.9.1 (e tenerlo checkouttato lì) SoleBase e SoleData.
+
+1) rinominare brackets in parentheses, e bracket in paranthesis.
+	Questo va fatto in SoleLogics (dev-v0.9.1), e SoleModels (dev-v0.9.1)
+
+2) rendere più leggibile syntaxstring (di default, NON è allparentheses.)
+	2.1) scegliere con parametro "allparentheses"
+	2.2) TESTARE (cioè, vedere che i test girino già come sono adesso)
+	2.3) testare anche, ovviamente, con allparentheses=true
+
+3) vedi propositional-logic sopra
+
+4) Leggere documentazione SoleData (controllare anche grammatica) e vedere se ho capito
+e cosa trasporterei in SoleLogics. 
+	4.1) Eventualmente fare un branch personale
