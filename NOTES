@@ -43,11 +43,11 @@ DONE: 0) clone, instantiate and checkout in dev-v0.9.1 the following packages: S
 
 DONE: 1) rename parentheses in parentheses, and parenthesis in paranthesis.
 
-DONE: 2) make syntaxstring more readable (by default, not all parentheses are displayed.)
+2) make syntaxstring more readable (by default, not all parentheses are displayed.)
 	2.1) optional parameter "allparentheses"
 	2.2) testing both with allparantheses=false (default) and true)
 
-3) propositional-logic:
+DONE: 3) propositional-logic:
 	julia> t2 = TruthTable(["a" => true, "b" => false, "c" => true, "d" => false, "e" => true, "f" => true])
 	TruthTable wrapping:
 	Dict{Proposition{String}, Bool} with 3 entries:
@@ -66,10 +66,6 @@ DONE: 2) make syntaxstring more readable (by default, not all parentheses are di
 		println(io, "TruthTable wrapping:")
 		Base.display(i.truth)
 	end
-
-	to be 
-
-	" | p | q | r | s | "
 
 4) Read SoleData documentation
 	4.1) Eventually, make a custom branch
