@@ -195,6 +195,7 @@ Dict{Proposition{Int64}, Bool} with 4 entries:
 julia> t1 = TruthDict(1:4, false); t1[5] = true; t1
 TruthDict wrapping:
 Dict{Proposition{Int64}, Bool} with 4 entries:
+  Proposition{Int64}(5) => 1
   Proposition{Int64}(4) => 0
   Proposition{Int64}(2) => 0
   Proposition{Int64}(3) => 0

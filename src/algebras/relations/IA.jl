@@ -226,6 +226,7 @@ IARelation = Union{typeof.(IARelations)...}
 
 """
     const IA7Relations = [IA_AorO,   IA_L,  IA_DorBorE,
+                          IA_AiorOi, IA_Li, IA_DiorBiorEi]
 
 Vector of 7 interval relations from a coarser version of Allen's interval algebra.
 

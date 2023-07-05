@@ -1,27 +1,3 @@
-# Notes about SoleLogics structure.
-
-	# This alphabet is not complete and its dispatches requires more arguments to work
-	struct NonCompleteDimensionalAlphabet{A} <: AbstractAlphabet{A}
-	    #
-	end
-
-	# AbstractAlphabet children types
-	propositions(::NonCompleteDimensionalAlphabet, thresholds...) = for for for for
-
-    #### Alphabet: new things (5 december) ####
-    AbstractDimensionaAlphabet
-        DimensionalAlphabet # Wraps a Vector{L}
-        FullUnbounded       # 4 parameters are combined using product
-                            #but A is infinite (thresholds are needed to enumerate things)
-
-* formula normalization heuristic (can be done using precedence for letters, and precedence + hashing for operators)
-
-* fan-in fan-out method to generate pseudorandom Kripke Frames
-
-* `generate()` to generate pseudo random Kripke Frames
-
-
-
 <!-- Draft README.md 
 # Usage
 

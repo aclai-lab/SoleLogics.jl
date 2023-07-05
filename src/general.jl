@@ -41,7 +41,7 @@ isbinary(a) = arity(a) == 2
 
 Produces the string representation of a formula or syntax token by performing
 a tree traversal of the syntax tree representation of the formula.
-Note that this representation may introduce redundant parenthesis.
+Note that this representation may introduce redundant brackets.
 `kwargs` can be used to specify how to display syntax tokens/trees under
 some specific conditions.
 
@@ -84,7 +84,7 @@ the function can simply be:
 !!! warning
     The `syntaxstring` for syntax tokens (e.g., propositions, operators) should not be
     prefixed/suffixed by whitespaces, as this may cause ambiguities upon *parsing*.
-    For similar reasons, `syntaxstring`s should not contain parenthesis (`'('`, `')'`),
+    For similar reasons, `syntaxstring`s should not contain brackets (`'('`, `')'`),
     and, when parsing in function notation, commas (`','`).
     See also [`parsebaseformula`](@ref).
 

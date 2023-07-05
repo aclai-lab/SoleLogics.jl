@@ -113,3 +113,32 @@ IA2DRelations...,
 IA2D_URelations...
 ]
 IA2DRelation_extended = Union{typeof.(IA2DRelations_extended)...}
+
+############################################################################################
+
+# IA7 2D
+                                                                          const IA7_IdAorO          = RectangleRelation(identityrel   , IA_AorO); const IA7_IdL           = RectangleRelation(identityrel    , IA_L); const IA7_IdDorBorE         = RectangleRelation(identityrel    , IA_DorBorE); const IA7_IdAiorOi          = RectangleRelation(identityrel   , IA_AiorOi); const IA7_IdLi          = RectangleRelation(identityrel   , IA_Li); const IA7_IdDiorBiorEi          = RectangleRelation(identityrel   , IA_DiorBiorEi);
+const IA7_AorOId        = RectangleRelation(IA_AorO       , identityrel); const IA7_AorOAorO        = RectangleRelation(IA_AorO       , IA_AorO); const IA7_AorOL         = RectangleRelation(IA_AorO        , IA_L); const IA7_AorODorBorE       = RectangleRelation(IA_AorO        , IA_DorBorE); const IA7_AorOAi            = RectangleRelation(IA_AorO       , IA_AiorOi); const IA7_AorOLi        = RectangleRelation(IA_AorO       , IA_Li); const IA7_AorODiorBiorEi        = RectangleRelation(IA_AorO       , IA_DiorBiorEi);
+const IA7_LId           = RectangleRelation(IA_L          , identityrel); const IA7_LAorO           = RectangleRelation(IA_L          , IA_AorO); const IA7_LL            = RectangleRelation(IA_L           , IA_L); const IA7_LDorBorE          = RectangleRelation(IA_L           , IA_DorBorE); const IA7_LAiorOi           = RectangleRelation(IA_L          , IA_AiorOi); const IA7_LLi           = RectangleRelation(IA_L          , IA_Li); const IA7_LDiorBiorEi           = RectangleRelation(IA_L          , IA_DiorBiorEi);
+const IA7_DorBorEId     = RectangleRelation(IA_DorBorE    , identityrel); const IA7_DorBorEAorO     = RectangleRelation(IA_DorBorE    , IA_AorO); const IA7_DorBorEL      = RectangleRelation(IA_DorBorE     , IA_L); const IA7_DorBorEDorBorE    = RectangleRelation(IA_DorBorE     , IA_DorBorE); const IA7_DorBorEAiorOi     = RectangleRelation(IA_DorBorE    , IA_AiorOi); const IA7_DorBorELi     = RectangleRelation(IA_DorBorE    , IA_Li); const IA7_DorBorEDiorBiorEi     = RectangleRelation(IA_DorBorE    , IA_DiorBiorEi);
+const IA7_AiorOiId      = RectangleRelation(IA_AiorOi     , identityrel); const IA7_AiorOiAorO      = RectangleRelation(IA_AiorOi     , IA_AorO); const IA7_AiorOiL       = RectangleRelation(IA_AiorOi      , IA_L); const IA7_AiorOiDorBorE     = RectangleRelation(IA_AiorOi      , IA_DorBorE); const IA7_AiorOiAiorOi      = RectangleRelation(IA_AiorOi     , IA_AiorOi); const IA7_AiorOiLi      = RectangleRelation(IA_AiorOi     , IA_Li); const IA7_AiorOiDiorBiorEi      = RectangleRelation(IA_AiorOi     , IA_DiorBiorEi);
+const IA7_LiId          = RectangleRelation(IA_Li         , identityrel); const IA7_LiAorO          = RectangleRelation(IA_Li         , IA_AorO); const IA7_LiL           = RectangleRelation(IA_Li          , IA_L); const IA7_LiDorBorE         = RectangleRelation(IA_Li          , IA_DorBorE); const IA7_LiAiorOi          = RectangleRelation(IA_Li         , IA_AiorOi); const IA7_LiLi          = RectangleRelation(IA_Li         , IA_Li); const IA7_LiDiorBiorEi          = RectangleRelation(IA_Li         , IA_DiorBiorEi);
+const IA7_DiorBiorEiId  = RectangleRelation(IA_DiorBiorEi , identityrel); const IA7_DiorBiorEiAorO  = RectangleRelation(IA_DiorBiorEi , IA_AorO); const IA7_DiorBiorEiL   = RectangleRelation(IA_DiorBiorEi  , IA_L); const IA7_DiorBiorEiDorBorE = RectangleRelation(IA_DiorBiorEi  , IA_DorBorE); const IA7_DiorBiorEiAiorOi  = RectangleRelation(IA_DiorBiorEi , IA_AiorOi); const IA7_DiorBiorEiLi  = RectangleRelation(IA_DiorBiorEi , IA_Li); const IA7_DiorBiorEiDiorBiorEi  = RectangleRelation(IA_DiorBiorEi , IA_DiorBiorEi);
+
+
+const IA72DRelations = [IA7_IdAorO, IA7_IdL, IA7_IdDorBorE, IA7_IdAiorOi, IA7_IdLi, IA7_IdDiorBiorEi, IA7_AorOId, IA7_AorOAorO, IA7_AorOL, IA7_AorODorBorE, IA7_AorOAi, IA7_AorOLi, IA7_AorODiorBiorEi, IA7_LId, IA7_LAorO, IA7_LL, IA7_LDorBorE, IA7_LAiorOi, IA7_LLi, IA7_LDiorBiorEi, IA7_DorBorEId, IA7_DorBorEAorO, IA7_DorBorEL, IA7_DorBorEDorBorE, IA7_DorBorEAiorOi, IA7_DorBorELi, IA7_DorBorEDiorBiorEi, IA7_AiorOiId, IA7_AiorOiAorO, IA7_AiorOiL, IA7_AiorOiDorBorE, IA7_AiorOiAiorOi, IA7_AiorOiLi, IA7_AiorOiDiorBiorEi, IA7_LiId, IA7_LiAorO, IA7_LiL, IA7_LiDorBorE, IA7_LiAiorOi, IA7_LiLi, IA7_LiDiorBiorEi, IA7_DiorBiorEiId, IA7_DiorBiorEiAorO, IA7_DiorBiorEiL, IA7_DiorBiorEiDorBorE, IA7_DiorBiorEiAiorOi, IA7_DiorBiorEiLi, IA7_DiorBiorEiDiorBiorEi]
+
+IA72DRelation = Union{typeof.(IA72DRelations)...}
+
+############################################################################################
+
+# IA3 2D
+                                                                          const IA3_IdI             = RectangleRelation(identityrel   , IA_I); const IA3_IdL           = RectangleRelation(identityrel    , IA_L); const IA3_IdLi          = RectangleRelation(identityrel   , IA_Li);
+const IA3_IId           = RectangleRelation(IA_I          , identityrel); const IA3_II              = RectangleRelation(IA_I          , IA_I); const IA3_IL            = RectangleRelation(IA_I           , IA_L); const IA3_ILi           = RectangleRelation(IA_I          , IA_Li);
+const IA3_LId           = RectangleRelation(IA_L          , identityrel); const IA3_LI              = RectangleRelation(IA_L          , IA_I); const IA3_LL            = RectangleRelation(IA_L           , IA_L); const IA3_LLi           = RectangleRelation(IA_L          , IA_Li);
+const IA3_LiId          = RectangleRelation(IA_Li         , identityrel); const IA3_LiI             = RectangleRelation(IA_Li         , IA_I); const IA3_LiL           = RectangleRelation(IA_Li          , IA_L); const IA3_LiLi          = RectangleRelation(IA_Li         , IA_Li);
+
+
+const IA32DRelations = [IA3_IdI, IA3_IdL, IA3_IdLi, IA3_IId, IA3_II, IA3_IL, IA3_ILi, IA3_LId, IA3_LI, IA3_LL, IA3_LLi, IA3_LiId, IA3_LiI, IA3_LiL, IA3_LiLi]
+
+IA32DRelation = Union{typeof.(IA32DRelations)...}
