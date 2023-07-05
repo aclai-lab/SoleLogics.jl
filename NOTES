@@ -43,7 +43,7 @@ DONE: 0) clone, instantiate and checkout in dev-v0.9.1 the following packages: S
 
 DONE: 1) rename parentheses in parentheses, and parenthesis in paranthesis.
 
-2) make syntaxstring more readable (by default, not all parentheses are displayed.)
+DONE: 2) make syntaxstring more readable (by default, not all parentheses are displayed.)
 	2.1) optional parameter "allparentheses"
 	2.2) testing both with allparantheses=false (default) and true)
 
