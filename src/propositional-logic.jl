@@ -269,9 +269,7 @@ struct TruthTable{
 end
 
 Base.getindex(i::TruthTable{AA}, p::Proposition) where {AA} = Base.getindex(i.truth, p)
-Base.haskey(i::TruthTable{AA}, p::Proposition) where {AA} = Base.haskey(i.truth, p)
-
-using Printf
+Base.haskey(i::TruthTable{AA}, p::Proposition) where {AA} = Base.haskey(i.truth, p)Printf
 
 function Base.show(
     io::IO,
