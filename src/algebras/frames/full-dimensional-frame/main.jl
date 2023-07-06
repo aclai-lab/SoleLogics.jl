@@ -1,4 +1,5 @@
 using IterTools
+import SoleBase: dimensionality
 
 """
     abstract type AbstractDimensionalFrame{
@@ -96,6 +97,8 @@ end
 
 channelsize(fr::FullDimensionalFrame) = fr.channelsize
 Base.getindex(fr::FullDimensionalFrame, i::Integer) = channelsize(fr)[i]
+
+dimensionality(fr::FullDimensionalFrame) = length(channelsize(fr))
 
 # Shorthands
 X(fr::FullDimensionalFrame) = fr[1]

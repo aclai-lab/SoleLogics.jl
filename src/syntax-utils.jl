@@ -18,15 +18,22 @@ conjuctive normal form (CNF) or disjunctive normal form (DNF), defined as:
     const DNF{SS<:AbstractSyntaxStructure} = LeftmostLinearForm{typeof(∨),LeftmostLinearForm{typeof(∧),SS}}
 
 # Examples
-TODO four examples of syntaxstring of a LeftmostConjunctiveForm, LeftmostDisjunctiveForm, CNF, DNF
 ```julia-repl
-julia> lfcf = LeftmostConjunctiveForm{Literal}([l1, l2_neg, l1_float])
-LeftmostLinearForm{SoleLogics.NamedOperator{:∧},Literal}
-(1) ∧ (¬(2)) ∧ (1.0)
+julia> LeftmostLinearForm(→, parseformula.(["p", "q", "r"]))
+LeftmostLinearForm{SoleLogics.NamedOperator{:→},SyntaxTree{Proposition{String}}}
+    (p) → (q) → (r)
 
-julia> lfdf = LeftmostDisjunctiveForm{Literal}([l1_number_float, l_string_neg])
+julia> LeftmostConjunctiveForm(parseformula.(["¬p", "q", "¬r"]))
+LeftmostLinearForm{SoleLogics.NamedOperator{:∧},SyntaxTree}
+    (¬(p)) ∧ (q) ∧ (¬(r))
+
+julia> LeftmostDisjunctiveForm{Literal}([Literal(false, Proposition("p")), Literal(true, Proposition("q")), Literal(false, Proposition("r"))])
 LeftmostLinearForm{SoleLogics.NamedOperator{:∨},Literal}
-(1.4) ∨ (¬(1))
+    (¬(p)) ∨ (q) ∨ (¬(r))
+
+julia> LeftmostDisjunctiveForm([LeftmostConjunctiveForm(parseformula.(["¬p", "q", "¬r"]))]) isa SoleLogics.DNF
+true
+
 ```
 """
 
@@ -36,7 +43,7 @@ See also [`AbstractSyntaxStructure`](@ref), [`SyntaxTree`](@ref),
 [`LeftmostConjunctiveForm`](@ref), [`LeftmostDisjunctiveForm`](@ref),
 [`Literal`](@ref).
 """
-struct LeftmostLinearForm{O<:AbstractOperator, SS<:AbstractSyntaxStructure} <: AbstractSyntaxStructure
+struct LeftmostLinearForm{O<:AbstractOperator,SS<:AbstractSyntaxStructure} <: AbstractSyntaxStructure
     children::Vector{SS}
 
     function LeftmostLinearForm{O,SS}(
@@ -47,15 +54,15 @@ struct LeftmostLinearForm{O<:AbstractOperator, SS<:AbstractSyntaxStructure} <: A
 
         if a == 0
             n_children == 0 ||
-                error("Mismatching number of children and operator's arity.")
+                error("Mismatching number of children ($n_children) and operator's arity ($a).")
         elseif a == 1
             n_children == 1 ||
-                error("Mismatching number of children and operator's arity.")
+                error("Mismatching number of children ($n_children) and operator's arity ($a).")
         else
             h = (n_children-1)/(a-1)
-            (isinteger(h) && h >= 1) ||
+            (isinteger(h) && h >= 0) ||
             # TODO figure out whether the base case n_children = 0 makes sense
-                error("Mismatching number of children and operator's arity.")
+                error("Mismatching number of children ($n_children) and operator's arity ($a).")
         end
 
         new{O,SS}(children)
@@ -179,7 +186,7 @@ function tree(lf::LeftmostLinearForm)
 end
 
 function Base.show(io::IO, lf::LeftmostLinearForm{O,SS}) where {O,SS}
-    println(io, "LeftmostLinearForm{$(O),$(SS)}")
+    println(io, "LeftmostLinearForm{$(O),$(SS)} with $(nchildren(lf)) children")
     println(io, "\t$(syntaxstring(lf))")
 end
 
