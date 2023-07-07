@@ -1,7 +1,7 @@
 name = "SoleLogics"
 uuid = "b002da8f-3cb3-4d91-bbe3-2953433912b5"
 authors = ["Mauro MILELLA", "Giovanni PAGLIARINI", "Eduard I. STAN"]
-version = "0.2.1"
+version = "0.3.0"
 
 [deps]
 DataStructures = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
@@ -24,6 +24,7 @@ IterTools = "1"
 Lazy = "0.15"
 Reexport = "1"
 Revise = "3"
+SoleBase = "0.9.2"
 julia = "1"
 
 [extras]
