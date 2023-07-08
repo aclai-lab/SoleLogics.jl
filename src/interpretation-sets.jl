@@ -55,13 +55,8 @@ function check(
         kwargs...
     ), 1:ninstances(d))
     # map(
-    #     i_instance->check(
-    #         formula(c),
-    #         slicedataset(d, [i_instance]),
-    #         args...;
-    #         use_memo = (isnothing(use_memo) ? nothing : @view use_memo[[i_instance]]),
-    #         kwargs...,
-    #     )[1], 1:ninstances(d)
+    #     i_instance->check(φ, slicedataset(d, [i_instance]; return_view = true), args...; kwargs...)[1],
+    #     1:ninstances(d)
     # )
 end
 

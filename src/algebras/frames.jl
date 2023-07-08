@@ -54,6 +54,44 @@ end
 
 ############################################################################################
 
+doc_tocenteredrel = """
+    struct ToCenteredRel <: AbstractRelation end;
+    const tocenteredrel  = ToCenteredRel();
+
+Singleton type for a relation that leads to the world at the center of a frame.
+The relation is transitive.
+
+# Examples
+```
+julia> syntaxstring(SoleLogics.tocenteredrel)
+"◉"
+```
+
+See also
+[`IdentityRel`](@ref),
+[`centeredworld`](@ref),
+[`AbstractRelation`](@ref),
+[`AbstractWorld`](@ref),
+[`AbstractFrame`](@ref).
+[`AbstractKripkeStructure`](@ref),
+"""
+
+"""$(doc_tocenteredrel)"""
+struct ToCenteredRel <: AbstractRelation end;
+"""$(doc_tocenteredrel)"""
+const tocenteredrel  = ToCenteredRel();
+
+accessibles(fr::AbstractMultiModalFrame, ::AbstractWorld, r::ToCenteredRel) = [centeredworld(fr)]
+
+arity(::Type{<:ToCenteredRel}) = 2
+
+syntaxstring(::Type{<:ToCenteredRel}; kwargs...) = "◉"
+
+hasconverse(::Type{<:ToCenteredRel}) = false
+istransitive(::ToCenteredRel) = true
+
+############################################################################################
+
 # TODO remove
 # Fix (not needed from Julia 1.7, see https://github.com/JuliaLang/julia/issues/34674 )
 if length(methods(Base.keys, (Base.Generator,))) == 0

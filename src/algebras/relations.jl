@@ -27,7 +27,7 @@ export Topo_DR, Topo_PP, Topo_PPi
 # Singletons representing natural relations
 ############################################################################################
 
-doc_id_rel = """
+doc_identityrel = """
     struct IdentityRel <: AbstractRelation end;
     const identityrel   = IdentityRel();
 
@@ -50,9 +50,9 @@ See also
 [`AbstractKripkeStructure`](@ref),
 """
 
-"""$(doc_id_rel)"""
+"""$(doc_identityrel)"""
 struct IdentityRel <: AbstractRelation end;
-"""$(doc_id_rel)"""
+"""$(doc_identityrel)"""
 const identityrel   = IdentityRel();
 
 arity(::Type{IdentityRel}) = 2
@@ -67,7 +67,7 @@ istransitive(::IdentityRel) = true
 
 ############################################################################################
 
-doc_glob_rel = """
+doc_globalrel = """
     struct GlobalRel <: AbstractRelation end;
     const globalrel  = GlobalRel();
 
@@ -91,9 +91,9 @@ See also
 [`AbstractKripkeStructure`](@ref),
 """
 
-"""$(doc_glob_rel)"""
+"""$(doc_globalrel)"""
 struct GlobalRel <: AbstractRelation end;
-"""$(doc_glob_rel)"""
+"""$(doc_globalrel)"""
 const globalrel  = GlobalRel();
 
 arity(::Type{GlobalRel}) = 2
@@ -108,7 +108,7 @@ istransitive(::GlobalRel) = true
 
 ############################################################################################
 
-doc_glob_rel = """
+"""
     struct NamedRelation{T} <: AbstractRelation
         name::T
     end

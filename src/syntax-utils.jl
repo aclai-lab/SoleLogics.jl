@@ -2,7 +2,7 @@ import Base: show, promote_rule, length, getindex
 using SoleBase
 
 doc_lmlf = """
-    struct LeftmostLinearForm{O<:AbstractOperator, SS<:AbstractSyntaxStructure} <: AbstractSyntaxStructure
+    struct LeftmostLinearForm{O<:AbstractOperator,SS<:AbstractSyntaxStructure} <: AbstractSyntaxStructure
         children::Vector{<:SS}
     end
 
@@ -70,7 +70,7 @@ struct LeftmostLinearForm{O<:AbstractOperator,SS<:AbstractSyntaxStructure} <: Ab
 
     function LeftmostLinearForm{O}(
         children::Vector,
-    ) where {O <: AbstractOperator}
+    ) where {O<:AbstractOperator}
         length(children) > 0 || error("Cannot instantiate LeftmostLinearForm{$(O)} with no children.")
         SS = SoleBase._typejoin(typeof.(children)...)
         LeftmostLinearForm{O,SS}(children)
@@ -192,8 +192,8 @@ function Base.show(io::IO, lf::LeftmostLinearForm{O,SS}) where {O,SS}
 end
 
 Base.promote_rule(::Type{<:LeftmostLinearForm}, ::Type{<:LeftmostLinearForm}) = SyntaxTree
-Base.promote_rule(::Type{SS}, ::Type{LF}) where {SS<:AbstractSyntaxStructure, LF<:LeftmostLinearForm} = SyntaxTree
-Base.promote_rule(::Type{LF}, ::Type{SS}) where {LF<:LeftmostLinearForm, SS<:AbstractSyntaxStructure} = SyntaxTree
+Base.promote_rule(::Type{SS}, ::Type{LF}) where {SS<:AbstractSyntaxStructure,LF<:LeftmostLinearForm} = SyntaxTree
+Base.promote_rule(::Type{LF}, ::Type{SS}) where {LF<:LeftmostLinearForm,SS<:AbstractSyntaxStructure} = SyntaxTree
 
 ############################################################################################
 
