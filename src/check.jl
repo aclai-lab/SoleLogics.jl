@@ -292,9 +292,9 @@ function normalize(
 end
 
 """
-    isglobal(f::AbstractFormula)::Bool
+    isgrounded(f::AbstractFormula)::Bool
 
-Return `true` if the formula is global, that is, if it can be inferred from its syntactic
+Return `true` if the formula is grounded, that is, if it can be inferred from its syntactic
 structure that, given any frame-based model, the truth value of the formula is the same
 on every world.
 
@@ -305,19 +305,19 @@ julia> f = parsebaseformula("⟨G⟩p → [G]q");
 julia> syntaxstring(f)
 "([G](p)) → (⟨G⟩(q))"
 
-julia> SoleLogics.isglobal(f)
+julia> SoleLogics.isgrounded(f)
 true
 ```
 
 See also
 [`SyntaxTree`](@ref), [`Formula`](@ref), [`AbstractFormula`](@ref).
 """
-isglobal(f::AbstractFormula)::Bool = isglobal(tree(f))
-isglobal(t::SyntaxTree)::Bool =
+isgrounded(f::AbstractFormula)::Bool = isgrounded(tree(f))
+isgrounded(t::SyntaxTree)::Bool =
     # (println(token(t)); println(children(t)); true) &&
-    (token(t) isa SoleLogics.AbstractRelationalOperator && relation(token(t)) == globalrel) ||
+    (token(t) isa SoleLogics.AbstractRelationalOperator && relation(token(t)) in [globalrel, tocenterrel]) ||
     # (token(t) in [◊,□]) ||
-    (token(t) isa AbstractOperator && all(c->isglobal(c), children(t)))
+    (token(t) isa AbstractOperator && all(c->isgrounded(c), children(t)))
 
 """
     function collateworlds(

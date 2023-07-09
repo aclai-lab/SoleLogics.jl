@@ -137,10 +137,10 @@ emptyworld(fr::FullDimensionalFrame{1}) = Interval{Int}(-1,0)
 emptyworld(fr::FullDimensionalFrame{2}) = Interval2D{Int}(Interval{Int}(-1,0),Interval{Int}(-1,0))
 
 # Smallest centered hyperrectangle
-_centeredworld(X::Integer) = Interval{Int}(div(X+1, 2),(div(X+1, 2))+1+(isodd(X) ? 0 : 1))
-centeredworld(fr::FullDimensionalFrame{0}) = OneWorld()
-centeredworld(fr::FullDimensionalFrame{1}) = _centeredworld(X(fr))
-centeredworld(fr::FullDimensionalFrame{2}) = Interval2D{Int}(_centeredworld(X(fr)),_centeredworld(Y(fr)))
+_centralworld(X::Integer) = Interval{Int}(div(X+1, 2),(div(X+1, 2))+1+(isodd(X) ? 0 : 1))
+centralworld(fr::FullDimensionalFrame{0}) = OneWorld()
+centralworld(fr::FullDimensionalFrame{1}) = _centralworld(X(fr))
+centralworld(fr::FullDimensionalFrame{2}) = Interval2D{Int}(_centralworld(X(fr)),_centralworld(Y(fr)))
 
 ############################################################################################
 
