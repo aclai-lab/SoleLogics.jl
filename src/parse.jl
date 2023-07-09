@@ -10,7 +10,6 @@ function Base.parse(
 end
 
 """
-
     function parseformula(
         F::Type{<:AbstractFormula},
         str::AbstractString,
