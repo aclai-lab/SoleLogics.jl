@@ -35,9 +35,10 @@ Singleton type for the identity relation. This is a binary relation via which a 
 accesses itself. The relation is also symmetric, reflexive and transitive.
 
 # Examples
-```
+```julia-repl
 julia> syntaxstring(SoleLogics.identityrel)
 "="
+
 julia> SoleLogics.converse(IdentityRel)
 IdentityRel
 ```
@@ -76,9 +77,10 @@ accesses every other world within the frame.
 The relation is also symmetric, reflexive and transitive.
 
 # Examples
-```
+```julia-repl
 julia> syntaxstring(SoleLogics.globalrel)
 "G"
+
 julia> SoleLogics.converse(GlobalRel)
 GlobalRel
 ```
@@ -105,6 +107,7 @@ converse(::Type{GlobalRel}) = GlobalRel
 issymmetric(::GlobalRel) = true
 isreflexive(::GlobalRel) = true
 istransitive(::GlobalRel) = true
+isgrounding(::GlobalRel) = true
 
 ############################################################################################
 

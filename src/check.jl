@@ -18,7 +18,7 @@ julia> syntaxstring.(SoleLogics.subformulas(parsebaseformula("◊((p∧q)→r)")
 ```
 
 See also
-[`SyntaxTree`](@ref), [`Formula`](@ref), [`AbstractFormula`](@ref).
+[`SyntaxTree`](@ref)), [`AbstractFormula`](@ref).
 """
 subformulas(f::AbstractSyntaxStructure; kwargs...) = subformulas(tree(f); kwargs...)
 subformulas(f::Formula; kwargs...) = f.(subformulas(tree(f); kwargs...))
@@ -88,7 +88,7 @@ julia> syntaxstring(SoleLogics.normalize(f; profile = :readability, allow_propos
 ```
 
 See also
-[`SyntaxTree`](@ref), [`Formula`](@ref), [`AbstractFormula`](@ref).
+[`SyntaxTree`](@ref)), [`AbstractFormula`](@ref).
 """
 normalize(f::AbstractSyntaxStructure; kwargs...) = normalize(tree(f); kwargs...)
 normalize(f::Formula; kwargs...) = f(normalize(tree(f); kwargs...))
@@ -310,12 +310,12 @@ true
 ```
 
 See also
-[`SyntaxTree`](@ref), [`Formula`](@ref), [`AbstractFormula`](@ref).
+[`isgrounding`](@ref)), [`SyntaxTree`](@ref)), [`AbstractFormula`](@ref).
 """
 isgrounded(f::AbstractFormula)::Bool = isgrounded(tree(f))
 isgrounded(t::SyntaxTree)::Bool =
     # (println(token(t)); println(children(t)); true) &&
-    (token(t) isa SoleLogics.AbstractRelationalOperator && relation(token(t)) in [globalrel, tocenterrel]) ||
+    (token(t) isa SoleLogics.AbstractRelationalOperator && isgrounding(relation(token(t)))) ||
     # (token(t) in [◊,□]) ||
     (token(t) isa AbstractOperator && all(c->isgrounded(c), children(t)))
 

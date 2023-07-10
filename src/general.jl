@@ -211,6 +211,7 @@ Return whether it is known that an `AbstractOperator` is commutative.
 ```julia-repl
 julia> iscommutative(∧)
 true
+
 julia> iscommutative(→)
 false
 ```
@@ -283,7 +284,7 @@ but it allows to use operators for a more flexible composition; see the examples
 (and more in the extended help).
 
 # Examples
-```
+```julia-repl
 julia> f = parseformula("◊(p→q)");
 
 julia> p = Proposition("p");

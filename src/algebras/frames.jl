@@ -56,13 +56,13 @@ end
 
 doc_tocenterrel = """
     struct ToCenteredRel <: AbstractRelation end;
-    const tocenterrel  = ToCenteredRel();
+    const tocenterrel = ToCenteredRel();
 
 Singleton type for a relation that leads to the world at the center of a frame.
 The relation is transitive.
 
 # Examples
-```
+```julia-repl
 julia> syntaxstring(SoleLogics.tocenterrel)
 "◉"
 ```
@@ -79,7 +79,7 @@ See also
 """$(doc_tocenterrel)"""
 struct ToCenteredRel <: AbstractRelation end;
 """$(doc_tocenterrel)"""
-const tocenterrel  = ToCenteredRel();
+const tocenterrel = ToCenteredRel();
 
 accessibles(fr::AbstractMultiModalFrame, ::AbstractWorld, r::ToCenteredRel) = [centralworld(fr)]
 
@@ -89,6 +89,7 @@ syntaxstring(::Type{<:ToCenteredRel}; kwargs...) = "◉"
 
 hasconverse(::Type{<:ToCenteredRel}) = false
 istransitive(::ToCenteredRel) = true
+isgrounding(::ToCenteredRel) = true
 
 ############################################################################################
 

@@ -17,3 +17,10 @@ SoleLogics.jl provides a fresh codebase for computational logic, featuring easy 
 - Algorithms for model checking, that is, checking that a formula is satisfied by an interpretation.
 
 SoleLogics.jl lays the logical foundations for Sole.jl, an open-source framework for symbolic machine learning.
+
+```@index
+```
+
+```@autodocs
+Modules = [SoleModels]
+```
