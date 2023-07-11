@@ -643,21 +643,63 @@ Base.hash(a::SyntaxTree) = Base.hash(syntaxstring(a))
 
 # Refer to syntaxstring(tok::AbstractSyntaxToken; kwargs...) for documentation
 function syntaxstring(t::SyntaxTree; function_notation = false, kwargs...)
+    lpar = "("
+    rpar = ")"
+
+    function _canavoid_newscope(t::SyntaxTree; fnotation::Bool=false)
+        # Avoid printing the subtree rooted in `t` if this does not generate ambiguities.
+
+        # For example, consider parsetree("a ∧ b ∧ c → d ∧ e ∧ f → g ∧ h ∧ i");
+        # naive output:         (a ∧ (b ∧ c)) → ((d ∧ (e ∧ f)) → (g ∧ (h ∧ i)))
+        # improved output:      (a ∧ b ∧ c) → ((d ∧ e ∧ f) → (g ∧ h ∧ i))
+
+        # Consider parsetree("¬p∧q→(¬s∧¬z)"; function_notation = true)
+        # naive output:         "→(∧(¬(p), q), ∧(¬(s), ¬(z)))"
+        # improved output:      "→(∧(¬p, q), ∧(¬s, ¬z))"
+
+        tarity = arity(token(t))
+        if (fnotation == true && tarity > 1)
+            # In this case, I don't want parentheses just in ¬(p) and (p) cases
+            return false
+        end
+
+        for c in children(t)
+            carity = arity(token(c))
+            if carity <= 1 || (fnotation == false && carity == tarity-1)
+                return true
+            end
+        end
+
+        return false
+    end
+
 
     tok = token(t)
     if arity(tok) == 0
         syntaxstring(tok; function_notation = function_notation, kwargs...)
     elseif arity(tok) == 2 && !function_notation
-        f = ch->arity(token(ch)) == 0 ? "$(syntaxstring(ch; function_notation = function_notation, kwargs...))" : "($(syntaxstring(ch; function_notation = function_notation, kwargs...)))"
+
+        if (_canavoid_newscope(t; fnotation=function_notation))
+            lpar, rpar = "", ""
+        end
+
+        f = ch->arity(token(ch)) == 0 ?
+        "$(syntaxstring(ch; function_notation = function_notation, kwargs...))" :
+        "$(lpar)$(syntaxstring(ch; function_notation = function_notation, kwargs...))$(rpar)"
         # Infix notation for binary operator
         "$(f(children(t)[1])) $(syntaxstring(tok; function_notation = function_notation, kwargs...)) $(f(children(t)[2]))"
     else
+        if (_canavoid_newscope(t; fnotation=function_notation))
+            lpar, rpar = "", ""
+        end
+
         # Function notation for higher arity operator
         length(children(t)) == 0 ?
                syntaxstring(tok; function_notation = function_notation, kwargs...) :
-               syntaxstring(tok; function_notation = function_notation, kwargs...) * "(" *
-                    join([syntaxstring(c; function_notation = function_notation, kwargs...) for c in children(t)], ", ") *
-                ")"
+               syntaxstring(tok; function_notation = function_notation, kwargs...) *
+                "$(lpar)" *
+                join([syntaxstring(c; function_notation = function_notation, kwargs...) for c in children(t)], ", ") *
+                "$(rpar)"
         # "$(syntaxstring(tok; kwargs...))(" * join(map((c)->("($(syntaxstring(c; kwargs...)))"), children(t)), ",") * ")"
     end
 end
