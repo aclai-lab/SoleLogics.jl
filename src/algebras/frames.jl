@@ -48,9 +48,48 @@ end
 Return the world at the *center* of the frame;
 note that this does not always exist.
 """
-function centeredworld(fr::AbstractMultiModalFrame)
-    return error("Please, provide method centeredworld(::$(typeof(fr))).")
+function centralworld(fr::AbstractMultiModalFrame)
+    return error("Please, provide method centralworld(::$(typeof(fr))).")
 end
+
+############################################################################################
+
+doc_tocenterrel = """
+    struct ToCenteredRel <: AbstractRelation end;
+    const tocenterrel = ToCenteredRel();
+
+Singleton type for a relation that leads to the world at the center of a frame.
+The relation is transitive.
+
+# Examples
+```julia-repl
+julia> syntaxstring(SoleLogics.tocenterrel)
+"◉"
+```
+
+See also
+[`IdentityRel`](@ref),
+[`centralworld`](@ref),
+[`AbstractRelation`](@ref),
+[`AbstractWorld`](@ref),
+[`AbstractFrame`](@ref).
+[`AbstractKripkeStructure`](@ref),
+"""
+
+"""$(doc_tocenterrel)"""
+struct ToCenteredRel <: AbstractRelation end;
+"""$(doc_tocenterrel)"""
+const tocenterrel = ToCenteredRel();
+
+accessibles(fr::AbstractMultiModalFrame, ::AbstractWorld, r::ToCenteredRel) = [centralworld(fr)]
+
+arity(::Type{<:ToCenteredRel}) = 2
+
+syntaxstring(::Type{<:ToCenteredRel}; kwargs...) = "◉"
+
+hasconverse(::Type{<:ToCenteredRel}) = false
+istransitive(::ToCenteredRel) = true
+isgrounding(::ToCenteredRel) = true
 
 ############################################################################################
 

@@ -177,6 +177,7 @@ See also
 [`issymmetric`](@ref),
 [`isreflexive`](@ref),
 [`istransitive`](@ref),
+[`isgrounding`](@ref),
 [`arity`](@ref),
 [`syntaxstring`](@ref),
 [`converse`](@ref),
@@ -244,7 +245,7 @@ converse(r::AbstractRelation)::AbstractRelation = converse(typeof(r))()
 Return whether it is known that a relation is symmetric.
 
 See also [`hasconverse`](@ref), [`converse`](@ref),
-[`isreflexive`](@ref), [`istransitive`](@ref), [`AbstractRelation`](@ref).
+[`isreflexive`](@ref), [`istransitive`](@ref), [`isgrounding`](@ref), [`AbstractRelation`](@ref).
 """
 issymmetric(r::AbstractRelation) = hasconverse(r) ? converse(r) == r : false
 
@@ -254,7 +255,7 @@ issymmetric(r::AbstractRelation) = hasconverse(r) ? converse(r) == r : false
 Return whether it is known that a relation is reflexive.
 
 See also
-[`issymmetric`](@ref), [`istransitive`](@ref), [`AbstractRelation`](@ref).
+[`issymmetric`](@ref), [`istransitive`](@ref), [`isgrounding`](@ref), [`AbstractRelation`](@ref).
 """
 isreflexive(::AbstractRelation) = false
 
@@ -264,9 +265,20 @@ isreflexive(::AbstractRelation) = false
 Return whether it is known that a relation is transitive.
 
 See also
-[`isreflexive`](@ref), [`issymmetric`](@ref), [`AbstractRelation`](@ref).
+[`isreflexive`](@ref), [`issymmetric`](@ref), [`isgrounding`](@ref), [`AbstractRelation`](@ref).
 """
 istransitive(::AbstractRelation) = false
+
+"""
+    isgrounding(::AbstractRelation)
+
+Return whether it is known that a relation is grounding.
+A relation `R` is grounding if ∀x,y R(x,y) ⇔ R(z,y).
+
+See also
+[`isreflexive`](@ref), [`issymmetric`](@ref), [`istransitive`](@ref), [`AbstractRelation`](@ref).
+"""
+isgrounding(::AbstractRelation) = false
 
 include("algebras/relations.jl")
 
@@ -607,6 +619,7 @@ Return whether it is known that an `AbstractOperator` is modal.
 ```julia-repl
 julia> ismodal(◊)
 true
+
 julia> ismodal(∧)
 false
 ```

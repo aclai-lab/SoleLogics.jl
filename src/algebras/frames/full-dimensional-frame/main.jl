@@ -1,4 +1,5 @@
 using IterTools
+import SoleBase: dimensionality, channelsize
 
 """
     abstract type AbstractDimensionalFrame{
@@ -97,6 +98,8 @@ end
 channelsize(fr::FullDimensionalFrame) = fr.channelsize
 Base.getindex(fr::FullDimensionalFrame, i::Integer) = channelsize(fr)[i]
 
+dimensionality(fr::FullDimensionalFrame) = length(channelsize(fr))
+
 # Shorthands
 X(fr::FullDimensionalFrame) = fr[1]
 Y(fr::FullDimensionalFrame) = fr[2]
@@ -120,12 +123,12 @@ const Full2DFrame = FullDimensionalFrame{2,Interval2D{Int}}
 
 allworlds(fr::FullDimensionalFrame{0}) = [OneWorld()]
 allworlds(fr::FullDimensionalFrame{1}) = intervals_in(1, X(fr)+1)
-allworlds(fr::FullDimensionalFrame{2}) = intervals2D_in(1,X(fr)+1,1,Y(fr)+1)
+allworlds(fr::FullDimensionalFrame{2}) = intervals2D_in(1, X(fr)+1, 1, Y(fr)+1)
 
 nworlds(fr::FullDimensionalFrame{0}) = 1
-nworlds(fr::FullDimensionalFrame{1}) = div(X(fr)*(X(fr)+1),2)
-nworlds(fr::FullDimensionalFrame{2}) = div(X(fr)*(X(fr)+1),2) * div(Y(fr)*(Y(fr)+1),2)
-nworlds(fr::FullDimensionalFrame{3}) = div(X(fr)*(X(fr)+1),2) * div(Y(fr)*(Y(fr)+1),2) * div(Z(fr)*(Z(fr)+1),2)
+nworlds(fr::FullDimensionalFrame{1}) = div(X(fr)*(X(fr)+1), 2)
+nworlds(fr::FullDimensionalFrame{2}) = div(X(fr)*(X(fr)+1), 2) * div(Y(fr)*(Y(fr)+1), 2)
+nworlds(fr::FullDimensionalFrame{3}) = div(X(fr)*(X(fr)+1), 2) * div(Y(fr)*(Y(fr)+1), 2) * div(Z(fr)*(Z(fr)+1), 2)
 
 ############################################################################################
 
@@ -134,10 +137,10 @@ emptyworld(fr::FullDimensionalFrame{1}) = Interval{Int}(-1,0)
 emptyworld(fr::FullDimensionalFrame{2}) = Interval2D{Int}(Interval{Int}(-1,0),Interval{Int}(-1,0))
 
 # Smallest centered hyperrectangle
-_centeredworld(X::Integer) = Interval{Int}(div(X,2)+1,(div(X,2)+1)+1+(isodd(X) ? 0 : 1))
-centeredworld(fr::FullDimensionalFrame{0}) = OneWorld()
-centeredworld(fr::FullDimensionalFrame{1}) = _centeredworld(X(fr))
-centeredworld(fr::FullDimensionalFrame{2}) = Interval2D{Int}(_centeredworld(X(fr)),_centeredworld(Y(fr)))
+_centralworld(X::Integer) = Interval{Int}(div(X+1, 2),(div(X+1, 2))+1+(isodd(X) ? 0 : 1))
+centralworld(fr::FullDimensionalFrame{0}) = OneWorld()
+centralworld(fr::FullDimensionalFrame{1}) = _centralworld(X(fr))
+centralworld(fr::FullDimensionalFrame{2}) = Interval2D{Int}(_centralworld(X(fr)),_centralworld(Y(fr)))
 
 ############################################################################################
 

@@ -55,13 +55,8 @@ function check(
         kwargs...
     ), 1:ninstances(d))
     # map(
-    #     i_instance->check(
-    #         formula(c),
-    #         slicedataset(d, [i_instance]),
-    #         args...;
-    #         use_memo = (isnothing(use_memo) ? nothing : @view use_memo[[i_instance]]),
-    #         kwargs...,
-    #     )[1], 1:ninstances(d)
+    #     i_instance->check(φ, slicedataset(d, [i_instance]; return_view = true), args...; kwargs...)[1],
+    #     1:ninstances(d)
     # )
 end
 
@@ -137,3 +132,58 @@ accessibles(X::AbstractInterpretationSet, i_instance::Integer, args...) = access
 allworlds(X::AbstractInterpretationSet, i_instance::Integer, args...) = allworlds(frame(X, i_instance), args...)
 nworlds(X::AbstractInterpretationSet, i_instance::Integer) = nworlds(frame(X, i_instance))
 
+function check(
+    φ::SyntaxTree{
+        Union{
+            DiamondRelationalOperator{typeof(tocenterrel)},
+            BoxRelationalOperator{typeof(tocenterrel)},
+        }
+    },
+    X::AbstractInterpretationSet{<:AbstractKripkeStructure},
+    i_instance::Integer;
+    kwargs...
+)
+    check(first(children(φ)), X, i_instance, centralworld(frame(X, i_instance)); kwargs...)
+end
+
+function check(
+    φ::SyntaxTree{
+        Union{
+            DiamondRelationalOperator{typeof(globalrel)},
+            BoxRelationalOperator{typeof(globalrel)},
+        }
+    },
+    X::AbstractInterpretationSet{<:AbstractKripkeStructure},
+    i_instance::Integer;
+    kwargs...
+)
+    check(first(children(φ)), X, i_instance, nothing; kwargs...)
+end
+
+# General grounding
+# function check(
+#     φ::SyntaxTree{
+#         Union{
+#             DiamondRelationalOperator{R},
+#             BoxRelationalOperator{R},
+#         }
+#     },
+#     X::AbstractInterpretationSet{<:AbstractKripkeStructure},
+#     i_instance::Integer;
+#     kwargs...
+# ) where {R<:AbstractRelation}
+#     rel = SoleLogics.relation(SoleLogics.token(φ))
+#     check(first(children(φ)), X, i_instance, accessibles(frame(X, i_instance), rel); kwargs...)
+# end
+
+# TODO remove?
+function check(
+    φ::SoleLogics.AbstractFormula,
+    X::AbstractInterpretationSet{<:AbstractKripkeStructure},
+    i_instance::Integer,
+    args...;
+    kwargs...
+)
+    @warn "This method is deprecating... $(@show φ), $(@show X), $(@show args)"
+    check(tree(φ), X, i_instance, args...; kwargs...)
+end
