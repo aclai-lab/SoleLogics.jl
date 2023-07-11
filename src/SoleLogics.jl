@@ -3,10 +3,12 @@ module SoleLogics
 import Base: show
 using DataStructures
 using Dictionaries
+using PrettyTables
 using Random
 using StatsBase
 using Reexport
 using Lazy
+
 
 include("utils.jl")
 

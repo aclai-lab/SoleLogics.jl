@@ -275,20 +275,7 @@ function Base.show(
     io::IO,
     i::TruthTable{A,T,D},
 ) where {A,T<:TruthValue,D<:AbstractDict{<:Proposition{<:A},T}}
-    sep = "│"
-
-    [print("$sep $k") for k in keys(i.truth)]
-    println(sep)
-
-    for (k, v) in zip(keys(i.truth), values(i.truth))
-        kreprlen = length(repr(k))
-        vlen = length(v)
-        content = lpad(rpad(v, div(kreprlen,2)+vlen*2), div(kreprlen, 2, RoundDown)*2) *
-            " "^(Int(kreprlen%2 == 1))
-        print("$sep $content")
-    end
-
-    print(sep)
+    pretty_table(io, i.truth)
 end
 
 # Helpers
@@ -408,9 +395,7 @@ function Base.show(
     io::IO,
     i::DefaultedTruthTable{A,T,D},
 ) where {A,T<:TruthValue,D<:AbstractDict{<:Proposition{<:A},T}}
-    # println(io, "DefaultedTruthTable{$(A),$(T),$(D)} with default truth `$(i.default_truth)` wrapping:")
-    println(io, "DefaultedTruthTable with default truth `$(i.default_truth)` wrapping:")
-    Base.display(i.truth)
+    pretty_table(io, i.truth)
 end
 
 # Helpers
