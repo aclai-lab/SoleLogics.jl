@@ -653,7 +653,7 @@ function syntaxstring(t::SyntaxTree; function_notation = false, kwargs...)
         # naive output:         (a ∧ (b ∧ c)) → ((d ∧ (e ∧ f)) → (g ∧ (h ∧ i)))
         # improved output:      (a ∧ b ∧ c) → ((d ∧ e ∧ f) → (g ∧ h ∧ i))
 
-        # Consider parsetree("¬p∧q→(¬s∧¬z)"; function_notation = true)
+        # Consider parsetree("¬p∧q→(¬s∧¬z)"; function_notation = true);
         # naive output:         "→(∧(¬(p), q), ∧(¬(s), ¬(z)))"
         # improved output:      "→(∧(¬p, q), ∧(¬s, ¬z))"
 
