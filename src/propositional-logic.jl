@@ -184,18 +184,39 @@ If prompted for the value of an unknown proposition, it throws an error.
 # Examples
 ```julia-repl
 julia> TruthTable(1:4)
-│ Proposition{Int64}(4)│ Proposition{Int64}(2)│ Proposition{Int64}(3)│ Proposition{Int64}(1)│
-│         true         │         true         │         true         │         true         │
+┌───────────────────────┬────────┐
+│                  Keys │ Values │
+│    Proposition{Int64} │   Bool │
+├───────────────────────┼────────┤
+│ Proposition{Int64}(4) │   true │
+│ Proposition{Int64}(2) │   true │
+│ Proposition{Int64}(3) │   true │
+│ Proposition{Int64}(1) │   true │
+└───────────────────────┴────────┘
 
 
 julia> t1 = TruthTable(1:4, false); t1[5] = true; t1
-│ Proposition{Int64}(5)│ Proposition{Int64}(4)│ Proposition{Int64}(2)│ Proposition{Int64}(3)│ Proposition{Int64}(1)│
-│         true         │         false        │         false        │         false        │         false        │
+┌───────────────────────┬────────┐
+│                  Keys │ Values │
+│    Proposition{Int64} │   Bool │
+├───────────────────────┼────────┤
+│ Proposition{Int64}(5) │   true │
+│ Proposition{Int64}(4) │  false │
+│ Proposition{Int64}(2) │  false │
+│ Proposition{Int64}(3) │  false │
+│ Proposition{Int64}(1) │  false │
+└───────────────────────┴────────┘
 
 
 julia> t2 = TruthTable(["a" => true, "b" => false, "c" => true])
-│ Proposition{String}("c")│ Proposition{String}("b")│ Proposition{String}("a")│
-│           true          │           false         │           true          │
+┌──────────────────────────┬────────┐
+│                     Keys │ Values │
+│      Proposition{String} │   Bool │
+├──────────────────────────┼────────┤
+│ Proposition{String}("c") │   true │
+│ Proposition{String}("b") │  false │
+│ Proposition{String}("a") │   true │
+└──────────────────────────┴────────┘
 
 
 julia> check(parsebaseformula("a ∨ b"), t2)
@@ -307,13 +328,16 @@ it returns `default_truth`.
 # Examples
 ```julia-repl
 julia> t1 = DefaultedTruthTable(string.(1:4), false); t1["5"] = false; t1
-DefaultedTruthTable with default truth `false` wrapping:
-Dict{Proposition{String}, Bool} with 5 entries:
-  Proposition{String}("1") => 1
-  Proposition{String}("2") => 1
-  Proposition{String}("3") => 1
-  Proposition{String}("4") => 1
-  Proposition{String}("5") => 0
+┌──────────────────────────┬────────┐
+│                     Keys │ Values │
+│      Proposition{String} │   Bool │
+├──────────────────────────┼────────┤
+│ Proposition{String}("4") │   true │
+│ Proposition{String}("1") │   true │
+│ Proposition{String}("5") │  false │
+│ Proposition{String}("2") │   true │
+│ Proposition{String}("3") │   true │
+└──────────────────────────┴────────┘
 
 
 julia> check(parsebaseformula("1 ∨ 2"), t1)
