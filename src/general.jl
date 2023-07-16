@@ -673,7 +673,6 @@ function syntaxstring(t::SyntaxTree; function_notation = false, kwargs...)
         return false
     end
 
-
     tok = token(t)
     if arity(tok) == 0
         syntaxstring(tok; function_notation = function_notation, kwargs...)

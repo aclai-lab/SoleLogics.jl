@@ -48,7 +48,7 @@ import SoleLogics: arity
 @test syntaxstring(parsetree("p→q"); function_notation = true) == "→(p, q)"
 
 @test filter(!isspace, syntaxstring(parsetree("¬p∧q∧(¬s∧¬z)");
-    function_notation = true)) == "∧(¬(p),∧(q,∧(¬(s),¬(z))))"
+    function_notation = true)) == "∧(¬p,∧(q,∧(¬s,¬z)))"
 
 @test_nowarn parsetree("→(∧(¬p, q), ∧(¬s, ¬z))", function_notation=true)
 @test_nowarn parsetree("→(∧(¬p; q); ∧(¬s; ¬z))",
@@ -59,18 +59,17 @@ import SoleLogics: arity
 
 
 @test filter(!isspace, syntaxstring(parsetree("¬p∧q→(¬s∧¬z)");
-    function_notation = true)) == "→(∧(¬(p),q),∧(¬(s),¬(z)))"
+    function_notation = true)) == "→(∧(¬p,q),∧(¬s,¬z))"
 @test filter(!isspace, syntaxstring(
     parsetree("¬p∧q→A¬s∧¬zB",
         opening_parenthesis = "A",
         closing_parenthesis = "B");
-    function_notation = true)) == "→(∧(¬(p),q),∧(¬(s),¬(z)))"
+    function_notation = true)) == "→(∧(¬p,q),∧(¬s,¬z))"
 @test_nowarn parsetree("¬p∧q→     (¬s∧¬z)")
 @test parsetree("□p∧   q∧(□s∧◊z)", [BOX]) == parsetree("□p∧   q∧(□s∧◊z)")
-@test syntaxstring(parsetree("◊ ◊ ◊ ◊ p∧q"); function_notation = true) ==
-    "∧(◊(◊(◊(◊(p)))), q)"
+@test syntaxstring(parsetree("◊ ◊ ◊ ◊ p∧q"); function_notation = true) == "∧(◊◊◊◊p, q)"
 @test syntaxstring(parsetree("¬¬¬ □□□ ◊◊◊ p ∧ ¬¬¬ q"); function_notation = true) ==
-    "∧(¬(¬(¬(□(□(□(◊(◊(◊(p))))))))), ¬(¬(¬(q))))"
+    "∧(¬¬¬□□□◊◊◊p, ¬¬¬q)"
 
 f = parsetree("¬((¬(⟨G⟩(q))) → (([G](p)) ∧ ([G](q))))")
 @test syntaxstring(f) == syntaxstring(parsetree(syntaxstring(f)))
@@ -265,6 +264,9 @@ s = "◊((¬((◊(◊(((¬(¬(q))) ∧ ((p ∧ p) ∨ (¬(p)))) → (¬(□(¬(q
     "q)))))) → ((□(◊(¬(◊(¬(p)))))) ∨ ((□(□((q → p) ∧ (p ∧ p)))) ∨ (((◊(◊(p))) → ((p →" *
     "q) ∧ (p → q))) ∧ (□((p ∨ q) ∧ (◊(q))))))))))"
 f = parsetree(s)
+
+# TODO fix tests - nesting parsetree and syntaxstring multiple times brings to different parentheses
+
 @test syntaxstring(f) == syntaxstring(parsetree(syntaxstring(f)))
 @test syntaxstring(f; function_notation = true) ==
     syntaxstring(parsetree(syntaxstring(f)); function_notation = true)

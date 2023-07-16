@@ -82,7 +82,19 @@ t2 = @test_nowarn TruthTable(Pair{Real,Bool}[1.0 => true, 2 => true, 3 => true])
 @test !check(parsebaseformula("a ∧ ¬b"), DefaultedTruthTable(["a", "b"]))
 @test check(parsebaseformula("a ∧ ¬b"), DefaultedTruthTable(["a"]))
 
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ normalization: rotate commutatives ~~~~~~~~~~~~~~~~~~~~~~~~~~
+#  normalization: negations compression ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+@test syntaxstring(normalize(parsetree("¬¬ p"))) == "p"
+@test syntaxstring(normalize(parsetree("¬¬¬ p"))) == "¬p"
+@test syntaxstring(normalize(parsetree("¬¬¬¬ p"))) == "p"
+@test syntaxstring(normalize(parsetree("¬¬¬ □□□ ◊◊◊ p ∧ ¬¬¬ q"))) == "◊◊◊□□□¬p ∧ ¬q"
+
+# normalization: diamond and box compression ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+@test syntaxstring(normalize(parsetree("¬◊¬p"))) == "□p"
+@test syntaxstring(normalize(parsetree("¬□¬p"))) == "◊p"
+
+# normalization: rotate commutatives ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 _test_rot_comm1 = normalize(parsetree("((d ∧ c) ∧ ((e ∧ f) ∧ (g ∧ h))) ∧ (b ∧ a)"))
 for f in [
