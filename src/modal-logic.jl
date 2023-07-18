@@ -19,6 +19,29 @@ See also [`AbstractKripkeStructure`](@ref), [`AbstractFrame`](@ref).
 """
 abstract type AbstractWorld end
 
+# Base.show(io::IO, w::AbstractWorld) = print(io, inlinedisplay(w))
+
+############################################################################################
+
+"""
+    struct World{T} <: AbstractWorld
+        name::T
+    end
+
+A world that is solely identified by its `name`.
+This can be useful when instantiating the underlying graph of a modal frame
+in an explicit way.
+
+See also [`OneWorld`](@ref), [`AbstractWorld`](@ref).
+"""
+struct World{T} <: AbstractWorld
+    name::T
+end
+
+name(w::World) = w.name
+
+inlinedisplay(w::World) = string(name(w))
+
 include("algebras/worlds.jl")
 
 """
@@ -137,9 +160,9 @@ nworlds(fr::ExplicitCrispUniModalFrame) = length(fr.worlds)
 
 function Base.show(io::IO, fr::ExplicitCrispUniModalFrame)
     println(io, "$(typeof(fr)) with")
-    println(io, "- worlds = $(fr.worlds)")
-    maxl = maximum(length.(string.(fr.worlds)))
-    println(io, "- accessibles = \n$(join(["\t$(rpad(string(w), maxl)) -> [$(join(accessibles(fr, w), ", "))]" for w in fr.worlds], "\n"))")
+    println(io, "- worlds = $(inlinedisplay.(fr.worlds))")
+    maxl = maximum(length.(inlinedisplay.(fr.worlds)))
+    println(io, "- accessibles = \n$(join(["\t$(rpad(inlinedisplay(w), maxl)) -> [$(join(inlinedisplay.(accessibles(fr, w)), ", "))]" for w in fr.worlds], "\n"))")
 end
 
 ############################################################################################
@@ -697,8 +720,8 @@ function Base.show(io::IO, i::KripkeStructure)
     println(io, "$(typeof(i)) with")
     print(io, "- frame = ")
     Base.show(io, frame(i))
-    maxl = maximum(length.(string.(allworlds(i))))
-    println(io, "- valuations = \n$(join(["\t$(rpad(string(w), maxl)) -> $(inlinedisplay(i.assignment[w]))" for w in allworlds(i)], "\n"))")
+    maxl = maximum(length.(inlinedisplay.(allworlds(i))))
+    println(io, "- valuations = \n$(join(["\t$(rpad(inlinedisplay(w), maxl)) -> $(inlinedisplay(i.assignment[w]))" for w in allworlds(i)], "\n"))")
 end
 
 # TODO maybe this yields the worlds where a certain formula is true...?

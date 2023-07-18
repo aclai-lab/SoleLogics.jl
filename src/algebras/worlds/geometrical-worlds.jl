@@ -101,7 +101,7 @@ struct Interval{T} <: GeometricalWorld
     # Interval(x,y) = x>0 && y>0 && x < y ? new(x,y) : error("Cannot instantiate Interval(x={$x},y={$y})")
 end
 
-Base.show(io::IO, w::Interval) = print(io, "($(w.x)−$(w.y))")
+inlinedisplay(w::Interval) = "($(w.x)−$(w.y))"
 
 goeswithdim(::Type{<:Interval}, ::Val{1}) = true
 
@@ -154,12 +154,6 @@ struct Interval2D{T} <: GeometricalWorld
     Interval2D(x::Tuple{T,T}, y::Tuple{T,T}) where {T} = Interval2D{T}(x,y)
 end
 
-function Base.show(io::IO, w::Interval2D)
-    print(io, "(")
-    print(io, w.x)
-    print(io, "×")
-    print(io, w.y)
-    print(io, ")")
-end
+inlinedisplay(w::Interval2D) = "($(w.x)×$(w.y))"
 
 goeswithdim(::Type{<:Interval2D}, ::Val{2}) = true

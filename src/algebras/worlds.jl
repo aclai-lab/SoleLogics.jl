@@ -50,31 +50,10 @@ See also [`Interval`](@ref), [`Interval2D`](@ref),
 """
 struct OneWorld <: AbstractWorld end
 
-Base.show(io::IO, w::OneWorld) = print(io, "−")
+inlinedisplay(w::OneWorld) = "−"
 
 # A propositional world is compatible with 0-dimensional datasets
 goeswithdim(::Type{OneWorld}, ::Val{0}) = true
-
-############################################################################################
-
-"""
-    struct World{T} <: AbstractWorld
-        name::T
-    end
-
-A world that is only identified by its `name`.
-This can be useful when instantiating the underlying graph of a modal frame
-in an explicit way.
-
-See also [`OneWorld`](@ref), [`AbstractWorld`](@ref).
-"""
-struct World{T} <: AbstractWorld
-    name::T
-end
-
-name(w::World) = w.name
-
-Base.show(io::IO, w::World) = print(io, name(w))
 
 ############################################################################################
 
