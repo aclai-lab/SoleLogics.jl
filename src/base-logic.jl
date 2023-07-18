@@ -25,7 +25,7 @@ function collatetruth(
                      "operator $(typeof(op)) with arity $(arity(op))).")
     else
         return error("Please, provide method collatetruth(::$(typeof(a)), ::$(typeof(op)), " *
-                     "::NTuple{$(arity(op)),$(truthtype(a))}.")
+                     "::NTuple{$(arity(op)),$(truthtype(a))}).")
     end
 end
 
@@ -65,6 +65,7 @@ doc_NEGATION = """
     arity(::Type{typeof(¬)}) = 1
 
 Logical negation (also referred to as complement).
+It can be typed by `\\neg<tab>`.
 
 See also [`NamedOperator`](@ref), [`AbstractOperator`](@ref).
 """
@@ -80,6 +81,7 @@ doc_CONJUNCTION = """
     arity(::Type{typeof(∧)}) = 2
 
 Logical conjunction.
+It can be typed by `\\wedge<tab>`.
 
 See also [`NamedOperator`](@ref), [`AbstractOperator`](@ref).
 """
@@ -95,6 +97,7 @@ doc_DISJUNCTION = """
     arity(::Type{typeof(∨)}) = 2
 
 Logical disjunction.
+It can be typed by `\\vee<tab>`.
 
 See also [`NamedOperator`](@ref), [`AbstractOperator`](@ref).
 """
@@ -110,6 +113,7 @@ doc_IMPLICATION = """
     arity(::Type{typeof(→)}) = 2
 
 Logical implication.
+It can be typed by `\\to<tab>`.
 
 See also [`NamedOperator`](@ref), [`AbstractOperator`](@ref).
 """
@@ -167,14 +171,14 @@ collatetruth(::BooleanAlgebra, ::typeof(∨), (t1, t2)::NTuple{2,Bool}) = max(t1
 
 # The IMPLIES operator, →, falls back to ¬
 function collatetruth(a::BooleanAlgebra, ::typeof(→), (t1, t2)::NTuple{2,Bool})
-    return collatetruth(a, ∨, (collatetruth(a, ¬, t1), t2))
+    return collatetruth(a, ∨, (collatetruth(a, ¬, (t1,)), t2))
 end
 
 
 # Bool values -> Boolean algebra
 istop(t::Bool)::Bool = (t == true)
 isbottom(t::Bool)::Bool = (t == false)
-default_algebra(::Type{Bool}) = BooleanAlgebra{Bool}()
+default_algebra(::Type{Bool}) = BooleanAlgebra()
 
 # # With dense, discrete algebras, floats can be used.
 # istop(t::AbstractFloat)::Bool = isone(t)

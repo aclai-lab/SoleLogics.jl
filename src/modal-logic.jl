@@ -1,5 +1,7 @@
+import Base: show
 using DataStructures: OrderedDict
 using Graphs
+using ThreadSafeDicts
 
 """
     abstract type AbstractWorld end
@@ -64,18 +66,19 @@ function nworlds(fr::AbstractFrame)::Integer
     return error("Please, provide method nworlds(frame::$(typeof(fr))).")
 end
 
-"""
-    initialworld(fr::AbstractFrame{W})::W
+# TODO remove initialworld
+# """
+#     initialworld(fr::AbstractFrame{W})::W
 
-Return the initial world of the frame. Note that not all frame types
-can provide an initial world.
+# Return the initial world of the frame. Note that not all frame types
+# can provide an initial world.
 
-See also [`allworlds`](@ref), [`nworlds`](@ref), [`AbstractFrame`](@ref).
-"""
-function initialworld(fr::AbstractFrame{W})::Union{Nothing,W} where {W<:AbstractWorld}
-    return error("Please, provide method " *
-        "initialworld(frame::$(typeof(fr)))::Union{Nothing,$(worldtype(fr))}.")
-end
+# See also [`allworlds`](@ref), [`nworlds`](@ref), [`AbstractFrame`](@ref).
+# """
+# function initialworld(fr::AbstractFrame{W})::Union{Nothing,W} where {W<:AbstractWorld}
+#     return error("Please, provide method " *
+#         "initialworld(frame::$(typeof(fr)))::Union{Nothing,$(worldtype(fr))}.")
+# end
 
 ############################################################################################
 ##################################### Uni-modal logic ######################################
@@ -132,6 +135,12 @@ accessibles(fr::ExplicitCrispUniModalFrame, w::AbstractWorld) = fr.worlds[neighb
 allworlds(fr::ExplicitCrispUniModalFrame) = fr.worlds
 nworlds(fr::ExplicitCrispUniModalFrame) = length(fr.worlds)
 
+function Base.show(io::IO, fr::ExplicitCrispUniModalFrame)
+    println(io, "$(typeof(fr)) with")
+    println(io, "- worlds = $(fr.worlds)")
+    maxl = maximum(length.(string.(fr.worlds)))
+    println(io, "- accessibles = \n$(join(["\t$(rpad(string(w), maxl)) -> [$(join(accessibles(fr, w), ", "))]" for w in fr.worlds], "\n"))")
+end
 
 ############################################################################################
 #################################### Multi-modal logic #####################################
@@ -466,16 +475,16 @@ include("algebras/frames.jl")
 ############################################################################################
 ############################################################################################
 
-"""
-    abstract type AbstractModalAssignment{W<:AbstractWorld,A,T<:TruthValue} end
+# """
+#     abstract type AbstractModalAssignment{W<:AbstractWorld,A,T<:TruthValue} end
 
-A modal assignment is a mapping from `World`s to propositional assignments;
-or equivalently, a mapping from `World`s, `Proposition`s of atom type `A`
-to truth values of type `T`.
+# A modal assignment is a mapping from `World`s to propositional assignments;
+# or equivalently, a mapping from `World`s, `Proposition`s of atom type `A`
+# to truth values of type `T`.
 
-See also [`AbstractAssignment`](@ref), [`AbstractFrame`](@ref).
-"""
-abstract type AbstractModalAssignment{W<:AbstractWorld,A,T<:TruthValue} end
+# See also [`AbstractAssignment`](@ref), [`AbstractFrame`](@ref).
+# """
+# abstract type AbstractModalAssignment{W<:AbstractWorld,A,T<:TruthValue} <: AbstractDict{W,<:AbstractAssignment{A,T}} end
 
 # """
 # TODO
@@ -484,7 +493,7 @@ abstract type AbstractModalAssignment{W<:AbstractWorld,A,T<:TruthValue} end
 #     return error("Please, provide ...")
 # end
 
-# struct GenericExplicitAssignment{W<:AbstractWorld,A,T<:TruthValue} <: AbstractModalAssignment{W,A,T}
+# struct GenericModalAssignment{W<:AbstractWorld,A,T<:TruthValue} <: AbstractModalAssignment{W,A,T}
 #     dict::Dict{W,AbstractAssignment{A,T}}
 # end
 
@@ -516,7 +525,7 @@ abstract type AbstractKripkeStructure{
 } <: AbstractInterpretation{A,T} end
 
 function check(
-    ::Proposition{A},
+    ::Proposition,
     ::AbstractKripkeStructure{W,A,T},
     ::W,
 )::T where {W<:AbstractWorld,A,T<:TruthValue}
@@ -526,7 +535,7 @@ end
 function check(
     ::AbstractFormula,
     ::AbstractKripkeStructure{W,A,T},
-    ::W,
+    ::Union{W,Nothing},
 )::T where {W<:AbstractWorld,A,T<:TruthValue}
     return error("Please, provide ...")
 end
@@ -560,7 +569,92 @@ worldtype(a::AbstractKripkeStructure) = worldtype(typeof(a))
 accessibles(i::AbstractKripkeStructure, args...) = accessibles(frame(i), args...)
 allworlds(i::AbstractKripkeStructure, args...) = allworlds(frame(i), args...)
 nworlds(i::AbstractKripkeStructure) = nworlds(frame(i))
-initialworld(i::AbstractKripkeStructure) = initialworld(frame(i))
+# initialworld(i::AbstractKripkeStructure) = initialworld(frame(i))
+
+function check(
+    φ::SyntaxTree,
+    i::AbstractKripkeStructure{W,A,T},
+    w::Union{Nothing,<:AbstractWorld} = nothing; # TODO remove defaulting
+    use_memo::Union{Nothing,AbstractDict{<:AbstractFormula,<:WorldSet}} = nothing,
+    perform_normalization::Bool = true,
+    memo_max_height::Union{Nothing,Int} = nothing,
+)::T where {W<:AbstractWorld,A,T<:TruthValue}
+
+    if isnothing(w)
+        if nworlds(frame(i)) == 1
+            w = first(allworlds(frame(i)))
+        end
+    end
+    @assert isgrounded(φ) || !isnothing(w) "Please, specify a world in order " *
+        "to check non-grounded formula: $(syntaxstring(φ))."
+
+    setformula(memo_structure::AbstractDict{<:AbstractFormula}, φ::AbstractFormula, val) = memo_structure[tree(φ)] = val
+    readformula(memo_structure::AbstractDict{<:AbstractFormula}, φ::AbstractFormula) = memo_structure[tree(φ)]
+    hasformula(memo_structure::AbstractDict{<:AbstractFormula}, φ::AbstractFormula) = haskey(memo_structure, tree(φ))
+
+    if perform_normalization
+        φ = normalize(φ; profile = :modelchecking, allow_proposition_flipping = false)
+    end
+
+    memo_structure = begin
+        if isnothing(use_memo)
+            ThreadSafeDict{SyntaxTree,WorldSet{W}}()
+        else
+            use_memo
+        end
+    end
+
+    if !isnothing(memo_max_height)
+        forget_list = Vector{SyntaxTree}()
+    end
+
+    fr = frame(i)
+
+    # TODO try lazily
+    (_f, _c) = filter, collect
+    # (_f, _c) = Iterators.filter, identity
+
+    if !hasformula(memo_structure, φ)
+        for ψ in unique(subformulas(φ))
+            if !isnothing(memo_max_height) && height(ψ) > memo_max_height
+                push!(forget_list, ψ)
+            end
+
+            if !hasformula(memo_structure, ψ)
+                tok = token(ψ)
+
+                worldset = begin
+                    if tok isa AbstractOperator
+                        _c(collateworlds(fr, tok, map(f->readformula(memo_structure, f), children(ψ))))
+                    elseif tok isa Proposition
+                        _f(_w->check(tok, i, _w), _c(allworlds(fr)))
+                    else
+                        error("Unexpected token encountered in _check: $(typeof(tok))")
+                    end
+                end
+                setformula(memo_structure, ψ, Vector{W}(worldset))
+            end
+            # @show syntaxstring(ψ), readformula(memo_structure, ψ)
+        end
+    end
+
+    if !isnothing(memo_max_height)
+        for ψ in forget_list
+            delete!(memo_structure, ψ)
+        end
+    end
+
+    ret = begin
+        if isnothing(w)
+            length(readformula(memo_structure, φ)) > 0
+        else
+            w in readformula(memo_structure, φ)
+        end
+    end
+
+    return ret
+end
+
 
 ############################################################################################
 
@@ -570,7 +664,7 @@ initialworld(i::AbstractKripkeStructure) = initialworld(frame(i))
         A,
         T<:TruthValue,
         FR<:AbstractFrame{W},
-        AS<:AbstractModalAssignment{W,A,T}
+        AS<:AbstractDict{W,A where A<:AbstractAssignment{A,T}}
     } <: AbstractKripkeStructure{W,A,T,FR}
         frame::FR
         assignment::AS
@@ -586,20 +680,25 @@ struct KripkeStructure{
     A,
     T<:TruthValue,
     FR<:AbstractFrame{W},
-    AS<:AbstractModalAssignment{W,A,T}
+    AS<:AbstractAssignment{A,T},
+    MAS<:AbstractDict{W,AS}
 } <: AbstractKripkeStructure{W,A,T,FR}
     frame::FR
-    assignment::AS
+    assignment::MAS
 end
 
-function check(f::AbstractFormula, i::KripkeStructure{W,A,T}, w::W)::T where {W<:AbstractWorld,A,T<:TruthValue} end
+frame(i::KripkeStructure) = i.frame
 
-function check(f::AbstractFormula, i::KripkeStructure{W,A,T})::T where {W<:AbstractWorld,A,T<:TruthValue}
-    check(f, i, initialworld(i))
+function check(p::Proposition, i::KripkeStructure{W}, w::W) where {W<:AbstractWorld}
+    check(p, i.assignment[w])
 end
 
-function check(p::Proposition{A}, i::KripkeStructure{W,A}, w::W) where {W<:AbstractWorld,A}
-    check(p, i.assignment, w)
+function Base.show(io::IO, i::KripkeStructure)
+    println(io, "$(typeof(i)) with")
+    print(io, "- frame = ")
+    Base.show(io, frame(i))
+    maxl = maximum(length.(string.(allworlds(i))))
+    println(io, "- valuations = \n$(join(["\t$(rpad(string(w), maxl)) -> [$(join(i.assignment[w], ", "))]" for w in allworlds(i)], "\n"))")
 end
 
 # TODO maybe this yields the worlds where a certain formula is true...?

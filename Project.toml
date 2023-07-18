@@ -14,17 +14,19 @@ Reexport = "189a3867-3050-52da-a836-e630ba90ab69"
 Revise = "295af30f-e4ad-537b-8983-00126c2a3abe"
 SoleBase = "4475fa32-7023-44a0-aa70-4813b230e492"
 StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
+ThreadSafeDicts = "4239201d-c60e-5e0a-9702-85d713665ba7"
 
 [compat]
 DataStructures = "0.18"
 Dictionaries = "0.3"
+Graphs = "1.8"
 IterTools = "1"
 Lazy = "0.15"
 Reexport = "1"
 Revise = "3"
 SoleBase = "0.11"
-Graphs = "1.8"
 StatsBase = "0.34"
+ThreadSafeDicts = "0.1.0"
 julia = "1"
 
 [extras]
