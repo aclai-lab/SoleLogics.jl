@@ -9,54 +9,53 @@ import StatsBase: sample
 """
     function Base.rand(
         [rng::AbstractRNG = Random.GLOBAL_RNG, ]
-        a::AbstractAlphabet,
+        alphabet,
         args...;
         kwargs...
     )::Proposition
 
-Randomly sample a proposition from an alphabet `a`, according to a uniform distribution.
+Randomly sample a proposition from an `alphabet`, according to a uniform distribution.
 
 # Implementation
-If the alphabet is finite, the function defaults to `rand(rng, propositions(alphabet))`;
+If the `alphabet` is finite, the function defaults to `rand(rng, propositions(alphabet))`;
 otherwise, it must be implemented, and additional keyword arguments should be provided
 in order to limit the (otherwise infinite) sampling domain.
 
 See also
-[`ScalarCondition`](@ref),
-[`ScalarMetaCondition`](@ref),
+[`isfinite`](@ref),
 [`AbstractAlphabet'](@ref).
 """
-function Base.rand(a::AbstractAlphabet, args...; kwargs...)
-    Base.rand(Random.GLOBAL_RNG, a, args...; kwargs...)
+function Base.rand(alphabet, args...; kwargs...)
+    Base.rand(Random.GLOBAL_RNG, alphabet, args...; kwargs...)
 end
 
 function Base.rand(
     rng::AbstractRNG,
-    a::AbstractAlphabet,
+    alphabet::AbstractAlphabet,
     args...;
     kwargs...
 )
-    if isfinite(a)
-        Base.rand(rng, propositions(a), args...; kwargs...)
+    if isfinite(alphabet)
+        Base.rand(rng, propositions(alphabet), args...; kwargs...)
     else
-        error("Please, provide method Base.rand(rng::AbstractRNG, a::$(typeof(a)), args...; kwargs...).")
+        error("Please, provide method Base.rand(rng::AbstractRNG, alphabet::$(typeof(alphabet)), args...; kwargs...).")
     end
 end
 
-function StatsBase.sample(a::AbstractAlphabet, args...; kwargs...)
-    StatsBase.sample(Random.GLOBAL_RNG, a, args...; kwargs...)
+function StatsBase.sample(alphabet::AbstractAlphabet, args...; kwargs...)
+    StatsBase.sample(Random.GLOBAL_RNG, alphabet, args...; kwargs...)
 end
 
 function StatsBase.sample(
     rng::AbstractRNG,
-    a::AbstractAlphabet,
+    alphabet::AbstractAlphabet,
     args...;
     kwargs...
 )
-    if isfinite(a)
-        StatsBase.sample(rng, propositions(a), args...; kwargs...)
+    if isfinite(alphabet)
+        StatsBase.sample(rng, propositions(alphabet), args...; kwargs...)
     else
-        error("Please, provide method StatsBase.sample(rng::AbstractRNG, a::$(typeof(a)), args...; kwargs...).")
+        error("Please, provide method StatsBase.sample(rng::AbstractRNG, alphabet::$(typeof(alphabet)), args...; kwargs...).")
     end
 end
 
@@ -90,8 +89,6 @@ This method for must be implemented, and additional keyword arguments should be 
 in order to limit the (otherwise infinite) sampling domain.
 
 See also
-[`ScalarCondition`](@ref),
-[`ScalarMetaCondition`](@ref),
 [`AbstractAlphabet'](@ref).
 """
 function StatsBase.sample(g::AbstractGrammar, args...; kwargs...)
@@ -135,7 +132,7 @@ end
 doc_randformula = """
     randformula(
         height::Integer,
-        alphabet::AbstractAlphabet,
+        alphabet,
         operators::Vector{<:AbstractOperator};
         rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG
     )::SyntaxTree
@@ -148,7 +145,7 @@ doc_randformula = """
 
     function randbaseformula(
         height::Integer,
-        alphabet::AbstractAlphabet,
+        alphabet,
         operators::Vector{<:AbstractOperator};
         rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG
     )::Formula
@@ -162,7 +159,7 @@ julia> syntaxstring(randformula(4, ExplicitAlphabet([1,2]), [NEGATION, CONJUNCTI
 "¬((¬(¬(2))) → ((1 → 2) → (1 → 2)))"
 ```
 
-See also [`randbaseformula`](@ref), [`SyntaxTree`](@ref).
+See also [`AbstractAlphabet`](@ref), [`SyntaxTree`](@ref).
 """
 
 """$(doc_randformula)"""
@@ -183,10 +180,11 @@ end
 """$(doc_randformula)"""
 function randbaseformula(
     height::Integer,
-    alphabet::AbstractAlphabet,
+    alphabet,
     operators::Vector{<:AbstractOperator};
     kwargs...
 )::Formula
+    alphabet = convert(AbstractAlphabet, alphabet)
     baseformula(
         randformula(height, alphabet, operators; kwargs...);
         alphabet = alphabet,
@@ -197,12 +195,13 @@ end
 """$(doc_randformula)"""
 function randformula(
     height::Integer,
-    alphabet::AbstractAlphabet,
+    alphabet,
     operators::Vector{<:AbstractOperator};
     modaldepth::Integer = height,
     rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG,
     opweights::Union{AbstractWeights,AbstractVector{<:Real},Nothing} = nothing
 )::SyntaxTree
+    alphabet = convert(AbstractAlphabet, alphabet)
     # TODO this pattern is so common that we may want to move this code to a util function,
     # and move this so that it is the first thing that a randomic function (e.g., randformula) does.
     rng = (rng isa AbstractRNG) ? rng : Random.MersenneTwister(rng)

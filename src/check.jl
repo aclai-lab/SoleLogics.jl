@@ -210,24 +210,24 @@ function normalize(
         tok, ch = token(newt), children(newt)
         if simplify_constants && tok isa AbstractOperator
             if (tok == ∨) && arity(tok) == 2
-                if     token(ch[1]) == ⊥  ch[2]
-                elseif token(ch[2]) == ⊥  ch[1]
-                elseif token(ch[1]) == ⊤  SyntaxTree(⊤)
-                elseif token(ch[2]) == ⊤  SyntaxTree(⊤)
+                if     token(ch[1]) == ⊥  ch[2]          # ⊥ ∨ φ ≡ φ
+                elseif token(ch[2]) == ⊥  ch[1]          # φ ∨ ⊥ ≡ φ
+                elseif token(ch[1]) == ⊤  SyntaxTree(⊤)  # ⊤ ∨ φ ≡ ⊤
+                elseif token(ch[2]) == ⊤  SyntaxTree(⊤)  # φ ∨ ⊤ ≡ ⊤
                 else                      newt
                 end
             elseif (tok == ∧) && arity(tok) == 2
-                if     token(ch[1]) == ⊥  SyntaxTree(⊥)
-                elseif token(ch[2]) == ⊥  SyntaxTree(⊥)
-                elseif token(ch[1]) == ⊤  ch[2]
-                elseif token(ch[2]) == ⊤  ch[1]
+                if     token(ch[1]) == ⊥  SyntaxTree(⊥)  # ⊥ ∧ φ ≡ ⊥
+                elseif token(ch[2]) == ⊥  SyntaxTree(⊥)  # φ ∧ ⊥ ≡ ⊥
+                elseif token(ch[1]) == ⊤  ch[2]          # ⊤ ∧ φ ≡ φ
+                elseif token(ch[2]) == ⊤  ch[1]          # φ ∧ ⊤ ≡ φ
                 else                      newt
                 end
             elseif (tok == →) && arity(tok) == 2
-                if     token(ch[1]) == ⊥  SyntaxTree(⊥)
-                elseif token(ch[2]) == ⊥  SyntaxTree(⊥)
-                elseif token(ch[1]) == ⊤  ch[2]
-                elseif token(ch[2]) == ⊤  ch[1]
+                if     token(ch[1]) == ⊥  SyntaxTree(⊤)       # ⊥ → φ ≡ ⊤
+                elseif token(ch[2]) == ⊥  _normalize(¬ch[1])  # φ → ⊥ ≡ ¬φ
+                elseif token(ch[1]) == ⊤  ch[2]               # ⊤ → φ ≡ φ
+                elseif token(ch[2]) == ⊤  SyntaxTree(⊤)       # φ → ⊤ ≡ ⊤
                 else                      SyntaxTree(∨, _normalize(¬ch[1]), ch[2])
                 end
             elseif (tok == ¬) && arity(tok) == 1
@@ -281,6 +281,9 @@ function normalize(
             if tok isa AbstractOperator && iscommutative(tok) && arity(tok) > 1
                 ch = children(LeftmostLinearForm(newt, tok))
                 ch = Vector(sort(collect(_normalize.(ch)), lt=_isless))
+                if tok in [∧,∨] # TODO create trait for this behavior: p ∧ p ∧ p ∧ q   -> p ∧ q
+                    ch = unique(ch)
+                end
                 tree(LeftmostLinearForm(tok, ch))
             else
                 SyntaxTree(tok, ch)
@@ -343,7 +346,7 @@ function collateworlds(
                      "operator $(typeof(op)) with arity $(arity(op))).")
     else
         return error("Please, provide method collateworlds(::$(typeof(fr)), " *
-                     "::$(typeof(op)), ::NTuple{$(arity(op)), $(AbstractWorldSet{W})}.")
+                     "::$(typeof(op)), ::NTuple{$(arity(op)), $(AbstractWorldSet{W})}).")
     end
 end
 

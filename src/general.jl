@@ -96,7 +96,7 @@ function syntaxstring(tok::AbstractSyntaxToken; kwargs...)::String
 end
 
 # Helper
-syntaxstring(atom::Union{String,Number}; kwargs...) = string(atom)
+syntaxstring(atom::Union{AbstractString,Number,AbstractChar}; kwargs...) = string(atom)
 
 ############################################################################################
 ############################################################################################
@@ -144,8 +144,8 @@ atomtype(::Type{Proposition{A}}) where {A} = A
 # Helpers
 Base.convert(::Type{P}, p::Proposition) where {P<:Proposition} = P(p)
 Base.convert(::Type{P}, a) where {P<:Proposition} = P(a)
-# Base.promote_rule(::Type{Union{String,Number}}, ::Type{<:Proposition}) = Proposition
-# Base.promote_rule(::Type{<:Proposition}, ::Type{Union{String,Number}}) = Proposition
+# Base.promote_rule(::Type{Union{AbstractString,Number,AbstractChar}}, ::Type{<:Proposition}) = Proposition
+# Base.promote_rule(::Type{<:Proposition}, ::Type{Union{AbstractString,Number,AbstractChar}}) = Proposition
 
 syntaxstring(p::Proposition; kwargs...) = syntaxstring(atom(p); kwargs...)
 
@@ -838,7 +838,7 @@ function Base.in(p::Proposition, a::AbstractAlphabet)::Bool
 end
 
 # Helper
-function Base.in(atom::Union{String,Number}, a::AbstractAlphabet)
+function Base.in(atom::Union{AbstractString,Number,AbstractChar}, a::AbstractAlphabet)
     @warn "Please, use Base.in(Proposition($(atom)), alphabet::$(typeof(a))) instead of " *
         "Base.in($(atom), alphabet::$(typeof(a)))"
     Base.in(Proposition(atom), a)
@@ -898,6 +898,7 @@ struct ExplicitAlphabet{A} <: AbstractAlphabet{A}
 end
 propositions(a::ExplicitAlphabet) = a.propositions
 
+Base.convert(::Type{AbstractAlphabet}, alphabet::Vector{<:Proposition}) = ExplicitAlphabet(alphabet)
 """
     struct AlphabetOfAny{A} <: AbstractAlphabet{A} end
 
@@ -1203,6 +1204,7 @@ doc_TOP = """
     const ⊤ = TOP
 
 Canonical truth operator representing the value `true`.
+It can be typed by `\\top<tab>`.
 
 See also [`BOTTOM`](@ref), [`AbstractTruthOperator`](@ref), [`TruthValue`](@ref).
 """
@@ -1221,6 +1223,7 @@ doc_BOTTOM = """
     const ⊥ = BOTTOM
 
 Canonical truth operator representing the value `false`.
+It can be typed by `\\bot<tab>`.
 
 See also [`TOP`](@ref), [`AbstractTruthOperator`](@ref), [`TruthValue`](@ref).
 """

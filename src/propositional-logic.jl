@@ -117,6 +117,17 @@ function Base.haskey(i::AbstractAssignment, a)::Bool
     # end
 end
 
+# # Implementation
+
+# With propositional logic, the fallback method extracts the formula's syntax tree and checks it using the logic's
+# algebra.
+
+#     check(
+#         a::AbstractAlgebra,
+#         tree::SyntaxTree,
+#         i::AbstractAssignment{A,T},
+#         args...
+#     )::T where {A,T<:TruthValue}
 """
     check(
         f::AbstractFormula,
@@ -124,25 +135,14 @@ end
         args...
     )::T where {A,T<:TruthValue}
 
-Check a logical formula on an assigment.
-This function returns a truth value of the assigment.
+Check a logical formula on an assigment, returning a truth value.
+The (finite) [model checking](https://en.wikipedia.org/wiki/Model_checking) algorithm depends
+on the given logic.
 
 See also
 [`TruthDict`](@ref),
 [`SyntaxTree`](@ref), [`AbstractFormula`](@ref),
 [`AbstractAlgebra`](@ref), [`AbstractInterpretation`](@ref).
-
-# Implementation
-
-The fallback method extracts the formula's syntax tree and checks it using the logic's
-algebra.
-
-    check(
-        a::AbstractAlgebra,
-        tree::SyntaxTree,
-        i::AbstractAssignment{A,T},
-        args...
-    )::T where {A,T<:TruthValue}
 """
 check(f::Formula, i::AbstractAssignment, args...) = check(algebra(f), tree(f), i, args...)
 
