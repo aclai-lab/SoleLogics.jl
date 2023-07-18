@@ -184,6 +184,7 @@ If prompted for the value of an unknown proposition, it throws an error.
 # Examples
 ```julia-repl
 julia> TruthDict(1:4)
+TruthDict with values:
 ┌───────────────────────┬────────┐
 │                  Keys │ Values │
 │    Proposition{Int64} │   Bool │
@@ -196,6 +197,7 @@ julia> TruthDict(1:4)
 
 
 julia> t1 = TruthDict(1:4, false); t1[5] = true; t1
+TruthDict with values:
 ┌───────────────────────┬────────┐
 │                  Keys │ Values │
 │    Proposition{Int64} │   Bool │
@@ -209,6 +211,7 @@ julia> t1 = TruthDict(1:4, false); t1[5] = true; t1
 
 
 julia> t2 = TruthDict(["a" => true, "b" => false, "c" => true])
+TruthDict with values:
 ┌──────────────────────────┬────────┐
 │                     Keys │ Values │
 │      Proposition{String} │   Bool │
@@ -296,6 +299,7 @@ function Base.show(
     io::IO,
     i::TruthDict{A,T,D},
 ) where {A,T<:TruthValue,D<:AbstractDict{<:Proposition{<:A},T}}
+    println(io, "TruthDict with values:")
     pretty_table(io, i.truth)
 end
 
@@ -328,6 +332,7 @@ it returns `default_truth`.
 # Examples
 ```julia-repl
 julia> t1 = DefaultedTruthDict(string.(1:4), false); t1["5"] = false; t1
+DefaultedTruthDict with default truth `false` with values:
 ┌──────────────────────────┬────────┐
 │                     Keys │ Values │
 │      Proposition{String} │   Bool │
@@ -419,6 +424,7 @@ function Base.show(
     io::IO,
     i::DefaultedTruthDict{A,T,D},
 ) where {A,T<:TruthValue,D<:AbstractDict{<:Proposition{<:A},T}}
+    println(io, "DefaultedTruthDict with default truth `$(i.default_truth)` and values:")
     pretty_table(io, i.truth)
 end
 
