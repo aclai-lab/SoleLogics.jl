@@ -50,7 +50,7 @@ include("base-logic.jl")
 
 export propositionallogic
 
-export TruthTable, DefaultedTruthTable
+export TruthDict, DefaultedTruthDict
 
 include("propositional-logic.jl")
 

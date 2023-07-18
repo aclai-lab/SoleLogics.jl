@@ -22,10 +22,10 @@ v0 = ["a", "c"]
 @test !check(parsebaseformula("a ∧ ¬b"), ["a", "b"])
 @test check(parsebaseformula("a ∧ ¬b"), ["a"])
 
-@test_nowarn TruthTable(1:4)
-@test_nowarn TruthTable(1:4, false)
+@test_nowarn TruthDict(1:4)
+@test_nowarn TruthDict(1:4, false)
 
-t0 = @test_nowarn TruthTable(["a" => true, "b" => false, "c" => true])
+t0 = @test_nowarn TruthDict(["a" => true, "b" => false, "c" => true])
 @test haskey(t0, Proposition("a"))
 @test haskey(t0, Proposition("b"))
 @test haskey(t0, "a")
@@ -34,7 +34,7 @@ t0 = @test_nowarn TruthTable(["a" => true, "b" => false, "c" => true])
 @test !check(Proposition("b"), t0)
 @test check(parsebaseformula("a ∨ b"), t0)
 
-t1 = @test_nowarn TruthTable([1 => true, 2 => false, 3 => true])
+t1 = @test_nowarn TruthDict([1 => true, 2 => false, 3 => true])
 
 @test_nowarn t1[2] = false
 @test_nowarn t1[Proposition(2)]
@@ -47,7 +47,7 @@ t1 = @test_nowarn TruthTable([1 => true, 2 => false, 3 => true])
 @test_throws MethodError t1[2.0] = false
 @test_throws MethodError t1[10.0] = false
 
-t2 = @test_nowarn TruthTable(Pair{Real,Bool}[1.0 => true, 2 => true, 3 => true])
+t2 = @test_nowarn TruthDict(Pair{Real,Bool}[1.0 => true, 2 => true, 3 => true])
 @test haskey(t2, Proposition(1))
 @test !xor(haskey(t2, Proposition(1)), isequal(1,1.0)) # Weird, but is consistent with the behavior: isequal(1,1.0)
 # [isequal(Proposition(1.0), k) for k in keys(t2)]
@@ -62,25 +62,25 @@ t2 = @test_nowarn TruthTable(Pair{Real,Bool}[1.0 => true, 2 => true, 3 => true])
 @test_nowarn t2[Proposition(1.0)]
 
 
-@test_nowarn TruthTable([(Proposition(1.0), true), (Proposition(2), true), (Proposition(3), true)])
-@test_nowarn TruthTable([(1.0, true), (2, true), (3, true)])
-@test_nowarn TruthTable([Proposition(1.0) => true, Proposition(2) => true, Proposition(3) => true])
-@test_nowarn TruthTable([(Proposition(1.0), true), (Proposition(2), true), (Proposition(3), true)])
-@test_nowarn TruthTable(Dict([Proposition(1.0) => true, Proposition(2) => true, Proposition(3) => true]))
-@test_nowarn TruthTable(1.0 => true)
-@test_nowarn TruthTable(Proposition(1.0) => true)
+@test_nowarn TruthDict([(Proposition(1.0), true), (Proposition(2), true), (Proposition(3), true)])
+@test_nowarn TruthDict([(1.0, true), (2, true), (3, true)])
+@test_nowarn TruthDict([Proposition(1.0) => true, Proposition(2) => true, Proposition(3) => true])
+@test_nowarn TruthDict([(Proposition(1.0), true), (Proposition(2), true), (Proposition(3), true)])
+@test_nowarn TruthDict(Dict([Proposition(1.0) => true, Proposition(2) => true, Proposition(3) => true]))
+@test_nowarn TruthDict(1.0 => true)
+@test_nowarn TruthDict(Proposition(1.0) => true)
 
-@test_nowarn DefaultedTruthTable([(Proposition(1.0), true), (Proposition(2), true), (Proposition(3), true)])
-@test_nowarn DefaultedTruthTable([(1.0, true), (2, true), (3, true)])
-@test_nowarn DefaultedTruthTable([Proposition(1.0) => true, Proposition(2) => true, Proposition(3) => true])
-@test_nowarn DefaultedTruthTable([(Proposition(1.0), true), (Proposition(2), true), (Proposition(3), true)])
-@test_nowarn DefaultedTruthTable(Dict([Proposition(1.0) => true, Proposition(2) => true, Proposition(3) => true]))
-@test_nowarn DefaultedTruthTable(1.0 => true)
-@test_nowarn DefaultedTruthTable(Proposition(1.0) => true)
+@test_nowarn DefaultedTruthDict([(Proposition(1.0), true), (Proposition(2), true), (Proposition(3), true)])
+@test_nowarn DefaultedTruthDict([(1.0, true), (2, true), (3, true)])
+@test_nowarn DefaultedTruthDict([Proposition(1.0) => true, Proposition(2) => true, Proposition(3) => true])
+@test_nowarn DefaultedTruthDict([(Proposition(1.0), true), (Proposition(2), true), (Proposition(3), true)])
+@test_nowarn DefaultedTruthDict(Dict([Proposition(1.0) => true, Proposition(2) => true, Proposition(3) => true]))
+@test_nowarn DefaultedTruthDict(1.0 => true)
+@test_nowarn DefaultedTruthDict(Proposition(1.0) => true)
 
-@test !check(parsebaseformula("a ∧ b"), DefaultedTruthTable(["a"]))
-@test !check(parsebaseformula("a ∧ ¬b"), DefaultedTruthTable(["a", "b"]))
-@test check(parsebaseformula("a ∧ ¬b"), DefaultedTruthTable(["a"]))
+@test !check(parsebaseformula("a ∧ b"), DefaultedTruthDict(["a"]))
+@test !check(parsebaseformula("a ∧ ¬b"), DefaultedTruthDict(["a", "b"]))
+@test check(parsebaseformula("a ∧ ¬b"), DefaultedTruthDict(["a"]))
 
 #  normalization: negations compression ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

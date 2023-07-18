@@ -49,11 +49,13 @@ The following `kwargs` are currently supported:
 - `function_notation = false::Bool`: when set to `true`, it forces the use of
 function notation for binary operators.
 See [here](https://en.wikipedia.org/wiki/Infix_notation).
+- `remove_redundant_parentheses = true::Bool`: when set to `false`, it prints a syntaxstring
+where each syntactical element is wrapped in parentheses.
 
 # Examples
 ```julia-repl
 julia> syntaxstring((parsebaseformula("◊((p∧s)→q)")))
-"(◊(p ∧ s)) → q"
+"◊(p ∧ s → q)"
 
 julia> syntaxstring((parsebaseformula("◊((p∧s)→q)")); function_notation = true)
 "→(◊(∧(p, s)), q)"
@@ -642,7 +644,12 @@ end
 Base.hash(a::SyntaxTree) = Base.hash(syntaxstring(a))
 
 # Refer to syntaxstring(tok::AbstractSyntaxToken; kwargs...) for documentation
-function syntaxstring(t::SyntaxTree; function_notation = false, kwargs...)
+function syntaxstring(
+    t::SyntaxTree;
+    function_notation = false,
+    remove_redundant_parentheses = true,
+    kwargs...
+)
     lpar = "("
     rpar = ")"
 
@@ -664,8 +671,9 @@ function syntaxstring(t::SyntaxTree; function_notation = false, kwargs...)
         end
 
         for c in children(t)
-            carity = arity(token(c))
-            if carity <= 1 || (fnotation == false && carity == tarity-1)
+            tc = token(c)
+            carity = arity(tc)
+            if carity <= 1 || (fnotation == false && (carity == tarity-1))
                 return true
             end
         end
@@ -678,7 +686,8 @@ function syntaxstring(t::SyntaxTree; function_notation = false, kwargs...)
         syntaxstring(tok; function_notation = function_notation, kwargs...)
     elseif arity(tok) == 2 && !function_notation
 
-        if (_canavoid_newscope(t; fnotation=function_notation))
+        if (remove_redundant_parentheses &&
+            _canavoid_newscope(t; fnotation=function_notation))
             lpar, rpar = "", ""
         end
 
@@ -688,7 +697,8 @@ function syntaxstring(t::SyntaxTree; function_notation = false, kwargs...)
         # Infix notation for binary operator
         "$(f(children(t)[1])) $(syntaxstring(tok; function_notation = function_notation, kwargs...)) $(f(children(t)[2]))"
     else
-        if (_canavoid_newscope(t; fnotation=function_notation))
+        if (remove_redundant_parentheses &&
+            _canavoid_newscope(t; fnotation=function_notation))
             lpar, rpar = "", ""
         end
 
