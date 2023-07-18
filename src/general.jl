@@ -671,9 +671,9 @@ function syntaxstring(
         end
 
         for c in children(t)
-            tc = token(c)
-            carity = arity(tc)
-            if carity <= 1 || (fnotation == false && (carity == tarity-1))
+            carity = arity(token(c))
+            if carity <= tarity
+                # Suspiciously, this condition is enough!
                 return true
             end
         end
