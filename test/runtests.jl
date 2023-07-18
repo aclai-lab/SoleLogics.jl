@@ -17,6 +17,7 @@ test_suites = [
         "general.jl",
         "parse.jl",
         "random.jl",
+        "normalize.jl",
     ]),
 
     ("Formulas", [
