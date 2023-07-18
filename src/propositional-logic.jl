@@ -117,6 +117,11 @@ function Base.haskey(i::AbstractAssignment, a)::Bool
     # end
 end
 
+
+function inlinedisplay(i::AbstractAssignment)
+    return error("Please, provide method inlinedisplay(::$(typeof(i)))::String.")
+end
+
 # # Implementation
 
 # With propositional logic, the fallback method extracts the formula's syntax tree and checks it using the logic's
@@ -295,6 +300,11 @@ end
 Base.getindex(i::TruthDict{AA}, p::Proposition) where {AA} = Base.getindex(i.truth, p)
 Base.haskey(i::TruthDict{AA}, p::Proposition) where {AA} = Base.haskey(i.truth, p)
 
+
+function inlinedisplay(i::TruthDict)
+    "TruthDict([$(join(["$(syntaxstring(p)) => $t" for (p,t) in i.truth], ", "))])"
+end
+
 function Base.show(
     io::IO,
     i::TruthDict{A,T,D},
@@ -419,6 +429,10 @@ function Base.getindex(i::DefaultedTruthDict{AA}, p::Proposition) where {AA}
     return Base.haskey(i.truth, p) ? Base.getindex(i.truth, p) : i.default_truth
 end
 Base.haskey(i::DefaultedTruthDict{AA}, p::Proposition) where {AA} = true
+
+function inlinedisplay(i::DefaultedTruthDict)
+    "DefaultedTruthDict([$(join(["$(syntaxstring(p)) => $t" for (p,t) in i.truth], ", "))], $(i.default_truth))"
+end
 
 function Base.show(
     io::IO,

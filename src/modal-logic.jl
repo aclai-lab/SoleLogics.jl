@@ -698,7 +698,7 @@ function Base.show(io::IO, i::KripkeStructure)
     print(io, "- frame = ")
     Base.show(io, frame(i))
     maxl = maximum(length.(string.(allworlds(i))))
-    println(io, "- valuations = \n$(join(["\t$(rpad(string(w), maxl)) -> [$(join(i.assignment[w], ", "))]" for w in allworlds(i)], "\n"))")
+    println(io, "- valuations = \n$(join(["\t$(rpad(string(w), maxl)) -> $(inlinedisplay(i.assignment[w]))" for w in allworlds(i)], "\n"))")
 end
 
 # TODO maybe this yields the worlds where a certain formula is true...?
