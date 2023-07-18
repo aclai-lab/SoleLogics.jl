@@ -260,7 +260,7 @@ s = "¬((¬(([G](⟨G⟩(¬((¬([G](⟨G⟩(⟨G⟩(q))))) → (¬(⟨G⟩((¬(q
     "(⟨G⟩(¬(((⟨G⟩(q)) ∧ (⟨G⟩(q))) → (⟨G⟩(q → p)))))) ∧ ([G](¬(((¬(¬(q))) → (¬(q → p))" *
     ") ∧ (([G](p → p)) → ((⟨G⟩(p)) → (q → p)))))))))))"
 f = parsetree(s)
-@test_broken syntaxstring(f) == syntaxstring(parsetree(syntaxstring(f)))
+@test syntaxstring(f) == syntaxstring(parsetree(syntaxstring(f)))
 @test syntaxstring(f; function_notation = true) ==
     syntaxstring(
         parseformula(
@@ -277,7 +277,7 @@ s = "◊((¬((◊(◊(((¬(¬(q))) ∧ ((p ∧ p) ∨ (¬(p)))) → (¬(□(¬(q
     "q)))))) → ((□(◊(¬(◊(¬(p)))))) ∨ ((□(□((q → p) ∧ (p ∧ p)))) ∨ (((◊(◊(p))) → ((p →" *
     "q) ∧ (p → q))) ∧ (□((p ∨ q) ∧ (◊(q))))))))))"
 f = parsetree(s)
-@test_broken syntaxstring(f) == syntaxstring(parsetree(syntaxstring(f)))
+@test syntaxstring(f) == syntaxstring(parsetree(syntaxstring(f)))
 @test syntaxstring(f; function_notation = true) ==
     syntaxstring(
         parseformula(
