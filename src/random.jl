@@ -219,6 +219,7 @@ function randformula(
     nonmodal_operators = findall(!ismodal, operators)
 
     function _randformula(
+        rng::AbstractRNG,
         height::Integer,
         modaldepth::Integer
     )::SyntaxTree
@@ -239,7 +240,7 @@ function randformula(
             # op = rand(rng, ops)
             op = sample(rng, ops, ops_w)
             ch = Tuple([
-                    _randformula(height-1, modaldepth-(ismodal(op) ? 1 : 0))
+                    _randformula(rng, height-1, modaldepth-(ismodal(op) ? 1 : 0))
                     for _ in 1:arity(op)])
             return SyntaxTree(op, ch)
         end
@@ -251,7 +252,7 @@ function randformula(
             "(infinite) alphabet of type $(typeof(alphabet))!"
     end
 
-    return _randformula(height, modaldepth)
+    return _randformula(rng, height, modaldepth)
 end
 
 function randbaseformula(
@@ -259,7 +260,7 @@ function randbaseformula(
     args...;
     kwargs...
 )
-    randbaseformula(args...; rng = Random.GLOBAL_RNG, kwargs...)
+    randbaseformula(args...; rng = rng, kwargs...)
 end
 
 function randformula(
@@ -267,7 +268,7 @@ function randformula(
     args...;
     kwargs...
 )
-    randformula(args...; rng = Random.GLOBAL_RNG, kwargs...)
+    randformula(args...; rng = rng, kwargs...)
 end
 
 #= ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Kripke Structures ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ =#
