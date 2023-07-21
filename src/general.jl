@@ -648,6 +648,7 @@ function syntaxstring(
     t::SyntaxTree;
     function_notation = false,
     remove_redundant_parentheses = true,
+    parentheses_at_propositions = !remove_redundant_parentheses,
     kwargs...
 )
     lpar = "("
@@ -656,6 +657,7 @@ function syntaxstring(
     ch_kwargs = merge((; kwargs...), (;
         function_notation = function_notation,
         remove_redundant_parentheses = remove_redundant_parentheses,
+        parentheses_at_propositions = parentheses_at_propositions,
     ))
 
     function _canavoid_newscope(t::SyntaxTree; fnotation::Bool=false)
