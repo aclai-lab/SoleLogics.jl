@@ -653,6 +653,11 @@ function syntaxstring(
     lpar = "("
     rpar = ")"
 
+    ch_kwargs = merge(kwargs, (;
+        function_notation = function_notation,
+        remove_redundant_parentheses = remove_redundant_parentheses,
+    ))
+
     function _canavoid_newscope(t::SyntaxTree; fnotation::Bool=false)
         # Avoid printing the subtree rooted in `t` if this does not generate ambiguities.
 
@@ -683,7 +688,7 @@ function syntaxstring(
 
     tok = token(t)
     if arity(tok) == 0
-        syntaxstring(tok; function_notation = function_notation, kwargs...)
+        syntaxstring(tok; ch_kwargs...)
     elseif arity(tok) == 2 && !function_notation
 
         if (remove_redundant_parentheses &&
@@ -692,10 +697,10 @@ function syntaxstring(
         end
 
         f = ch->arity(token(ch)) == 0 ?
-        "$(syntaxstring(ch; function_notation = function_notation, kwargs...))" :
-        "$(lpar)$(syntaxstring(ch; function_notation = function_notation, kwargs...))$(rpar)"
+        "$(syntaxstring(ch; ch_kwargs...))" :
+        "$(lpar)$(syntaxstring(ch; ch_kwargs...))$(rpar)"
         # Infix notation for binary operator
-        "$(f(children(t)[1])) $(syntaxstring(tok; function_notation = function_notation, kwargs...)) $(f(children(t)[2]))"
+        "$(f(children(t)[1])) $(syntaxstring(tok; ch_kwargs...)) $(f(children(t)[2]))"
     else
         if (remove_redundant_parentheses &&
             _canavoid_newscope(t; fnotation=function_notation))
@@ -704,10 +709,10 @@ function syntaxstring(
 
         # Function notation for higher arity operator
         length(children(t)) == 0 ?
-               syntaxstring(tok; function_notation = function_notation, kwargs...) :
-               syntaxstring(tok; function_notation = function_notation, kwargs...) *
+               syntaxstring(tok; ch_kwargs...) :
+               syntaxstring(tok; ch_kwargs...) *
                 "$(lpar)" *
-                join([syntaxstring(c; function_notation = function_notation, kwargs...) for c in children(t)], ", ") *
+                join([syntaxstring(c; ch_kwargs...) for c in children(t)], ", ") *
                 "$(rpar)"
         # "$(syntaxstring(tok; kwargs...))(" * join(map((c)->("($(syntaxstring(c; kwargs...)))"), children(t)), ",") * ")"
     end
