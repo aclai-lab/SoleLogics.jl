@@ -653,7 +653,7 @@ function syntaxstring(
     lpar = "("
     rpar = ")"
 
-    ch_kwargs = merge(kwargs, (;
+    ch_kwargs = merge((; kwargs...), (;
         function_notation = function_notation,
         remove_redundant_parentheses = remove_redundant_parentheses,
     ))
