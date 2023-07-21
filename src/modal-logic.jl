@@ -973,10 +973,12 @@ See also
 dual(op::DiamondRelationalOperator) = BoxRelationalOperator{relationtype(op)}()
 dual(op::BoxRelationalOperator)     = DiamondRelationalOperator{relationtype(op)}()
 
+global_diamond = DiamondRelationalOperator(globalrel)
+global_box = BoxRelationalOperator(globalrel)
 
 const BASE_MULTIMODAL_OPERATORS = [BASE_PROPOSITIONAL_OPERATORS...,
-    DiamondRelationalOperator(globalrel),
-    BoxRelationalOperator(globalrel),
+    global_diamond,
+    global_box,
     DiamondRelationalOperator(identityrel),
     BoxRelationalOperator(identityrel),
 ]
