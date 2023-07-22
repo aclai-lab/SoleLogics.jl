@@ -679,8 +679,6 @@ function syntaxstring(
         tprec = Base.operator_precedence(tok)
         chprec = Base.operator_precedence(chtok)
 
-        # println("$(tok) with $(tprec) and $(chtok) with $(chprec) $(relation)")
-
         if !(
             (iscommutative(tok) && tok == chtok) ||
             # this is needed to write "◊¬p ∧ ¬q" instead of "(◊¬p) ∧ (¬q)"
@@ -695,7 +693,6 @@ function syntaxstring(
             # this is needed to write "(q → p) → ¬q" instead of "q → p → ¬q";
             # note that "q → (p → ¬q)", instead, is not correct since → is not commutative.
             lpar, rpar = "(", ")"
-            # println("entered")
         end
 
         return "$(lpar)$(syntaxstring(ch; kwargs...))$(rpar)"
