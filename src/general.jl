@@ -55,10 +55,10 @@ where each syntactical element is wrapped in parentheses.
 # Examples
 ```julia-repl
 julia> syntaxstring((parsebaseformula("◊((p∧s)→q)")))
-"◊(p ∧ s → q)"
+"◊(p ∧ s) → q"
 
 julia> syntaxstring((parsebaseformula("◊((p∧s)→q)")); function_notation = true)
-"→(◊(∧(p, s)), q)"
+"◊(→(∧(p, s), q))"
 ```
 
 See also [`parsebaseformula`](@ref), [`parsetree`](@ref),
@@ -657,7 +657,8 @@ function syntaxstring(
         parentheses_at_propositions = parentheses_at_propositions,
     ))
 
-    function _infix_syntaxstring(t::SyntaxTree, ch::SyntaxTree; relation::Symbol=:left, kwargs...)
+    function _binary_infix_syntaxstring(t::SyntaxTree, ch::SyntaxTree; relation::Symbol=:left, kwargs...)
+        # syntaxstring triggered by a binary operator in infix notation
         tok = token(t)
         chtok = token(ch)
         lpar, rpar = "", ""
@@ -675,11 +676,26 @@ function syntaxstring(
         end
 
         # Conditions are explicited, at the moment, to make them more comprehensible
+        tprec = Base.operator_precedence(tok)
+        chprec = Base.operator_precedence(chtok)
+
+        # println("$(tok) with $(tprec) and $(chtok) with $(chprec) $(relation)")
+
         if !(
             (iscommutative(tok) && tok == chtok) ||
-            (Base.operator_precedence(tok) == Base.operator_precedence(chtok) && relation == :left)
+            # this is needed to write "◊¬p ∧ ¬q" instead of "(◊¬p) ∧ (¬q)"
+            (tprec < chprec) ||
+            # each operator is left associative, thus left AST branch can avoid parentheses
+            (tprec == chprec && relation == :left)
         )
             lpar, rpar = "(", ")"
+        end
+
+        if !iscommutative(tok) && tprec <= chprec # tok == chtok
+            # this is needed to write "(q → p) → ¬q" instead of "q → p → ¬q";
+            # note that "q → (p → ¬q)", instead, is not correct since → is not commutative.
+            lpar, rpar = "(", ")"
+            # println("entered")
         end
 
         return "$(lpar)$(syntaxstring(ch; kwargs...))$(rpar)"
@@ -700,19 +716,17 @@ function syntaxstring(
         # "$(f(children(t)[1])) $(syntaxstring(tok; ch_kwargs...)) $(f(children(t)[2]))"
 
         # Infix notation for binary operator
-        "$(_infix_syntaxstring(t, children(t)[1]; relation=:left, ch_kwargs...)) $(syntaxstring(tok; ch_kwargs...)) $(_infix_syntaxstring(t, children(t)[2]; relation=:right, ch_kwargs...))"
+        "$(_binary_infix_syntaxstring(t, children(t)[1]; relation=:left, ch_kwargs...)) $(syntaxstring(tok; ch_kwargs...)) $(_binary_infix_syntaxstring(t, children(t)[2]; relation=:right, ch_kwargs...))"
     else
         lpar, rpar = "(", ")"
-        if (remove_redundant_parentheses && arity(tok) != 2)
+        if !function_notation # when not in function notation, print "¬p" instead of "¬(p)"
             lpar, rpar = "", ""
         end
 
         length(children(t)) == 0 ?
                syntaxstring(tok; ch_kwargs...) :
                syntaxstring(tok; ch_kwargs...) *
-                "$(lpar)" *
-                join([syntaxstring(c; ch_kwargs...) for c in children(t)], ", ") *
-                "$(rpar)"
+                "$(lpar)" * join([syntaxstring(c; ch_kwargs...) for c in children(t)], ", ") * "$(rpar)"
     end
 end
 
