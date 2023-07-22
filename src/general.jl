@@ -651,72 +651,68 @@ function syntaxstring(
     parentheses_at_propositions = !remove_redundant_parentheses,
     kwargs...
 )
-    lpar = "("
-    rpar = ")"
-
     ch_kwargs = merge((; kwargs...), (;
         function_notation = function_notation,
         remove_redundant_parentheses = remove_redundant_parentheses,
         parentheses_at_propositions = parentheses_at_propositions,
     ))
 
-    function _canavoid_newscope(t::SyntaxTree; fnotation::Bool=false)
-        # Avoid printing the subtree rooted in `t` if this does not generate ambiguities.
+    function _infix_syntaxstring(t::SyntaxTree, ch::SyntaxTree; relation::Symbol=:left, kwargs...)
+        tok = token(t)
+        chtok = token(ch)
+        lpar, rpar = "", ""
 
-        # For example, consider parsetree("a ∧ b ∧ c → d ∧ e ∧ f → g ∧ h ∧ i");
-        # naive output:         (a ∧ (b ∧ c)) → ((d ∧ (e ∧ f)) → (g ∧ (h ∧ i)))
-        # improved output:      (a ∧ b ∧ c) → ((d ∧ e ∧ f) → (g ∧ h ∧ i))
-
-        # Consider parsetree("¬p∧q→(¬s∧¬z)"; function_notation = true);
-        # naive output:         "→(∧(¬(p), q), ∧(¬(s), ¬(z)))"
-        # improved output:      "→(∧(¬p, q), ∧(¬s, ¬z))"
-
-        tarity = arity(token(t))
-        if (fnotation == true && tarity > 1)
-            # In this case, I don't want parentheses just in ¬(p) and (p) cases
-            return false
+        if !remove_redundant_parentheses
+            lpar, rpar = "(", ")"
         end
 
-        for c in children(t)
-            carity = arity(token(c))
-            if carity <= tarity
-                # Suspiciously, this condition is enough!
-                return true
+        if arity(chtok) == 0
+            if  parentheses_at_propositions
+                return "($(syntaxstring(ch; kwargs...)))"
+            else
+                return "$(lpar)$(syntaxstring(ch; kwargs...))$(rpar)"
             end
         end
 
-        return false
+        # Conditions are explicited, at the moment, to make them more comprehensible
+        if !(
+            (iscommutative(tok) && tok == chtok) ||
+            (Base.operator_precedence(tok) == Base.operator_precedence(chtok) && relation == :left)
+        )
+            lpar, rpar = "(", ")"
+        end
+
+        return "$(lpar)$(syntaxstring(ch; kwargs...))$(rpar)"
     end
 
     tok = token(t)
     if arity(tok) == 0
-        syntaxstring(tok; ch_kwargs...)
+        if parentheses_at_propositions
+            return "($(syntaxstring(tok; ch_kwargs...)))"
+        else
+            return "$(syntaxstring(tok; ch_kwargs...))"
+        end
     elseif arity(tok) == 2 && !function_notation
+        # Previous idea
+        # f = ch->arity(token(ch)) == 0 ?
+        # "$(syntaxstring(ch; ch_kwargs...))" :
+        # "$(lpar)$(syntaxstring(ch; ch_kwargs...))$(rpar)"
+        # "$(f(children(t)[1])) $(syntaxstring(tok; ch_kwargs...)) $(f(children(t)[2]))"
 
-        if (remove_redundant_parentheses &&
-            _canavoid_newscope(t; fnotation=function_notation))
-            lpar, rpar = "", ""
-        end
-
-        f = ch->arity(token(ch)) == 0 ?
-        "$(syntaxstring(ch; ch_kwargs...))" :
-        "$(lpar)$(syntaxstring(ch; ch_kwargs...))$(rpar)"
         # Infix notation for binary operator
-        "$(f(children(t)[1])) $(syntaxstring(tok; ch_kwargs...)) $(f(children(t)[2]))"
+        "$(_infix_syntaxstring(t, children(t)[1]; relation=:left, ch_kwargs...)) $(syntaxstring(tok; ch_kwargs...)) $(_infix_syntaxstring(t, children(t)[2]; relation=:right, ch_kwargs...))"
     else
-        if (remove_redundant_parentheses &&
-            _canavoid_newscope(t; fnotation=function_notation))
+        lpar, rpar = "(", ")"
+        if (remove_redundant_parentheses && arity(tok) != 2)
             lpar, rpar = "", ""
         end
 
-        # Function notation for higher arity operator
         length(children(t)) == 0 ?
                syntaxstring(tok; ch_kwargs...) :
                syntaxstring(tok; ch_kwargs...) *
                 "$(lpar)" *
                 join([syntaxstring(c; ch_kwargs...) for c in children(t)], ", ") *
                 "$(rpar)"
-        # "$(syntaxstring(tok; kwargs...))(" * join(map((c)->("($(syntaxstring(c; kwargs...)))"), children(t)), ",") * ")"
     end
 end
 
