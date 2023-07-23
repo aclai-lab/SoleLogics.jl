@@ -28,7 +28,7 @@ _operators = [NEGATION, CONJUNCTION, IMPLICATION,
     DiamondRelationalOperator(globalrel), BoxRelationalOperator(globalrel)]
 w = [5,1,1,1,1,1,1]
 
-@test_broken all([begin
+@test all([begin
         f = randbaseformula(3, _alphabet, _operators)
         s = syntaxstring(f)
         s == syntaxstring(parsetree(s))

@@ -682,9 +682,10 @@ function syntaxstring(
         if !(
             (iscommutative(tok) && tok == chtok) ||
             # this is needed to write "◊¬p ∧ ¬q" instead of "(◊¬p) ∧ (¬q)"
-            (tprec < chprec) ||
+            (tprec <= chprec)
+            # What follows is a previous idea
             # each operator is left associative, thus left AST branch can avoid parentheses
-            (tprec == chprec && relation == :left)
+            # (tprec == chprec && relation == :left)
         )
             lpar, rpar = "(", ")"
         end
@@ -716,7 +717,9 @@ function syntaxstring(
         "$(_binary_infix_syntaxstring(t, children(t)[1]; relation=:left, ch_kwargs...)) $(syntaxstring(tok; ch_kwargs...)) $(_binary_infix_syntaxstring(t, children(t)[2]; relation=:right, ch_kwargs...))"
     else
         lpar, rpar = "(", ")"
-        if !function_notation # when not in function notation, print "¬p" instead of "¬(p)"
+        if !function_notation && arity(tok) == 1 && arity(token(children(t)[1])) <= 1
+            # when not in function notation, print "¬p" instead of "¬(p)";
+            # note that "◊((p ∧ q) → s)" must not be simplified as "◊(p ∧ q) → s".
             lpar, rpar = "", ""
         end
 

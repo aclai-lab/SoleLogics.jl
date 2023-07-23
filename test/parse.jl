@@ -95,9 +95,9 @@ fxs = [
     "((¬(q ∧ q)) ∧ ((p ∧ p) ∧ (q → q))) → ([G]([G](⟨G⟩(p))))",
     "((⟨G⟩(⟨G⟩(q))) ∧ (¬([G](p)))) → (((q → p) → (¬(q))) ∧ (¬([G](q))))",
     "[G](¬(⟨G⟩(p ∧ q)))",
-    # "⟨G⟩(((¬(⟨G⟩((q ∧ p) → (¬(q))))) ∧ (((¬(q → q)) → ((q → p) → (¬(q))))"*
-    # "∧ (((¬(p)) ∧ (⟨G⟩(p))) → (¬(⟨G⟩(q)))))) ∧ ((¬(([G](p ∧ q)) → (¬(p → q)))) →" *
-    # "([G](([G](q∧ q)) ∧ ([G](q → p))))))"
+    "⟨G⟩(((¬(⟨G⟩((q ∧ p) → (¬(q))))) ∧ (((¬(q → q)) → ((q → p) → (¬(q))))" *
+    "∧ (((¬(p)) ∧ (⟨G⟩(p))) → (¬(⟨G⟩(q)))))) ∧ ((¬(([G](p ∧ q)) → (¬(p → q)))) →" *
+    "([G](([G](q∧ q)) ∧ ([G](q → p))))))"
 ]
 [test_parsing_equivalence(parsetree(f)) for f in fxs]
 
@@ -261,7 +261,7 @@ s = "¬((¬(([G](⟨G⟩(¬((¬([G](⟨G⟩(⟨G⟩(q))))) → (¬(⟨G⟩((¬(q
     "(⟨G⟩(¬(((⟨G⟩(q)) ∧ (⟨G⟩(q))) → (⟨G⟩(q → p)))))) ∧ ([G](¬(((¬(¬(q))) → (¬(q → p))" *
     ") ∧ (([G](p → p)) → ((⟨G⟩(p)) → (q → p)))))))))))"
 f = parsetree(s)
-@test_broken syntaxstring(f) == syntaxstring(parsetree(syntaxstring(f)))
+@test syntaxstring(f) == syntaxstring(parsetree(syntaxstring(f)))
 @test syntaxstring(f; function_notation = true) ==
     syntaxstring(
         parseformula(
@@ -278,7 +278,7 @@ s = "◊((¬((◊(◊(((¬(¬(q))) ∧ ((p ∧ p) ∨ (¬(p)))) → (¬(□(¬(q
     "q)))))) → ((□(◊(¬(◊(¬(p)))))) ∨ ((□(□((q → p) ∧ (p ∧ p)))) ∨ (((◊(◊(p))) → ((p →" *
     "q) ∧ (p → q))) ∧ (□((p ∨ q) ∧ (◊(q))))))))))"
 f = parsetree(s)
-@test_broken syntaxstring(f) == syntaxstring(parsetree(syntaxstring(f)))
+@test syntaxstring(f) == syntaxstring(parsetree(syntaxstring(f)))
 @test syntaxstring(f; function_notation = true) ==
     syntaxstring(
         parseformula(
