@@ -701,12 +701,16 @@ function syntaxstring(
 
     tok = token(t)
     tokstr = syntaxstring(tok; ch_kwargs...)
+    # Previous idea
+    #if arity(tok) == 0
+    #    if tok isa Proposition && parentheses_at_propositions
+    #        return "($(tokstr))"
+    #    else
+    #        return tokstr
+    #    end
+    #else
     if arity(tok) == 0
-        if tok isa Proposition && parentheses_at_propositions
-            return "($(tokstr))"
-        else
-            return tokstr
-        end
+        return tokstr
     elseif arity(tok) == 2 && !function_notation
         # Previous idea
         # f = ch->arity(token(ch)) == 0 ?
@@ -719,18 +723,17 @@ function syntaxstring(
     else # Function notation
         lpar, rpar = "(", ")"
         charity = arity(token(children(t)[1]))
-        if !function_notation && arity(tok) == 1 && charity <= 1
+        if !function_notation && arity(tok) == 1 && (charity == 1 || (charity == 0 && !parentheses_at_propositions))
             # when not in function notation, print "¬p" instead of "¬(p)";
             # note that "◊((p ∧ q) → s)" must not be simplified as "◊(p ∧ q) → s".
             lpar, rpar = "", ""
         end
 
         length(children(t)) == 0 ?
-               syntaxstring(tok; ch_kwargs...) :
-               syntaxstring(tok; ch_kwargs...) *
+               tokstr :
+               tokstr *
                 "$(lpar)" *
                 join([syntaxstring(c;
-                    parentheses_at_propositions=(lpar == "(" || rpar == ")"),
                     ch_kwargs...)
                     for c in children(t)],
                     ", ") *
