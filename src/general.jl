@@ -55,7 +55,7 @@ where each syntactical element is wrapped in parentheses.
 # Examples
 ```julia-repl
 julia> syntaxstring((parsebaseformula("◊((p∧s)→q)")))
-"◊(p ∧ s) → q"
+"◊((p ∧ s) → q)"
 
 julia> syntaxstring((parsebaseformula("◊((p∧s)→q)")); function_notation = true)
 "◊(→(∧(p, s), q))"
@@ -657,10 +657,10 @@ function syntaxstring(
         parentheses_at_propositions = parentheses_at_propositions,
     ))
 
-    function _binary_infix_syntaxstring(t::SyntaxTree, ch::SyntaxTree; relation::Symbol=:left, kwargs...)
+    function _binary_infix_syntaxstring(tok::AbstractSyntaxToken, ch::SyntaxTree; relation::Symbol=:left)
         # syntaxstring triggered by a binary operator in infix notation
-        tok = token(t)
         chtok = token(ch)
+        chtokstring = syntaxstring(ch; ch_kwargs...)
         lpar, rpar = "", ""
 
         if !remove_redundant_parentheses
@@ -668,10 +668,10 @@ function syntaxstring(
         end
 
         if arity(chtok) == 0
-            if  parentheses_at_propositions
-                return "($(syntaxstring(ch; kwargs...)))"
+            if chtok isa Proposition && parentheses_at_propositions
+                return "($(chtokstring))"
             else
-                return "$(lpar)$(syntaxstring(ch; kwargs...))$(rpar)"
+                return "$(lpar)$(chtokstring)$(rpar)"
             end
         end
 
@@ -696,26 +696,27 @@ function syntaxstring(
             lpar, rpar = "(", ")"
         end
 
-        return "$(lpar)$(syntaxstring(ch; kwargs...))$(rpar)"
+        return "$(lpar)$(chtokstring)$(rpar)"
     end
 
     tok = token(t)
+    tokstr = syntaxstring(tok; ch_kwargs...)
     if arity(tok) == 0
-        if parentheses_at_propositions
-            return "($(syntaxstring(tok; ch_kwargs...)))"
+        if tok isa Proposition && parentheses_at_propositions
+            return "($(tokstr))"
         else
-            return "$(syntaxstring(tok; ch_kwargs...))"
+            return tokstr
         end
     elseif arity(tok) == 2 && !function_notation
         # Previous idea
         # f = ch->arity(token(ch)) == 0 ?
         # "$(syntaxstring(ch; ch_kwargs...))" :
         # "$(lpar)$(syntaxstring(ch; ch_kwargs...))$(rpar)"
-        # "$(f(children(t)[1])) $(syntaxstring(tok; ch_kwargs...)) $(f(children(t)[2]))"
+        # "$(f(children(t)[1])) $(tokstr) $(f(children(t)[2]))"
 
         # Infix notation for binary operator
-        "$(_binary_infix_syntaxstring(t, children(t)[1]; relation=:left, ch_kwargs...)) $(syntaxstring(tok; ch_kwargs...)) $(_binary_infix_syntaxstring(t, children(t)[2]; relation=:right, ch_kwargs...))"
-    else
+        "$(_binary_infix_syntaxstring(tok, children(t)[1]; relation=:left)) $tokstr $(_binary_infix_syntaxstring(tok, children(t)[2]; relation=:right))"
+    else # Function notation
         lpar, rpar = "(", ")"
         charity = arity(token(children(t)[1]))
         if !function_notation && arity(tok) == 1 && charity <= 1
