@@ -233,7 +233,8 @@ propositionstype(::Literal{T}) where {T} = T
 
 tree(l::Literal) = ispos(l) ? SyntaxTree(l.prop) : ¬(SyntaxTree(l.prop))
 
-negation(l::Literal) = Literal(!ispos(l), prop(l))
+hasdual(l::Literal) = true
+dual(l::Literal) = Literal(!ispos(l), prop(l))
 
 function Base.show(io::IO, l::Literal)
     println(io,

@@ -3,7 +3,7 @@
 # using Test
 # using SoleLogics
 
-using SoleLogics: Literal, negation, LeftmostConjunctiveForm, LeftmostDisjunctiveForm
+using SoleLogics: Literal, dual, LeftmostConjunctiveForm, LeftmostDisjunctiveForm
 using SoleLogics: CNF, DNF
 
 # @testset "General" begin
@@ -237,19 +237,19 @@ l1 = @test_nowarn Literal(true, p1)
 l1_neg = @test_nowarn Literal(false, p1)
 
 l2 = @test_nowarn Literal(true, p2)
-l2_neg = @test_nowarn negation(l2)
+l2_neg = @test_nowarn dual(l2)
 
 l100 = @test_nowarn Literal(true, p100)
 l100_neg = @test_nowarn Literal(false, p100)
 
 l1_float = @test_nowarn Literal(true, p1_float)
-l1_float_neg = @test_nowarn negation(l1_float)
+l1_float_neg = @test_nowarn dual(l1_float)
 
 l1_number_float = @test_nowarn Literal(true, p1_number_float)
 l1_number_float_neg = @test_nowarn Literal(false, p1_number_float)
 
 l1_number = @test_nowarn Literal(true, p1_number)
-l1_number_neg = @test_nowarn negation(l1_number)
+l1_number_neg = @test_nowarn dual(l1_number)
 
 l_string = @test_nowarn Literal(true, p_string)
 l_string_neg = @test_nowarn Literal(false, p_string)

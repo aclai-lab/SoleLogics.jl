@@ -30,10 +30,33 @@ See also [`AbstractSyntaxToken`](@ref).
 arity(T::Type{<:AbstractSyntaxToken})::Integer = error("Please, provide method arity(::$(Type{T})).")
 arity(t::AbstractSyntaxToken)::Integer = arity(typeof(t))
 
-# Helpers: TODO move to SoleBase?
 isnullary(a) = arity(a) == 0
 isunary(a) = arity(a) == 1
 isbinary(a) = arity(a) == 2
+
+"""
+    dual(tok::AbstractSyntaxToken)
+
+Return the `dual` of a syntax token.
+Given a token `tok` of arity `n`, the dual `dtok` is such that,
+on a boolean algebra,
+`tok(ch_1, ..., ch_n)` ≡ `¬dtok(¬ch_1, ..., ¬ch_n)`.
+
+Duality can be used to perform synctactic simplifications on formulas.
+For example, since `∧` and `∨` are `dual`s, `¬(¬p ∧ ¬q)` can be simplified to `(p ∧ q)`.
+Duality also applies to nullary operators (`⊤`/`⊥`), operators with
+existential/universal semantics (`◊`/`□`), and `Proposition`s.
+
+# Implementation
+
+When providing a `dual` for a token of type `T`, please also provide:
+
+    hasdual(::T) = true
+
+See also [`normalize`](@ref), [`AbstractSyntaxToken`](@ref).
+"""
+dual(t::AbstractSyntaxToken) = error("Please, provide method dual(::$(typeof(t))).")
+hasdual(t::AbstractSyntaxToken) = false
 
 """
     syntaxstring(φ::AbstractFormula; kwargs...)::String
@@ -154,27 +177,12 @@ Base.isequal(a::Proposition, b) = Base.isequal(atom(a), b)
 Base.isequal(a, b::Proposition) = Base.isequal(a, atom(b))
 Base.hash(a::Proposition) = Base.hash(atom(a))
 
-"""
-    negation(p::Proposition)
+hasdual(p::Proposition) = hasdual(atom(p))
+dual(p::Proposition) = Proposition(dual(atom(p)))
 
-Return a proposition with inverted semantics with respect to `p` (i.e., negation of `p`).
-In a crisp propositional logic, for example, the negation
-is the proposition which is true whenever `p` is false, and viceversa.
-
-The main method for this function is defined as:
-
-    negation(p::Proposition) = Proposition(negation(atom(p)))
-
-Note that, for a correct functioning,
-`SoleLogics.negation` must be defined for the wrapped atom.
-
-See also [`Proposition`](@ref), [`check`](@ref).
-"""
-negation(p::Proposition) = Proposition(negation(atom(p)))
-
-function negation(atom::Any)
+function dual(atom::Any)
     return error("Please, provide method " *
-        "SoleLogics.negation(::$(typeof(atom))).")
+        "SoleLogics.dual(::$(typeof(atom))).")
 end
 
 ############################################################################################

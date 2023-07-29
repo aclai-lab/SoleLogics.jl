@@ -811,18 +811,10 @@ ismodal(::Type{typeof(□)}) = true
 isbox(::Type{typeof(□)}) = true
 arity(::Type{typeof(□)}) = 1
 
-"""
-    dual(op::DiamondRelationalOperator) = BoxRelationalOperator{relationtype(op)}()
-    dual(op::BoxRelationalOperator)     = DiamondRelationalOperator{relationtype(op)}()
-
-Return the modal operator with dual semantics (existential<->universal).
-
-See also
-[`DiamondRelationalOperator`](@ref), [`BoxRelationalOperator`](@ref).
-"""
+hasdual(::typeof(DIAMOND)) = true
 dual(::typeof(DIAMOND)) = BOX
+hasdual(::typeof(BOX)) = true
 dual(::typeof(BOX))     = DIAMOND
-
 
 ############################################################################################
 
@@ -961,23 +953,34 @@ isbox(::Type{<:BoxRelationalOperator}) = true
 syntaxstring(op::DiamondRelationalOperator; kwargs...) = "⟨$(syntaxstring(relationtype(op); kwargs...))⟩"
 syntaxstring(op::BoxRelationalOperator; kwargs...)     = "[$(syntaxstring(relationtype(op); kwargs...))]"
 
-"""
-    dual(op::DiamondRelationalOperator) = BoxRelationalOperator{relationtype(op)}()
-    dual(op::BoxRelationalOperator)     = DiamondRelationalOperator{relationtype(op)}()
-
-Return the modal operator with dual semantics (existential<->universal).
-
-See also
-[`DiamondRelationalOperator`](@ref), [`BoxRelationalOperator`](@ref).
-"""
+hasdual(::DiamondRelationalOperator) = true
 dual(op::DiamondRelationalOperator) = BoxRelationalOperator{relationtype(op)}()
+hasdual(::BoxRelationalOperator) = true
 dual(op::BoxRelationalOperator)     = DiamondRelationalOperator{relationtype(op)}()
 
+############################################################################################
+
+"""
+"""
+function diamond() DIAMOND end
+function diamond(r::AbstractRelation) DiamondRelationalOperator(r) end
+
+"""
+"""
+function box() BOX end
+function box(r::AbstractRelation) BoxRelationalOperator(r) end
+
+global_diamond = diamond(globalrel)
+global_box = box(globalrel)
+
+# TODO remove those with the underscore
+globaldiamond = global_diamond
+globalbox = global_box
 
 const BASE_MULTIMODAL_OPERATORS = [BASE_PROPOSITIONAL_OPERATORS...,
-    DiamondRelationalOperator(globalrel),
-    BoxRelationalOperator(globalrel),
-    DiamondRelationalOperator(identityrel),
-    BoxRelationalOperator(identityrel),
+    global_diamond,
+    global_box,
+    diamond(identityrel),
+    box(identityrel),
 ]
 const BaseMultiModalOperators = Union{typeof.(BASE_MULTIMODAL_OPERATORS)...}
