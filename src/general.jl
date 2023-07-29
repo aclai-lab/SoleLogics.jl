@@ -49,9 +49,16 @@ existential/universal semantics (`◊`/`□`), and `Proposition`s.
 
 # Implementation
 
-When providing a `dual` for a token of type `T`, please also provide:
+When providing a `dual` for an operator of type `O`, please also provide:
 
-    hasdual(::T) = true
+    hasdual(::O) = true
+
+The dual of a `Proposition` (that is, the proposition with inverted semantics)
+is defined as:
+
+    dual(p::Proposition{A}) where {A} = Proposition(dual(atom(p)))
+
+As such, `hasdual(::A)` and `dual(::A)` should be defined when wrapping objects of type `A`.
 
 See also [`normalize`](@ref), [`AbstractSyntaxToken`](@ref).
 """
@@ -177,7 +184,6 @@ Base.isequal(a::Proposition, b) = Base.isequal(atom(a), b)
 Base.isequal(a, b::Proposition) = Base.isequal(a, atom(b))
 Base.hash(a::Proposition) = Base.hash(atom(a))
 
-hasdual(p::Proposition) = hasdual(atom(p))
 dual(p::Proposition) = Proposition(dual(atom(p)))
 
 function dual(atom::Any)
