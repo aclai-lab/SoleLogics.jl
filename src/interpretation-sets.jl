@@ -120,9 +120,9 @@ function alphabet(X::AbstractInterpretationSet{M}) where {M<:AbstractKripkeStruc
     return error("Please, provide method alphabet(::$(typeof(X))).")
 end
 
-function relations(X::AbstractInterpretationSet{M}) where {M<:AbstractKripkeStructure}
-    return error("Please, provide method relations(::$(typeof(X))).")
-end
+# function relations(X::AbstractInterpretationSet{M}) where {M<:AbstractKripkeStructure}
+#     return error("Please, provide method relations(::$(typeof(X))).")
+# end
 
 
 function frame(X::AbstractInterpretationSet{M}, i_instance::Integer) where {M<:AbstractKripkeStructure}
