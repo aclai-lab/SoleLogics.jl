@@ -69,6 +69,8 @@ export AbstractWorldSet, WorldSet
 
 export Interval, Interval2D, OneWorld
 
+export global_diamond, global_box
+
 include("modal-logic.jl")
 
 export LeftmostLinearForm, LeftmostConjunctiveForm, LeftmostDisjunctiveForm, Literal

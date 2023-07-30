@@ -85,10 +85,10 @@ where each syntactical element is wrapped in parentheses.
 # Examples
 ```julia-repl
 julia> syntaxstring((parsebaseformula("◊((p∧s)→q)")))
-"◊(p ∧ s → q)"
+"◊((p ∧ s) → q)"
 
 julia> syntaxstring((parsebaseformula("◊((p∧s)→q)")); function_notation = true)
-"→(◊(∧(p, s)), q)"
+"◊(→(∧(p, s), q))"
 ```
 
 See also [`parsebaseformula`](@ref), [`parsetree`](@ref),
@@ -662,68 +662,86 @@ function syntaxstring(
     t::SyntaxTree;
     function_notation = false,
     remove_redundant_parentheses = true,
+    parentheses_at_propositions = !remove_redundant_parentheses,
     kwargs...
 )
-    lpar = "("
-    rpar = ")"
+    ch_kwargs = merge((; kwargs...), (;
+        function_notation = function_notation,
+        remove_redundant_parentheses = remove_redundant_parentheses,
+        parentheses_at_propositions = parentheses_at_propositions,
+    ))
 
-    function _canavoid_newscope(t::SyntaxTree; fnotation::Bool=false)
-        # Avoid printing the subtree rooted in `t` if this does not generate ambiguities.
+    function _binary_infix_syntaxstring(tok::AbstractSyntaxToken, ch::SyntaxTree; relation::Symbol=:left)
+        # syntaxstring triggered by a binary operator in infix notation
+        chtok = token(ch)
+        chtokstring = syntaxstring(ch; ch_kwargs...)
+        lpar, rpar = "", ""
 
-        # For example, consider parsetree("a ∧ b ∧ c → d ∧ e ∧ f → g ∧ h ∧ i");
-        # naive output:         (a ∧ (b ∧ c)) → ((d ∧ (e ∧ f)) → (g ∧ (h ∧ i)))
-        # improved output:      (a ∧ b ∧ c) → ((d ∧ e ∧ f) → (g ∧ h ∧ i))
-
-        # Consider parsetree("¬p∧q→(¬s∧¬z)"; function_notation = true);
-        # naive output:         "→(∧(¬(p), q), ∧(¬(s), ¬(z)))"
-        # improved output:      "→(∧(¬p, q), ∧(¬s, ¬z))"
-
-        tarity = arity(token(t))
-        if (fnotation == true && tarity > 1)
-            # In this case, I don't want parentheses just in ¬(p) and (p) cases
-            return false
+        if !remove_redundant_parentheses
+            lpar, rpar = "(", ")"
         end
 
-        for c in children(t)
-            carity = arity(token(c))
-            if carity <= tarity
-                # Suspiciously, this condition is enough!
-                return true
+        if arity(chtok) == 0
+            if chtok isa Proposition && parentheses_at_propositions
+                return "($(chtokstring))"
+            else
+                return "$(lpar)$(chtokstring)$(rpar)"
             end
         end
 
-        return false
+        # Conditions are explicited, at the moment, to make them more comprehensible
+        tprec = Base.operator_precedence(tok)
+        chprec = Base.operator_precedence(chtok)
+
+        if !(
+            (iscommutative(tok) && tok == chtok) ||
+            # this is needed to write "◊¬p ∧ ¬q" instead of "(◊¬p) ∧ (¬q)"
+            (tprec <= chprec)
+            # What follows is a previous idea
+            # each operator is left associative, thus left AST branch can avoid parentheses
+            # (tprec == chprec && relation == :left)
+        )
+            lpar, rpar = "(", ")"
+        end
+
+        if !iscommutative(tok) && tprec <= chprec # tok == chtok
+            # this is needed to write "(q → p) → ¬q" instead of "q → p → ¬q";
+            # note that "q → (p → ¬q)", instead, is not correct since → is not commutative.
+            lpar, rpar = "(", ")"
+        end
+
+        return "$(lpar)$(chtokstring)$(rpar)"
     end
 
     tok = token(t)
+    tokstr = syntaxstring(tok; ch_kwargs...)
     if arity(tok) == 0
-        syntaxstring(tok; function_notation = function_notation, kwargs...)
+        if tok isa Proposition && parentheses_at_propositions
+            return "($(tokstr))"
+        else
+            return tokstr
+        end
     elseif arity(tok) == 2 && !function_notation
+        # Previous idea
+        # f = ch->arity(token(ch)) == 0 ?
+        # "$(syntaxstring(ch; ch_kwargs...))" :
+        # "$(lpar)$(syntaxstring(ch; ch_kwargs...))$(rpar)"
+        # "$(f(children(t)[1])) $(tokstr) $(f(children(t)[2]))"
 
-        if (remove_redundant_parentheses &&
-            _canavoid_newscope(t; fnotation=function_notation))
-            lpar, rpar = "", ""
-        end
-
-        f = ch->arity(token(ch)) == 0 ?
-        "$(syntaxstring(ch; function_notation = function_notation, kwargs...))" :
-        "$(lpar)$(syntaxstring(ch; function_notation = function_notation, kwargs...))$(rpar)"
         # Infix notation for binary operator
-        "$(f(children(t)[1])) $(syntaxstring(tok; function_notation = function_notation, kwargs...)) $(f(children(t)[2]))"
-    else
-        if (remove_redundant_parentheses &&
-            _canavoid_newscope(t; fnotation=function_notation))
+        "$(_binary_infix_syntaxstring(tok, children(t)[1]; relation=:left)) $tokstr $(_binary_infix_syntaxstring(tok, children(t)[2]; relation=:right))"
+    else # Function notation
+        lpar, rpar = "(", ")"
+        if !function_notation && arity(tok) == 1 && arity(token(children(t)[1])) <= 1
+            # when not in function notation, print "¬p" instead of "¬(p)";
+            # note that "◊((p ∧ q) → s)" must not be simplified as "◊(p ∧ q) → s".
             lpar, rpar = "", ""
         end
 
-        # Function notation for higher arity operator
         length(children(t)) == 0 ?
-               syntaxstring(tok; function_notation = function_notation, kwargs...) :
-               syntaxstring(tok; function_notation = function_notation, kwargs...) *
-                "$(lpar)" *
-                join([syntaxstring(c; function_notation = function_notation, kwargs...) for c in children(t)], ", ") *
-                "$(rpar)"
-        # "$(syntaxstring(tok; kwargs...))(" * join(map((c)->("($(syntaxstring(c; kwargs...)))"), children(t)), ",") * ")"
+               tokstr :
+               tokstr *
+                "$(lpar)" * join([syntaxstring(c; ch_kwargs...) for c in children(t)], ", ") * "$(rpar)"
     end
 end
 

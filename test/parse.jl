@@ -9,7 +9,8 @@ function test_parsing_equivalence(f::SyntaxTree)
     @test syntaxstring(f; function_notation = true) ==
         syntaxstring(
             parseformula(
-                syntaxstring(f; function_notation = true); function_notation = true
+                syntaxstring(f; function_notation = true);
+                function_notation = true
             );
             function_notation = true
         )
@@ -66,7 +67,7 @@ end
 @test syntaxstring(parsetree("p→q"); function_notation = true) == "→(p, q)"
 
 @test filter(!isspace, syntaxstring(parsetree("¬p∧q∧(¬s∧¬z)");
-    function_notation = true)) == "∧(¬p,∧(q,∧(¬s,¬z)))"
+    function_notation = true)) == "∧(¬(p),∧(q,∧(¬(s),¬(z))))"
 
 @test_nowarn parsetree("→(∧(¬p, q), ∧(¬s, ¬z))", function_notation=true)
 @test_nowarn parsetree("→(∧(¬p; q); ∧(¬s; ¬z))",
@@ -77,24 +78,24 @@ end
 
 
 @test filter(!isspace, syntaxstring(parsetree("¬p∧q→(¬s∧¬z)");
-    function_notation = true)) == "→(∧(¬p,q),∧(¬s,¬z))"
+    function_notation = true)) == "→(∧(¬(p),q),∧(¬(s),¬(z)))"
 @test filter(!isspace, syntaxstring(
     parsetree("¬p∧q→A¬s∧¬zB",
         opening_parenthesis = "A",
         closing_parenthesis = "B");
-    function_notation = true)) == "→(∧(¬p,q),∧(¬s,¬z))"
+    function_notation = true)) == "→(∧(¬(p),q),∧(¬(s),¬(z)))"
 @test_nowarn parsetree("¬p∧q→     (¬s∧¬z)")
 @test parsetree("□p∧   q∧(□s∧◊z)", [BOX]) == parsetree("□p∧   q∧(□s∧◊z)")
-@test syntaxstring(parsetree("◊ ◊ ◊ ◊ p∧q"); function_notation = true) == "∧(◊◊◊◊p, q)"
+@test syntaxstring(parsetree("◊ ◊ ◊ ◊ p∧q"); function_notation = true) == "∧(◊(◊(◊(◊(p)))), q)"
 @test syntaxstring(parsetree("¬¬¬ □□□ ◊◊◊ p ∧ ¬¬¬ q"); function_notation = true) ==
-    "∧(¬¬¬□□□◊◊◊p, ¬¬¬q)"
+    "∧(¬(¬(¬(□(□(□(◊(◊(◊(p))))))))), ¬(¬(¬(q))))"
 
 fxs = [
-    "¬((¬(⟨G⟩(q))) → (([G](p)) ∧ ([G](q))))",
+    "(¬(¬(⟨G⟩(q))) → (([G](p)) ∧ ([G](q))))", #¬((¬(⟨G⟩(q))) → (([G](p)) ∧ ([G](q))))
     "((¬(q ∧ q)) ∧ ((p ∧ p) ∧ (q → q))) → ([G]([G](⟨G⟩(p))))",
     "((⟨G⟩(⟨G⟩(q))) ∧ (¬([G](p)))) → (((q → p) → (¬(q))) ∧ (¬([G](q))))",
     "[G](¬(⟨G⟩(p ∧ q)))",
-    "⟨G⟩(((¬(⟨G⟩((q ∧ p) → (¬(q))))) ∧ (((¬(q → q)) → ((q → p) → (¬(q))))"*
+    "⟨G⟩(((¬(⟨G⟩((q ∧ p) → (¬(q))))) ∧ (((¬(q → q)) → ((q → p) → (¬(q))))" *
     "∧ (((¬(p)) ∧ (⟨G⟩(p))) → (¬(⟨G⟩(q)))))) ∧ ((¬(([G](p ∧ q)) → (¬(p → q)))) →" *
     "([G](([G](q∧ q)) ∧ ([G](q → p))))))"
 ]
