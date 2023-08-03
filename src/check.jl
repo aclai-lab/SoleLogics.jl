@@ -71,7 +71,7 @@ BEWARE: it currently assumes the underlying algebra is Boolean!
     Note: this assumes an underlying Boolean algebra.
 - `allow_proposition_flipping::Bool`: when set to `true`,
     together with `reduce_negations=true`, this may cause the negation of a proposition
-    to be replaced with the proposition with its [`negation`](@ref).
+    to be replaced with the proposition with its [`dual`](@ref).
 
 # Examples
 ```julia-repl
@@ -172,8 +172,8 @@ function normalize(
                 # _normalize(∨(¬(grandchildren[1]), grandchildren[2]))
                 ∧(_normalize(grandchildren[1]), _normalize(¬(grandchildren[2])))
             elseif reduce_negations && chtok isa Proposition
-                if allow_proposition_flipping
-                    SyntaxTree(negation(chtok))
+                if allow_proposition_flipping && hasdual(chtok)
+                    SyntaxTree(dual(chtok))
                 else
                     ¬(_normalize(child))
                 end
