@@ -25,7 +25,7 @@ end
 # Instantiate a frame with 5 worlds and 5 edges
 begin
 	using Graphs
-	
+
 	worlds = SoleLogics.World.(1:5)
 	edges = Edge.([ (1, 2), (1, 3), (2, 4), (3, 4), (3, 5)])
 	fr = SoleLogics.ExplicitCrispUniModalFrame(worlds, Graphs.SimpleDiGraph(edges))
@@ -78,14 +78,14 @@ end
 # ╔═╡ a1ebd2cb-4677-4839-88c0-f3c57b08a1ab
 begin
 	println("Producing formula of height $height...")
-	
+
 	# Create a random formula
 	φ4 = randformula(Random.MersenneTwister(107), height, [p,q], SoleLogics.BASE_PROPOSITIONAL_OPERATORS)
-	
+
 	φ4 |> syntaxstring |> println
-	
+
 	println("Simplifying...")
-	
+
 	# Minimize the formula (according to pre-defined, simple rules, e.g., De Morgan)
 	normalize(φ4) |> syntaxstring |> println
 end
@@ -109,7 +109,7 @@ end
 begin
 	import SoleLogics: collatetruth
 	SoleLogics.collatetruth(::SoleLogics.BooleanAlgebra, ::typeof(⊕), (t1, t2)::NTuple{2,Bool}) = Base.xor(t1, t2)
-	
+
 	check(φ, I)
 end
 
@@ -139,7 +139,7 @@ begin
 	        worlds[4] => TruthDict([p => false, q => false]),
 	        worlds[5] => TruthDict([p => false, q => true]),
 	     ])
-	
+
 	# Instantiate a Kripke structure
 	K = KripkeStructure(fr, valuation)
 
