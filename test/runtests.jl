@@ -14,7 +14,7 @@ println("Julia version: ", VERSION)
 
 test_suites = [
     ("Base", [
-        "general.jl",
+        "core.jl",
         "parse.jl",
         "random.jl",
         "normalize.jl",

@@ -1,6 +1,6 @@
-(A) Make an mauro/outreach branch
+(A) Make an mauro/outreach branch {cm:2023-08-04}
 
-(A) Rename general.jl in core.jl
+(A) Rename general.jl in core.jl {cm:2023-08-04}
 
 (C) Establish the trait is_right_associative (defaulted to false, but true for implication)
     Fix parsing algorithm accordingly 

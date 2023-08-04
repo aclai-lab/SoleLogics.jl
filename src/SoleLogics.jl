@@ -38,7 +38,7 @@ export istop, isbottom
 
 export tokens, operators, propositions
 
-include("general.jl")
+include("core.jl")
 
 export ∧, ¬, ∨, →
 export CONJUNCTION, NEGATION, DISJUNCTION, IMPLICATION
