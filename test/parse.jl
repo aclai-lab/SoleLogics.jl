@@ -51,7 +51,7 @@ end
 @test_nowarn parsetree("¬p∧q→(¬s∧¬z)")
 
 @test syntaxstring(parsetree("⟨G⟩p")) == "⟨G⟩p"
-@test syntaxstring(parsetree("⟨G⟩p"); remove_redundant_parentheses = false) == "⟨G⟩(p)"
+@test syntaxstring(parsetree("⟨G⟩(p)"); remove_redundant_parentheses = false) == "⟨G⟩(p)"
 
 @test syntaxstring(parsetree("[G]p")) == "[G]p"
 @test syntaxstring(parsetree("[G]p"); remove_redundant_parentheses = false) == "[G](p)"

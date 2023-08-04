@@ -715,12 +715,16 @@ function syntaxstring(
 
     tok = token(t)
     tokstr = syntaxstring(tok; ch_kwargs...)
+    # Previous idea
+    #if arity(tok) == 0
+    #    if tok isa Proposition && parentheses_at_propositions
+    #        return "($(tokstr))"
+    #    else
+    #        return tokstr
+    #    end
+    #else
     if arity(tok) == 0
-        if tok isa Proposition && parentheses_at_propositions
-            return "($(tokstr))"
-        else
-            return tokstr
-        end
+        return tokstr
     elseif arity(tok) == 2 && !function_notation
         # Previous idea
         # f = ch->arity(token(ch)) == 0 ?
@@ -732,7 +736,8 @@ function syntaxstring(
         "$(_binary_infix_syntaxstring(tok, children(t)[1]; relation=:left)) $tokstr $(_binary_infix_syntaxstring(tok, children(t)[2]; relation=:right))"
     else # Function notation
         lpar, rpar = "(", ")"
-        if !function_notation && arity(tok) == 1 && arity(token(children(t)[1])) <= 1
+        charity = arity(token(children(t)[1]))
+        if !function_notation && arity(tok) == 1 && (charity == 1 || (charity == 0 && !parentheses_at_propositions))
             # when not in function notation, print "¬p" instead of "¬(p)";
             # note that "◊((p ∧ q) → s)" must not be simplified as "◊(p ∧ q) → s".
             lpar, rpar = "", ""
@@ -741,7 +746,12 @@ function syntaxstring(
         length(children(t)) == 0 ?
                tokstr :
                tokstr *
-                "$(lpar)" * join([syntaxstring(c; ch_kwargs...) for c in children(t)], ", ") * "$(rpar)"
+                "$(lpar)" *
+                join([syntaxstring(c;
+                    ch_kwargs...)
+                    for c in children(t)],
+                    ", ") *
+                "$(rpar)"
     end
 end
 

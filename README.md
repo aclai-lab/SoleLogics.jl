@@ -36,7 +36,7 @@ julia> φ1 isa SyntaxTree
 true
 
 julia> syntaxstring(φ1)
-"(¬(p)) ∧ (q ∧ ((¬(s)) ∧ (¬(z))))"
+"¬p ∧ q ∧ ¬s ∧ ¬z"
 
 julia> φ2 = ⊥ ∨ Proposition("t") → φ1;
 
@@ -44,7 +44,7 @@ julia> φ2 isa SyntaxTree
 true
 
 julia> syntaxstring(φ2)
-"(⊥ ∨ t) → ((¬(p)) ∧ (q ∧ ((¬(s)) ∧ (¬(z)))))"
+"(⊥ ∨ t) → (¬p ∧ q ∧ ¬s ∧ ¬z)"
 ```
 
 <!-- 
