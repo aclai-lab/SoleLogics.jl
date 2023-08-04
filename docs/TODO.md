@@ -1,6 +1,10 @@
 (A) Outline documentation structure
     Establish SoleLogics fundamental entities
     Write down the documentation hierarchy
+        # An idea might be 
+        # - Core concepts
+        # - Propositional logic
+        # - Modal logic 
     Write down real functioning examples using ```julia etc.```
         Also, think about making a functioning notebook using Pluto.jl
     Improve docstrings to make them more clear

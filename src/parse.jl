@@ -436,10 +436,9 @@ function parseformula(
     # TODO: expand special sequences to special *sequences* (strings of characters)
     # TODO: check that no special sequence is a substring of another one.
     @assert function_notation ||
-            (allunique(string.([opening_parenthesis, arg_delim])) ||
-             allunique(string.([closing_parenthesis, arg_delim]))) "" *
-        "Invalid " *
-        "special sequences provided: please, check that both the `opening_parenthesis` " *
+        opening_parenthesis != arg_delim && closing_parenthesis != arg_delim
+        "Invalid special sequences provided: " *
+        "please, check that both the `opening_parenthesis` " *
         "and the `closing_parenthesis` are not equal to the `arg_delim`."
 
     opening_parenthesis = Symbol(opening_parenthesis)
