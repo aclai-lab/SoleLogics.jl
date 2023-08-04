@@ -89,20 +89,6 @@ function nworlds(fr::AbstractFrame)::Integer
     return error("Please, provide method nworlds(frame::$(typeof(fr))).")
 end
 
-# TODO remove initialworld
-# """
-#     initialworld(fr::AbstractFrame{W})::W
-
-# Return the initial world of the frame. Note that not all frame types
-# can provide an initial world.
-
-# See also [`allworlds`](@ref), [`nworlds`](@ref), [`AbstractFrame`](@ref).
-# """
-# function initialworld(fr::AbstractFrame{W})::Union{Nothing,W} where {W<:AbstractWorld}
-#     return error("Please, provide method " *
-#         "initialworld(frame::$(typeof(fr)))::Union{Nothing,$(worldtype(fr))}.")
-# end
-
 ############################################################################################
 ##################################### Uni-modal logic ######################################
 ############################################################################################
@@ -592,7 +578,6 @@ worldtype(a::AbstractKripkeStructure) = worldtype(typeof(a))
 accessibles(i::AbstractKripkeStructure, args...) = accessibles(frame(i), args...)
 allworlds(i::AbstractKripkeStructure, args...) = allworlds(frame(i), args...)
 nworlds(i::AbstractKripkeStructure) = nworlds(frame(i))
-# initialworld(i::AbstractKripkeStructure) = initialworld(frame(i))
 
 function check(
     φ::SyntaxTree,
