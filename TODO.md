@@ -1,3 +1,7 @@
+(A) Make an mauro/outreach branch
+
+(A) Rename general.jl in core.jl
+
 (C) Establish the trait is_right_associative (defaulted to false, but true for implication)
     Fix parsing algorithm accordingly 
         # When child are popped out of the token stack, if associativity is left, then the AST grows to the left.
