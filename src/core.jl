@@ -207,10 +207,17 @@ be parametric singleton types, which can be dispatched upon.
 
 # Implementation
 
+When implementing a new custom operator, think about changing its default [precedence and
+associativity](https://docs.julialang.org/en/v1/manual/mathematical-operations/#Operator-Precedence-and-Associativity)
+by providing the methods `Base.operator_precedence(::Type{AbstractOperator})` and
+`isrightassociative(::Type{AbstractOperator})`.
+
 When implementing a new type for a *commutative* operator `O` with arity higher than 1,
 please provide a method `iscommutative(::Type{O})`. This can help model checking operations.
 
-See also [`AbstractSyntaxToken`](@ref), [`NamedOperator`](@ref), [`check`](@ref).
+See also [`AbstractSyntaxToken`](@ref), [`NamedOperator`](@ref),
+[`Base.operator_precedence`](@ref), [`isrightassociative`](@ref), [`iscommutative`](@ref),
+[`check`](@ref).
 """
 abstract type AbstractOperator <: AbstractSyntaxToken end
 
@@ -253,6 +260,76 @@ function iscommutative(O::Type{<:AbstractOperator})
 end
 
 iscommutative(o::AbstractOperator) = iscommutative(typeof(o))
+
+doc_precedence = """
+    const MAX_PRECEDENCE  = Base.operator_precedence(:(::))
+    const HIGH_PRECEDENCE = Base.operator_precedence(:^)
+    const BASE_PRECEDENCE = Base.operator_precedence(:*)
+    const LOW_PRECEDENCE  = Base.operator_precedence(:+)
+
+Standard integers representing operator precedence;
+operators with high values take precedence over operators with lower values.
+This is needed to establish unambiguous implementations of parsing-related algorithms.
+
+By default, all operators are assigned a `BASE_PRECEDENCE`, except for:
+- nullary operators (e.g., ⊤, ⊥), that are assigned a `MAX_PRECEDENCE`;
+- unary operators (e.g., ¬, ◊), that are assigned a `HIGH_PRECEDENCE`;
+- the implication (→), that is assigned a `LOW_PRECEDENCE`.
+
+It is possible to assign a specific precedence to an operator by providing a method
+`Base.operator_precedence(::Type{O})`.
+
+# Examples
+```julia-repl
+julia> syntaxstring(parseformula("¬a → b ∧ c"))
+"(¬a) → (b ∧ c)"
+
+julia> syntaxstring(parseformula("a ∧ b → c ∧ d"))
+"(a ∧ b) → (c ∧ d)"
+```
+
+See also [`parseformula`](@ref), [`syntaxstring`](@ref).
+"""
+
+"""$(doc_precedence)"""
+const MAX_PRECEDENCE = Base.operator_precedence(:(::))
+"""$(doc_precedence)"""
+const HIGH_PRECEDENCE = Base.operator_precedence(:^)
+"""$(doc_precedence)"""
+const BASE_PRECEDENCE = Base.operator_precedence(:*)
+"""$(doc_precedence)"""
+const LOW_PRECEDENCE  = Base.operator_precedence(:+)
+
+doc_isrightassociative = """
+    isrightassociative(::Type{AbstractOperator})
+    isrightassociative(o::AbstractOperator) = isrightassociative(typeof(o))
+
+Return whether an `AbstractOperator` is right associative or no.
+
+Associativity establishes how operators of the same precedence are grouped in the absence of
+the parentheses.
+
+Conjunction and disjunction are commutative operators, thus, the left associativity case
+"(p ∧ q) ∧ r" and the right associativity case "p ∧ (q ∧ r)" are equivalent; by convention
+we consider the latter form.
+Implication is right associative, meaning that "p → q → r" is grouped as "p → (q → r)".
+
+By default, an operator is right associative.
+
+# Examples
+```julia-repl
+julia> isrightassociative(∧)
+true
+
+julia> isrightassociative(→)
+true
+```
+See also [`AbstractOperator`](@ref).
+"""
+
+"""$(doc_isrightassociative)"""
+isrightassociative(::Type{<:AbstractOperator}) = true
+isrightassociative(o::AbstractOperator) = isrightassociative(typeof(o))
 
 ############################################################################################
 

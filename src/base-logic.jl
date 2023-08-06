@@ -149,6 +149,30 @@ dual(op::typeof(∧)) = typeof(∨)
 hasdual(::typeof(∨)) = true
 dual(op::typeof(∨))     = typeof(∧)
 
+doc_operatorprecedence = """
+    Base.operator_precedence(op::AbstractOperator)
+    Base.operator_precedence(::typeof(IMPLICATION))
+
+Assign a precedence to an operator.
+
+See also [`AbstractOperator`](@ref), [`MAX_PRECEDENCE`](@ref), [`HIGH_PRECEDENCE`](@ref),
+[`BASE_PRECEDENCE`](@ref), [`LOW_PRECEDENCE`](@ref).
+"""
+
+"""$(doc_operatorprecedence)"""
+function Base.operator_precedence(op::AbstractOperator)
+    if isunary(op)
+        HIGH_PRECEDENCE
+    elseif isnullary(op)
+        MAX_PRECEDENCE
+    else
+        BASE_PRECEDENCE
+    end
+end
+
+"""$(doc_operatorprecedence)"""
+Base.operator_precedence(::typeof(IMPLICATION)) = LOW_PRECEDENCE
+
 ############################################################################################
 ########################################## ALGEBRA #########################################
 ############################################################################################
@@ -346,7 +370,7 @@ end
     )
 
 Attempt at instantiating a `Formula` from a syntax token/formula,
-by inferring the logic it belongs to. If `infer_logic` is true, then 
+by inferring the logic it belongs to. If `infer_logic` is true, then
 a canonical logic (e.g., propositional logic with all the `BASE_PROPOSITIONAL_OPERATORS`) is
 inferred; if it's false, then a logic with exactly the operators appearing in the syntax tree,
 plus the `additional_operators` is instantiated.
