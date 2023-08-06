@@ -99,44 +99,6 @@ if length(methods(Base.keys, (Base.Generator,))) == 0
     Base.keys(g::Base.Generator) = g.iter
 end
 
-# """TODO remove"""
-# struct AnchoredMultiModalFrame{
-#     N,
-#     W<:AbstractWorld,
-#     FR<:AbstractMultiModalFrame{N,W},
-# } <: AbstractMultiModalFrame{N,W}
-
-#     frame::FR
-
-#     initialworld::Union{Nothing,W}
-
-#     function check_initialworld(initialworld, N, W)
-#         @assert isnothing(initialworld) || initialworld isa W "Cannot instantiate" *
-#             " AnchoredMultiModalFrame with initialworld of type $(typeof(initialworld))." *
-#             " Type should be $(W) (dimensionality = $(N))."
-#     end
-
-#     function AnchoredMultiModalFrame{N,W}(
-#         fr::AbstractMultiModalFrame{N,W},
-#         initialworld = nothing,
-#     ) where {N,W<:AbstractWorld}
-#         new{N,W}(fr, initialworld)
-#     end
-
-#     function AnchoredMultiModalFrame(
-#         fr::AbstractMultiModalFrame{N,W},
-#         initialworld = nothing,
-#     ) where {N,W<:AbstractWorld}
-#         AnchoredMultiModalFrame{N,W}(fr, initialworld)
-#     }
-#     end
-# end
-
-# accessibles(fr::AnchoredMultiModalFrame, args...) = accessibles(fr.frame, args...)
-# allworlds(fr::AnchoredMultiModalFrame, args...) = allworlds(fr.frame, args...)
-# nworlds(fr::AnchoredMultiModalFrame) = nworlds(fr.frame)
-# initialworld(fr::AnchoredMultiModalFrame) = fr.initialworld
-
 ############################################################################################
 
 include("frames/full-dimensional-frame/main.jl")

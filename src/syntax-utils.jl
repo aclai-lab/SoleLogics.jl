@@ -139,6 +139,8 @@ Base.getindex(lf::LeftmostLinearForm, idx::Integer) = Base.getindex(lf,[idx])
 
 nchildren(lf::LeftmostLinearForm) = length(children(lf))
 
+# TODO: add parameter remove_redundant_parentheses
+# TODO: add parameter parentheses_at_propositions
 function syntaxstring(
     lf::LeftmostLinearForm;
     function_notation = false,
