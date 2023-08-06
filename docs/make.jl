@@ -3,18 +3,6 @@ using Documenter
 
 DocMeta.setdocmeta!(SoleLogics, :DocTestSetup, :(using SoleLogics); recursive = true)
 
-BaseDocs = [
-    "base/syntax.md",
-    "base/operators.md",
-    "base/formulas.md",
-    "base/alphabets.md"
-]
-
-const PAGES = [
-    "Home" => "index.md",
-    "Base" => BaseDocs,
-]
-
 makedocs(;
     modules = [SoleLogics],
     authors = "Mauro Milella, Giovanni Pagliarini, Eduard I. Stan",
@@ -25,7 +13,12 @@ makedocs(;
         canonical = "https://aclai-lab.github.io/SoleLogics.jl",
         assets = String[],
     ),
-    pages = PAGES
+    pages = [
+        "Home" => "index.md",
+        "Core concepts" => "core.md",
+        "Propositional logic" => "propositional-logic.md",
+        "Modal logic" => "modal-logic.md"
+    ]
 )
 
 deploydocs(;
