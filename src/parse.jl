@@ -33,12 +33,6 @@ end
 
 parseformula(str, args...; kwargs...) = parseformula(SyntaxTree, str, args...; kwargs...)
 
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Table of contents ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#
-#    TODO: This code is not so friendly.
-#    A little overview about all the private methods and the workflow involved
-#    in this page could be helpful to future developers.
-
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Utils ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 function strip_whitespaces(
@@ -102,6 +96,37 @@ function Base.operator_precedence(op::AbstractOperator)
 end
 
 Base.operator_precedence(::typeof(IMPLICATION)) = LOW_PRECEDENCE
+
+doc_isrightassociative = """
+    isrightassociative(::Type{AbstractOperator})
+    isrightassociative(o::AbstractOperator) = isrightassociative(typeof(o))
+
+Return whether an `AbstractOperator` is right associative or no.
+
+Associativity establishes how operators of the same precedence are grouped in the absence of
+the parentheses.
+
+Conjunction and disjunction are commutative operators, thus, the left associativity case
+"(p ∧ q) ∧ r" and the right associativity case "p ∧ (q ∧ r)" are equivalent; by convention
+we consider the latter form.
+Implication is right associative, meaning that "p → q → r" is grouped as "p → (q → r)".
+
+By default, an operator is right associative.
+
+# Examples
+```julia-repl
+julia> isrightassociative(∧)
+true
+
+julia> isrightassociative(→)
+true
+```
+See also [`AbstractOperator`](@ref).
+"""
+
+"""$(doc_isrightassociative)"""
+isrightassociative(::Type{<:AbstractOperator}) = true
+isrightassociative(o::AbstractOperator) = isrightassociative(typeof(o))
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Input and construction ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -453,14 +478,35 @@ function parseformula(
     #  In other words, all special symbols (e.g. opening_parenthesis) are already filtered
     #  out and only AbstractSyntaxToken are considered.
     function _postfixbuild(postfix::Vector{<:AbstractSyntaxToken})
-
         stack = SyntaxTree[]
 
         for tok in postfix
             # Stack collapses, composing a new part of the syntax tree
             if tok isa AbstractOperator
-                children = [pop!(stack) for _ in 1:arity(tok)]
-                push!(stack, SyntaxTree(tok, Tuple(reverse(children))))
+                # How associativity affects the token stack to SyntaxTree conversion?
+                # Consider "p → q → r" where "→" is right associative.
+                # The stack is [p, q, r, →, →], and is manipulated like this:
+                #   1) the first → from the left is encountered: [p, q, r, ...→... , →];
+                #   2) q and r are popped: [p, ...→..., →];
+                #   3) the current token → receives q and r as children: [p, q→r, →];
+                #   4) the next → is found, then p and q→r are popped: [...→...];
+                #   5) the current token → receives p and q→r as children: [p → (q→r)].
+                #
+                # Now consider "p → q → r" where "→" is left associative.
+                # The stack is [p, q, r, →, →], and is manipulated like this:
+                #   1) the first → from the left is encountered: [p, q, r, ...→... , →];
+                #   2) p and q are popped using popfirst instead of pop: [r, ...→..., →];
+                #   3) the current token → receives p and q as children. Instead of push,
+                #      pushfirst is used to obtain: [p→q, r, →];
+                #   4) the next → is found, r and p→q are removed using popfirst: [...→...];
+                #   5) the current token → receives q→r and r as children: [(p→q) → r].
+                if (isrightassociative(tok))
+                    children = [pop!(stack) for _ in 1:arity(tok)]
+                    push!(stack, SyntaxTree(tok, Tuple(reverse(children))))
+                else
+                    children = [popfirst!(stack) for _ in 1:arity(tok)]
+                    pushfirst!(stack, SyntaxTree(tok, Tuple(children)))
+                end
             elseif tok isa Proposition
                 push!(stack, SyntaxTree(tok))
             else
@@ -487,6 +533,8 @@ function parseformula(
     end
 
     # Build a formula starting from its function notation;
+    # note that here, differently from the _postfixbuild case, operators associativity is
+    # already covered by the function notation parenthesization.
     function _prefixbuild(prefix::Vector{STACK_TOKEN_TYPE})
         stack = Vector{Union{SyntaxTree, STACK_TOKEN_TYPE}}()
 
