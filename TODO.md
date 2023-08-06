@@ -12,6 +12,6 @@
 
 (C) Move Base.operator_precedence docstring and definitions from parse.jl to AbstractOperator interface, in core.jl {cm:2023-08-06}
 
-(C) Enrich syntaxstring examples. Each parameter has to be considered atleast once (atm, remove_redundant_parentheses has to be added)
+(C) Enrich syntaxstring examples. Each parameter has to be considered atleast once (atm, remove_redundant_parentheses has to be added) {cm:2023-08-06}
 
 (A) refactor this file {cm:2023-08-04}

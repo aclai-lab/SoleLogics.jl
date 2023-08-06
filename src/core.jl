@@ -81,13 +81,30 @@ function notation for binary operators.
 See [here](https://en.wikipedia.org/wiki/Infix_notation).
 - `remove_redundant_parentheses = true::Bool`: when set to `false`, it prints a syntaxstring
 where each syntactical element is wrapped in parentheses.
+- `parentheses_at_propositions = !remove_redundant_parentheses::Bool`: when set to `true`,
+it forces the propositions (which are the leafs of a formula's tree structure) to be
+wrapped in parentheses.
 
 # Examples
 ```julia-repl
-julia> syntaxstring((parsebaseformula("◊((p∧s)→q)")))
+
+julia> syntaxstring(parsebaseformula("p∧q∧r∧s∧t"))
+"p ∧ q ∧ r ∧ s ∧ t"
+
+julia> syntaxstring(parsebaseformula("p∧q∧r∧s∧t"), function_notation=true)
+"∧(p, ∧(q, ∧(r, ∧(s, t))))"
+
+julia> syntaxstring(parsebaseformula("p∧q∧r∧s∧t"), remove_redundant_parentheses=false)
+"(p) ∧ ((q) ∧ ((r) ∧ ((s) ∧ (t))))"
+
+julia> syntaxstring(parsebaseformula("p∧q∧r∧s∧t"),
+    remove_redundant_parentheses=true, parentheses_at_propositions=true)
+"(p) ∧ (q) ∧ (r) ∧ (s) ∧ (t)"
+
+julia> syntaxstring(parsebaseformula("◊((p∧s)→q)"))
 "◊((p ∧ s) → q)"
 
-julia> syntaxstring((parsebaseformula("◊((p∧s)→q)")); function_notation = true)
+julia> syntaxstring(parsebaseformula("◊((p∧s)→q)"); function_notation = true)
 "◊(→(∧(p, s), q))"
 ```
 
