@@ -15,7 +15,7 @@ makedocs(;
     ),
     pages = [
         "Home" => "index.md",
-        "Core concepts" => "core.md",
+        "Getting started" => "getting-started.md",
         "Propositional logic" => "propositional-logic.md",
         "Modal logic" => "modal-logic.md"
     ]

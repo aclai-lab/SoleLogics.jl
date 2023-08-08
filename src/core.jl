@@ -400,13 +400,13 @@ julia> f = parseformula("◊(p→q)");
 julia> p = Proposition("p");
 
 julia> syntaxstring(∧(f, p))
-"(◊(p → q)) ∧ p"
+"◊(p → q) ∧ p"
 
 julia> syntaxstring(f ∧ ¬p) # Leverage infix notation ;)
-"(◊(p → q)) ∧ (¬(p))"
+"◊(p → q) ∧ ¬p"
 
 julia> syntaxstring(∧(f, p, ¬p))
-"(◊(p → q)) ∧ (p ∧ (¬(p)))"
+"◊(p → q) ∧ p ∧ ¬p"
 ```
 
 # Implementation

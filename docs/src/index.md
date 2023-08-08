@@ -4,11 +4,10 @@ CurrentModule = SoleLogics
 
 # SoleLogics
 
+## Introduction
+
 Welcome to the documentation for [SoleLogics](https://github.com/aclai-lab/SoleLogics.jl). SoleLogics.jl lays the logical foundations for [Sole.jl](https://github.com/aclai-lab/Sole.jl), an open-source framework for symbolic machine learning. Specifically, SoleLogics.jl provides a fresh codebase for [computational logic](https://en.wikipedia.org/wiki/Computational_logic).
 
-
-```@contents
-```
 
 ## Installation
 
