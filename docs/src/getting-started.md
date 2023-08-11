@@ -87,8 +87,6 @@ AbstractFormula
 ```@docs
 joinformulas
 tokens(f::AbstractFormula)
-operators(f::AbstractFormula)
-propositions(f::AbstractFormula)
 SoleLogics.height(t::SyntaxTree)
 SoleLogics.tree(f::AbstractFormula)
 ```

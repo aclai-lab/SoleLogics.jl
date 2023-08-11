@@ -344,7 +344,7 @@ version = "0.11.0"
 
 [[deps.SoleLogics]]
 deps = ["DataStructures", "Dictionaries", "Graphs", "IterTools", "Lazy", "PrettyTables", "Random", "Reexport", "Revise", "SoleBase", "StatsBase", "ThreadSafeDicts"]
-git-tree-sha1 = "c359fec24146a678d63242aa5de3960a46d96aeb"
+git-tree-sha1 = "3a3fd73cbd580806550445a6fcbe5b8f81d1c14f"
 repo-rev = "mauro/outreach"
 repo-url = "https://github.com/aclai-lab/SoleLogics.jl"
 uuid = "b002da8f-3cb3-4d91-bbe3-2953433912b5"
