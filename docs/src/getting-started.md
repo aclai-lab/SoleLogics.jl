@@ -91,8 +91,19 @@ SoleLogics.height(t::SyntaxTree)
 SoleLogics.tree(f::AbstractFormula)
 ```
 
-## Parsing
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc justo justo, finibus ac odio in, tempor fermentum augue. Vivamus ullamcorper lacus eget enim imperdiet, ac lobortis turpis elementum. Fusce non auctor eros. Duis scelerisque auctor volutpat. Morbi non luctus est. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Pellentesque porttitor a est sit amet ornare. Aliquam faucibus fringilla imperdiet.
+## Parsing & Printing
+SoleLogics.jl parsing and printing systems allows you to 
+
+- easily convert formulas represented as strings into syntactical structures;
+- print complex formulas in a more clear manner, avoiding placing parentheses where it's not needed. 
+
+ Those features are both highly customizable and work entirely three properties typical of syntactical tokens: [`arity`](@ref), operator precedence ([`Base.operator_precedence(op::AbstractOperator)`](@ref)) and operator associativity ([`SoleLogics.isrightassociative`](@ref)).
+
+```@docs
+parsetree
+syntaxstring
+
+```
 
 
 ## Grammar
