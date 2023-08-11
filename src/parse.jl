@@ -53,7 +53,10 @@ const DEFAULT_ARG_DELIM       = ","
 
 
 """
-See [`parsetree`](@ref).
+Operators considered valid by default, when parsing.
+Those are the vector $(repr(BASE_PARSABLE_OPERATORS)).
+
+See also [`parsetree`](@ref).
 """
 const BASE_PARSABLE_OPERATORS = [
     BASE_PROPOSITIONAL_OPERATORS...,
@@ -299,14 +302,14 @@ end
 Return a `SyntaxTree` which is the result of parsing `expression`
  via [Shunting yard](https://en.wikipedia.org/wiki/Shunting_yard_algorithm).
 By default, this function is only able to parse operators in
-`SoleLogics.BASE_PARSABLE_OPERATORS`; additional operators may be provided as
-a second argument.
+`SoleLogics.BASE_PARSABLE_OPERATORS` (see arguments section);
+additional operators may be provided as a second argument.
 
 # Arguments
 - `expression::String`: expression to be parsed;
 - `additional_operators::Vector{<:AbstractOperator}`: additional, non-standard operators
     needed to correctly parse the expression.
-    When left unset, only the following operators are
+    When left unset, only the operators in `SoleLogics.BASE_PARSABLE_OPERATORS` are
     correctly parsed: $(repr(BASE_PARSABLE_OPERATORS));
     note that, in case of clashing `syntaxstring`'s,
     the provided additional operators will override these.
@@ -352,7 +355,7 @@ julia> syntaxstring(parsetree("¬1→0";
 "(¬1.0) → 0.0"
 ```
 
-See also [`SyntaxTree`](@ref), [`syntaxstring`](@ref).
+See also [`SyntaxTree`](@ref), [`syntaxstring`](@ref), [].
 """
 parsetree(str, args...; kwargs...) = parseformula(SyntaxTree, str, args...; kwargs...)
 

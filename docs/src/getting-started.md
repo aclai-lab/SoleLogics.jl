@@ -75,6 +75,8 @@ To learn more about operators, refer to [Propositional Logic](@ref) and [Modal L
 
 ## Formulas
 
+TODO: the following definition might be unclear, since "evaluation" and "logic" are not concepts already red from the user. When the Logic structure will be removed from SoleLogics, this section will be expanded with semantics-related concepts.
+
 ```@docs
 AbstractFormula
 ```
@@ -102,7 +104,6 @@ SoleLogics.jl parsing and printing systems allows you to
 ```@docs
 parsetree
 syntaxstring
-
 ```
 
 
