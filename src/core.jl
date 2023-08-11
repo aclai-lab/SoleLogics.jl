@@ -765,42 +765,26 @@ function syntaxstring(
         parentheses_at_propositions = parentheses_at_propositions,
     ))
 
+    # Parenthesization rules for binary operators in infix notation
     function _binary_infix_syntaxstring(tok::AbstractSyntaxToken, ch::SyntaxTree; relation::Symbol=:left)
-        # syntaxstring triggered by a binary operator in infix notation
         chtok = token(ch)
         chtokstring = syntaxstring(ch; ch_kwargs...)
-        lpar, rpar = "", ""
 
-        if !remove_redundant_parentheses
-            lpar, rpar = "(", ")"
-        end
+        lpar, rpar = (!remove_redundant_parentheses) ? ["(", ")"] : ["", ""]
 
         if arity(chtok) == 0
-            if chtok isa Proposition && parentheses_at_propositions
+            if chtok isa Proposition && parentheses_at_propositions # Force parenthesization
                 return "($(chtokstring))"
             else
                 return "$(lpar)$(chtokstring)$(rpar)"
             end
         end
 
-        # Conditions are explicited, at the moment, to make them more comprehensible
         tprec = Base.operator_precedence(tok)
         chprec = Base.operator_precedence(chtok)
 
-        if !(
-            (iscommutative(tok) && tok == chtok) ||
-            # this is needed to write "◊¬p ∧ ¬q" instead of "(◊¬p) ∧ (¬q)"
-            (tprec <= chprec)
-            # What follows is a previous idea
-            # each operator is left associative, thus left AST branch can avoid parentheses
-            # (tprec == chprec && relation == :left)
-        )
-            lpar, rpar = "(", ")"
-        end
-
-        if !iscommutative(tok) && tprec <= chprec # tok == chtok
-            # this is needed to write "(q → p) → ¬q" instead of "q → p → ¬q";
-            # note that "q → (p → ¬q)", instead, is not correct since → is not commutative.
+        if ((!iscommutative(tok) || tok != chtok) && (tprec > chprec)) || # "◊¬p ∧ ¬q" instead of "(◊¬p) ∧ (¬q)"
+            (!iscommutative(tok) && tprec <= chprec)                      # "(q → p) → ¬q" instead of "q → p → ¬q"
             lpar, rpar = "(", ")"
         end
 
@@ -809,43 +793,26 @@ function syntaxstring(
 
     tok = token(t)
     tokstr = syntaxstring(tok; ch_kwargs...)
-    # Previous idea
-    #if arity(tok) == 0
-    #    if tok isa Proposition && parentheses_at_propositions
-    #        return "($(tokstr))"
-    #    else
-    #        return tokstr
-    #    end
-    #else
-    if arity(tok) == 0
-        return tokstr
-    elseif arity(tok) == 2 && !function_notation
-        # Previous idea
-        # f = ch->arity(token(ch)) == 0 ?
-        # "$(syntaxstring(ch; ch_kwargs...))" :
-        # "$(lpar)$(syntaxstring(ch; ch_kwargs...))$(rpar)"
-        # "$(f(children(t)[1])) $(tokstr) $(f(children(t)[2]))"
 
-        # Infix notation for binary operator
-        "$(_binary_infix_syntaxstring(tok, children(t)[1]; relation=:left)) $tokstr $(_binary_infix_syntaxstring(tok, children(t)[2]; relation=:right))"
-    else # Function notation
+    if arity(tok) == 0 # A leaf nodes parenthesization is responsability of its parent
+        return tokstr
+    elseif arity(tok) == 2 && !function_notation # Infix notation for binary operators
+        "$(_binary_infix_syntaxstring(tok, children(t)[1]; relation=:left)) "*
+        "$tokstr $(_binary_infix_syntaxstring(tok, children(t)[2]; relation=:right))"
+    else # Infix notation with arity != 2, or function notation
         lpar, rpar = "(", ")"
         charity = arity(token(children(t)[1]))
-        if !function_notation && arity(tok) == 1 && (charity == 1 || (charity == 0 && !parentheses_at_propositions))
-            # when not in function notation, print "¬p" instead of "¬(p)";
+        if !function_notation && arity(tok) == 1 &&
+            (charity == 1 || (charity == 0 && !parentheses_at_propositions))
+            # When not in function notation, print "¬p" instead of "¬(p)";
             # note that "◊((p ∧ q) → s)" must not be simplified as "◊(p ∧ q) → s".
             lpar, rpar = "", ""
         end
 
         length(children(t)) == 0 ?
                tokstr :
-               tokstr *
-                "$(lpar)" *
-                join([syntaxstring(c;
-                    ch_kwargs...)
-                    for c in children(t)],
-                    ", ") *
-                "$(rpar)"
+               tokstr * "$(lpar)" * join(
+                    [syntaxstring(c; ch_kwargs...) for c in children(t)], ", ") * "$(rpar)"
     end
 end
 
