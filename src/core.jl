@@ -931,6 +931,13 @@ function propositions(a::AbstractAlphabet)::AbstractVector{propositionstype(a)}
     end
 end
 
+"""
+    Base.in(p::Proposition, a::AbstractAlphabet)::Bool
+
+Return whether a proposition belongs to an alphabet.
+
+See also [`AbstractAlphabet`](@ref), [`Proposition`](@ref).
+"""
 function Base.in(p::Proposition, a::AbstractAlphabet)::Bool
     if Base.isfinite(a)
         Base.in(p, propositions(a))
@@ -947,6 +954,13 @@ function Base.in(atom::Union{AbstractString,Number,AbstractChar}, a::AbstractAlp
     Base.in(Proposition(atom), a)
 end
 
+"""
+    Base.length(a::AbstractAlphabet)::Bool
+
+Return the alphabet length, if it is finite.
+
+See also [`AbstractAlphabet`](@ref), [`SyntaxTree`](@ref).
+"""
 function Base.length(a::AbstractAlphabet)
     if isfinite(a)
         return Base.length(propositions(a))
@@ -955,6 +969,14 @@ function Base.length(a::AbstractAlphabet)
     end
 end
 
+"""
+    Base.iterate(a::AbstractAlphabet)
+    Base.iterate(a::AbstractAlphabet, state)
+
+Return an iterator to the next element in an alhabet.
+
+See also [`AbstractAlphabet`](@ref), [`SyntaxTree`](@ref).
+"""
 function Base.iterate(a::AbstractAlphabet)
     if isfinite(a)
         return Base.iterate(propositions(a))

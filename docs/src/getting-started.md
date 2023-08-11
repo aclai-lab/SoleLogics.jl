@@ -106,22 +106,34 @@ parsetree
 syntaxstring
 ```
 
-
 ## Grammar
 
 ```@docs
 AbstractAlphabet
-propositions
-in
-length
-iterate
+```
 
+!!! note
+    SoleLogics.jl offers the possibility to implement a custom [`AbstractAlphabet`](@ref) concrete type. To see an in-depth example, please refer to section [Customization](@ref customization-section).
+
+```@docs
+propositions(a::AbstractAlphabet)
+
+Base.in(p::Proposition, a::AbstractAlphabet)
+Base.length(a::AbstractAlphabet)
+Base.iterate(a::AbstractAlphabet)
 ExplicitAlphabet
 AlphabetOfAny
 
-
 AbstractGrammar
+alphabet(g::AbstractGrammar{A} where {A})
+Base.in(t::SyntaxTree, g::AbstractGrammar)
+formulas(g::AbstractGrammar; maxdepth::Integer, nformulas::Union{Nothing,Integer} = nothing, args...)
+
+CompleteFlatGrammar{A<:AbstractAlphabet,O<:AbstractOperator}
+formulas( g::CompleteFlatGrammar{A,O} where {A,O}; maxdepth::Integer, nformulas::Union{Nothing,Integer} = nothing)
 ```
+
+## Semantics
 
 ## [Customization](@id customization-section)
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc justo justo, finibus ac odio in, tempor fermentum augue. Vivamus ullamcorper lacus eget enim imperdiet, ac lobortis turpis elementum. Fusce non auctor eros. Duis scelerisque auctor volutpat. Morbi non luctus est. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Pellentesque porttitor a est sit amet ornare. Aliquam faucibus fringilla imperdiet.
