@@ -399,14 +399,14 @@ julia> f = parseformula("◊(p→q)");
 
 julia> p = Proposition("p");
 
-julia> syntaxstring(∧(f, p))
-"◊(p → q) ∧ p"
+julia> ∧(f, p)
+SyntaxTree: ◊(p → q) ∧ p
 
-julia> syntaxstring(f ∧ ¬p) # Leverage infix notation ;)
-"◊(p → q) ∧ ¬p"
+julia> f ∧ ¬p   # Leverage infix notation ;)
+SyntaxTree: ◊(p → q) ∧ ¬p
 
-julia> syntaxstring(∧(f, p, ¬p))
-"◊(p → q) ∧ p ∧ ¬p"
+julia> ∧(f, p, ¬p)
+SyntaxTree: ◊(p → q) ∧ p ∧ ¬p
 ```
 
 # Implementation

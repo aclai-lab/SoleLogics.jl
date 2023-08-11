@@ -16,7 +16,7 @@ SoleLogics.arity(::Type{<:AbstractSyntaxToken})
 Proposition
 ```
 
-Let's recall the last concepts with an example.
+Let's recall the last concepts with a simple script.
 
 ```julia
 julia> p = Proposition("p")
@@ -60,16 +60,18 @@ julia> leftree |> token |> arity
 
 ```@docs
 SoleLogics.AbstractOperator
+```
+!!! note
+    SoleLogics.jl offers the possibility to implement custom [`NamedOperator`](@ref)s. To see an in-depth example, please refer to section [Customization](@ref customization-section).
+
+```@docs
 SoleLogics.NamedOperator
 Base.operator_precedence(op::AbstractOperator)
 SoleLogics.isrightassociative
 SoleLogics.iscommutative
 ```
 
-Operators are exhaustively explained in [Propositional Logic](@ref) and [Modal Logic](@ref) chapters.
-
-!!! note
-    SoleLogics.jl offers the possibility to implement custom [`NamedOperator`](@ref)s. To see an in-depth example, please refer to section [Customization](@ref customization-section).
+To learn more about operators, refer to [Propositional Logic](@ref) and [Modal Logic](@ref) chapters.
 
 ## Formulas
 
@@ -82,7 +84,6 @@ AbstractFormula
 
 ```@docs
 joinformulas
-syntaxstring
 tokens(f::AbstractFormula)
 operators(f::AbstractFormula)
 propositions(f::AbstractFormula)
