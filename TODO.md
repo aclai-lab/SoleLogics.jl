@@ -1,5 +1,5 @@
-In README.md
-    Check examples (see NOTE or pluto-demo.jl)
+In README.md {c}
+    Check examples (see NOTE or pluto-demo.jl) {cm:2023-08-22}
     List of similar packages, highlightning SoleLogics use cases
 
 Rename things to increase readability, using @deprecate in a deprecate.jl file.

@@ -163,6 +163,17 @@ julia> [w => check(modphi, K, w) for w in worlds]
 
 The package is developed by the [ACLAI Lab](https://aclai.unife.it/en/) @ University of Ferrara.
 
-*SoleLogics.jl* lays the logical foundations for [*Sole.jl*](https://github.com/aclai-lab/Sole.jl), an open-source framework for *symbolic machine learning*.
+*SoleLogics.jl* lays the logical foundations for [*Sole.jl*](https://github.com/aclai-lab/Sole.jl), an open-source framework for *symbolic machine learning* and [*modal symbolic machine learning*](https://www.repository.unipr.it/bitstream/1889/5219/5/main.pdf).
+
+## More on Sole
+- [SoleData.jl](https://github.com/aclai-lab/SoleData.jl)
+- [SoleFeatures.jl](https://github.com/aclai-lab/SoleFeatures.jl) 
+- [SoleModels.jl](https://github.com/aclai-lab/SoleModels.jl)
+- [SolePostHoc.jl](https://github.com/aclai-lab/SolePostHoc.jl)
 
 ## Related Projects
+
+- [PAndQ.jl](https://raw.githubusercontent.com/jakobjpeters/PAndQ.jl/main/README.md)
+- [Julog.jl](https://github.com/ztangent/Julog.jl)
+- [LogicCircuits.jl](https://github.com/Juice-jl/LogicCircuits.jl)
+- [FirstOrderLogic.jl](https://github.com/roberthoenig/FirstOrderLogic.jl)
