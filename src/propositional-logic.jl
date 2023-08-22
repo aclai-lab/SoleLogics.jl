@@ -470,3 +470,57 @@ convert(::Type{AbstractInterpretation}, i::AbstractVector) = DefaultedTruthDict(
 # Base.getindex(i::AbstractVector, p::Proposition) = (atom(p) in i)
 # Base.in(p::Proposition, i::AbstractVector) = true
 check(p::Proposition, i::AbstractVector) = (p in i)
+
+
+"""
+    eagercheck(phi::SoleLogics.AbstractSyntaxStructure)
+
+Return a generator that yields applications of `check` algorithm over `phi`, considering
+every possible formula interpretation. Each yielded value is a pair `(i,c)` where `i` is an
+interpretation and c corresponds to `check(phi, i)`.
+
+# Examples
+```julia
+julia> for (interpretation, checkans) in SoleLogics.eagercheck(parseformula("¬(p ∧ q)"))
+        println(interpretation)
+        println("Checking result using the above interpretation: \$checkans\n")
+    end
+
+TruthDict with values:
+┌────────┬────────┐
+│      q │      p │
+│ String │ String │
+├────────┼────────┤
+│   true │   true │
+└────────┴────────┘
+
+Checking result using the above interpretation: false
+
+TruthDict with values:
+┌────────┬────────┐
+│      q │      p │
+│ String │ String │
+├────────┼────────┤
+│   true │  false │
+└────────┴────────┘
+
+Checking result using the above interpretation: true
+...
+```
+
+See also [`AbstractAssignment`](@ref), [`check`](@ref).
+"""
+function eagercheck(phi::SoleLogics.AbstractSyntaxStructure)
+    props = propositions(phi)
+
+    return (
+        (
+            TruthDict([ prop => truth for (prop, truth) in zip(props, interpretation)] ),
+            check(
+                phi,
+                TruthDict([ prop => truth for (prop, truth) in zip(props, interpretation)] )
+            )
+        )
+        for interpretation in Iterators.product([[true, false] for _ in 1:length(props)]...)
+    )
+end
