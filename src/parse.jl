@@ -300,7 +300,8 @@ end
     )
 
 Return a `SyntaxTree` which is the result of parsing `expression`
- via [Shunting yard](https://en.wikipedia.org/wiki/Shunting_yard_algorithm).
+ via the [Shunting yard](https://en.wikipedia.org/wiki/Shunting_yard_algorithm)
+ algorithm.
 By default, this function is only able to parse operators in
 `SoleLogics.BASE_PARSABLE_OPERATORS` (see arguments section);
 additional operators may be provided as a second argument.
@@ -310,7 +311,7 @@ additional operators may be provided as a second argument.
 - `additional_operators::Vector{<:AbstractOperator}`: additional, non-standard operators
     needed to correctly parse the expression.
     When left unset, only the operators in `SoleLogics.BASE_PARSABLE_OPERATORS` are
-    correctly parsed: $(repr(BASE_PARSABLE_OPERATORS));
+    correctly parsed: $(join(repr(BASE_PARSABLE_OPERATORS), ", "));
     note that, in case of clashing `syntaxstring`'s,
     the provided additional operators will override these.
 
@@ -551,7 +552,8 @@ end
     )::Formula
 
 Return a `Formula` which is the result of parsing `expression`
- via [Shunting yard](https://en.wikipedia.org/wiki/Shunting_yard_algorithm).
+ via the [Shunting yard](https://en.wikipedia.org/wiki/Shunting_yard_algorithm)
+ algorithm.
 By default, this function is only able to parse operators in
 `SoleLogics.BASE_PARSABLE_OPERATORS`; additional operators may be provided as
 a second argument.

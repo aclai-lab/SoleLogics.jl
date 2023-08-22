@@ -16,19 +16,20 @@ SoleLogics.arity(::Type{<:AbstractSyntaxToken})
 Proposition
 ```
 
-Let's recall the last concepts with a simple script.
+Let's recall the last concepts with a simple example.
 
-```julia
+```julia-repl
 julia> p = Proposition("p")
 Proposition{String}("p")
 
 julia> q = Proposition("q")
 Proposition{String}("q")
 
-# As we shall see in the next section, operators are syntax tokens too
+# Operators are syntax tokens too
 julia> CONJUNCTION
 ∧
 
+# SyntaxTree's are arity-compliant
 julia> st = SyntaxTree(CONJUNCTION, p)
 ERROR: AssertionError: Cannot instantiate SyntaxTree{SoleLogics.NamedOperator{:∧}} 
 with token ∧ of arity 2 and 1 children.
@@ -40,18 +41,18 @@ julia> arity(CONJUNCTION)
 julia> stree = SyntaxTree(CONJUNCTION, (p,q))
 SyntaxTree: p ∧ q
 
-# Get the content of the root token
+# Get the token of the root node
 julia> token(st)
 ∧
 
-# Get the right subtree, containing only a proposition
+# Get the first subtree, containing only a proposition
 julia> leftree = children(st)[1]; 
 SyntaxTree: p
 
 julia> typeof(leftree)
 SyntaxTree{Proposition{String}}
 
-# Propositions are necessarily leaf nodes, in fact their arity is 0
+# Propositions are necessarily at the leaves; in fact their arity is 0
 julia> leftree |> token |> arity
 0
 ```
@@ -92,16 +93,16 @@ SoleLogics.tree(f::AbstractFormula)
 ```
 
 ## Parsing & Printing
-SoleLogics.jl parsing and printing systems allows you to 
+SoleLogics.jl allows you to: 
 
-- easily convert formulas represented as strings into syntactical structures;
-- print complex formulas in a more clear manner, avoiding placing parentheses where it's not needed. 
+- Extract the string representation of a formula (via `syntaxstring`);
+- Parse formulas from strings (via `parsetree`).
 
- Those features are both highly customizable and work entirely three properties typical of syntactical tokens: [`arity`](@ref), operator precedence ([`Base.operator_precedence(op::AbstractOperator)`](@ref)) and operator associativity ([`SoleLogics.isrightassociative`](@ref)).
+These features are highly customizable, and leverage three properties of syntactical tokens: [`arity`](@ref), operator precedence ([`operator_precedence`](@ref)) and operator associativity ([`isrightassociative`](@ref)).
 
 ```@docs
-parsetree
 syntaxstring
+parsetree
 ```
 
 ## Grammar

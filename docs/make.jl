@@ -17,7 +17,8 @@ makedocs(;
         "Home" => "index.md",
         "Getting started" => "getting-started.md",
         "Propositional logic" => "propositional-logic.md",
-        "Modal logic" => "modal-logic.md"
+        "Modal logic" => "modal-logic.md",
+        "Full reference" => "autodocs.md"
     ]
 )
 

@@ -8,9 +8,7 @@ import Base: eltype, in, getindex, isiterable, iterate, IteratorSize, length, is
 """
     abstract type AbstractSyntaxToken end
 
-A token in a syntactic structure, most commonly, a syntax tree.
-A syntax tree is a tree-like structure representing a logical formula, where each
-node holds a *token*, and has as many children as the `arity` of the token.
+A token in a syntactic structure.
 
 See also [`SyntaxTree`](@ref), [`AbstractSyntaxStructure`](@ref),
 [`arity`](@ref), [`syntaxstring`](@ref).
@@ -77,13 +75,13 @@ some specific conditions.
 
 The following `kwargs` are currently supported:
 - `function_notation = false::Bool`: when set to `true`, it forces the use of
-function notation for binary operators.
-See [here](https://en.wikipedia.org/wiki/Infix_notation).
+   function notation for binary operators.
+   (see [here](https://en.wikipedia.org/wiki/Infix_notation)).
 - `remove_redundant_parentheses = true::Bool`: when set to `false`, it prints a syntaxstring
-where each syntactical element is wrapped in parentheses.
+   where each syntactical element is wrapped in parentheses.
 - `parentheses_at_propositions = !remove_redundant_parentheses::Bool`: when set to `true`,
-it forces the propositions (which are the leafs of a formula's tree structure) to be
-wrapped in parentheses.
+   it forces the propositions (which are the leafs of a formula's tree structure) to be
+   wrapped in parentheses.
 
 # Examples
 ```julia-repl
@@ -158,8 +156,8 @@ A proposition, sometimes called a propositional letter (or simply *letter*), of 
 `Proposition{A}` wraps a value `atom::A` representing a fact which truth can be assessed on
 a logical interpretation.
 
-Propositions are nullary tokens (i.e, they are at the leaves of a syntax tree).
-Note that their atom cannot be a Proposition.
+Propositions are nullary tokens (i.e, they are at the leaves of a syntax tree);
+note that their atoms cannot be `Proposition`s.
 
 See also [`AbstractSyntaxToken`](@ref), [`AbstractInterpretation`](@ref), [`check`](@ref).
 """
@@ -218,9 +216,9 @@ which establishes a relation between propositions (i.e., facts).
 For example, the boolean operators AND, OR and IMPLIES (stylized as ∧, ∨ and →)
 are used to connect propositions and/or formulas to express derived concepts.
 
-Since operators display very different algorithmic behaviors,
-all `struct`s that are subtypes of `AbstractOperator` must
-be parametric singleton types, which can be dispatched upon.
+Since operators often display very different algorithmic behaviors,
+leaf subtypes of `AbstractOperator` are
+often singleton types, which can be easily dispatched upon.
 
 # Implementation
 
@@ -245,7 +243,7 @@ doc_iscommutative = """
     iscommutative(::Type{AbstractOperator})
     iscommutative(o::AbstractOperator) = iscommutative(typeof(o))
 
-Return whether it is known that an `AbstractOperator` is commutative.
+Return whether an operator is known to be commutative.
 
 # Examples
 ```julia-repl
@@ -317,7 +315,7 @@ const BASE_PRECEDENCE = Base.operator_precedence(:*)
 """$(doc_precedence)"""
 const LOW_PRECEDENCE  = Base.operator_precedence(:+)
 
-doc_isrightassociative = """
+"""
     isrightassociative(::Type{AbstractOperator})
     isrightassociative(o::AbstractOperator) = isrightassociative(typeof(o))
 
@@ -341,10 +339,9 @@ true
 julia> isrightassociative(→)
 true
 ```
+
 See also [`AbstractOperator`](@ref).
 """
-
-"""$(doc_isrightassociative)"""
 isrightassociative(::Type{<:AbstractOperator}) = true
 isrightassociative(o::AbstractOperator) = isrightassociative(typeof(o))
 
@@ -361,14 +358,14 @@ and it can be anchored to a logic (see [`Formula`](@ref)).
 
 # Implementation
 
-When implementing a new formula type `MyCustomFormulaType`, please provide the method
+When implementing a new formula type `MyCustomFormulaType`, please provide a method `tree`
 for extracting its syntax tree representation:
 
     function tree(f::MyCustomFormulaType)::SyntaxTree
         ...
     end
 
-As well as the one used for composing formulas:
+As well as a method used for composing formulas:
 
     function (op::AbstractOperator)(
         children::NTuple{N,Union{AbstractSyntaxToken,MyCustomFormulaType}},
@@ -389,9 +386,8 @@ abstract type AbstractFormula end
     )::F where {N,F<:AbstractFormula}
 
 Return a new formula of type `F` by composing `N` formulas of the same type
-via an operator `op`. This function provides a way for composing formulas,
-but it allows to use operators for a more flexible composition; see the examples
-(and more in the extended help).
+via an operator `op`. This function allows one to use operators for flexibly composing
+formulas (see *Implementation*).
 
 # Examples
 ```julia-repl
@@ -399,7 +395,7 @@ julia> f = parseformula("◊(p→q)");
 
 julia> p = Proposition("p");
 
-julia> ∧(f, p)
+julia> ∧(f, p) # Shortcut
 SyntaxTree: ◊(p → q) ∧ p
 
 julia> f ∧ ¬p   # Leverage infix notation ;)
@@ -411,8 +407,8 @@ SyntaxTree: ◊(p → q) ∧ p ∧ ¬p
 
 # Implementation
 
-Upon `joinformulas` lies a more flexible way of using operators for composing
-formulas and syntax tokens (e.g., propositions), given methods like the following:
+Upon `joinformulas` lies a flexible way of using operators for composing
+formulas and syntax tokens (e.g., propositions), given by methods like the following:
 
     function (op::AbstractOperator)(
         children::NTuple{N,Union{AbstractSyntaxToken,AbstractFormula}},
@@ -478,11 +474,10 @@ end
 """
     abstract type AbstractSyntaxStructure <: AbstractFormula end
 
-A logical formula unanchored to any logic, and solely
-represented by its syntactic component.
-Classically, this structure is implemented as a tree structure (see [`SyntaxTree`](@ref));
-however, the implementation in some cases (e.g., conjuctive/disjuctive normal forms)
-can differ.
+A logical formula, represented by its syntactic component.
+The typical representation is the [`SyntaxTree`](@ref);
+however, different implementations can cover specific synctactic forms
+(e.g., conjuctive/disjuctive normal forms).
 
 See also
 [`tree`](@ref),
@@ -573,7 +568,7 @@ Base.promote_rule(::Type{<:AbstractSyntaxToken}, ::Type{SS}) where {SS<:Abstract
     end
 
 A syntax tree encoding a logical formula.
-Each node of the syntax tree holds a `token::T`, and
+Each node of the syntax tree holds a `token`, and
 has as many children as the `arity` of the token.
 
 This implementation is *arity-compliant*, in that, upon construction,
@@ -857,8 +852,9 @@ tree(t::AbstractSyntaxToken) = SyntaxTree(t)
     abstract type AbstractAlphabet{A} end
 
 Abstract type for representing an alphabet of propositions with atoms of type `A`.
-An alphabet (or *propositional alphabet*) is a set of propositions, and it is assumed to be
-[countable](https://en.wikipedia.org/wiki/Countable_set).
+An alphabet (or *propositional alphabet*) is a set of propositions
+(assumed to be
+[countable](https://en.wikipedia.org/wiki/Countable_set)).
 
 See also [`ExplicitAlphabet`](@ref), [`AlphabetOfAny`](@ref),
 [`propositionstype`](@ref), [`atomtype`](@ref),
