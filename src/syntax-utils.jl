@@ -188,6 +188,16 @@ function tree(lf::LeftmostLinearForm)
     return st
 end
 
+function joinformulas(
+    op::AbstractOperator,
+    tojoin::Vararg{LeftmostConjunctiveForm,N}
+) where {N}
+    @assert iscommutative(op) "Cannot join $(length(tojoin)) LeftmostConjunctiveForm's" *
+        " by means of $(op) because the operator is not commutative"
+
+    return LeftmostConjunctiveForm(op,reduce(vcat,children.(tojoin)))
+end
+
 function Base.show(io::IO, lf::LeftmostLinearForm{O,SS}) where {O,SS}
     println(io, "LeftmostLinearForm{$(O),$(SS)} with $(nchildren(lf)) children")
     println(io, "\t$(syntaxstring(lf))")
