@@ -43,7 +43,7 @@ collatetruth(a::AbstractAlgebra{T}, ::typeof(⊥), t::NTuple{0,T}) where {T<:Tru
 A singleton type for representing operators defined by a name or a symbol.
 
 # Examples
-The AND operator (logical conjuction) can be defined as the subtype:
+The AND operator (logical conjuction) is defined as the subtype:
 
     const CONJUNCTION = NamedOperator{:∧}()
     const ∧ = CONJUNCTION
@@ -149,7 +149,7 @@ dual(op::typeof(∧)) = typeof(∨)
 hasdual(::typeof(∨)) = true
 dual(op::typeof(∨))     = typeof(∧)
 
-doc_operatorprecedence = """
+"""
     Base.operator_precedence(op::AbstractOperator)
     Base.operator_precedence(::typeof(IMPLICATION))
 
@@ -158,8 +158,6 @@ Assign a precedence to an operator.
 See also [`AbstractOperator`](@ref), [`MAX_PRECEDENCE`](@ref), [`HIGH_PRECEDENCE`](@ref),
 [`BASE_PRECEDENCE`](@ref), [`LOW_PRECEDENCE`](@ref).
 """
-
-"""$(doc_operatorprecedence)"""
 function Base.operator_precedence(op::AbstractOperator)
     if isunary(op)
         HIGH_PRECEDENCE
@@ -170,7 +168,6 @@ function Base.operator_precedence(op::AbstractOperator)
     end
 end
 
-"""$(doc_operatorprecedence)"""
 Base.operator_precedence(::typeof(IMPLICATION)) = LOW_PRECEDENCE
 
 ############################################################################################
