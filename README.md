@@ -93,13 +93,12 @@ julia> phi = parseformula("¬(p ∧ q)")
 SyntaxTree: ¬(p ∧ q)
 
 julia> I = TruthDict(["p" => true, "q" => false])
-┌──────────────────────────┬────────┐
-│                     Keys │ Values │
-│      Proposition{String} │   Bool │
-├──────────────────────────┼────────┤
-│ Proposition{String}("q") │  false │
-│ Proposition{String}("p") │   true │
-└──────────────────────────┴────────┘
+┌────────┬────────┐
+│      q │      p │
+│ String │ String │
+├────────┼────────┤
+│  false │   true │
+└────────┴────────┘
 
 julia> check(phi, I)
 true

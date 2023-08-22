@@ -190,42 +190,32 @@ If prompted for the value of an unknown proposition, it throws an error.
 ```julia-repl
 julia> TruthDict(1:4)
 TruthDict with values:
-┌───────────────────────┬────────┐
-│                  Keys │ Values │
-│    Proposition{Int64} │   Bool │
-├───────────────────────┼────────┤
-│ Proposition{Int64}(4) │   true │
-│ Proposition{Int64}(2) │   true │
-│ Proposition{Int64}(3) │   true │
-│ Proposition{Int64}(1) │   true │
-└───────────────────────┴────────┘
+┌───────┬───────┬───────┬───────┐
+│     4 │     2 │     3 │     1 │
+│ Int64 │ Int64 │ Int64 │ Int64 │
+├───────┼───────┼───────┼───────┤
+│  true │  true │  true │  true │
+└───────┴───────┴───────┴───────┘
 
 
 julia> t1 = TruthDict(1:4, false); t1[5] = true; t1
 TruthDict with values:
-┌───────────────────────┬────────┐
-│                  Keys │ Values │
-│    Proposition{Int64} │   Bool │
-├───────────────────────┼────────┤
-│ Proposition{Int64}(5) │   true │
-│ Proposition{Int64}(4) │  false │
-│ Proposition{Int64}(2) │  false │
-│ Proposition{Int64}(3) │  false │
-│ Proposition{Int64}(1) │  false │
-└───────────────────────┴────────┘
+┌───────┬───────┬───────┬───────┬───────┐
+│     5 │     4 │     2 │     3 │     1 │
+│ Int64 │ Int64 │ Int64 │ Int64 │ Int64 │
+├───────┼───────┼───────┼───────┼───────┤
+│  true │ false │ false │ false │ false │
+└───────┴───────┴───────┴───────┴───────┘
 
 
 julia> t2 = TruthDict(["a" => true, "b" => false, "c" => true])
 TruthDict with values:
-┌──────────────────────────┬────────┐
-│                     Keys │ Values │
-│      Proposition{String} │   Bool │
-├──────────────────────────┼────────┤
-│ Proposition{String}("c") │   true │
-│ Proposition{String}("b") │  false │
-│ Proposition{String}("a") │   true │
-└──────────────────────────┴────────┘
-
+┌────────┬────────┬────────┐
+│      c │      b │      a │
+│ String │ String │ String │
+├────────┼────────┼────────┤
+│   true │  false │   true │
+└────────┴────────┴────────┘
 
 julia> check(parsebaseformula("a ∨ b"), t2)
 true
@@ -305,12 +295,20 @@ function inlinedisplay(i::TruthDict)
     "TruthDict([$(join(["$(syntaxstring(p)) => $t" for (p,t) in i.truth], ", "))])"
 end
 
+# Utility function to represent pretty tables horizontally
+function _hpretty_table(io::IO, keys, values)
+    atomkeys = atom.(keys)
+    header = (atomkeys, typeof.(atomkeys))
+    data = hcat([x for x in values]...)
+    pretty_table(io, data; header=header)
+end
+
 function Base.show(
     io::IO,
     i::TruthDict{A,T,D},
 ) where {A,T<:TruthValue,D<:AbstractDict{<:Proposition{<:A},T}}
     println(io, "TruthDict with values:")
-    pretty_table(io, i.truth)
+    _hpretty_table(io, i.truth |> keys, i.truth |> values)
 end
 
 # Helpers
@@ -342,17 +340,13 @@ it returns `default_truth`.
 # Examples
 ```julia-repl
 julia> t1 = DefaultedTruthDict(string.(1:4), false); t1["5"] = false; t1
-DefaultedTruthDict with default truth `false` with values:
-┌──────────────────────────┬────────┐
-│                     Keys │ Values │
-│      Proposition{String} │   Bool │
-├──────────────────────────┼────────┤
-│ Proposition{String}("4") │   true │
-│ Proposition{String}("1") │   true │
-│ Proposition{String}("5") │  false │
-│ Proposition{String}("2") │   true │
-│ Proposition{String}("3") │   true │
-└──────────────────────────┴────────┘
+DefaultedTruthDict with default truth `false` and values:
+┌────────┬────────┬────────┬────────┬────────┐
+│      4 │      1 │      5 │      2 │      3 │
+│ String │ String │ String │ String │ String │
+├────────┼────────┼────────┼────────┼────────┤
+│   true │   true │  false │   true │   true │
+└────────┴────────┴────────┴────────┴────────┘
 
 
 julia> check(parsebaseformula("1 ∨ 2"), t1)
@@ -439,7 +433,7 @@ function Base.show(
     i::DefaultedTruthDict{A,T,D},
 ) where {A,T<:TruthValue,D<:AbstractDict{<:Proposition{<:A},T}}
     println(io, "DefaultedTruthDict with default truth `$(i.default_truth)` and values:")
-    pretty_table(io, i.truth)
+    _hpretty_table(io, i.truth |> keys, i.truth |> values)
 end
 
 # Helpers
