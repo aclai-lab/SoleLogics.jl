@@ -47,23 +47,116 @@ julia> syntaxstring(φ2)
 "(⊥ ∨ t) → (¬p ∧ q ∧ ¬s ∧ ¬z)"
 ```
 
-<!-- 
 ### Generating random formulas
 
 ```julia-repl
-julia> parseformula("")
-```
+julia> using Random
 
-### Generating random interpretations
+julia> height = 2
 
-```julia-repl
-julia> parseformula("")
+julia> alphabet = Proposition.(["p", "q"])
+
+# Propositional case 
+julia> SoleLogics.BASE_PROPOSITIONAL_OPERATORS
+6-element Vector{SoleLogics.AbstractOperator}:
+ ⊤
+ ⊥
+ ¬
+ ∧
+ ∨
+ →
+
+julia> randformula(Random.MersenneTwister(507), height, alphabet, SoleLogics.BASE_PROPOSITIONAL_OPERATORS)
+SyntaxTree: ¬(q → p)
+
+# Modal case
+julia> SoleLogics.BASE_MODAL_OPERATORS
+8-element Vector{SoleLogics.AbstractOperator}:
+ ⊤
+ ⊥
+ ¬
+ ∧
+ ∨
+ →
+ ◊
+ □
+
+julia> randformula(Random.MersenneTwister(14), height, alphabet, SoleLogics.BASE_MODAL_OPERATORS)
+SyntaxTree: ¬□p
 ```
 
 ### Model checking
 
-### Interpretation sets
+```julia-repl
+# Propositional case
+julia> phi = parseformula("¬(p ∧ q)")
+SyntaxTree: ¬(p ∧ q)
 
+julia> I = TruthDict(["p" => true, "q" => false])
+┌──────────────────────────┬────────┐
+│                     Keys │ Values │
+│      Proposition{String} │   Bool │
+├──────────────────────────┼────────┤
+│ Proposition{String}("q") │  false │
+│ Proposition{String}("p") │   true │
+└──────────────────────────┴────────┘
+
+julia> check(phi, I)
+true
+
+# Modal case
+julia> using Graphs
+
+# Instantiate a Kripke frame with 5 worlds and 5 edges
+julia> worlds = SoleLogics.World.(1:5)
+
+julia> edges = Edge.([ (1, 2), (1, 3), (2, 4), (3, 4), (3, 5)])
+
+julia> fr = SoleLogics.ExplicitCrispUniModalFrame(worlds, Graphs.SimpleDiGraph(edges))
+SoleLogics.ExplicitCrispUniModalFrame{SoleLogics.World{Int64}, SimpleDiGraph{Int64}} with
+- worlds = ["1", "2", "3", "4", "5"]
+- accessibles = 
+        1 -> [2, 3]
+        2 -> [4]
+        3 -> [4, 5]
+        4 -> []
+        5 -> []
+
+# Enumerate the world that are accessible from the first world
+julia> accessibles(fr, first(worlds))
+2-element Vector{SoleLogics.World{Int64}}:
+ SoleLogics.World{Int64}(2)
+ SoleLogics.World{Int64}(3)
+
+julia> p,q = Proposition.(["p", "q"])
+
+ # Assign each world a propositional interpretation
+julia> valuation = Dict([
+	        worlds[1] => TruthDict([p => true, q => false]),
+	        worlds[2] => TruthDict([p => true, q => true]),
+	        worlds[3] => TruthDict([p => true, q => false]),
+	        worlds[4] => TruthDict([p => false, q => false]),
+	        worlds[5] => TruthDict([p => false, q => true]),
+	     ])
+
+# Instantiate a Kripke structure by combining a Kripke frame and the propositional interpretations over each world
+julia> K = KripkeStructure(fr, valuation)
+
+# Generate a modal formula
+julia> modphi = parseformula("◊(p ∧ q)")
+
+# Check the just generated formula on each world of the Kripke structure
+julia> [w => check(modphi, K, w) for w in worlds]
+5-element Vector{Pair{SoleLogics.World{Int64}, Bool}}:
+ SoleLogics.World{Int64}(1) => 1
+ SoleLogics.World{Int64}(2) => 0
+ SoleLogics.World{Int64}(3) => 0
+ SoleLogics.World{Int64}(4) => 0
+ SoleLogics.World{Int64}(5) => 0
+```
+
+<!--
+### Interpretation sets
 -->
 
 ## About
