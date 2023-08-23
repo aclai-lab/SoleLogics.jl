@@ -515,12 +515,30 @@ function eagercheck(phi::SoleLogics.AbstractSyntaxStructure)
 
     return (
         (
-            TruthDict([ prop => truth for (prop, truth) in zip(props, interpretation)] ),
+            TruthDict([prop => truth for (prop, truth) in zip(props, interpretation)]),
             check(
                 phi,
-                TruthDict([ prop => truth for (prop, truth) in zip(props, interpretation)] )
+                TruthDict([ prop => truth for (prop, truth) in zip(props, interpretation)])
             )
         )
         for interpretation in Iterators.product([[true, false] for _ in 1:length(props)]...)
+    )
+end
+
+"""
+    feedtruth!(td::TruthDict, entry::T)
+
+Push a new interpretation `entry` in a `TruthDict`.
+
+!!! warning
+    `entry`, whose type represent a `TruthValue`, must be an `AbstractVector` subtype.
+
+See also [`TruthDict`](@ref), [`TruthValue`](@ref).
+"""
+function feedtruth!(td::TruthDict{A,T,D}, entry::T) where {A,T<:AbstractVector,D}
+    td = TruthDict(
+        Dict(
+            [k => vcat(v, e) for (k,v,e) in zip(td.truth|>keys, td.truth|>values, entry)]
+        )
     )
 end
