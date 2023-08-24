@@ -471,7 +471,6 @@ convert(::Type{AbstractInterpretation}, i::AbstractVector) = DefaultedTruthDict(
 # Base.in(p::Proposition, i::AbstractVector) = true
 check(p::Proposition, i::AbstractVector) = (p in i)
 
-
 """
     eagercheck(phi::SoleLogics.AbstractSyntaxStructure)
 
@@ -485,7 +484,6 @@ julia> for (interpretation, checkans) in SoleLogics.eagercheck(parseformula("¬(
         println(interpretation)
         println("Checking result using the above interpretation: \$checkans\n")
     end
-
 TruthDict with values:
 ┌────────┬────────┐
 │      q │      p │
@@ -518,7 +516,7 @@ function eagercheck(phi::SoleLogics.AbstractSyntaxStructure)
             TruthDict([prop => truth for (prop, truth) in zip(props, interpretation)]),
             check(
                 phi,
-                TruthDict([ prop => truth for (prop, truth) in zip(props, interpretation)])
+                TruthDict([prop => truth for (prop, truth) in zip(props, interpretation)])
             )
         )
         for interpretation in Iterators.product([[true, false] for _ in 1:length(props)]...)
@@ -533,6 +531,29 @@ Push a new interpretation `entry` in a `TruthDict`.
 !!! warning
     `entry`, whose type represent a `TruthValue`, must be an `AbstractVector` subtype.
 
+# Examples
+```julia
+julia> p, q = Proposition.(["p", "q"])
+
+julia> td = TruthDict([p => [true], q => [true]])
+TruthDict with values:
+┌────────┬────────┐
+│      q │      p │
+│ String │ String │
+├────────┼────────┤
+│   true │   true │
+└────────┴────────┘
+
+julia> SoleLogics.feedtruth!(td, [true, false])
+┌────────┬────────┐
+│      q │      p │
+│ String │ String │
+├────────┼────────┤
+│   true │   true │
+│   true │  false │
+└────────┴────────┘
+```
+
 See also [`TruthDict`](@ref), [`TruthValue`](@ref).
 """
 function feedtruth!(td::TruthDict{A,T,D}, entry::T) where {A,T<:AbstractVector,D}
@@ -541,4 +562,13 @@ function feedtruth!(td::TruthDict{A,T,D}, entry::T) where {A,T<:AbstractVector,D
             [k => vcat(v, e) for (k,v,e) in zip(td.truth|>keys, td.truth|>values, entry)]
         )
     )
+end
+
+"""
+    generate_truthtable()
+
+Given a SyntaxTree, retrun a truth table where each possible interpretation is considered.
+"""
+function generate_truthtable()
+    # @Mauro TODO
 end
