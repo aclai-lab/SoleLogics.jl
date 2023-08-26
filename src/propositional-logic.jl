@@ -482,7 +482,8 @@ interpretation and c corresponds to `check(phi, i)`.
 ```julia
 julia> for (interpretation, checkans) in SoleLogics.eagercheck(parseformula("¬(p ∧ q)"))
         println(interpretation)
-        println("Checking result using the above interpretation: \$checkans\n")
+        print("Checking ¬(p ∧ q) using the above interpretation: ")
+        println(checkans)
     end
 TruthDict with values:
 ┌────────┬────────┐
@@ -571,4 +572,11 @@ Given a SyntaxTree, retrun a truth table where each possible interpretation is c
 """
 function generate_truthtable()
     # @Mauro TODO
+    # @Mauro IDEA
+    #   Extending TruthDict "truth" dictionary type in order to accept both propositions and
+    #   syntactical structures seems to be a choppy solution.
+    #   Instead, use composition to make TruthDict structure more powerful.
+    #   In other words, add more constructors to fill another dictionary (of
+    #   AbstractSyntaxStructures) that, when asked, can be accessed to evaluate a certain
+    #   interpretation.
 end

@@ -14,15 +14,11 @@ include("utils.jl")
 
 export iscrisp, isfinite, isnullary, isunary, isbinary
 
-export Proposition,
-    #
-    AlphabetOfAny,
-    ExplicitAlphabet,
-    #
-    SyntaxTree,
-    #
-    AbstractFormula,
-    Formula
+export AbstractSyntaxToken, Proposition,
+    AbstractFormula, Formula,
+    AbstractSyntaxStructure, SyntaxTree,
+    AlphabetOfAny, ExplicitAlphabet,
+    SYNTACTICAL
 
 export syntaxstring
 

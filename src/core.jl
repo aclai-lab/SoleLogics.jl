@@ -1771,3 +1771,13 @@ function (op::AbstractOperator)(
         return joinformulas(op, Base.promote(children...))
     end
 end
+
+"""
+    const SYNTACTICAL = Union{AbstractSyntaxStructure,AbstractSyntaxToken}
+
+Union type representing a generic [`AbstractSyntaxStructure`](@ref) or a single token
+in it.
+
+See also [`AbstractSyntaxStructure`](@ref), [`AbstractSyntaxToken`](@ref).
+"""
+const SYNTACTICAL = Union{AbstractSyntaxStructure,AbstractSyntaxToken}
