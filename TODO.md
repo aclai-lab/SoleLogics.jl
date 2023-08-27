@@ -1,11 +1,13 @@
 In README.md {c}
     Check examples (see NOTE or pluto-demo.jl) {cm:2023-08-22}
-    List of similar packages, highlightning SoleLogics use cases
+    List of similar packages {cm:2023-08-27}
+    Highlight SoleLogics use cases
 
 Rename things to increase readability, using @deprecate in a deprecate.jl file.
 
 See PAndQ
-    Write the algorithm that produces truth tables of propositional formulae; also, recognize if a formula is satisfiable, is a contingency, a tautology or a contraddiction.
+    Write the algorithm that produces truth tables of propositional formulae
+    Recognize if a formula is satisfiable, is a contingency, a tautology or a contraddiction.
     Macro to easily create atoms
 
 Fix SatsBase.sample errors
