@@ -282,6 +282,13 @@ struct TruthDict{
     function TruthDict(t::Tuple)
         return TruthDict(Pair(t...))
     end
+    function TruthDict{A,T,D}() where {
+        A,
+        T<:TruthValue,
+        D<:AbstractDict{<:Proposition{<:A},T},
+    }
+        return TruthDict{A,T,D}(Dict{Proposition{A},T}())
+    end
     function TruthDict()
         d = Dict{Proposition{Any},TruthValue}([])
         return TruthDict{Any,TruthValue,typeof(d)}(d)
@@ -334,7 +341,13 @@ function Base.show(
     io::IO,
     i::TruthDict{A,T,D},
 ) where {A,T<:TruthValue,D<:AbstractDict{<:Proposition{<:A},T}}
-    println(io, "TruthDict with values:")
+    if isempty(i.truth)
+        print(io, "Empty TruthDict")
+        return
+    else
+        println(io, "TruthDict with values:")
+    end
+
     _hpretty_table(
         io,
         Iterators.flatten((i.truth |> keys, i.synstructs |> keys)),
@@ -504,6 +517,94 @@ convert(::Type{AbstractInterpretation}, i::AbstractVector) = DefaultedTruthDict(
 check(p::Proposition, i::AbstractVector) = (p in i)
 
 """
+    feedtruth!(td::TruthDict, entry::T)
+
+Push a new interpretation `entry` in a `TruthDict`.
+This function guarantees that no duplicate interpretations occur.
+
+!!! warning
+    `entry`, whose type represent a `TruthValue`, must be an `AbstractVector` subtype.
+
+# Examples
+```julia
+julia> p, q = Proposition.(["p", "q"])
+
+julia> td = TruthDict([p => [true], q => [true]])
+TruthDict with values:
+┌────────┬────────┐
+│      q │      p │
+│ String │ String │
+├────────┼────────┤
+│   true │   true │
+└────────┴────────┘
+
+julia> SoleLogics.feedtruth!(td, [true, false])
+┌────────┬────────┐
+│      q │      p │
+│ String │ String │
+├────────┼────────┤
+│   true │   true │
+│   true │  false │
+└────────┴────────┘
+```
+
+See also [`TruthDict`](@ref), [`TruthValue`](@ref).
+"""
+function feedtruth!(td::TruthDict{A,T,D}, entry::T) where {A,T<:AbstractVector,D<:AbstractDict{<:Proposition{<:A},T}}
+    # Insert a new interpretation, if unique
+    function _unique_update(x)
+        # TODO: check for unique
+        k, v, e = x
+        td[k] = vcat(v,e)
+    end
+
+    map(x -> _unique_update(x),  zip(td.truth |> keys, td.truth |> values, entry))
+    return td
+end
+
+
+"""
+    truth_table()
+
+Return...
+
+# Examples
+```julia
+
+```
+
+See also...
+"""
+function truth_table(
+    st::AbstractSyntaxStructure;
+    truthvals::T=[true, false]
+) where {T <: Vector{<:TruthValue}}
+    props = propositions(st)
+    proptypes = typejoin(atomtype.(propositions(st))...)
+    td = TruthDict{proptypes, T, Dict{Proposition{proptypes},T} }(
+        Dict([p => [truthvals[1]] for p in props])
+    )
+
+    function _addentry(
+        i::T
+    ) where {T <: Vector{<:TruthValue}}
+        feedtruth!(td, i)
+        checkans = check(st, TruthDict([prop => truth for (prop, truth) in zip(props, i)]))
+
+        try
+            push!(td.synstructs[st], checkans)
+        catch e
+            if e isa KeyError
+                td.synstructs[st] = [checkans]
+            end
+        end
+    end
+
+    map(i -> _addentry([i...]), Iterators.product([truthvals for _ in 1:length(props)]...))
+    return td
+end
+
+"""
     eagercheck(phi::SoleLogics.AbstractSyntaxStructure)
 
 Return a generator that yields applications of `check` algorithm over `phi`, considering
@@ -541,8 +642,12 @@ Checking result using the above interpretation: true
 
 See also [`AbstractAssignment`](@ref), [`check`](@ref).
 """
-function eagercheck(phi::SoleLogics.AbstractSyntaxStructure)
+function eagercheck(
+    phi::SoleLogics.AbstractSyntaxStructure;
+    truthvals::Vector{T}=[true, false]
+) where {T <: TruthValue}
     props = propositions(phi)
+    typejoin(atomtype.(propositions(st))...)
 
     return (
         (
@@ -552,61 +657,6 @@ function eagercheck(phi::SoleLogics.AbstractSyntaxStructure)
                 TruthDict([prop => truth for (prop, truth) in zip(props, interpretation)])
             )
         )
-        for interpretation in Iterators.product([[true, false] for _ in 1:length(props)]...)
+        for interpretation in Iterators.product([truthvals for _ in 1:length(props)]...)
     )
-end
-
-"""
-    feedtruth!(td::TruthDict, entry::T)
-
-Push a new interpretation `entry` in a `TruthDict`.
-
-!!! warning
-    `entry`, whose type represent a `TruthValue`, must be an `AbstractVector` subtype.
-
-# Examples
-```julia
-julia> p, q = Proposition.(["p", "q"])
-
-julia> td = TruthDict([p => [true], q => [true]])
-TruthDict with values:
-┌────────┬────────┐
-│      q │      p │
-│ String │ String │
-├────────┼────────┤
-│   true │   true │
-└────────┴────────┘
-
-julia> SoleLogics.feedtruth!(td, [true, false])
-┌────────┬────────┐
-│      q │      p │
-│ String │ String │
-├────────┼────────┤
-│   true │   true │
-│   true │  false │
-└────────┴────────┘
-```
-
-See also [`TruthDict`](@ref), [`TruthValue`](@ref).
-"""
-function feedtruth!(td::TruthDict{A,T,D}, entry::T) where {A,T<:AbstractVector,D}
-    # TODO: assert to check whether an interpretation already exists
-    [td[k] = vcat(v, e) for (k,v,e) in zip(td.truth|>keys, td.truth|>values, entry)]
-    return td
-end
-
-"""
-    generate_truthtable()
-
-Given a SyntaxTree, retrun a truth table where each possible interpretation is considered.
-"""
-function generate_truthtable()
-    # @Mauro TODO
-    # @Mauro IDEA
-    #   Extending TruthDict "truth" dictionary type in order to accept both propositions and
-    #   syntactical structures seems to be a choppy solution.
-    #   Instead, use composition to make TruthDict structure more powerful.
-    #   In other words, add more constructors to fill another dictionary (of
-    #   AbstractSyntaxStructures) that, when asked, can be accessed to evaluate a certain
-    #   interpretation.
 end
