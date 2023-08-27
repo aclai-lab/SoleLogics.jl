@@ -233,6 +233,7 @@ struct TruthDict{
 } <: AbstractAssignment{A,T}
 
     truth::D
+    synstructs::Dict{AbstractSyntaxStructure,T} # nothing if not computed
 
     function TruthDict{A,T,D}(
         d::D,
@@ -241,7 +242,7 @@ struct TruthDict{
         T<:TruthValue,
         D<:AbstractDict{<:Proposition{<:A},T},
     }
-        return new{A,T,D}(d)
+        return new{A,T,D}(d,Dict{AbstractSyntaxStructure,T}())
     end
     function TruthDict{A,T}(d::AbstractDict{<:Proposition,T}) where {A,T<:TruthValue}
         return TruthDict{A,T,typeof(d)}(d)
@@ -290,15 +291,14 @@ end
 Base.getindex(i::TruthDict{AA}, p::Proposition) where {AA} = Base.getindex(i.truth, p)
 Base.haskey(i::TruthDict{AA}, p::Proposition) where {AA} = Base.haskey(i.truth, p)
 
-
 function inlinedisplay(i::TruthDict)
     "TruthDict([$(join(["$(syntaxstring(p)) => $t" for (p,t) in i.truth], ", "))])"
 end
 
 # Utility function to represent pretty tables horizontally
-function _hpretty_table(io::IO, keys, values)
-    atomkeys = atom.(keys)
-    header = (atomkeys, typeof.(atomkeys))
+function _hpretty_table(io::IO, keys::Any, values::Any)
+    _keys = map(x -> x isa Proposition ? atom(x) : x, collect(keys))
+    header = (_keys, string.(nameof.(typeof.(_keys))))
     data = hcat([x for x in values]...)
     pretty_table(io, data; header=header)
 end
@@ -308,7 +308,24 @@ function Base.show(
     i::TruthDict{A,T,D},
 ) where {A,T<:TruthValue,D<:AbstractDict{<:Proposition{<:A},T}}
     println(io, "TruthDict with values:")
-    _hpretty_table(io, i.truth |> keys, i.truth |> values)
+
+    try
+        _hpretty_table(
+            io,
+            Iterators.flatten((i.truth |> keys, i.synstructs |> keys)),
+            Iterators.flatten((i.truth |> values, i.synstructs |> values))
+        )
+    catch e
+        if e isa DimensionMismatch
+            @warn "Some syntax structures are not resolved with all the interpretations " *
+            "(# interpretations: $(i.truth |> values |> length), " *
+            "# values: $(i.synstructs |> values |>length)).\n" *
+            "Missing truth values are replaced with 'nothing'."
+
+            # TODO: find a way to fill values with nothing
+        end
+    end
+
 end
 
 # Helpers
@@ -558,11 +575,9 @@ julia> SoleLogics.feedtruth!(td, [true, false])
 See also [`TruthDict`](@ref), [`TruthValue`](@ref).
 """
 function feedtruth!(td::TruthDict{A,T,D}, entry::T) where {A,T<:AbstractVector,D}
-    td = TruthDict(
-        Dict(
-            [k => vcat(v, e) for (k,v,e) in zip(td.truth|>keys, td.truth|>values, entry)]
-        )
-    )
+    # TODO: assert to check whether an interpretation already exists
+    [td[k] = vcat(v, e) for (k,v,e) in zip(td.truth|>keys, td.truth|>values, entry)]
+    return td
 end
 
 """

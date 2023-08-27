@@ -641,7 +641,7 @@ propositionstype(t::SyntaxTree) = typeintersect(Proposition, tokenstype(t))
 # Shows the type of the syntax tree and its syntaxstring.
 # Base.show(io::IO, t::SyntaxTree) = print(io, "$(typeof(t))($(syntaxstring(t)))")
 function Base.show(io::IO, t::SyntaxTree)
-    print(io, "SyntaxTree: $(syntaxstring(t))")
+    print(io, "$(syntaxstring(t))")
     # print(io, "Allowed token types: $(tokenstype(t))")
 end
 
