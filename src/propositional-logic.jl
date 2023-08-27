@@ -296,11 +296,38 @@ function inlinedisplay(i::TruthDict)
 end
 
 # Utility function to represent pretty tables horizontally
-function _hpretty_table(io::IO, keys::Any, values::Any)
+function _hpretty_table(
+    io::IO,
+    keys::Any,
+    values::Any,
+    nvalues::Int; # This is required since "values" might be a generator
+    defaulttruth::Union{Nothing,TruthValue} = nothing
+)
+    # Prepare columns names
     _keys = map(x -> x isa Proposition ? atom(x) : x, collect(keys))
     header = (_keys, string.(nameof.(typeof.(_keys))))
-    data = hcat([x for x in values]...)
-    pretty_table(io, data; header=header)
+
+    try
+        # Try to draw a complete table
+        data = hcat([x for x in values]...)
+        pretty_table(io, data; header=header)
+    catch e
+        if e isa DimensionMismatch
+            # If it is not possible to draw a complete table, then fill the missing
+            # values with `defaulttruth` (e.g., there are 3 interpretations but only
+            # one is evaluated on a certain formula)
+            @warn "Some syntax structures are not resolved with all the interpretations " *
+            "(which are $nvalues)\n" *
+            "Missing truth values are replaced with default value $defaulttruth."
+
+            data = hcat([
+                length(x) == nvalues ? x : [x..., fill(nothing, nvalues - length(x))...]
+                for x in values]...
+            )
+
+            pretty_table(io, data; header=header)
+        end
+    end
 end
 
 function Base.show(
@@ -308,24 +335,12 @@ function Base.show(
     i::TruthDict{A,T,D},
 ) where {A,T<:TruthValue,D<:AbstractDict{<:Proposition{<:A},T}}
     println(io, "TruthDict with values:")
-
-    try
-        _hpretty_table(
-            io,
-            Iterators.flatten((i.truth |> keys, i.synstructs |> keys)),
-            Iterators.flatten((i.truth |> values, i.synstructs |> values))
-        )
-    catch e
-        if e isa DimensionMismatch
-            @warn "Some syntax structures are not resolved with all the interpretations " *
-            "(# interpretations: $(i.truth |> values |> length), " *
-            "# values: $(i.synstructs |> values |>length)).\n" *
-            "Missing truth values are replaced with 'nothing'."
-
-            # TODO: find a way to fill values with nothing
-        end
-    end
-
+    _hpretty_table(
+        io,
+        Iterators.flatten((i.truth |> keys, i.synstructs |> keys)),
+        Iterators.flatten((i.truth |> values, i.synstructs |> values)),
+        i.truth |> values |> first |>length
+    )
 end
 
 # Helpers
@@ -450,7 +465,7 @@ function Base.show(
     i::DefaultedTruthDict{A,T,D},
 ) where {A,T<:TruthValue,D<:AbstractDict{<:Proposition{<:A},T}}
     println(io, "DefaultedTruthDict with default truth `$(i.default_truth)` and values:")
-    _hpretty_table(io, i.truth |> keys, i.truth |> values)
+    _hpretty_table(io, i.truth |> keys, i.truth |> values, i.truth |> values |> length)
 end
 
 # Helpers
