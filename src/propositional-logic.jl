@@ -520,7 +520,6 @@ check(p::Proposition, i::AbstractVector) = (p in i)
     feedtruth!(td::TruthDict, entry::T)
 
 Push a new interpretation `entry` in a `TruthDict`.
-This function guarantees that no duplicate interpretations occur.
 
 !!! warning
     `entry`, whose type represent a `TruthValue`, must be an `AbstractVector` subtype.
@@ -551,14 +550,10 @@ julia> SoleLogics.feedtruth!(td, [true, false])
 See also [`TruthDict`](@ref), [`TruthValue`](@ref).
 """
 function feedtruth!(td::TruthDict{A,T,D}, entry::T) where {A,T<:AbstractVector,D<:AbstractDict{<:Proposition{<:A},T}}
-    # Insert a new interpretation, if unique
-    function _unique_update(x)
-        # TODO: check for unique
-        k, v, e = x
-        td[k] = vcat(v,e)
-    end
-
-    map(x -> _unique_update(x),  zip(td.truth |> keys, td.truth |> values, entry))
+    # NOTE: this function could be useful if avoids duplicate entries.
+    # In order to efficiently implement duplicates recognition, a Set could be used to
+    # see the TruthDict keys from a different perspective.
+    [td[k] = vcat(v, e) for (k,v,e) in zip(td.truth|>keys, td.truth|>values, entry)]
     return td
 end
 
@@ -581,14 +576,22 @@ function truth_table(
 ) where {T <: Vector{<:TruthValue}}
     props = propositions(st)
     proptypes = typejoin(atomtype.(propositions(st))...)
+    # Interpretations generator
+    intergen = Iterators.product([truthvals for _ in 1:length(props)]...)
+
     td = TruthDict{proptypes, T, Dict{Proposition{proptypes},T} }(
-        Dict([p => [truthvals[1]] for p in props])
+        Dict([
+            props[p] => vec([
+                i[p]
+                for i in intergen
+            ])
+            for p in 1:length(props)
+        ])
     )
 
     function _addentry(
         i::T
     ) where {T <: Vector{<:TruthValue}}
-        feedtruth!(td, i)
         checkans = check(st, TruthDict([prop => truth for (prop, truth) in zip(props, i)]))
 
         try
@@ -600,7 +603,7 @@ function truth_table(
         end
     end
 
-    map(i -> _addentry([i...]), Iterators.product([truthvals for _ in 1:length(props)]...))
+    map(i -> _addentry([i...]), intergen)
     return td
 end
 

@@ -6,7 +6,7 @@ In README.md {c}
 Rename things to increase readability, using @deprecate in a deprecate.jl file.
 
 See PAndQ
-    Write the algorithm that produces truth tables of propositional formulae
+    Write the algorithm that produces truth tables of propositional formulae {cm:2023-08-28}
     Recognize if a formula is satisfiable, is a contingency, a tautology or a contraddiction.
     Macro to easily create atoms
 
