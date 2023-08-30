@@ -38,7 +38,8 @@ function Base.rand(
     if isfinite(alphabet)
         Base.rand(rng, propositions(alphabet), args...; kwargs...)
     else
-        error("Please, provide method Base.rand(rng::AbstractRNG, alphabet::$(typeof(alphabet)), args...; kwargs...).")
+        error("Please, provide method Base.rand(rng::AbstractRNG, " *
+            "alphabet::$(typeof(alphabet)), args...; kwargs...).")
     end
 end
 
@@ -55,7 +56,8 @@ function StatsBase.sample(
     if isfinite(alphabet)
         StatsBase.sample(rng, propositions(alphabet), args...; kwargs...)
     else
-        error("Please, provide method StatsBase.sample(rng::AbstractRNG, alphabet::$(typeof(alphabet)), args...; kwargs...).")
+        error("Please, provide method StatsBase.sample(rng::AbstractRNG, " *
+            "alphabet::$(typeof(alphabet)), args...; kwargs...).")
     end
 end
 
@@ -96,12 +98,20 @@ function StatsBase.sample(g::AbstractGrammar, args...; kwargs...)
 end
 
 function StatsBase.sample(
-    rng::AbstractRNG,
-    g::AbstractGrammar,
     height::Integer,
+    g::AbstractGrammar,
     kwargs...
 )
-    return error("Please, provide method StatsBase.sample(rng::AbstractRNG, g::$(typeof(g)), height::Integer; kwargs...).")
+    StatsBase.sample(Random.GLOBAL_RNG, height, g, kwargs...)
+end
+
+function StatsBase.sample(
+    rng::AbstractRNG,
+    height::Integer,
+    g::AbstractGrammar,
+    kwargs...
+)
+    randbaseformula(height, alphabet(g), operators(g); rng=rng)
 end
 
 #= ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ CompleteFlatGrammar ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ =#
@@ -112,7 +122,7 @@ function Base.rand(
     g::CompleteFlatGrammar,
     args...
 )
-    randbaseformula(height, alphabet(g), operators(g); rng = Random.GLOBAL_RNG, args...)
+    randbaseformula(height, alphabet(g), operators(g); rng=Random.GLOBAL_RNG, args...)
 end
 
 function Base.rand(
@@ -121,7 +131,7 @@ function Base.rand(
     g::CompleteFlatGrammar,
     args...
 )
-    randbaseformula(height, alphabet(g), operators(g); rng = rng, args...)
+    randbaseformula(height, alphabet(g), operators(g); rng=rng, args...)
 end
 
 # TODO

@@ -10,7 +10,8 @@ See PAndQ
     Recognize if a formula is satisfiable, is a contingency, a tautology or a contraddiction.
     Macro to easily create atoms and parse expressions related to syntax (See PAndQ.jl) {cm:2023-08-30}
 
-Fix SatsBase.sample errors
+Fix SatsBase.sample errors {cm:2023-08-30}
+Differentiate Base.rand and StatsBase.sample (randformula should have a picker::Function argument, which can be rand or sample)
 
 Write check's docstring
 
