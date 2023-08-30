@@ -47,6 +47,7 @@ include("base-logic.jl")
 export propositionallogic
 
 export TruthDict, DefaultedTruthDict
+export truth_table
 
 include("propositional-logic.jl")
 

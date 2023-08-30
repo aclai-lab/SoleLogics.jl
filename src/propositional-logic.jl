@@ -549,7 +549,10 @@ julia> SoleLogics.feedtruth!(td, [true, false])
 
 See also [`TruthDict`](@ref), [`TruthValue`](@ref).
 """
-function feedtruth!(td::TruthDict{A,T,D}, entry::T) where {A,T<:AbstractVector,D<:AbstractDict{<:Proposition{<:A},T}}
+function feedtruth!(
+    td::TruthDict{A,T,D},
+    entry::T
+) where {A,T<:AbstractVector,D<:AbstractDict{<:Proposition{<:A},T}}
     # NOTE: this function could be useful if avoids duplicate entries.
     # In order to efficiently implement duplicates recognition, a Set could be used to
     # see the TruthDict keys from a different perspective.
@@ -559,16 +562,39 @@ end
 
 
 """
-    truth_table()
+    function truth_table(
+        st::AbstractSyntaxStructure;
+        truthvals::T=[true, false]
+    ) where {T <: Vector{<:TruthValue}}
 
-Return...
+Return a [`TruthDict`](@ref) containing the complete truth table of a generic syntax
+structure.
+
+# Arguments
+- `st::AbstractSyntaxStructure`: principal structure of the truth table;
+- `truthvals::T where {T <: Vector{<:TruthValue}}`: vector of legal truth values; every
+    combination of those values is considered when computing the truth table.
 
 # Examples
 ```julia
 
+julia> st = CONJUNCTION(Proposition("p"), Proposition("q"))
+p ∧ q
+
+julia> truth_table(st, truthvals=[true, false])
+TruthDict with values:
+┌────────┬────────┬────────────┐
+│      q │      p │      p ∧ q │
+│ String │ String │ SyntaxTree │
+├────────┼────────┼────────────┤
+│   true │   true │       true │
+│   true │  false │      false │
+│  false │   true │      false │
+│  false │  false │      false │
+└────────┴────────┴────────────┘
 ```
 
-See also...
+See also [`TruthDict`](@ref), [`TruthValue`](@ref), [`check`](@ref).
 """
 function truth_table(
     st::AbstractSyntaxStructure;
