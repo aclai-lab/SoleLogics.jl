@@ -163,6 +163,17 @@ doc_randformula = """
 
 Return a pseudo-randomic `SyntaxTree` or `Formula`.
 
+# Arguments
+- `height::Integer`: height of the generated structure;
+- `alphabet::AbstractAlphabet`: collection from which propositions are chosen randomly;
+- `operators::Vector{<:AbstractOperator}`: vector from which legal operators are chosen;
+- `g::AbstractGrammar`: alternative to passing alphabet and operators separately.
+
+# Keyword Arguments
+- `rng::Union{Intger,AbstractRNG} = Random.GLOBAL_RNG`: random number generator;
+- `picker::Function` = method used to pick a random element. For example, this could be
+    Base.rand or SimpleStats.sample.
+
 # Examples
 
 ```julia-repl
@@ -194,11 +205,12 @@ function randbaseformula(
     height::Integer,
     alphabet,
     operators::Vector{<:AbstractOperator};
+    picker::Function=rand,
     kwargs...
 )::Formula
     alphabet = convert(AbstractAlphabet, alphabet)
     baseformula(
-        randformula(height, alphabet, operators; kwargs...);
+        randformula(height, alphabet, operators; picker=picker, kwargs...);
         alphabet = alphabet,
         additional_operators = operators,
     )

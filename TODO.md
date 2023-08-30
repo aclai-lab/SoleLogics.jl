@@ -11,7 +11,7 @@ See PAndQ
     Macro to easily create atoms and parse expressions related to syntax (See PAndQ.jl) {cm:2023-08-30}
 
 Fix SatsBase.sample errors {cm:2023-08-30}
-Differentiate Base.rand and StatsBase.sample (randformula should have a picker::Function argument, which can be rand or sample)
+Differentiate Base.rand and StatsBase.sample (randformula should have a picker::Function argument, which can be rand or sample) {cm:2023-08-30}
 
 Write check's docstring
 
