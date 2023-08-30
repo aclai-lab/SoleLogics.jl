@@ -8,7 +8,7 @@ Rename things to increase readability, using @deprecate in a deprecate.jl file.
 See PAndQ
     Write the algorithm that produces truth tables of propositional formulae {cm:2023-08-28}
     Recognize if a formula is satisfiable, is a contingency, a tautology or a contraddiction.
-    Macro to easily create atoms
+    Macro to easily create atoms and parse expressions related to syntax (See PAndQ.jl) {cm:2023-08-30}
 
 Fix SatsBase.sample errors
 
