@@ -111,7 +111,8 @@ function StatsBase.sample(
     g::AbstractGrammar,
     kwargs...
 )
-    randbaseformula(height, alphabet(g), operators(g); rng=rng)
+    randbaseformula(
+        height, alphabet(g), operators(g); rng=rng, picker=StatsBase.sample, kwargs...)
 end
 
 #= ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ CompleteFlatGrammar ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ =#
@@ -122,7 +123,7 @@ function Base.rand(
     g::CompleteFlatGrammar,
     args...
 )
-    randbaseformula(height, alphabet(g), operators(g); rng=Random.GLOBAL_RNG, args...)
+    Base.rand(Random.GLOBAL_RNG, height, g, args...)
 end
 
 function Base.rand(
@@ -176,12 +177,13 @@ See also [`AbstractAlphabet`](@ref), [`SyntaxTree`](@ref).
 function randbaseformula(
     height::Integer,
     g::AbstractGrammar;
+    picker::Function=rand,
     kwargs...
 )::Formula
     _alphabet = alphabet(g)
     _operators = operators(g)
     baseformula(
-        randformula(height, _alphabet, _operators; kwargs...);
+        randformula(height, _alphabet, _operators; picker=picker, kwargs...);
         alphabet = _alphabet,
         additional_operators = _operators
     )
@@ -209,6 +211,7 @@ function randformula(
     operators::Vector{<:AbstractOperator};
     modaldepth::Integer = height,
     rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG,
+    picker::Function = rand,
     opweights::Union{AbstractWeights,AbstractVector{<:Real},Nothing} = nothing
 )::SyntaxTree
     alphabet = convert(AbstractAlphabet, alphabet)
@@ -235,7 +238,7 @@ function randformula(
     )::SyntaxTree
         if height == 0
             # Sample proposition from alphabet
-            return SyntaxTree(rand(rng, propositions(alphabet)))
+            return SyntaxTree(picker(rng, propositions(alphabet)))
         else
             # Sample operator and generate children
             # (Note: only allow modal operators if modaldepth > 0)
