@@ -206,6 +206,71 @@ function dual(atom::Any)
         "SoleLogics.dual(::$(typeof(atom))).")
 end
 
+# Utility function, see @propositions macro
+_define_props(cast, p::Symbol) = :(const $p = $(cast(p) |> Proposition))
+
+
+"""
+@propositions(cast, ps...)
+
+Instantiate a collection of [`Proposition`](@ref) and return them as a vector..
+
+!!! info
+    Propositions instantiated with this macro are defined in the global scope as constants.
+
+# Examples
+```julia
+julia> SoleLogics.@atoms String p q r s
+4-element Vector{Proposition{String}}:
+ Proposition{String}("p")
+ Proposition{String}("q")
+ Proposition{String}("r")
+ Proposition{String}("s")
+
+julia> p
+Proposition{String}("p")
+```
+"""
+macro propositions(cast, ps...)
+    quote
+        $(map(p -> _define_props(eval(cast), p), ps)...)
+        Proposition.([$(ps...)])
+    end |> esc
+end
+
+# Source:
+#   Symbolics.jl  (https://github.com/JuliaSymbolics/Symbolics.jl)
+#   PAndQ.jl      (https://github.com/jakobjpeters/PAndQ.jl)
+atomize(p::Symbol) = :((@isdefined $p) ? $p : $(string(p) |> Proposition))
+atomize(x::Expr) = Meta.isexpr(x, [:(=), :kw]) ?
+    Expr(x.head, x.args[1], map(atomize, x.args[2:end])...) :
+    Expr(x.head, map(atomize, x.args)...)
+atomize(x) = x
+
+"""
+    @synexpr(expression)
+
+Return an expression after automatically instantiating undefined [`Proposition`](@ref)s.
+
+!!! info
+Currently, every identified proposition is of type `Proposition{String}`.
+
+# Examples
+```julia
+julia> @synexpr x = p # Proposition{String}("p") is assigned to the global variable x
+Proposition{String}("p")
+
+julia> @synexpr st = p ∧ q → r
+(p ∧ q) → r
+
+julia> typeof(st)
+SyntaxTree{SoleLogics.NamedOperator{:→}}
+```
+"""
+macro synexpr(expression)
+    :($(expression |> atomize)) |> esc
+end
+
 ############################################################################################
 
 """

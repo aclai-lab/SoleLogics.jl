@@ -33,6 +33,7 @@ export domain, top, bottom, grammar, algebra, logic, tree
 export istop, isbottom
 
 export tokens, operators, propositions
+export @propositions, @synexpr
 
 include("core.jl")
 
