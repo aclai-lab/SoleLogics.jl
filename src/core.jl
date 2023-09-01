@@ -220,7 +220,7 @@ Instantiate a collection of [`Proposition`](@ref) and return them as a vector..
 
 # Examples
 ```julia
-julia> SoleLogics.@atoms String p q r s
+julia> SoleLogics.@propositions String p q r s
 4-element Vector{Proposition{String}}:
  Proposition{String}("p")
  Proposition{String}("q")
@@ -1771,8 +1771,27 @@ This process is referred to as
 [model checking](https://en.wikipedia.org/wiki/Model_checking), and there are many
 algorithms for it, typically depending on the complexity of the logic.
 
-See also [`AbstractFormula`](@ref), [`AbstractInterpretation`](@ref).
+# Examples
+```julia
+julia> @propositions String p q
+2-element Vector{Proposition{String}}:
+ Proposition{String}("p")
+ Proposition{String}("q")
 
+julia> td = TruthDict([p => true, q => false])
+TruthDict with values:
+┌────────┬────────┐
+│      q │      p │
+│ String │ String │
+├────────┼────────┤
+│  false │   true │
+└────────┴────────┘
+
+julia> check(CONJUNCTION(p,q), td)
+false
+```
+
+See also [`AbstractFormula`](@ref), [`AbstractInterpretation`](@ref).
 """
 function check(
     f::AbstractFormula,

@@ -8,9 +8,9 @@ import Base: getindex
 
 Abstract type for ordered sets of interpretations.
 A set of interpretations, also referred to as a *dataset* in this context,
-is a collection of *instances*, each of which is an interpretation, and is 
+is a collection of *instances*, each of which is an interpretation, and is
 identified by an index i_instance::Integer.
-These structures are especially useful when performing 
+These structures are especially useful when performing
 [model checking](https://en.wikipedia.org/wiki/Model_checking).
 
 See also [`atomtype`](@ref), [`truthtype`](@ref),
@@ -76,6 +76,21 @@ struct InterpretationSet{M<:AbstractInterpretation} <: AbstractInterpretationSet
 end
 
 Base.getindex(ms::InterpretationSet, i_instance::Integer) = Base.getindex(ms.instances, i_instance)
+
+"""
+    function check(
+        f::AbstractFormula,
+        is::InterpretationSet,
+        i_instance::Integer,
+        args...
+    )
+
+Dispatch to check a specific [`AbstractInterpretation`](@ref) in a
+[`InterpretationSet`](@ref) over a formula.
+
+See also [`AbstractInterpretation`](@ref), [`InterpretationSet`](@ref),
+[`AbstractFormula`](@ref).
+"""
 function check(
     f::AbstractFormula,
     is::InterpretationSet,
@@ -176,7 +191,7 @@ end
 #     check(first(children(φ)), X, i_instance, accessibles(frame(X, i_instance), rel); kwargs...)
 # end
 
-# TODO remove?
+# @deprecate (see deprecate.jl)
 function check(
     φ::SoleLogics.AbstractFormula,
     X::AbstractInterpretationSet{<:AbstractKripkeStructure},

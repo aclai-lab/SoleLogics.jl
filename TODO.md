@@ -3,7 +3,7 @@ In README.md {c}
     List of similar packages {cm:2023-08-27}
     Highlight SoleLogics use cases
 
-Rename things to increase readability, using @deprecate in a deprecate.jl file.
+(C) Rename things to increase readability, using @deprecate in a deprecate.jl file. {cm:2023-09-01}
 
 See PAndQ
     Write the algorithm that produces truth tables of propositional formulae {cm:2023-08-28}
@@ -13,7 +13,7 @@ See PAndQ
 Fix SatsBase.sample errors {cm:2023-08-30}
 Differentiate Base.rand and StatsBase.sample (randformula should have a picker::Function argument, which can be rand or sample) {cm:2023-08-30}
 
-Write check's docstring
+Write check's docstring {cm:2023-09-01}
 
 Write random models generation (see pluto-demo.jl)
 
