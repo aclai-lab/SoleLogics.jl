@@ -1,0 +1,28 @@
+Outreaching:
+  Documentation:
+    ☐ In the documentation, show how to create a custom operator (maybe a Xor/⊻/⊕) starting from scratch.
+  README:
+    ✔ Check examples (see NOTE or pluto-demo.jl) @done(23-09-05 19:34)
+    ✔ List of similar packages @done(23-09-05 19:30)
+    ☐ Highlight SoleLogics use cases
+
+Readibility: 
+  ✔ Write check's docstring @done(23-09-05 19:33)
+  ☐ Rename things to increase readability, using @deprecate in a deprecate.jl file.
+
+Tests:
+  ☐ Fix SatsBase.sample errors
+
+Utilities:
+  ☐ Differentiate Base.rand and StatsBase.sample (randformula should have a picker::Function argument, which can be rand or sample)
+
+From PAndQ:
+  ☐ Write the algorithm that produces truth tables of propositional formulae
+  ☐ Recognize if a formula is satisfiable, is a contingency, a tautology or a contraddiction.
+  ☐ Macro to easily create atoms and parse expressions related to syntax (See PAndQ.jl)
+
+General:
+  ☐ Write random models generation (see pluto-demo.jl)
+  Normalization:
+    ☐ Add custom normalization rules to normalize
+    ☐ Simplify code when possible, using dual/hasdual traits
