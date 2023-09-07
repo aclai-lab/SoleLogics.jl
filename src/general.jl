@@ -84,7 +84,19 @@ where each syntactical element is wrapped in parentheses.
 
 # Examples
 ```julia-repl
-julia> syntaxstring((parsebaseformula("◊((p∧s)→q)")))
+julia> syntaxstring(parsebaseformula("p∧q∧r∧s∧t"))
+"p ∧ q ∧ r ∧ s ∧ t"
+
+julia> syntaxstring(parsebaseformula("p∧q∧r∧s∧t"), function_notation=true)
+"∧(p, ∧(q, ∧(r, ∧(s, t))))"
+
+julia> syntaxstring(parsebaseformula("p∧q∧r∧s∧t"), remove_redundant_parentheses=false)
+"(p) ∧ ((q) ∧ ((r) ∧ ((s) ∧ (t))))"
+
+julia> syntaxstring(parsebaseformula("p∧q∧r∧s∧t"), remove_redundant_parentheses=true, parentheses_at_propositions=true)
+"(p) ∧ (q) ∧ (r) ∧ (s) ∧ (t)"
+
+julia> syntaxstring(parsebaseformula("◊((p∧s)→q)"))
 "◊((p ∧ s) → q)"
 
 julia> syntaxstring((parsebaseformula("◊((p∧s)→q)")); function_notation = true)

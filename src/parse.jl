@@ -70,10 +70,10 @@ In case of tie, operators are evaluated in the left-to-right order.
 # Examples
 ```julia-repl
 julia> syntaxstring(parseformula("¬a ∧ b ∧ c"))
-"(¬(a)) ∧ (b ∧ c)"
+"¬a ∧ b ∧ c"
 
 julia> syntaxstring(parseformula("¬a → b ∧ c"))
-"(¬(a)) → (b ∧ c)"
+"(¬a) → (b ∧ c)"
 
 julia> syntaxstring(parseformula("a∧b → c∧d"))
 "(a ∧ b) → (c ∧ d)"
@@ -403,14 +403,13 @@ a second argument.
 # Examples
 ```julia-repl
 julia> syntaxstring(parsetree("¬p∧q∧(¬s∧¬z)"))
-"(¬(p)) ∧ (q ∧ ((¬(s)) ∧ (¬(z))))"
+"¬p ∧ q ∧ ¬s ∧ ¬z"
 
 julia> syntaxstring(parsetree("∧(¬p,∧(q,∧(¬s,¬z)))", function_notation=true))
-"(¬(p)) ∧ (q ∧ ((¬(s)) ∧ (¬(z))))"
+"¬p ∧ q ∧ ¬s ∧ ¬z"
 
-julia> syntaxstring(parsetree("¬1→0";
-    proposition_parser = (x -> Proposition{Float64}(parse(Float64, x)))))
-"(¬(1.0)) → 0.0"
+julia> syntaxstring(parsetree("¬1→0"; proposition_parser = (x -> Proposition{Float64}(parse(Float64, x)))))
+"(¬1.0) → 0.0"
 ```
 
 See also [`SyntaxTree`](@ref), [`syntaxstring`](@ref).
