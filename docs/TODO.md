@@ -5,7 +5,7 @@
         # - Core concepts
         # - Propositional logic
         # - Modal logic 
-    Write down real functioning examples using ```julia etc.```
+    Write down real functioning examples using ```julia-repl etc.```
         Also, think about making a functioning notebook using Pluto.jl
     Improve docstrings to make them more clear
     Fill up docstrings with considerations

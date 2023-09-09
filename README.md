@@ -29,7 +29,7 @@ using SoleLogics
 
 ### Parsing and manipulating Formulas
 
-```julia
+```julia-repl
 julia> φ1 = parseformula("¬p∧q∧(¬s∧¬z)");
 
 julia> φ1 isa SyntaxTree
@@ -49,7 +49,7 @@ julia> syntaxstring(φ2)
 
 ### Generating random formulas
 
-```julia
+```julia-repl
 julia> using Random
 
 julia> height = 2
@@ -87,7 +87,7 @@ SyntaxTree: ¬□p
 
 ### Model checking
 
-```julia
+```julia-repl
 # Propositional case
 julia> phi = parseformula("¬(p ∧ q)")
 SyntaxTree: ¬(p ∧ q)
@@ -162,7 +162,7 @@ julia> [w => check(modphi, K, w) for w in worlds]
 
 The package is developed by the [ACLAI Lab](https://aclai.unife.it/en/) @ University of Ferrara.
 
-*SoleLogics.jl* lays the logical foundations for [*Sole.jl*](https://github.com/aclai-lab/Sole.jl), an open-source framework for *symbolic machine learning* and [*modal symbolic machine learning*](https://www.repository.unipr.it/bitstream/1889/5219/5/main.pdf).
+*SoleLogics.jl* lays the logical foundations for [*Sole.jl*](https://github.com/aclai-lab/Sole.jl), an open-source framework for *symbolic machine learning*, originally designed for machine learning based on modal logics (see [Eduard](https://eduardstan.github.io/)'s PhD thesis *'Foundations of Modal Symbolic Learning'* [here](https://www.repository.unipr.it/bitstream/1889/5219/5/main.pdf)).
 
 ## More on Sole
 - [SoleData.jl](https://github.com/aclai-lab/SoleData.jl)
@@ -170,9 +170,9 @@ The package is developed by the [ACLAI Lab](https://aclai.unife.it/en/) @ Univer
 - [SoleModels.jl](https://github.com/aclai-lab/SoleModels.jl)
 - [SolePostHoc.jl](https://github.com/aclai-lab/SolePostHoc.jl)
 
-## Related Projects
+## Similar Julia Packages for Computational Logic
 
-- [PAndQ.jl](https://raw.githubusercontent.com/jakobjpeters/PAndQ.jl/main/README.md)
+- [PAndQ.jl](https://github.com/jakobjpeters/PAndQ.jl/)
 - [Julog.jl](https://github.com/ztangent/Julog.jl)
 - [LogicCircuits.jl](https://github.com/Juice-jl/LogicCircuits.jl)
 - [FirstOrderLogic.jl](https://github.com/roberthoenig/FirstOrderLogic.jl)

@@ -67,7 +67,7 @@ hasdual(t::AbstractSyntaxToken) = false
     syntaxstring(φ::AbstractFormula; kwargs...)::String
     syntaxstring(tok::AbstractSyntaxToken; kwargs...)::String
 
-Produces the string representation of a formula or syntax token by performing
+Produce the string representation of a formula or syntax token by performing
 a tree traversal of the syntax tree representation of the formula.
 Note that this representation may introduce redundant parentheses.
 `kwargs` can be used to specify how to display syntax tokens/trees under
@@ -75,7 +75,7 @@ some specific conditions.
 
 The following `kwargs` are currently supported:
 - `function_notation = false::Bool`: when set to `true`, it forces the use of
-   function notation for binary operators.
+   function notation for binary operators
    (see [here](https://en.wikipedia.org/wiki/Infix_notation)).
 - `remove_redundant_parentheses = true::Bool`: when set to `false`, it prints a syntaxstring
    where each syntactical element is wrapped in parentheses.
@@ -85,7 +85,6 @@ The following `kwargs` are currently supported:
 
 # Examples
 ```julia-repl
-
 julia> syntaxstring(parsebaseformula("p∧q∧r∧s∧t"))
 "p ∧ q ∧ r ∧ s ∧ t"
 
@@ -219,7 +218,7 @@ Instantiate a collection of [`Proposition`](@ref) and return them as a vector.
     Propositions instantiated with this macro are defined in the global scope as constants.
 
 # Examples
-```julia
+```julia-repl
 julia> SoleLogics.@propositions String p q r s
 4-element Vector{Proposition{String}}:
  Proposition{String}("p")
@@ -256,7 +255,7 @@ Return an expression after automatically instantiating undefined [`Proposition`]
 Currently, every identified proposition is of type `Proposition{String}`.
 
 # Examples
-```julia
+```julia-repl
 julia> @synexpr x = p # Proposition{String}("p") is assigned to the global variable x
 Proposition{String}("p")
 
@@ -379,6 +378,27 @@ const HIGH_PRECEDENCE = Base.operator_precedence(:^)
 const BASE_PRECEDENCE = Base.operator_precedence(:*)
 """$(doc_precedence)"""
 const LOW_PRECEDENCE  = Base.operator_precedence(:+)
+
+
+"""
+    Base.operator_precedence(op::AbstractOperator)
+    Base.operator_precedence(::typeof(IMPLICATION))
+
+Assign a precedence to an operator.
+
+See also [`AbstractOperator`](@ref), [`MAX_PRECEDENCE`](@ref), [`HIGH_PRECEDENCE`](@ref),
+[`BASE_PRECEDENCE`](@ref), [`LOW_PRECEDENCE`](@ref).
+"""
+function Base.operator_precedence(op::AbstractOperator)
+    if isunary(op)
+        HIGH_PRECEDENCE
+    elseif isnullary(op)
+        MAX_PRECEDENCE
+    else
+        BASE_PRECEDENCE
+    end
+end
+
 
 """
     isrightassociative(::Type{AbstractOperator})
@@ -643,7 +663,7 @@ See also [`token`](@ref), [`children`](@ref), [`tokentype`](@ref),
 [`tokens`](@ref), [`operators`](@ref), [`propositions`](@ref),
 [`ntokens`](@ref), [`npropositions`](@ref), [`height`](@ref),
 [`tokenstype`](@ref), [`operatorstype`](@ref), [`propositionstype`](@ref),
-[`AbstractSyntaxToken`](@ref), [`arity`](@ref), [`Proposition`](@ref), [`Operator`](@ref).
+[`AbstractSyntaxToken`](@ref), [`arity`](@ref), [`Proposition`](@ref), [`AbstractOperator`](@ref).
 """
 struct SyntaxTree{
     T<:AbstractSyntaxToken,
@@ -1772,7 +1792,7 @@ This process is referred to as
 algorithms for it, typically depending on the complexity of the logic.
 
 # Examples
-```julia
+```julia-repl
 julia> @propositions String p q
 2-element Vector{Proposition{String}}:
  Proposition{String}("p")

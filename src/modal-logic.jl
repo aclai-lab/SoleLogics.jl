@@ -592,7 +592,7 @@ function check(
 Check a formula on a specific word in a [`KripkeStructure`](@ref).
 
 # Examples
-```julia
+```julia-repl
 julia> using Graphs, Random
 
 julia> @propositions String p q
