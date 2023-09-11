@@ -212,7 +212,7 @@ _define_props(cast, p::Symbol) = :(const $p = $(cast(p) |> Proposition))
 """
 @propositions(cast, ps...)
 
-Instantiate a collection of [`Proposition`](@ref) and return them as a vector.
+Instantiate a collection of [`Proposition`](@ref)s and return them as a vector.
 
 !!! info
     Propositions instantiated with this macro are defined in the global scope as constants.
