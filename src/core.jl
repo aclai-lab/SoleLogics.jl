@@ -460,13 +460,13 @@ julia> f = parseformula("◊(p→q)");
 
 julia> p = Proposition("p");
 
-julia> ∧(f, p) # Shortcut
+julia> ∧(f, p)  # Easy way to compose a formula
 SyntaxTree: ◊(p → q) ∧ p
 
 julia> f ∧ ¬p   # Leverage infix notation ;)
 SyntaxTree: ◊(p → q) ∧ ¬p
 
-julia> ∧(f, p, ¬p)
+julia> ∧(f, p, ¬p) # Shortcut for ∧(f, ∧(p, ¬p))
 SyntaxTree: ◊(p → q) ∧ p ∧ ¬p
 ```
 
