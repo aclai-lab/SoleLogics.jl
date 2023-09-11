@@ -29,7 +29,7 @@ using SoleLogics
 
 ### Parsing and manipulating Formulas
 
-```julia-repl
+```julia
 julia> φ1 = parseformula("¬p∧q∧(¬s∧¬z)");
 
 julia> φ1 isa SyntaxTree
@@ -49,7 +49,7 @@ julia> syntaxstring(φ2)
 
 ### Generating random formulas
 
-```julia-repl
+```julia
 julia> using Random
 
 julia> height = 2
@@ -87,7 +87,7 @@ SyntaxTree: ¬□p
 
 ### Model checking
 
-```julia-repl
+```julia
 # Propositional case
 julia> phi = parseformula("¬(p ∧ q)")
 SyntaxTree: ¬(p ∧ q)
