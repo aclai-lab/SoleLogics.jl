@@ -123,6 +123,8 @@ const IMPLICATION = NamedOperator{:→}()
 const → = IMPLICATION
 arity(::Type{typeof(→)}) = 2
 
+Base.operator_precedence(::typeof(IMPLICATION)) = LOW_PRECEDENCE
+
 # Helpers that allow the conjuction/disjuction of more than two tokens/formulas.
 function CONJUNCTION(
     c1::Union{AbstractSyntaxToken,AbstractFormula},
@@ -149,26 +151,6 @@ dual(op::typeof(∧)) = typeof(∨)
 hasdual(::typeof(∨)) = true
 dual(op::typeof(∨))     = typeof(∧)
 
-"""
-    Base.operator_precedence(op::AbstractOperator)
-    Base.operator_precedence(::typeof(IMPLICATION))
-
-Assign a precedence to an operator.
-
-See also [`AbstractOperator`](@ref), [`MAX_PRECEDENCE`](@ref), [`HIGH_PRECEDENCE`](@ref),
-[`BASE_PRECEDENCE`](@ref), [`LOW_PRECEDENCE`](@ref).
-"""
-function Base.operator_precedence(op::AbstractOperator)
-    if isunary(op)
-        HIGH_PRECEDENCE
-    elseif isnullary(op)
-        MAX_PRECEDENCE
-    else
-        BASE_PRECEDENCE
-    end
-end
-
-Base.operator_precedence(::typeof(IMPLICATION)) = LOW_PRECEDENCE
 
 ############################################################################################
 ########################################## ALGEBRA #########################################

@@ -67,7 +67,7 @@ export AbstractWorldSet, WorldSet
 
 export Interval, Interval2D, OneWorld
 
-export global_diamond, global_box
+export globaldiamond, globalbox
 
 include("modal-logic.jl")
 

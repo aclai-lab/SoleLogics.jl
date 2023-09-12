@@ -525,7 +525,7 @@ Push a new interpretation `entry` in a `TruthDict`.
     `entry`, whose type represent a `TruthValue`, must be an `AbstractVector` subtype.
 
 # Examples
-```julia
+```julia-repl
 julia> p, q = Proposition.(["p", "q"])
 
 julia> td = TruthDict([p => [true], q => [true]])
@@ -576,8 +576,7 @@ structure.
     combination of those values is considered when computing the truth table.
 
 # Examples
-```julia
-
+```julia-repl
 julia> st = CONJUNCTION(Proposition("p"), Proposition("q"))
 p ∧ q
 
@@ -641,7 +640,7 @@ every possible formula interpretation. Each yielded value is a pair `(i,c)` wher
 interpretation and c corresponds to `check(phi, i)`.
 
 # Examples
-```julia
+```julia-repl
 julia> for (interpretation, checkans) in SoleLogics.eagercheck(parseformula("¬(p ∧ q)"))
         println(interpretation)
         print("Checking ¬(p ∧ q) using the above interpretation: ")
