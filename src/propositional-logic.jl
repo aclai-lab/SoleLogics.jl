@@ -517,12 +517,12 @@ convert(::Type{AbstractInterpretation}, i::AbstractVector) = DefaultedTruthDict(
 check(p::Proposition, i::AbstractVector) = (p in i)
 
 """
-    feedtruth!(td::TruthDict, entry::T)
+    function feedtruth!(
+        td::TruthDict{A,T,D},
+        entry::T
+    ) where {A,T<:AbstractVector,D<:AbstractDict{<:Proposition{<:A},T}}
 
 Push a new interpretation `entry` in a `TruthDict`.
-
-!!! warning
-    `entry`, whose type represent a `TruthValue`, must be an `AbstractVector` subtype.
 
 # Examples
 ```julia-repl
