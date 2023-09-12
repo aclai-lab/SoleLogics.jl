@@ -1010,8 +1010,8 @@ function diamond(r::AbstractRelation) DiamondRelationalOperator(r) end
 function box() BOX end
 function box(r::AbstractRelation) BoxRelationalOperator(r) end
 
-globaldiamond = diamond(globalrel)
-globalbox = box(globalrel)
+globaldiamond = diamond(globalrel) # @deprecate (see deprecate.jl)
+globalbox = box(globalrel)         # ...
 
 const BASE_MULTIMODAL_OPERATORS = [BASE_PROPOSITIONAL_OPERATORS...,
     globaldiamond,

@@ -5,3 +5,6 @@ Base.@deprecate function check(
     args...;
     kwargs...
 )
+
+Base.@deprecate globaldiamond
+Base.@deprecate globalbox
