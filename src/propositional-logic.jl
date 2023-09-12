@@ -491,6 +491,7 @@ end
 
 ############################################################################################
 
+# NOTE: the following has to be discussed @mauro-milella
 """
     struct TruthTable{A,T<:TruthValue}
 
