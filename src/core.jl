@@ -248,7 +248,7 @@ atomize(x) = x
 Return an expression after automatically instantiating undefined [`Proposition`](@ref)s.
 
 !!! info
-Currently, every identified proposition is of type `Proposition{String}`.
+Every identified proposition is of type `Proposition{String}`.
 
 # Examples
 ```julia-repl
@@ -263,7 +263,9 @@ SyntaxTree{SoleLogics.NamedOperator{:→}}
 ```
 """
 macro synexpr(expression)
-    :($(expression |> atomize)) |> esc
+    quote
+        $(expression |> atomize)
+    end |> esc
 end
 
 ############################################################################################
