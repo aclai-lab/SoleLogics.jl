@@ -226,10 +226,10 @@ julia> p
 Proposition{String}("p")
 ```
 """
-macro propositions(cast, ps...)
+macro propositions(ps...)
     quote
-        $(map(p -> _define_props(string, p), ps)...)
-        Proposition.([$(ps...)])
+        $(map(p -> :(const $p = $(string(p) |> Proposition)), ps)...)
+        [$(ps...)]
     end |> esc
 end
 
