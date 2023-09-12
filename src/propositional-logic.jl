@@ -182,7 +182,7 @@ check(p::Proposition, i::AbstractAssignment{AA}, args...) where {AA} = Base.geti
         truth::D
     end
 
-A truth table instantiated as a dictionary,
+A logical interpretation instantiated as a dictionary,
 explicitly assigning truth values to a *finite* set of propositions.
 If prompted for the value of an unknown proposition, it throws an error.
 
@@ -487,6 +487,25 @@ end
     Base.keys,
     Base.values,
 )
+
+
+############################################################################################
+
+"""
+    struct TruthTable{A,T<:TruthValue}
+
+Dictionary which associates an [`AbstractAssignment`](@ref)s to the truth value of the
+assignment itself on a [`AbstractSyntaxStructure`](@ref).
+
+See also [`AbstractAssignment`](@ref), [`AbstractSyntaxStructure`](@ref),
+[`TruthValue`](@ref).
+"""
+struct TruthTable{
+    A,
+    T<:TruthValue
+}
+    truth::Dict{<:AbstractAssignment{A,T},Pair{AbstractSyntaxStructure,T}}
+end
 
 ############################################################################################
 
