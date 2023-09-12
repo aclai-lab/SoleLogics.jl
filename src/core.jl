@@ -205,10 +205,6 @@ function dual(atom::Any)
         "SoleLogics.dual(::$(typeof(atom))).")
 end
 
-# Utility function, see @propositions macro
-_define_props(cast, p::Symbol) = :(const $p = $(cast(p) |> Proposition))
-
-
 """
 @propositions(cast, ps...)
 
@@ -232,7 +228,7 @@ Proposition{String}("p")
 """
 macro propositions(cast, ps...)
     quote
-        $(map(p -> _define_props(eval(cast), p), ps)...)
+        $(map(p -> _define_props(string, p), ps)...)
         Proposition.([$(ps...)])
     end |> esc
 end
