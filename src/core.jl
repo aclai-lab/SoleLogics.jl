@@ -237,10 +237,10 @@ end
 #   Symbolics.jl  (https://github.com/JuliaSymbolics/Symbolics.jl)
 #   PAndQ.jl      (https://github.com/jakobjpeters/PAndQ.jl)
 atomize(p::Symbol) = :((@isdefined $p) ? $p : $(string(p) |> Proposition))
+atomize(x) = x
 atomize(x::Expr) = Meta.isexpr(x, [:(=), :kw]) ?
     Expr(x.head, x.args[1], map(atomize, x.args[2:end])...) :
     Expr(x.head, map(atomize, x.args)...)
-atomize(x) = x
 
 """
     @synexpr(expression)

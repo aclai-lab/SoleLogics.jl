@@ -505,7 +505,7 @@ struct TruthTable{
     A,
     T<:TruthValue
 }
-    truth::Dict{<:AbstractAssignment{A,T},Pair{AbstractSyntaxStructure,T}}
+    truth::Dict{<:AbstractAssignment{A,T},Vector{Pair{AbstractSyntaxStructure,T}}}
 end
 
 ############################################################################################
