@@ -4,9 +4,10 @@ CurrentModule = SoleLogics
 
 # [Getting started](@id man-core)
 
-In this chapter, Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc justo justo, finibus ac odio in, tempor fermentum augue. Vivamus ullamcorper lacus eget enim imperdiet, ac lobortis turpis elementum. Fusce non auctor eros. Duis scelerisque auctor volutpat. Morbi non luctus est. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Pellentesque porttitor a est sit amet ornare. Aliquam faucibus fringilla imperdiet.
-
 ## [Syntax Basics](@id syntactical-base-definitions)
+
+- Logical formulas are most commonly represented as syntax trees
+TODO
 
 ```@docs
 AbstractSyntaxStructure
