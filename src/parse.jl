@@ -351,8 +351,7 @@ julia> syntaxstring(parsetree("¬p∧q∧(¬s∧¬z)"))
 julia> syntaxstring(parsetree("∧(¬p,∧(q,∧(¬s,¬z)))", function_notation=true))
 "¬p ∧ q ∧ ¬s ∧ ¬z"
 
-julia> syntaxstring(parsetree("¬1→0";
-    proposition_parser = (x -> Proposition{Float64}(parse(Float64, x)))))
+julia> syntaxstring(parsetree("¬1→0"; proposition_parser = (x -> Proposition{Float64}(parse(Float64, x)))))
 "(¬1.0) → 0.0"
 ```
 

@@ -94,8 +94,7 @@ julia> syntaxstring(parsebaseformula("p∧q∧r∧s∧t"), function_notation=tru
 julia> syntaxstring(parsebaseformula("p∧q∧r∧s∧t"), remove_redundant_parentheses=false)
 "(p) ∧ ((q) ∧ ((r) ∧ ((s) ∧ (t))))"
 
-julia> syntaxstring(parsebaseformula("p∧q∧r∧s∧t"),
-    remove_redundant_parentheses=true, parentheses_at_propositions=true)
+julia> syntaxstring(parsebaseformula("p∧q∧r∧s∧t"), remove_redundant_parentheses=true, parentheses_at_propositions=true)
 "(p) ∧ (q) ∧ (r) ∧ (s) ∧ (t)"
 
 julia> syntaxstring(parsebaseformula("◊((p∧s)→q)"))
@@ -353,11 +352,16 @@ By default, all operators are assigned a `BASE_PRECEDENCE`, except for:
 - unary operators (e.g., ¬, ◊), that are assigned a `HIGH_PRECEDENCE`;
 - the implication (→), that is assigned a `LOW_PRECEDENCE`.
 
-It is possible to assign a specific precedence to an operator by providing a method
+In case of tie, operators are evaluated in the left-to-right order.
+
+It is possible to assign a specific precedence to an operator type `O` by providing a method
 `Base.operator_precedence(::Type{O})`.
 
 # Examples
 ```julia-repl
+julia> syntaxstring(parseformula("¬a ∧ b ∧ c"))
+"¬a ∧ b ∧ c"
+
 julia> syntaxstring(parseformula("¬a → b ∧ c"))
 "(¬a) → (b ∧ c)"
 

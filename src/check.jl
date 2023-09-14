@@ -78,13 +78,13 @@ BEWARE: it currently assumes the underlying algebra is Boolean!
 julia> f = parsebaseformula("□¬((p∧¬q)→r)∧⊤");
 
 julia> syntaxstring(f)
-"(□(¬((p ∧ (¬(q))) → r))) ∧ ⊤"
+"□¬((p ∧ ¬q) → r) ∧ ⊤"
 
 julia> syntaxstring(SoleLogics.normalize(f; profile = :modelchecking, allow_proposition_flipping = false))
-"¬(◊(((¬(p)) ∨ q) ∧ r))"
+"¬◊(q ∨ ¬p ∨ r)"
 
 julia> syntaxstring(SoleLogics.normalize(f; profile = :readability, allow_proposition_flipping = false))
-"□((p ∧ (¬(q))) ∨ (¬(r)))"
+"□(¬r ∧ p ∧ ¬q)"
 ```
 
 See also
@@ -306,7 +306,7 @@ on every world.
 julia> f = parsebaseformula("⟨G⟩p → [G]q");
 
 julia> syntaxstring(f)
-"([G](p)) → (⟨G⟩(q))"
+"(⟨G⟩p) → ([G]q)"
 
 julia> SoleLogics.isgrounded(f)
 true
