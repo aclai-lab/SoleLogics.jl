@@ -28,7 +28,7 @@ export BOTTOM, ⊥
 export arity, valuetype, tokentype, tokenstype,
         atomstype, operatorstype, truthtype
 export check
-export atom, token, children, alphabet, formulas
+export value, token, children, alphabet, formulas
 export domain, top, bottom, grammar, algebra, logic, tree
 export istop, isbottom
 

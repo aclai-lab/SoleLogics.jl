@@ -15,4 +15,4 @@ const global_box = globalbox
 export Proposition, atom
 
 const Proposition = Atom
-const atom = value
+Base.@deprecate atom(p::Proposition) value(p)
