@@ -6,15 +6,15 @@ using Random
 
 @test (normalize(parsetree("◊((¬(□(q))) → ⊥)")) |> syntaxstring) == "◊□q"
 
-p = Proposition("p")
-q = Proposition("q")
-r = Proposition("r")
+p = Atom("p")
+q = Atom("q")
+r = Atom("r")
 
 alph_vector = [p,q,r]
 
 φ = randformula(MersenneTwister(1), 4, alph_vector, SoleLogics.BASE_MODAL_OPERATORS)
 
-@test issubset(propositions(φ), alph_vector)
+@test issubset(atoms(φ), alph_vector)
 
 worlds = SoleLogics.World.(1:10)
 fr = SoleLogics.ExplicitCrispUniModalFrame(worlds, SimpleDiGraph(length(worlds), 40))

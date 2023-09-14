@@ -13,7 +13,7 @@
 ## In a nutshell
 
 *SoleLogics.jl* provides a fresh codebase for computational logic, featuring easy manipulation of:
-- Propositional and (multi)modal logics (propositions, logical constants, alphabet, grammars, crisp/fuzzy algebras);
+- Propositional and (multi)modal logics (atoms, logical constants, alphabet, grammars, crisp/fuzzy algebras);
 - Logical formulas (parsing, random generation, minimization);
 - Logical interpretations (e.g., propositional valuations, Kripke structures);
 - Algorithms for *finite [model checking](https://en.wikipedia.org/wiki/Model_checking)*, that is, checking that a formula is satisfied by an interpretation.
@@ -38,7 +38,7 @@ true
 julia> syntaxstring(φ1)
 "¬p ∧ q ∧ ¬s ∧ ¬z"
 
-julia> φ2 = ⊥ ∨ Proposition("t") → φ1;
+julia> φ2 = ⊥ ∨ Atom("t") → φ1;
 
 julia> φ2 isa SyntaxTree
 true
@@ -54,7 +54,7 @@ julia> using Random
 
 julia> height = 2
 
-julia> alphabet = Proposition.(["p", "q"])
+julia> alphabet = Atom.(["p", "q"])
 
 # Propositional case 
 julia> SoleLogics.BASE_PROPOSITIONAL_OPERATORS
@@ -127,7 +127,7 @@ julia> accessibles(fr, first(worlds))
  SoleLogics.World{Int64}(2)
  SoleLogics.World{Int64}(3)
 
-julia> p,q = Proposition.(["p", "q"])
+julia> p,q = Atom.(["p", "q"])
 
  # Assign each world a propositional interpretation
 julia> valuation = Dict([

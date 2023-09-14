@@ -136,38 +136,38 @@ fxs = ["→(→(q, p), ¬q)", "∧(∧(q, p), ¬q)"]
 @test_throws ErrorException parsetree("¬p∧q→ |¬s∧¬z|",
     opening_parenthesis = "|", closing_parenthesis = "|")
 
-# parsing propositions ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# parsing atoms ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 @test_nowarn parsetree("¬1→0";
-    proposition_parser = (x -> Proposition{Float64}(parse(Float64, x))))
+    atom_parser = (x -> Atom{Float64}(parse(Float64, x))))
 @test_nowarn parsetree("¬0.42∧1";
-    proposition_parser = (x -> Proposition{Float64}(parse(Float64, x))))
+    atom_parser = (x -> Atom{Float64}(parse(Float64, x))))
 @test_nowarn parsetree("¬-96";
-    proposition_parser = (x -> Proposition{Float64}(parse(Float64, x))))
+    atom_parser = (x -> Atom{Float64}(parse(Float64, x))))
 
 @test_nowarn parsetree("→(¬1,0)";
-    proposition_parser = (x -> Proposition{Float64}(parse(Float64, x))),
+    atom_parser = (x -> Atom{Float64}(parse(Float64, x))),
     function_notation = true)
 @test_nowarn parsetree("→(¬1;0)";
-    proposition_parser = (x -> Proposition{Float64}(parse(Float64, x))),
+    atom_parser = (x -> Atom{Float64}(parse(Float64, x))),
     function_notation = true, arg_delim = ";")
 @test_nowarn parsetree("→(¬1/0)";
-    proposition_parser = (x -> Proposition{Float64}(parse(Float64, x))),
+    atom_parser = (x -> Atom{Float64}(parse(Float64, x))),
     function_notation = true, arg_delim = "/")
 @test_nowarn parsetree("∧(¬0.42,1)";
-    proposition_parser = (x -> Proposition{Float64}(parse(Float64, x))),
+    atom_parser = (x -> Atom{Float64}(parse(Float64, x))),
     function_notation = true)
 @test_nowarn parsetree("¬-96";
-    proposition_parser = (x -> Proposition{Float64}(parse(Float64, x))),
+    atom_parser = (x -> Atom{Float64}(parse(Float64, x))),
     function_notation = true)
 
 @test_throws ErrorException parsetree("[G][G]-1.2[G]";
-    proposition_parser = (x -> Proposition{Float64}(parse(Float64, x))))
+    atom_parser = (x -> Atom{Float64}(parse(Float64, x))))
 @test_throws ErrorException parsetree("¬-3(";
-    proposition_parser = (x -> Proposition{Float64}(parse(Float64, x))))
+    atom_parser = (x -> Atom{Float64}(parse(Float64, x))))
 
 @test_throws ArgumentError parsetree("p";
-    proposition_parser = (x -> Proposition{Float64}(parse(Float64, x))))
+    atom_parser = (x -> Atom{Float64}(parse(Float64, x))))
 
 # custom operators ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

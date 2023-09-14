@@ -50,7 +50,7 @@ end
         f::AbstractFormula;
         remove_boxes = true,
         reduce_negations = true,
-        allow_proposition_flipping = true,
+        allow_atom_flipping = true,
     )
 
 Return a modified version of a given formula, that has the same semantics
@@ -69,9 +69,9 @@ BEWARE: it currently assumes the underlying algebra is Boolean!
     some transformation rules
     (e.g., [De Morgan's laws](https://en.wikipedia.org/wiki/De_Morgan%27s_laws)).
     Note: this assumes an underlying Boolean algebra.
-- `allow_proposition_flipping::Bool`: when set to `true`,
-    together with `reduce_negations=true`, this may cause the negation of a proposition
-    to be replaced with the proposition with its [`dual`](@ref).
+- `allow_atom_flipping::Bool`: when set to `true`,
+    together with `reduce_negations=true`, this may cause the negation of an atom
+    to be replaced with the its [`dual`](@ref) atom.
 
 # Examples
 ```julia-repl
@@ -80,10 +80,10 @@ julia> f = parsebaseformula("□¬((p∧¬q)→r)∧⊤");
 julia> syntaxstring(f)
 "□¬((p ∧ ¬q) → r) ∧ ⊤"
 
-julia> syntaxstring(SoleLogics.normalize(f; profile = :modelchecking, allow_proposition_flipping = false))
+julia> syntaxstring(SoleLogics.normalize(f; profile = :modelchecking, allow_atom_flipping = false))
 "¬◊(q ∨ ¬p ∨ r)"
 
-julia> syntaxstring(SoleLogics.normalize(f; profile = :readability, allow_proposition_flipping = false))
+julia> syntaxstring(SoleLogics.normalize(f; profile = :readability, allow_atom_flipping = false))
 "□(¬r ∧ p ∧ ¬q)"
 ```
 
@@ -98,7 +98,7 @@ function normalize(
     remove_boxes = nothing,
     reduce_negations = nothing,
     simplify_constants = nothing,
-    allow_proposition_flipping = nothing,
+    allow_atom_flipping = nothing,
     forced_negation_removal = nothing,
     remove_identities = nothing,
     rotate_commutatives = nothing
@@ -107,7 +107,7 @@ function normalize(
         if isnothing(remove_boxes)               remove_boxes = false end
         if isnothing(reduce_negations)           reduce_negations = true end
         if isnothing(simplify_constants)         simplify_constants = true end
-        if isnothing(allow_proposition_flipping) allow_proposition_flipping = false end
+        if isnothing(allow_atom_flipping) allow_atom_flipping = false end
         if isnothing(remove_identities)          remove_identities = false end
         if isnothing(rotate_commutatives)        rotate_commutatives = true end
         # TODO leave \to's instead of replacing them with \lor's...
@@ -115,7 +115,7 @@ function normalize(
         if isnothing(remove_boxes)               remove_boxes = true end
         if isnothing(reduce_negations)           reduce_negations = true end
         if isnothing(simplify_constants)         simplify_constants = true end
-        if isnothing(allow_proposition_flipping) allow_proposition_flipping = false end
+        if isnothing(allow_atom_flipping) allow_atom_flipping = false end
         if isnothing(remove_identities)          remove_identities = true end
         if isnothing(rotate_commutatives)        rotate_commutatives = true end
     else
@@ -123,7 +123,7 @@ function normalize(
     end
 
     if isnothing(forced_negation_removal)
-        if isnothing(allow_proposition_flipping)
+        if isnothing(allow_atom_flipping)
             forced_negation_removal = true
         else
             forced_negation_removal = false
@@ -137,7 +137,7 @@ function normalize(
         remove_boxes = remove_boxes,
         reduce_negations = reduce_negations,
         simplify_constants = simplify_constants,
-        allow_proposition_flipping = allow_proposition_flipping,
+        allow_atom_flipping = allow_atom_flipping,
         forced_negation_removal = forced_negation_removal,
         rotate_commutatives = rotate_commutatives
     )
@@ -171,8 +171,8 @@ function normalize(
             elseif reduce_negations && (chtok == →) && arity(chtok) == 2
                 # _normalize(∨(¬(grandchildren[1]), grandchildren[2]))
                 ∧(_normalize(grandchildren[1]), _normalize(¬(grandchildren[2])))
-            elseif reduce_negations && chtok isa Proposition
-                if allow_proposition_flipping && hasdual(chtok)
+            elseif reduce_negations && chtok isa Atom
+                if allow_atom_flipping && hasdual(chtok)
                     SyntaxTree(dual(chtok))
                 else
                     ¬(_normalize(child))

@@ -13,14 +13,14 @@ identified by an index i_instance::Integer.
 These structures are especially useful when performing
 [model checking](https://en.wikipedia.org/wiki/Model_checking).
 
-See also [`atomtype`](@ref), [`truthtype`](@ref),
+See also [`valuetype`](@ref), [`truthtype`](@ref),
 [`InterpretationSet`](@ref).
 """
 abstract type AbstractInterpretationSet{M<:AbstractInterpretation} <: AbstractDataset end
 
 # TODO improve general doc.
-atomtype(::Type{AbstractInterpretationSet{M}}) where {M} = atomtype(M)
-atomtype(s::AbstractInterpretationSet) = atomtype(typeof(s))
+valuetype(::Type{AbstractInterpretationSet{M}}) where {M} = valuetype(M)
+valuetype(s::AbstractInterpretationSet) = valuetype(typeof(s))
 
 # TODO improve general doc.
 truthtype(::Type{AbstractInterpretationSet{M}}) where {M} = truthtype(M)

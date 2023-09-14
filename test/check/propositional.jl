@@ -5,7 +5,7 @@
 d0 = Dict(["a" => true, "b" => false, "c" => true])
 @test_throws ErrorException "a" in d0
 @test haskey(d0, "a")
-@test haskey(d0, Proposition("a"))
+@test haskey(d0, Atom("a"))
 @test d0["a"]
 @test !d0["b"]
 @test check(parsebaseformula("a ∧ ¬b"), d0)
@@ -14,7 +14,7 @@ d0 = Dict(["a" => true, "b" => false, "c" => true])
 v0 = ["a", "c"]
 @test "a" in v0
 @test !("b" in v0)
-@test !(Proposition("a") in v0)
+@test !(Atom("a") in v0)
 @test check(parsebaseformula("a ∧ ¬b"), v0)
 @test check(parsebaseformula("a ∧ c"), v0)
 
@@ -26,57 +26,57 @@ v0 = ["a", "c"]
 @test_nowarn TruthDict(1:4, false)
 
 t0 = @test_nowarn TruthDict(["a" => true, "b" => false, "c" => true])
-@test haskey(t0, Proposition("a"))
-@test haskey(t0, Proposition("b"))
+@test haskey(t0, Atom("a"))
+@test haskey(t0, Atom("b"))
 @test haskey(t0, "a")
 @test haskey(t0, "b")
-@test check(Proposition("a"), t0)
-@test !check(Proposition("b"), t0)
+@test check(Atom("a"), t0)
+@test !check(Atom("b"), t0)
 @test check(parsebaseformula("a ∨ b"), t0)
 
 t1 = @test_nowarn TruthDict([1 => true, 2 => false, 3 => true])
 
 @test_nowarn t1[2] = false
-@test_nowarn t1[Proposition(2)]
+@test_nowarn t1[Atom(2)]
 @test_nowarn t1[2]
 @test_nowarn t1[2.0]
 
 @test_nowarn t1[2] = false
-@test_nowarn t1[Proposition(2)] = false
-@test_throws MethodError t1[Proposition(2.0)] = false
+@test_nowarn t1[Atom(2)] = false
+@test_throws MethodError t1[Atom(2.0)] = false
 @test_throws MethodError t1[2.0] = false
 @test_throws MethodError t1[10.0] = false
 
 t2 = @test_nowarn TruthDict(Pair{Real,Bool}[1.0 => true, 2 => true, 3 => true])
-@test haskey(t2, Proposition(1))
-@test !xor(haskey(t2, Proposition(1)), isequal(1,1.0)) # Weird, but is consistent with the behavior: isequal(1,1.0)
-# [isequal(Proposition(1.0), k) for k in keys(t2)]
-@test haskey(t2, Proposition(1.0))
-@test haskey(t2, Proposition(2))
+@test haskey(t2, Atom(1))
+@test !xor(haskey(t2, Atom(1)), isequal(1,1.0)) # Weird, but is consistent with the behavior: isequal(1,1.0)
+# [isequal(Atom(1.0), k) for k in keys(t2)]
+@test haskey(t2, Atom(1.0))
+@test haskey(t2, Atom(2))
 @test haskey(t2, 1.0)
 @test haskey(t2, 1)
 @test haskey(t2, 2)
 
 @test_nowarn t2[1]
-@test_nowarn t2[Proposition(1)]
-@test_nowarn t2[Proposition(1.0)]
+@test_nowarn t2[Atom(1)]
+@test_nowarn t2[Atom(1.0)]
 
 
-@test_nowarn TruthDict([(Proposition(1.0), true), (Proposition(2), true), (Proposition(3), true)])
+@test_nowarn TruthDict([(Atom(1.0), true), (Atom(2), true), (Atom(3), true)])
 @test_nowarn TruthDict([(1.0, true), (2, true), (3, true)])
-@test_nowarn TruthDict([Proposition(1.0) => true, Proposition(2) => true, Proposition(3) => true])
-@test_nowarn TruthDict([(Proposition(1.0), true), (Proposition(2), true), (Proposition(3), true)])
-@test_nowarn TruthDict(Dict([Proposition(1.0) => true, Proposition(2) => true, Proposition(3) => true]))
+@test_nowarn TruthDict([Atom(1.0) => true, Atom(2) => true, Atom(3) => true])
+@test_nowarn TruthDict([(Atom(1.0), true), (Atom(2), true), (Atom(3), true)])
+@test_nowarn TruthDict(Dict([Atom(1.0) => true, Atom(2) => true, Atom(3) => true]))
 @test_nowarn TruthDict(1.0 => true)
-@test_nowarn TruthDict(Proposition(1.0) => true)
+@test_nowarn TruthDict(Atom(1.0) => true)
 
-@test_nowarn DefaultedTruthDict([(Proposition(1.0), true), (Proposition(2), true), (Proposition(3), true)])
+@test_nowarn DefaultedTruthDict([(Atom(1.0), true), (Atom(2), true), (Atom(3), true)])
 @test_nowarn DefaultedTruthDict([(1.0, true), (2, true), (3, true)])
-@test_nowarn DefaultedTruthDict([Proposition(1.0) => true, Proposition(2) => true, Proposition(3) => true])
-@test_nowarn DefaultedTruthDict([(Proposition(1.0), true), (Proposition(2), true), (Proposition(3), true)])
-@test_nowarn DefaultedTruthDict(Dict([Proposition(1.0) => true, Proposition(2) => true, Proposition(3) => true]))
+@test_nowarn DefaultedTruthDict([Atom(1.0) => true, Atom(2) => true, Atom(3) => true])
+@test_nowarn DefaultedTruthDict([(Atom(1.0), true), (Atom(2), true), (Atom(3), true)])
+@test_nowarn DefaultedTruthDict(Dict([Atom(1.0) => true, Atom(2) => true, Atom(3) => true]))
 @test_nowarn DefaultedTruthDict(1.0 => true)
-@test_nowarn DefaultedTruthDict(Proposition(1.0) => true)
+@test_nowarn DefaultedTruthDict(Atom(1.0) => true)
 
 @test !check(parsebaseformula("a ∧ b"), DefaultedTruthDict(["a"]))
 @test !check(parsebaseformula("a ∧ ¬b"), DefaultedTruthDict(["a", "b"]))

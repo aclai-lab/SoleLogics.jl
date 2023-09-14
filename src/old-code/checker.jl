@@ -194,7 +194,7 @@ function _check_binary(km::KripkeStructure, ψ::FNode)
 end
 
 function _process_node(km::KripkeStructure, ψ::FNode)
-    if is_proposition(token(ψ))
+    if is_atom(token(ψ))
         _check_alphabet(km, ψ)
     elseif is_unary_operator(token(ψ))
         _check_unary(km, ψ)

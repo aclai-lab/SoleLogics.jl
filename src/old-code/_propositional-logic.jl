@@ -26,7 +26,7 @@ false
 
 julia> propositionallogic(; alphabet = ["p", "q"]);
 
-julia> propositionallogic(; alphabet = ExplicitAlphabet([Proposition("p"), Proposition("q")]));
+julia> propositionallogic(; alphabet = ExplicitAlphabet([Atom("p"), Atom("q")]));
 
 ```
 
@@ -54,7 +54,7 @@ end
     abstract type AbstractAssignment{A,T<:TruthValue} <: AbstractInterpretation{A,T} end
 
 A propositional assigment (or, simply, an *assigment*) is a propositional interpretation,
-encoding a mapping from `Proposition`s of atom type `A`
+encoding a mapping from `Atom`s of value type `A`
 to truth values of type `T`.
 
 See also [`AbstractInterpretation`](@ref).
@@ -62,34 +62,34 @@ See also [`AbstractInterpretation`](@ref).
 abstract type AbstractAssignment{A,T<:TruthValue} <: AbstractInterpretation{A,T} end
 
 """
-    Base.getindex(i::AbstractAssignment{AA,T}, p::Proposition, args...)::T where {AA,T<:TruthValue}
+    Base.getindex(i::AbstractAssignment{AA,T}, p::Atom, args...)::T where {AA,T<:TruthValue}
 
-Return the truth value of a proposition, given an assignment.
+Return the truth value of an atom, given an assignment.
 
 See also [`AbstractInterpretation`](@ref).
 """
 function Base.getindex(
     i::AbstractAssignment{AA,T},
-    ::Proposition,
+    ::Atom,
     args...
 )::T where {AA,T<:TruthValue}
     return error("Please, provide method " *
                  "Base.getindex(::$(typeof(i)), " *
-                 "::Proposition, " *
+                 "::Atom, " *
                  "args...::$(typeof(args))::$(truthtype(i)).")
 end
 
 """
-    Base.haskey(::Proposition{A}, i::AbstractAssignment{A})::Bool where {A}
+    Base.haskey(::Atom{A}, i::AbstractAssignment{A})::Bool where {A}
 
-Return whether an assigment has a truth value for a given proposition.
+Return whether an assigment has a truth value for a given atom.
 
 See also [`AbstractInterpretation`](@ref).
 """
-function Base.haskey(i::AbstractAssignment{AA}, ::Proposition)::Bool where {AA}
+function Base.haskey(i::AbstractAssignment{AA}, ::Atom)::Bool where {AA}
     return error("Please, provide method " *
                  "Base.haskey(::$(typeof(i)), " *
-                 "::Proposition)::Bool.")
+                 "::Atom)::Bool.")
 end
 
 # Helpers
@@ -98,8 +98,8 @@ function Base.getindex(
     a,
     args...
 )::T where {AA,T<:TruthValue}
-    # if !(a isa Proposition)
-        Base.getindex(i, Proposition(a))
+    # if !(a isa Atom)
+        Base.getindex(i, Atom(a))
     # else
     #     return error("Please, provide method" *
     #                  " Base.getindex(::$(typeof(i))," *
@@ -108,8 +108,8 @@ function Base.getindex(
     # end
 end
 function Base.haskey(i::AbstractAssignment, a)::Bool
-    # if !(a isa Proposition)
-        Base.haskey(i, Proposition(a))
+    # if !(a isa Atom)
+        Base.haskey(i, Atom(a))
     # else
     #     return error("Please, provide method" *
     #                  " Base.haskey(::$(typeof(i))," *
@@ -157,7 +157,7 @@ function check(
     i::AbstractAssignment{A,T},
     args...
 )::T where {A,T<:TruthValue}
-    if token(tree) isa Proposition
+    if token(tree) isa Atom
         return Base.getindex(i, token(tree), args...)
     elseif token(tree) isa AbstractOperator
         ts = Tuple([check(a, childtree, i, args...) for childtree in children(tree)])
@@ -168,8 +168,8 @@ function check(
     end
 end
 
-# Helper: a proposition can be checked on an interpretation; a simple lookup is performed.
-check(p::Proposition, i::AbstractAssignment{AA}, args...) where {AA} = Base.getindex(i, p, args...)
+# Helper: an atom can be checked on an interpretation; a simple lookup is performed.
+check(p::Atom, i::AbstractAssignment{AA}, args...) where {AA} = Base.getindex(i, p, args...)
 
 ############################################################################################
 
@@ -177,14 +177,14 @@ check(p::Proposition, i::AbstractAssignment{AA}, args...) where {AA} = Base.geti
     struct TruthDict{
         A,
         T<:TruthValue,
-        D<:AbstractDict{<:Proposition{<:A},T}
+        D<:AbstractDict{<:Atom{<:A},T}
     } <: AbstractAssignment{A,T}
         truth::D
     end
 
 A truth table instantiated as a dictionary,
-explicitly assigning truth values to a *finite* set of propositions.
-If prompted for the value of an unknown proposition, it throws an error.
+explicitly assigning truth values to a *finite* set of atoms.
+If prompted for the value of an unknown atom, it throws an error.
 
 # Examples
 ```julia-repl
@@ -229,7 +229,7 @@ See also
 struct TruthDict{
     A,
     T<:TruthValue,
-    D<:AbstractDict{<:Proposition{<:A},T}
+    D<:AbstractDict{<:Atom{<:A},T}
 } <: AbstractAssignment{A,T}
 
     truth::D
@@ -240,27 +240,27 @@ struct TruthDict{
     ) where {
         A,
         T<:TruthValue,
-        D<:AbstractDict{<:Proposition{<:A},T},
+        D<:AbstractDict{<:Atom{<:A},T},
     }
         return new{A,T,D}(d,Dict{AbstractSyntaxStructure,T}())
     end
-    function TruthDict{A,T}(d::AbstractDict{<:Proposition,T}) where {A,T<:TruthValue}
+    function TruthDict{A,T}(d::AbstractDict{<:Atom,T}) where {A,T<:TruthValue}
         return TruthDict{A,T,typeof(d)}(d)
     end
-    function TruthDict{A}(d::AbstractDict{<:Proposition,T}) where {A,T<:TruthValue}
+    function TruthDict{A}(d::AbstractDict{<:Atom,T}) where {A,T<:TruthValue}
         return TruthDict{A,T,typeof(d)}(d)
     end
-    function TruthDict(d::AbstractDict{<:Proposition,T}) where {T<:TruthValue}
-        # A = Union{atomtype.(keys(d))...}
-        # P = Union{[Proposition{_A} for _A in atomtype.(keys(d))]...}
+    function TruthDict(d::AbstractDict{<:Atom,T}) where {T<:TruthValue}
+        # A = Union{valuetype.(keys(d))...}
+        # P = Union{[Atom{_A} for _A in valuetype.(keys(d))]...}
         # println(A)
         # println(d)
-        A = typejoin(atomtype.(keys(d))...)
-        d = Dict{Proposition{A},T}(d)
+        A = typejoin(valuetype.(keys(d))...)
+        d = Dict{Atom{A},T}(d)
         return TruthDict{A,T,typeof(d)}(d)
     end
     function TruthDict(d::AbstractDict{A,T}) where {A,T<:TruthValue}
-        return TruthDict(Dict{Proposition{A},T}([(Proposition{A}(a),v) for (a,v) in d]))
+        return TruthDict(Dict{Atom{A},T}([(Atom{A}(a),v) for (a,v) in d]))
     end
     function TruthDict(v::AbstractVector, truth_value = true)
         if length(v) == 0
@@ -285,18 +285,18 @@ struct TruthDict{
     function TruthDict{A,T,D}() where {
         A,
         T<:TruthValue,
-        D<:AbstractDict{<:Proposition{<:A},T},
+        D<:AbstractDict{<:Atom{<:A},T},
     }
-        return TruthDict{A,T,D}(Dict{Proposition{A},T}())
+        return TruthDict{A,T,D}(Dict{Atom{A},T}())
     end
     function TruthDict()
-        d = Dict{Proposition{Any},TruthValue}([])
+        d = Dict{Atom{Any},TruthValue}([])
         return TruthDict{Any,TruthValue,typeof(d)}(d)
     end
 end
 
-Base.getindex(i::TruthDict{AA}, p::Proposition) where {AA} = Base.getindex(i.truth, p)
-Base.haskey(i::TruthDict{AA}, p::Proposition) where {AA} = Base.haskey(i.truth, p)
+Base.getindex(i::TruthDict{AA}, p::Atom) where {AA} = Base.getindex(i.truth, p)
+Base.haskey(i::TruthDict{AA}, p::Atom) where {AA} = Base.haskey(i.truth, p)
 
 function inlinedisplay(i::TruthDict)
     "TruthDict([$(join(["$(syntaxstring(p)) => $t" for (p,t) in i.truth], ", "))])"
@@ -311,7 +311,7 @@ function _hpretty_table(
     defaulttruth::Union{Nothing,TruthValue} = nothing
 )
     # Prepare columns names
-    _keys = map(x -> x isa Proposition ? atom(x) : x, collect(keys))
+    _keys = map(x -> x isa Atom ? value(x) : x, collect(keys))
     header = (_keys, string.(nameof.(typeof.(_keys))))
 
     try
@@ -340,7 +340,7 @@ end
 function Base.show(
     io::IO,
     i::TruthDict{A,T,D},
-) where {A,T<:TruthValue,D<:AbstractDict{<:Proposition{<:A},T}}
+) where {A,T<:TruthValue,D<:AbstractDict{<:Atom{<:A},T}}
     if isempty(i.truth)
         print(io, "Empty TruthDict")
         return
@@ -371,15 +371,15 @@ end
     struct DefaultedTruthDict{
         A,
         T<:TruthValue,
-        D<:AbstractDict{<:Proposition{<:A},T}
+        D<:AbstractDict{<:Atom{<:A},T}
     } <: AbstractAssignment{A,T}
         truth::D
         default_truth::T
     end
 
 A truth table instantiated as a dictionary, plus a default value.
-This structure assigns truth values to a set of propositions and,
-when prompted for the value of a proposition that is not in the dictionary,
+This structure assigns truth values to a set of atoms and,
+when prompted for the value of an atom that is not in the dictionary,
 it returns `default_truth`.
 
 # Examples
@@ -409,7 +409,7 @@ See also
 struct DefaultedTruthDict{
     A,
     T<:TruthValue,
-    D<:AbstractDict{<:Proposition{<:A},T}
+    D<:AbstractDict{<:Atom{<:A},T}
 } <: AbstractAssignment{A,T}
 
     truth::D
@@ -422,7 +422,7 @@ struct DefaultedTruthDict{
     ) where {
         A,
         T<:TruthValue,
-        D<:AbstractDict{<:Proposition{<:A},T},
+        D<:AbstractDict{<:Atom{<:A},T},
     }
         return new{A,T,D}(d, default_truth)
     end
@@ -433,14 +433,14 @@ struct DefaultedTruthDict{
     ) where {
         A,
         T<:TruthValue,
-        D<:AbstractDict{<:Proposition{<:A},T}
+        D<:AbstractDict{<:Atom{<:A},T}
     }
         return DefaultedTruthDict{A,T,D}(d.truth, default_truth)
     end
 
     function DefaultedTruthDict(
         a::Union{
-            AbstractDict{<:Proposition,T},
+            AbstractDict{<:Atom,T},
             AbstractDict{A,T},
             AbstractVector{<:Union{Tuple,Pair}},
             AbstractVector,
@@ -459,15 +459,15 @@ struct DefaultedTruthDict{
     function DefaultedTruthDict(
         default_truth::T = false,
     ) where {T<:TruthValue}
-        d = Dict{Proposition{Any},T}([])
+        d = Dict{Atom{Any},T}([])
         return DefaultedTruthDict{Any,T,typeof(d)}(d, default_truth)
     end
 end
 
-function Base.getindex(i::DefaultedTruthDict{AA}, p::Proposition) where {AA}
+function Base.getindex(i::DefaultedTruthDict{AA}, p::Atom) where {AA}
     return Base.haskey(i.truth, p) ? Base.getindex(i.truth, p) : i.default_truth
 end
-Base.haskey(i::DefaultedTruthDict{AA}, p::Proposition) where {AA} = true
+Base.haskey(i::DefaultedTruthDict{AA}, p::Atom) where {AA} = true
 
 function inlinedisplay(i::DefaultedTruthDict)
     "DefaultedTruthDict([$(join(["$(syntaxstring(p)) => $t" for (p,t) in i.truth], ", "))], $(i.default_truth))"
@@ -476,7 +476,7 @@ end
 function Base.show(
     io::IO,
     i::DefaultedTruthDict{A,T,D},
-) where {A,T<:TruthValue,D<:AbstractDict{<:Proposition{<:A},T}}
+) where {A,T<:TruthValue,D<:AbstractDict{<:Atom{<:A},T}}
     println(io, "DefaultedTruthDict with default truth `$(i.default_truth)` and values:")
     _hpretty_table(io, i.truth |> keys, i.truth |> values, i.truth |> values |> length)
 end
@@ -504,29 +504,29 @@ function check(
     check(a, tree, convert(AbstractInterpretation, i), args...)
 end
 
-# A dictionary is interpreted as the map from propositions to truth values
+# A dictionary is interpreted as the map from atoms to truth values
 convert(::Type{AbstractInterpretation}, i::AbstractDict) = TruthDict(i)
-# Base.getindex(i::AbstractDict, p::Proposition) = i[atom(p)]
-Base.haskey(p::Proposition, i::AbstractDict) = (atom(p) in keys(i))
-check(p::Proposition, i::AbstractDict) = Base.getindex(i, p)
+# Base.getindex(i::AbstractDict, p::Atom) = i[value(p)]
+Base.haskey(p::Atom, i::AbstractDict) = (value(p) in keys(i))
+check(p::Atom, i::AbstractDict) = Base.getindex(i, p)
 
-# A vector is interpreted as the set of true propositions
+# A vector is interpreted as the set of true atoms
 convert(::Type{AbstractInterpretation}, i::AbstractVector) = DefaultedTruthDict(i, false)
-# Base.getindex(i::AbstractVector, p::Proposition) = (atom(p) in i)
-# Base.in(p::Proposition, i::AbstractVector) = true
-check(p::Proposition, i::AbstractVector) = (p in i)
+# Base.getindex(i::AbstractVector, p::Atom) = (value(p) in i)
+# Base.in(p::Atom, i::AbstractVector) = true
+check(p::Atom, i::AbstractVector) = (p in i)
 
 """
     function feedtruth!(
         td::TruthDict{A,T,D},
         entry::T
-    ) where {A,T<:AbstractVector,D<:AbstractDict{<:Proposition{<:A},T}}
+    ) where {A,T<:AbstractVector,D<:AbstractDict{<:Atom{<:A},T}}
 
 Push a new interpretation `entry` in a `TruthDict`.
 
 # Examples
 ```julia-repl
-julia> p, q = Proposition.(["p", "q"])
+julia> p, q = Atom.(["p", "q"])
 
 julia> td = TruthDict([p => [true], q => [true]])
 TruthDict with values:
@@ -552,7 +552,7 @@ See also [`TruthDict`](@ref), [`TruthValue`](@ref).
 function feedtruth!(
     td::TruthDict{A,T,D},
     entry::T
-) where {A,T<:AbstractVector,D<:AbstractDict{<:Proposition{<:A},T}}
+) where {A,T<:AbstractVector,D<:AbstractDict{<:Atom{<:A},T}}
     # NOTE: this function could be useful if avoids duplicate entries.
     # In order to efficiently implement duplicates recognition, a Set could be used to
     # see the TruthDict keys from a different perspective.
@@ -577,7 +577,7 @@ structure.
 
 # Examples
 ```julia-repl
-julia> st = CONJUNCTION(Proposition("p"), Proposition("q"))
+julia> st = CONJUNCTION(Atom("p"), Atom("q"))
 p ∧ q
 
 julia> truth_table(st, truthvals=[true, false])
@@ -599,12 +599,12 @@ function truth_table(
     st::AbstractSyntaxStructure;
     truthvals::T=[true, false]
 ) where {T <: Vector{<:TruthValue}}
-    props = propositions(st)
-    proptypes = typejoin(atomtype.(propositions(st))...)
+    props = atoms(st)
+    proptypes = typejoin(valuetype.(atoms(st))...)
     # Interpretations generator
     intergen = Iterators.product([truthvals for _ in 1:length(props)]...)
 
-    td = TruthDict{proptypes, T, Dict{Proposition{proptypes},T} }(
+    td = TruthDict{proptypes, T, Dict{Atom{proptypes},T} }(
         Dict([
             props[p] => vec([
                 i[p]
@@ -674,8 +674,8 @@ function eagercheck(
     phi::SoleLogics.AbstractSyntaxStructure;
     truthvals::Vector{T}=[true, false]
 ) where {T <: TruthValue}
-    props = propositions(phi)
-    typejoin(atomtype.(propositions(st))...)
+    props = atoms(phi)
+    typejoin(valuetype.(atoms(st))...)
 
     return (
         (

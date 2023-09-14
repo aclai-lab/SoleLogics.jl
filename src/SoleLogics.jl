@@ -14,7 +14,7 @@ include("utils.jl")
 
 export iscrisp, isfinite, isnullary, isunary, isbinary
 
-export AbstractSyntaxToken, Proposition,
+export AbstractSyntaxToken, Atom,
     AbstractFormula, Formula,
     AbstractSyntaxStructure, SyntaxTree,
     AlphabetOfAny, ExplicitAlphabet,
@@ -25,15 +25,15 @@ export syntaxstring
 export TOP, ⊤
 export BOTTOM, ⊥
 
-export arity, atomtype, tokentype, tokenstype,
-        propositionstype, operatorstype, truthtype
+export arity, valuetype, tokentype, tokenstype,
+        atomstype, operatorstype, truthtype
 export check
-export atom, token, children, alphabet, formulas
+export value, token, children, alphabet, formulas
 export domain, top, bottom, grammar, algebra, logic, tree
 export istop, isbottom
 
-export tokens, operators, propositions
-export @propositions, @synexpr
+export tokens, operators, atoms
+export @atoms, @synexpr
 
 include("core.jl")
 

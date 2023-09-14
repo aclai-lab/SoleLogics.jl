@@ -37,12 +37,12 @@ md"""
 """
 
 # ╔═╡ 34342f5e-59a1-4442-8d7d-0bb74b8f4f4d
-# A proposition is a wrapper for anything representing a fact
-Proposition("I am alive")
+# An atom is a wrapper for anything representing a fact
+Atom("I am alive")
 
 # ╔═╡ 48c4a3c2-2334-4f8b-8288-cfa3a8ef7fb9
-# Create propositions
-p, q = Proposition.(["p", "q"])
+# Create atoms
+p, q = Atom.(["p", "q"])
 
 # ╔═╡ 6c7f587e-7aa8-4bf2-adfb-22b315d071e7
 # Manually compose a formula
@@ -69,8 +69,8 @@ end
 φ2 = parseformula("¬(p ∧ q)")
 
 # ╔═╡ 7c9d5c28-f237-4b30-83a0-e3a84d0fd5ab
-# Parse a formula with integer propositions
-φ3 = parseformula("¬(1 ∧ 2)"; proposition_parser = (x -> Proposition(parse(Int64, x))))
+# Parse a formula with integer atoms
+φ3 = parseformula("¬(1 ∧ 2)"; atom_parser = (x -> Atom(parse(Int64, x))))
 
 # ╔═╡ 9da1c680-84a2-400e-a474-8a5c967bd445
 @bind height PlutoUI.Slider(1:10; default = 3)

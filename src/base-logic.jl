@@ -267,7 +267,7 @@ end
 ############################################################################################
 
 
-# This can be useful for standard phrasing of propositional formulas with string propositions.
+# This can be useful for standard phrasing of propositional formulas with string atoms.
 
 """
     const BASE_OPERATORS = [⊤, ⊥, ¬, ∧, ∨, →]
@@ -325,7 +325,7 @@ function _baselogic(;
                     end
                 end
                 if alphabet isa Vector
-                    alphabet = ExplicitAlphabet(map(Proposition, alphabet))
+                    alphabet = ExplicitAlphabet(map(Atom, alphabet))
                 end
                 CompleteFlatGrammar(alphabet, operators)
             # end
@@ -386,7 +386,7 @@ function baseformula(
 
     ops = isnothing(additional_operators) ? SoleLogics.operators(t) : additional_operators
     # operators = unique([additional_operators..., ops...])
-    # props = propositions(t)
+    # props = atoms(t)
 
     logic = begin
         if issubset(ops, BASE_PROPOSITIONAL_OPERATORS)
