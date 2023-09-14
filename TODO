@@ -15,6 +15,7 @@ Tests:
 
 Utilities:
   ✔ Differentiate Base.rand and StatsBase.sample (randformula should have a picker::Function argument, which can be rand or sample) @done(23-09-05 19:36)
+  ✔ @propositions defaulted to String @done(23-09-12 15:48)
 
 From PAndQ:
   ✔ Write the algorithm that produces truth tables of propositional formulae @done(23-09-05 19:36)
@@ -23,6 +24,7 @@ From PAndQ:
 
 General:
   ☐ Write random models generation (see pluto-demo.jl)
+  ☐ Create a TruthDictWithMemo
   Normalization:
     ☐ Add custom normalization rules to normalize
     ☐ Simplify code when possible, using dual/hasdual traits

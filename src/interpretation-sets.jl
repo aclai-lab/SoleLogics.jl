@@ -190,15 +190,3 @@ end
 #     rel = SoleLogics.relation(SoleLogics.token(φ))
 #     check(first(children(φ)), X, i_instance, accessibles(frame(X, i_instance), rel); kwargs...)
 # end
-
-# @deprecate (see deprecate.jl)
-function check(
-    φ::SoleLogics.AbstractFormula,
-    X::AbstractInterpretationSet{<:AbstractKripkeStructure},
-    i_instance::Integer,
-    args...;
-    kwargs...
-)
-    @warn "This method is deprecating... $(@show φ), $(@show X), $(@show args)"
-    check(tree(φ), X, i_instance, args...; kwargs...)
-end

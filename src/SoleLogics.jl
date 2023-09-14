@@ -89,4 +89,6 @@ export randbaseformula, randformula
 
 include("random.jl")
 
+include("deprecate.jl")
+
 end

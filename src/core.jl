@@ -205,10 +205,6 @@ function dual(atom::Any)
         "SoleLogics.dual(::$(typeof(atom))).")
 end
 
-# Utility function, see @propositions macro
-_define_props(cast, p::Symbol) = :(const $p = $(cast(p) |> Proposition))
-
-
 """
 @propositions(cast, ps...)
 
@@ -230,10 +226,10 @@ julia> p
 Proposition{String}("p")
 ```
 """
-macro propositions(cast, ps...)
+macro propositions(ps...)
     quote
-        $(map(p -> _define_props(eval(cast), p), ps)...)
-        Proposition.([$(ps...)])
+        $(map(p -> :(const $p = $(string(p) |> Proposition)), ps)...)
+        [$(ps...)]
     end |> esc
 end
 
@@ -241,10 +237,10 @@ end
 #   Symbolics.jl  (https://github.com/JuliaSymbolics/Symbolics.jl)
 #   PAndQ.jl      (https://github.com/jakobjpeters/PAndQ.jl)
 atomize(p::Symbol) = :((@isdefined $p) ? $p : $(string(p) |> Proposition))
+atomize(x) = x
 atomize(x::Expr) = Meta.isexpr(x, [:(=), :kw]) ?
     Expr(x.head, x.args[1], map(atomize, x.args[2:end])...) :
     Expr(x.head, map(atomize, x.args)...)
-atomize(x) = x
 
 """
     @synexpr(expression)
@@ -252,7 +248,7 @@ atomize(x) = x
 Return an expression after automatically instantiating undefined [`Proposition`](@ref)s.
 
 !!! info
-Currently, every identified proposition is of type `Proposition{String}`.
+Every identified proposition is of type `Proposition{String}`.
 
 # Examples
 ```julia-repl
@@ -267,7 +263,9 @@ SyntaxTree{SoleLogics.NamedOperator{:→}}
 ```
 """
 macro synexpr(expression)
-    :($(expression |> atomize)) |> esc
+    quote
+        $(expression |> atomize)
+    end |> esc
 end
 
 ############################################################################################
@@ -480,13 +478,13 @@ julia> f = parseformula("◊(p→q)");
 
 julia> p = Proposition("p");
 
-julia> ∧(f, p) # Shortcut
+julia> ∧(f, p)  # Easy way to compose a formula
 SyntaxTree: ◊(p → q) ∧ p
 
 julia> f ∧ ¬p   # Leverage infix notation ;)
 SyntaxTree: ◊(p → q) ∧ ¬p
 
-julia> ∧(f, p, ¬p)
+julia> ∧(f, p, ¬p) # Shortcut for ∧(f, ∧(p, ¬p))
 SyntaxTree: ◊(p → q) ∧ p ∧ ¬p
 ```
 
