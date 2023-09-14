@@ -67,6 +67,7 @@ Useful aliases.
 See also [`WorldSet`](@ref), [`AbstractWorld`](@ref).
 """
 const AbstractWorldSet{W} = Union{AbstractVector{W},AbstractSet{W}} where {W<:AbstractWorld}
+
 """
     const AbstractWorldSet{W} = Union{AbstractVector{W},AbstractSet{W}} where {W<:AbstractWorld}
     const WorldSet{W} = Vector{W} where {W<:AbstractWorld}
