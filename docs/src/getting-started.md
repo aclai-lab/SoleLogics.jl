@@ -14,17 +14,17 @@ AbstractSyntaxStructure
 AbstractSyntaxToken
 SyntaxTree
 SoleLogics.arity(::Type{<:AbstractSyntaxToken})
-Proposition
+Atom
 ```
 
 Let's recall the last concepts with a simple example.
 
 ```julia-repl
-julia> p = Proposition("p")
-Proposition{String}("p")
+julia> p = Atom("p")
+Atom{String}("p")
 
-julia> q = Proposition("q")
-Proposition{String}("q")
+julia> q = Atom("q")
+Atom{String}("q")
 
 # Operators are syntax tokens too
 julia> CONJUNCTION
@@ -46,14 +46,14 @@ SyntaxTree: p ∧ q
 julia> token(st)
 ∧
 
-# Get the first subtree, containing only a proposition
+# Get the first subtree, containing only an atom
 julia> leftree = children(st)[1]; 
 SyntaxTree: p
 
 julia> typeof(leftree)
-SyntaxTree{Proposition{String}}
+SyntaxTree{Atom{String}}
 
-# Propositions are necessarily at the leaves; in fact their arity is 0
+# Atoms are necessarily at the leaves; in fact their arity is 0
 julia> leftree |> token |> arity
 0
 ```
@@ -116,9 +116,9 @@ AbstractAlphabet
     SoleLogics.jl offers the possibility to implement a custom [`AbstractAlphabet`](@ref) concrete type. To see an in-depth example, please refer to section [Customization](@ref customization-section).
 
 ```@docs
-propositions(a::AbstractAlphabet)
+atoms(a::AbstractAlphabet)
 
-Base.in(p::Proposition, a::AbstractAlphabet)
+Base.in(p::Atom, a::AbstractAlphabet)
 Base.length(a::AbstractAlphabet)
 Base.iterate(a::AbstractAlphabet)
 ExplicitAlphabet

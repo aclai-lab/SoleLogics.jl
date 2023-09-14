@@ -10,3 +10,9 @@ Base.@deprecate check(
 
 const global_diamond = globaldiamond
 const global_box = globalbox
+
+
+export Proposition, atom
+
+const Proposition = Atom
+const atom = value

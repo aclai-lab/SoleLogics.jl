@@ -12,12 +12,12 @@ import StatsBase: sample
         alphabet,
         args...;
         kwargs...
-    )::Proposition
+    )::Atom
 
-Randomly sample a proposition from an `alphabet`, according to a uniform distribution.
+Randomly sample an atom from an `alphabet`, according to a uniform distribution.
 
 # Implementation
-If the `alphabet` is finite, the function defaults to `rand(rng, propositions(alphabet))`;
+If the `alphabet` is finite, the function defaults to `rand(rng, atoms(alphabet))`;
 otherwise, it must be implemented, and additional keyword arguments should be provided
 in order to limit the (otherwise infinite) sampling domain.
 
@@ -36,7 +36,7 @@ function Base.rand(
     kwargs...
 )
     if isfinite(alphabet)
-        Base.rand(rng, propositions(alphabet), args...; kwargs...)
+        Base.rand(rng, atoms(alphabet), args...; kwargs...)
     else
         error("Please, provide method Base.rand(rng::AbstractRNG, " *
             "alphabet::$(typeof(alphabet)), args...; kwargs...).")
@@ -54,7 +54,7 @@ function StatsBase.sample(
     kwargs...
 )
     if isfinite(alphabet)
-        StatsBase.sample(rng, propositions(alphabet), args...; kwargs...)
+        StatsBase.sample(rng, atoms(alphabet), args...; kwargs...)
     else
         error("Please, provide method StatsBase.sample(rng::AbstractRNG, " *
             "alphabet::$(typeof(alphabet)), args...; kwargs...).")
@@ -137,7 +137,7 @@ end
 
 # TODO
 # - make rng first (optional) argument of randformula (see above)
-# - in randformula, keyword argument alphabet_sample_kwargs that are unpacked upon sampling propositions, as in: Base.rand(rng, a; alphabet_sample_kwargs...). This would allow to sample from infinite alphabets, so when this parameter, !isfinite(alphabet) is allowed!
+# - in randformula, keyword argument alphabet_sample_kwargs that are unpacked upon sampling atoms, as in: Base.rand(rng, a; alphabet_sample_kwargs...). This would allow to sample from infinite alphabets, so when this parameter, !isfinite(alphabet) is allowed!
 # - Decide whether to keep randformula or randbaseformula
 
 doc_randformula = """
@@ -165,7 +165,7 @@ Return a pseudo-randomic `SyntaxTree` or `Formula`.
 
 # Arguments
 - `height::Integer`: height of the generated structure;
-- `alphabet::AbstractAlphabet`: collection from which propositions are chosen randomly;
+- `alphabet::AbstractAlphabet`: collection from which atoms are chosen randomly;
 - `operators::Vector{<:AbstractOperator}`: vector from which legal operators are chosen;
 - `g::AbstractGrammar`: alternative to passing alphabet and operators separately.
 
@@ -249,8 +249,8 @@ function randformula(
         modaldepth::Integer
     )::SyntaxTree
         if height == 0
-            # Sample proposition from alphabet
-            return SyntaxTree(picker(rng, propositions(alphabet)))
+            # Sample atom from alphabet
+            return SyntaxTree(picker(rng, atoms(alphabet)))
         else
             # Sample operator and generate children
             # (Note: only allow modal operators if modaldepth > 0)

@@ -147,7 +147,7 @@ end
 function _interpret_tokens(
     raw_tokens::Vector{String},
     string_to_op::Dict{String,AbstractOperator},
-    proposition_parser::Base.Callable;
+    atom_parser::Base.Callable;
     opening_parenthesis::Symbol,
     closing_parenthesis::Symbol,
     arg_delim::Symbol
@@ -168,11 +168,11 @@ function _interpret_tokens(
                     _check_unary_validity(tokens, op, opening_parenthesis, arg_delim)
                     op
                 else
-                    # If the token is something else -> parse as Proposition and push it
-                    proposition = Proposition(proposition_parser(st))
-                    # @assert proposition isa Proposition string(proposition) *
-                    #     " is not a proposition. Please, provide a valid proposition_parser."
-                    proposition
+                    # If the token is something else -> parse as Atom and push it
+                    atom = Atom(atom_parser(st))
+                    # @assert atom isa Atom string(atom) *
+                    #     " is not an atom. Please, provide a valid atom_parser."
+                    atom
                 end
             end
         end
@@ -188,7 +188,7 @@ end
 function tokenizer(
     expression::String,
     operators::Vector{<:AbstractOperator},
-    proposition_parser::Base.Callable,
+    atom_parser::Base.Callable,
     additional_whitespaces::Vector{Char},
     opening_parenthesis::Symbol = Symbol(DEFAULT_OPENING_PARENTHESIS),
     closing_parenthesis::Symbol = Symbol(DEFAULT_CLOSING_PARENTHESIS),
@@ -222,7 +222,7 @@ function tokenizer(
     raw_tokens = _recognize_tokens(expression, splitters, additional_whitespaces)
 
     # Interpret each raw token
-    return _interpret_tokens(raw_tokens, string_to_op, proposition_parser;
+    return _interpret_tokens(raw_tokens, string_to_op, atom_parser;
         opening_parenthesis = opening_parenthesis, closing_parenthesis = closing_parenthesis,
         arg_delim = arg_delim)
 end
@@ -266,7 +266,7 @@ function shunting_yard!(
             # Now push the current operator onto the tokstack
             push!(tokstack, tok)
 
-        elseif tok isa Proposition
+        elseif tok isa Atom
             push!(postfix, tok)
         else
             error("Parsing error! Unexpected token type encountered: `$(typeof(tok))`.")
@@ -292,7 +292,7 @@ end
         expression::String,
         additional_operators::Union{Nothing,Vector{<:AbstractOperator}} = nothing;
         function_notation::Bool = false,
-        proposition_parser::Base.Callable = Proposition{String},
+        atom_parser::Base.Callable = Atom{String},
         additional_whitespaces::Vector{Char} = Char[],
         opening_parenthesis::String = $(repr(DEFAULT_OPENING_PARENTHESIS)),
         closing_parenthesis::String = $(repr(DEFAULT_CLOSING_PARENTHESIS)),
@@ -320,9 +320,9 @@ additional operators may be provided as a second argument.
     in function notation (e.g, `"⨁(arg1, arg2)"`);
     otherwise, it is considered in
     [infix notation](https://en.wikipedia.org/wiki/Infix_notation) (e.g, `"arg1 ⨁ arg2"`);
-- `proposition_parser::Base.Callable = Proposition{String}`: a callable to be used for
-    parsing propositions, once they are recognized in the expression. It must return
-    the atom, or the `Proposition` itself;
+- `atom_parser::Base.Callable = Atom{String}`: a callable to be used for
+    parsing atoms, once they are recognized in the expression. It must return
+    the atom, or the `Atom` itself;
 - `additional_whitespaces`::Vector{Char} = Char[]: characters to be stripped out from each
     syntax token.
     For example, if `'@' in additional_whitespaces`, "¬@p@" is parsed just as "¬p".
@@ -351,7 +351,7 @@ julia> syntaxstring(parsetree("¬p∧q∧(¬s∧¬z)"))
 julia> syntaxstring(parsetree("∧(¬p,∧(q,∧(¬s,¬z)))", function_notation=true))
 "¬p ∧ q ∧ ¬s ∧ ¬z"
 
-julia> syntaxstring(parsetree("¬1→0"; proposition_parser = (x -> Proposition{Float64}(parse(Float64, x)))))
+julia> syntaxstring(parsetree("¬1→0"; atom_parser = (x -> Atom{Float64}(parse(Float64, x)))))
 "(¬1.0) → 0.0"
 ```
 
@@ -364,7 +364,7 @@ function parseformula(
     expression::String,
     additional_operators::Union{Nothing,Vector{<:AbstractOperator}} = nothing;
     function_notation::Bool = false,
-    proposition_parser::Base.Callable = Proposition{String},
+    atom_parser::Base.Callable = Atom{String},
     additional_whitespaces::Vector{Char} = Char[],
     opening_parenthesis::String = DEFAULT_OPENING_PARENTHESIS,
     closing_parenthesis::String = DEFAULT_CLOSING_PARENTHESIS,
@@ -424,7 +424,7 @@ function parseformula(
                     children = [popfirst!(stack) for _ in 1:arity(tok)]
                     pushfirst!(stack, SyntaxTree(tok, Tuple(children)))
                 end
-            elseif tok isa Proposition
+            elseif tok isa Atom
                 push!(stack, SyntaxTree(tok))
             else
                 error("Parsing error! Unexpected token type encountered: `$(typeof(tok))`.")
@@ -443,7 +443,7 @@ function parseformula(
     # Build a formula starting from its infix notation;
     # actually this is a preprocessing who fallbacks into `_postfixbuild`
     function _infixbuild()
-        tokens = tokenizer(expression, operators, proposition_parser,
+        tokens = tokenizer(expression, operators, atom_parser,
             additional_whitespaces, opening_parenthesis, closing_parenthesis)
         return _postfixbuild(shunting_yard!(tokens,
             opening_parenthesis = opening_parenthesis, closing_parenthesis = closing_parenthesis))
@@ -456,7 +456,7 @@ function parseformula(
         stack = Vector{Union{SyntaxTree, STACK_TOKEN_TYPE}}()
 
         for tok in reverse(prefix)
-            if tok isa Symbol || tok isa Proposition
+            if tok isa Symbol || tok isa Atom
                 push!(stack, tok)
             elseif tok isa AbstractOperator
                 if (arity(tok) == 1 && stack[end] isa
@@ -523,7 +523,7 @@ function parseformula(
     # Build a formula starting from its prefix notation;
     # actually this is a preprocessing who fallbacks into `_prefixbuild`
     function _fxbuild()
-        tokens = tokenizer(expression, operators, proposition_parser,
+        tokens = tokenizer(expression, operators, atom_parser,
             additional_whitespaces, opening_parenthesis, closing_parenthesis, arg_delim)
         return _prefixbuild(tokens)
     end
@@ -569,7 +569,7 @@ function parseformula(
     ::Type{Formula},
     expression::String,
     additional_operators::Union{Nothing,Vector{<:AbstractOperator}} = nothing;
-    # TODO add alphabet parameter add custom parser for propositions
+    # TODO add alphabet parameter add custom parser for atoms
     # alphabet::Union{Nothing,Vector,AbstractAlphabet} = nothing,
     grammar::Union{Nothing,AbstractGrammar} = nothing,
     algebra::Union{Nothing,AbstractAlgebra} = nothing,
