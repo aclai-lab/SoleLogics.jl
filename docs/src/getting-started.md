@@ -6,18 +6,23 @@ CurrentModule = SoleLogics
 
 ## [Syntax Basics](@id syntactical-base-definitions)
 
-- Logical formulas are most commonly represented as syntax trees
-TODO
+Logical formulas are synctactical objects representing statements which level of truth can be assessed.
+Formulas arise from formal grammars (e.g., context-free grammars), and are most commonly represented as syntax trees.
+At the leaf nodes of a syntax tree are atoms (simple, atomic statements) or truth values (e.g., ⊤, representing truth),
+while at the internal nodes are logical connectives that allow for the composition of formulas to represent complex concepts.
+
+In SoleLogics, an Atom is a wrapper for any value (accessible via the `value` method).
+
+arity
 
 ```@docs
-AbstractSyntaxStructure
-AbstractSyntaxToken
-SyntaxTree
-SoleLogics.arity(::Type{<:AbstractSyntaxToken})
 Atom
+TruthValue
+AbstractOperator
+SyntaxTree
 ```
 
-Let's recall the last concepts with a simple example.
+Let's review these concepts with a simple example.
 
 ```julia-repl
 julia> p = Atom("p")
@@ -25,6 +30,9 @@ Atom{String}("p")
 
 julia> q = Atom("q")
 Atom{String}("q")
+
+julia> value(p)
+"p"
 
 # Operators are syntax tokens too
 julia> CONJUNCTION
@@ -58,13 +66,22 @@ julia> leftree |> token |> arity
 0
 ```
 
-## Operators
+
+```@docs
+AbstractSyntaxStructure
+AbstractSyntaxToken
+SoleLogics.arity(::Type{<:AbstractSyntaxToken})
+```
+
+### Connectives
+
+TODO
 
 ```@docs
 SoleLogics.AbstractOperator
 ```
 !!! note
-    SoleLogics.jl offers the possibility to implement custom [`NamedOperator`](@ref)s. To see an in-depth example, please refer to section [Customization](@ref customization-section).
+    SoleLogics.jl offers the possibility to implement custom operators. To see an in-depth example, please refer to section [Customization](@ref customization-section).
 
 ```@docs
 SoleLogics.NamedOperator
@@ -75,9 +92,9 @@ SoleLogics.iscommutative
 
 To learn more about operators, refer to [Propositional Logic](@ref) and [Modal Logic](@ref) chapters.
 
-## Formulas
+### Formulas
 
-TODO: the following definition might be unclear, since "evaluation" and "logic" are not concepts already red from the user. When the Logic structure will be removed from SoleLogics, this section will be expanded with semantics-related concepts.
+TODO: the following definition might be unclear, since "evaluation" and "logic" are not concepts already read by the user. When the Logic structure will be removed from SoleLogics, this section will be expanded with semantics-related concepts.
 
 ```@docs
 AbstractFormula
@@ -93,7 +110,7 @@ SoleLogics.height(t::SyntaxTree)
 SoleLogics.tree(f::AbstractFormula)
 ```
 
-## Parsing & Printing
+### Parsing & Printing
 SoleLogics.jl allows you to: 
 
 - Extract the string representation of a formula (via `syntaxstring`);
@@ -106,7 +123,7 @@ syntaxstring
 parsetree
 ```
 
-## Grammar
+### Grammar
 
 ```@docs
 AbstractAlphabet
