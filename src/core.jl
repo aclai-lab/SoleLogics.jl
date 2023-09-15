@@ -150,7 +150,8 @@ syntaxstring(value::Union{AbstractString,Number,AbstractChar}; kwargs...) = stri
         value::A
     end
 
-An atom, sometimes called a propositional letter (or simply *letter*), of type
+An atom, sometimes called an atomic proposition,
+propositional letter (or simply *letter*), of type
 `Atom{A}` wraps a `value::A` representing a fact which truth can be assessed on
 a logical interpretation.
 
@@ -1767,7 +1768,7 @@ algebra(f::Formula) = algebra(logic(f))
 Abstract type for representing a propositional
 [interpretation](https://en.wikipedia.org/wiki/Interpretation_(logic))
 (or propositional model)
-that associates truth values of a type `T` to propositional letters of value type `A`.
+that associates truth values of a type `T` to atoms of value type `A`.
 In the case of
 [propositional logic](https://simple.wikipedia.org/wiki/Propositional_logic),
 is essentially a map *atom → truth value*.

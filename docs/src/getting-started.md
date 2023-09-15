@@ -147,7 +147,7 @@ Base.in(t::SyntaxTree, g::AbstractGrammar)
 formulas(g::AbstractGrammar; maxdepth::Integer, nformulas::Union{Nothing,Integer} = nothing, args...)
 
 CompleteFlatGrammar{A<:AbstractAlphabet,O<:AbstractOperator}
-formulas( g::CompleteFlatGrammar{A,O} where {A,O}; maxdepth::Integer, nformulas::Union{Nothing,Integer} = nothing)
+formulas(g::CompleteFlatGrammar{A,O} where {A,O}; maxdepth::Integer, nformulas::Union{Nothing,Integer} = nothing)
 ```
 
 ## Semantics
