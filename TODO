@@ -23,10 +23,12 @@ From PAndQ:
   ✔ Macro to easily create atoms and parse expressions related to syntax (See PAndQ.jl) @done(23-09-05 19:36)
 
 General:
-  ☐ Create a SupportedInterpretation
-  ☐ Algorithm to generate a truth table
   ☐ Write random models generation (see pluto-demo.jl)
 
   Normalization:
     ☐ Add custom normalization rules to normalize
     ☐ Simplify code when possible, using dual/hasdual traits
+
+  Interpretations:
+    ☐ Create a SupportedInterpretation
+    ☐ Algorithm to generate a truth table
