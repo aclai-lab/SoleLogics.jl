@@ -8,19 +8,19 @@ import Base: getindex
 
 Abstract type for ordered sets of interpretations.
 A set of interpretations, also referred to as a *dataset* in this context,
-is a collection of *instances*, each of which is an interpretation, and is 
+is a collection of *instances*, each of which is an interpretation, and is
 identified by an index i_instance::Integer.
-These structures are especially useful when performing 
+These structures are especially useful when performing
 [model checking](https://en.wikipedia.org/wiki/Model_checking).
 
-See also [`atomtype`](@ref), [`truthtype`](@ref),
+See also [`valuetype`](@ref), [`truthtype`](@ref),
 [`InterpretationSet`](@ref).
 """
 abstract type AbstractInterpretationSet{M<:AbstractInterpretation} <: AbstractDataset end
 
 # TODO improve general doc.
-atomtype(::Type{AbstractInterpretationSet{M}}) where {M} = atomtype(M)
-atomtype(s::AbstractInterpretationSet) = atomtype(typeof(s))
+valuetype(::Type{AbstractInterpretationSet{M}}) where {M} = valuetype(M)
+valuetype(s::AbstractInterpretationSet) = valuetype(typeof(s))
 
 # TODO improve general doc.
 truthtype(::Type{AbstractInterpretationSet{M}}) where {M} = truthtype(M)
@@ -76,6 +76,21 @@ struct InterpretationSet{M<:AbstractInterpretation} <: AbstractInterpretationSet
 end
 
 Base.getindex(ms::InterpretationSet, i_instance::Integer) = Base.getindex(ms.instances, i_instance)
+
+"""
+    function check(
+        f::AbstractFormula,
+        is::InterpretationSet,
+        i_instance::Integer,
+        args...
+    )
+
+Dispatch to check a specific [`AbstractInterpretation`](@ref) in a
+[`InterpretationSet`](@ref) over a formula.
+
+See also [`AbstractInterpretation`](@ref), [`InterpretationSet`](@ref),
+[`AbstractFormula`](@ref).
+"""
 function check(
     f::AbstractFormula,
     is::InterpretationSet,
@@ -175,15 +190,3 @@ end
 #     rel = SoleLogics.relation(SoleLogics.token(φ))
 #     check(first(children(φ)), X, i_instance, accessibles(frame(X, i_instance), rel); kwargs...)
 # end
-
-# TODO remove?
-function check(
-    φ::SoleLogics.AbstractFormula,
-    X::AbstractInterpretationSet{<:AbstractKripkeStructure},
-    i_instance::Integer,
-    args...;
-    kwargs...
-)
-    @warn "This method is deprecating... $(@show φ), $(@show X), $(@show args)"
-    check(tree(φ), X, i_instance, args...; kwargs...)
-end

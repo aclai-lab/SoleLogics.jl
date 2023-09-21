@@ -33,12 +33,6 @@ end
 
 parseformula(str, args...; kwargs...) = parseformula(SyntaxTree, str, args...; kwargs...)
 
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Table of contents ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#
-#    TODO: This code is not so friendly.
-#    A little overview about all the private methods and the workflow involved
-#    in this page could be helpful to future developers.
-
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Utils ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 function strip_whitespaces(
@@ -47,61 +41,6 @@ function strip_whitespaces(
 )
     return strip(x -> isspace(x) || x in additional_whitespaces, expression)
 end
-
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Precedence ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-doc_precedence = """
-    const MAX_PRECEDENCE  = Base.operator_precedence(:(::))
-    const HIGH_PRECEDENCE = Base.operator_precedence(:^)
-    const BASE_PRECEDENCE = Base.operator_precedence(:*)
-    const LOW_PRECEDENCE  = Base.operator_precedence(:+)
-
-Standard integers representing operator precedence;
-operators with high values take precedence over operators with lower values.
-This is needed to establish unambiguous implementations of parsing-related algorithms.
-
-By default, all operators are assigned a `BASE_PRECEDENCE`, except for:
-- nullary operators (e.g., ⊤, ⊥), that are assigned a `MAX_PRECEDENCE`;
-- unary operators (e.g., ¬, ◊), that are assigned a `HIGH_PRECEDENCE`;
-- the implication (→), that is assigned a `LOW_PRECEDENCE`.
-
-In case of tie, operators are evaluated in the left-to-right order.
-
-# Examples
-```julia-repl
-julia> syntaxstring(parseformula("¬a ∧ b ∧ c"))
-"(¬(a)) ∧ (b ∧ c)"
-
-julia> syntaxstring(parseformula("¬a → b ∧ c"))
-"(¬(a)) → (b ∧ c)"
-
-julia> syntaxstring(parseformula("a∧b → c∧d"))
-"(a ∧ b) → (c ∧ d)"
-```
-
-See also [`parseformula`](@ref).
-"""
-
-"""$(doc_precedence)"""
-const MAX_PRECEDENCE = Base.operator_precedence(:(::))
-"""$(doc_precedence)"""
-const HIGH_PRECEDENCE = Base.operator_precedence(:^)
-"""$(doc_precedence)"""
-const BASE_PRECEDENCE = Base.operator_precedence(:*)
-"""$(doc_precedence)"""
-const LOW_PRECEDENCE  = Base.operator_precedence(:+)
-
-function Base.operator_precedence(op::AbstractOperator)
-    if isunary(op)
-        HIGH_PRECEDENCE
-    elseif isnullary(op)
-        MAX_PRECEDENCE
-    else
-        BASE_PRECEDENCE
-    end
-end
-
-Base.operator_precedence(::typeof(IMPLICATION)) = LOW_PRECEDENCE
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Input and construction ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -114,7 +53,10 @@ const DEFAULT_ARG_DELIM       = ","
 
 
 """
-See [`parsetree`](@ref).
+Operators considered valid by default, when parsing.
+Those are the vector $(repr(BASE_PARSABLE_OPERATORS)).
+
+See also [`parsetree`](@ref).
 """
 const BASE_PARSABLE_OPERATORS = [
     BASE_PROPOSITIONAL_OPERATORS...,
@@ -205,7 +147,7 @@ end
 function _interpret_tokens(
     raw_tokens::Vector{String},
     string_to_op::Dict{String,AbstractOperator},
-    proposition_parser::Base.Callable;
+    atom_parser::Base.Callable;
     opening_parenthesis::Symbol,
     closing_parenthesis::Symbol,
     arg_delim::Symbol
@@ -226,11 +168,11 @@ function _interpret_tokens(
                     _check_unary_validity(tokens, op, opening_parenthesis, arg_delim)
                     op
                 else
-                    # If the token is something else -> parse as Proposition and push it
-                    proposition = Proposition(proposition_parser(st))
-                    # @assert proposition isa Proposition string(proposition) *
-                    #     " is not a proposition. Please, provide a valid proposition_parser."
-                    proposition
+                    # If the token is something else -> parse as Atom and push it
+                    atom = Atom(atom_parser(st))
+                    # @assert atom isa Atom string(atom) *
+                    #     " is not an atom. Please, provide a valid atom_parser."
+                    atom
                 end
             end
         end
@@ -246,7 +188,7 @@ end
 function tokenizer(
     expression::String,
     operators::Vector{<:AbstractOperator},
-    proposition_parser::Base.Callable,
+    atom_parser::Base.Callable,
     additional_whitespaces::Vector{Char},
     opening_parenthesis::Symbol = Symbol(DEFAULT_OPENING_PARENTHESIS),
     closing_parenthesis::Symbol = Symbol(DEFAULT_CLOSING_PARENTHESIS),
@@ -280,7 +222,7 @@ function tokenizer(
     raw_tokens = _recognize_tokens(expression, splitters, additional_whitespaces)
 
     # Interpret each raw token
-    return _interpret_tokens(raw_tokens, string_to_op, proposition_parser;
+    return _interpret_tokens(raw_tokens, string_to_op, atom_parser;
         opening_parenthesis = opening_parenthesis, closing_parenthesis = closing_parenthesis,
         arg_delim = arg_delim)
 end
@@ -324,7 +266,7 @@ function shunting_yard!(
             # Now push the current operator onto the tokstack
             push!(tokstack, tok)
 
-        elseif tok isa Proposition
+        elseif tok isa Atom
             push!(postfix, tok)
         else
             error("Parsing error! Unexpected token type encountered: `$(typeof(tok))`.")
@@ -350,7 +292,7 @@ end
         expression::String,
         additional_operators::Union{Nothing,Vector{<:AbstractOperator}} = nothing;
         function_notation::Bool = false,
-        proposition_parser::Base.Callable = Proposition{String},
+        atom_parser::Base.Callable = Atom{String},
         additional_whitespaces::Vector{Char} = Char[],
         opening_parenthesis::String = $(repr(DEFAULT_OPENING_PARENTHESIS)),
         closing_parenthesis::String = $(repr(DEFAULT_CLOSING_PARENTHESIS)),
@@ -358,17 +300,18 @@ end
     )
 
 Return a `SyntaxTree` which is the result of parsing `expression`
- via [Shunting yard](https://en.wikipedia.org/wiki/Shunting_yard_algorithm).
+ via the [Shunting yard](https://en.wikipedia.org/wiki/Shunting_yard_algorithm)
+ algorithm.
 By default, this function is only able to parse operators in
-`SoleLogics.BASE_PARSABLE_OPERATORS`; additional operators may be provided as
-a second argument.
+`SoleLogics.BASE_PARSABLE_OPERATORS` (see arguments section);
+additional operators may be provided as a second argument.
 
 # Arguments
 - `expression::String`: expression to be parsed;
 - `additional_operators::Vector{<:AbstractOperator}`: additional, non-standard operators
     needed to correctly parse the expression.
-    When left unset, only the following operators are
-    correctly parsed: $(repr(BASE_PARSABLE_OPERATORS));
+    When left unset, only the operators in `SoleLogics.BASE_PARSABLE_OPERATORS` are
+    correctly parsed: $(join(repr(BASE_PARSABLE_OPERATORS), ", "));
     note that, in case of clashing `syntaxstring`'s,
     the provided additional operators will override these.
 
@@ -377,9 +320,9 @@ a second argument.
     in function notation (e.g, `"⨁(arg1, arg2)"`);
     otherwise, it is considered in
     [infix notation](https://en.wikipedia.org/wiki/Infix_notation) (e.g, `"arg1 ⨁ arg2"`);
-- `proposition_parser::Base.Callable = Proposition{String}`: a callable to be used for
-    parsing propositions, once they are recognized in the expression. It must return
-    the atom, or the `Proposition` itself;
+- `atom_parser::Base.Callable = Atom{String}`: a callable to be used for
+    parsing atoms, once they are recognized in the expression. It must return
+    the atom, or the `Atom` itself;
 - `additional_whitespaces`::Vector{Char} = Char[]: characters to be stripped out from each
     syntax token.
     For example, if `'@' in additional_whitespaces`, "¬@p@" is parsed just as "¬p".
@@ -403,17 +346,16 @@ a second argument.
 # Examples
 ```julia-repl
 julia> syntaxstring(parsetree("¬p∧q∧(¬s∧¬z)"))
-"(¬(p)) ∧ (q ∧ ((¬(s)) ∧ (¬(z))))"
+"¬p ∧ q ∧ ¬s ∧ ¬z"
 
 julia> syntaxstring(parsetree("∧(¬p,∧(q,∧(¬s,¬z)))", function_notation=true))
-"(¬(p)) ∧ (q ∧ ((¬(s)) ∧ (¬(z))))"
+"¬p ∧ q ∧ ¬s ∧ ¬z"
 
-julia> syntaxstring(parsetree("¬1→0";
-    proposition_parser = (x -> Proposition{Float64}(parse(Float64, x)))))
-"(¬(1.0)) → 0.0"
+julia> syntaxstring(parsetree("¬1→0"; atom_parser = (x -> Atom{Float64}(parse(Float64, x)))))
+"(¬1.0) → 0.0"
 ```
 
-See also [`SyntaxTree`](@ref), [`syntaxstring`](@ref).
+See also [`SyntaxTree`](@ref), [`syntaxstring`](@ref), [].
 """
 parsetree(str, args...; kwargs...) = parseformula(SyntaxTree, str, args...; kwargs...)
 
@@ -422,7 +364,7 @@ function parseformula(
     expression::String,
     additional_operators::Union{Nothing,Vector{<:AbstractOperator}} = nothing;
     function_notation::Bool = false,
-    proposition_parser::Base.Callable = Proposition{String},
+    atom_parser::Base.Callable = Atom{String},
     additional_whitespaces::Vector{Char} = Char[],
     opening_parenthesis::String = DEFAULT_OPENING_PARENTHESIS,
     closing_parenthesis::String = DEFAULT_CLOSING_PARENTHESIS,
@@ -436,10 +378,9 @@ function parseformula(
     # TODO: expand special sequences to special *sequences* (strings of characters)
     # TODO: check that no special sequence is a substring of another one.
     @assert function_notation ||
-            (allunique(string.([opening_parenthesis, arg_delim])) ||
-             allunique(string.([closing_parenthesis, arg_delim]))) "" *
-        "Invalid " *
-        "special sequences provided: please, check that both the `opening_parenthesis` " *
+        opening_parenthesis != arg_delim && closing_parenthesis != arg_delim
+        "Invalid special sequences provided: " *
+        "please, check that both the `opening_parenthesis` " *
         "and the `closing_parenthesis` are not equal to the `arg_delim`."
 
     opening_parenthesis = Symbol(opening_parenthesis)
@@ -454,15 +395,36 @@ function parseformula(
     #  In other words, all special symbols (e.g. opening_parenthesis) are already filtered
     #  out and only AbstractSyntaxToken are considered.
     function _postfixbuild(postfix::Vector{<:AbstractSyntaxToken})
-
         stack = SyntaxTree[]
 
         for tok in postfix
             # Stack collapses, composing a new part of the syntax tree
             if tok isa AbstractOperator
-                children = [pop!(stack) for _ in 1:arity(tok)]
-                push!(stack, SyntaxTree(tok, Tuple(reverse(children))))
-            elseif tok isa Proposition
+                # How associativity affects the token stack to SyntaxTree conversion?
+                # Consider "p → q → r" where "→" is right associative.
+                # The stack is [p, q, r, →, →], and is manipulated like this:
+                #   1) the first → from the left is encountered: [p, q, r, ...→... , →];
+                #   2) q and r are popped: [p, ...→..., →];
+                #   3) the current token → receives q and r as children: [p, q→r, →];
+                #   4) the next → is found, then p and q→r are popped: [...→...];
+                #   5) the current token → receives p and q→r as children: [p → (q→r)].
+                #
+                # Now consider "p → q → r" where "→" is left associative.
+                # The stack is [p, q, r, →, →], and is manipulated like this:
+                #   1) the first → from the left is encountered: [p, q, r, ...→... , →];
+                #   2) p and q are popped using popfirst instead of pop: [r, ...→..., →];
+                #   3) the current token → receives p and q as children. Instead of push,
+                #      pushfirst is used to obtain: [p→q, r, →];
+                #   4) the next → is found, r and p→q are removed using popfirst: [...→...];
+                #   5) the current token → receives q→r and r as children: [(p→q) → r].
+                if (isrightassociative(tok))
+                    children = [pop!(stack) for _ in 1:arity(tok)]
+                    push!(stack, SyntaxTree(tok, Tuple(reverse(children))))
+                else
+                    children = [popfirst!(stack) for _ in 1:arity(tok)]
+                    pushfirst!(stack, SyntaxTree(tok, Tuple(children)))
+                end
+            elseif tok isa Atom
                 push!(stack, SyntaxTree(tok))
             else
                 error("Parsing error! Unexpected token type encountered: `$(typeof(tok))`.")
@@ -481,18 +443,20 @@ function parseformula(
     # Build a formula starting from its infix notation;
     # actually this is a preprocessing who fallbacks into `_postfixbuild`
     function _infixbuild()
-        tokens = tokenizer(expression, operators, proposition_parser,
+        tokens = tokenizer(expression, operators, atom_parser,
             additional_whitespaces, opening_parenthesis, closing_parenthesis)
         return _postfixbuild(shunting_yard!(tokens,
             opening_parenthesis = opening_parenthesis, closing_parenthesis = closing_parenthesis))
     end
 
     # Build a formula starting from its function notation;
+    # note that here, differently from the _postfixbuild case, operators associativity is
+    # already covered by the function notation parenthesization.
     function _prefixbuild(prefix::Vector{STACK_TOKEN_TYPE})
         stack = Vector{Union{SyntaxTree, STACK_TOKEN_TYPE}}()
 
         for tok in reverse(prefix)
-            if tok isa Symbol || tok isa Proposition
+            if tok isa Symbol || tok isa Atom
                 push!(stack, tok)
             elseif tok isa AbstractOperator
                 if (arity(tok) == 1 && stack[end] isa
@@ -559,7 +523,7 @@ function parseformula(
     # Build a formula starting from its prefix notation;
     # actually this is a preprocessing who fallbacks into `_prefixbuild`
     function _fxbuild()
-        tokens = tokenizer(expression, operators, proposition_parser,
+        tokens = tokenizer(expression, operators, atom_parser,
             additional_whitespaces, opening_parenthesis, closing_parenthesis, arg_delim)
         return _prefixbuild(tokens)
     end
@@ -587,7 +551,8 @@ end
     )::Formula
 
 Return a `Formula` which is the result of parsing `expression`
- via [Shunting yard](https://en.wikipedia.org/wiki/Shunting_yard_algorithm).
+ via the [Shunting yard](https://en.wikipedia.org/wiki/Shunting_yard_algorithm)
+ algorithm.
 By default, this function is only able to parse operators in
 `SoleLogics.BASE_PARSABLE_OPERATORS`; additional operators may be provided as
 a second argument.
@@ -604,7 +569,7 @@ function parseformula(
     ::Type{Formula},
     expression::String,
     additional_operators::Union{Nothing,Vector{<:AbstractOperator}} = nothing;
-    # TODO add alphabet parameter add custom parser for propositions
+    # TODO add alphabet parameter add custom parser for atoms
     # alphabet::Union{Nothing,Vector,AbstractAlphabet} = nothing,
     grammar::Union{Nothing,AbstractGrammar} = nothing,
     algebra::Union{Nothing,AbstractAlgebra} = nothing,

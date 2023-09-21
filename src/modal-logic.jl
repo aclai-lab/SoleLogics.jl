@@ -488,7 +488,7 @@ include("algebras/frames.jl")
 #     abstract type AbstractModalAssignment{W<:AbstractWorld,A,T<:TruthValue} end
 
 # A modal assignment is a mapping from `World`s to propositional assignments;
-# or equivalently, a mapping from `World`s, `Proposition`s of atom type `A`
+# or equivalently, a mapping from `World`s, `Atom`s of value type `A`
 # to truth values of type `T`.
 
 # See also [`AbstractAssignment`](@ref), [`AbstractFrame`](@ref).
@@ -498,7 +498,7 @@ include("algebras/frames.jl")
 # """
 # TODO
 # """
-# function check(::Proposition{A}, ::AbstractModalAssignment{W,A,T}, ::W)::T where {W<:AbstractWorld,A,T<:TruthValue}
+# function check(::Atom{A}, ::AbstractModalAssignment{W,A,T}, ::W)::T where {W<:AbstractWorld,A,T<:TruthValue}
 #     return error("Please, provide ...")
 # end
 
@@ -522,7 +522,7 @@ Abstract type for representing
 It comprehends a directed graph structure (Kripke frame), where nodes are referred to as
 *worlds*, and the binary relation between them is referred to as the
 *accessibility relation*. Additionally, each world is associated with a mapping from
-`Proposition`s of atom type `A` to truth values of type `T`.
+`Atom`s of value type `A` to truth values of type `T`.
 
 See also [`AbstractInterpretation`](@ref).
 """
@@ -534,7 +534,7 @@ abstract type AbstractKripkeStructure{
 } <: AbstractInterpretation{A,T} end
 
 function check(
-    ::Proposition,
+    ::Atom,
     ::AbstractKripkeStructure{W,A,T},
     ::W,
 )::T where {W<:AbstractWorld,A,T<:TruthValue}
@@ -579,6 +579,61 @@ accessibles(i::AbstractKripkeStructure, args...) = accessibles(frame(i), args...
 allworlds(i::AbstractKripkeStructure, args...) = allworlds(frame(i), args...)
 nworlds(i::AbstractKripkeStructure) = nworlds(frame(i))
 
+"""
+function check(
+    φ::SyntaxTree,
+    i::AbstractKripkeStructure{W,A,T},
+    w::Union{Nothing,<:AbstractWorld} = nothing;
+    use_memo::Union{Nothing,AbstractDict{<:AbstractFormula,<:WorldSet}} = nothing,
+    perform_normalization::Bool = true,
+    memo_max_height::Union{Nothing,Int} = nothing,
+)::T where {W<:AbstractWorld,A,T<:TruthValue}
+
+Check a formula on a specific word in a [`KripkeStructure`](@ref).
+
+# Examples
+```julia-repl
+julia> using Graphs, Random
+
+julia> @atoms String p q
+2-element Vector{Atom{String}}:
+ Atom{String}("p")
+ Atom{String}("q")
+
+julia> fmodal = randformula(Random.MersenneTwister(14), 3, [p,q], SoleLogics.BASE_MODAL_OPERATORS)
+¬□(p ∨ q)
+
+# A special graph, called Kripke Frame, is created.
+# Nodes are called worlds, and the edges are relations between worlds.
+julia> worlds = SoleLogics.World.(1:5) # 5 worlds are created, numerated from 1 to 5
+
+julia> edges = Edge.([ (1, 2), (1, 3), (2, 4), (3, 4), (3, 5)])
+
+julia> kframe = SoleLogics.ExplicitCrispUniModalFrame(worlds, Graphs.SimpleDiGraph(edges))
+
+# A valuation function establishes which fact are true on each world
+julia> valuation = Dict([
+    worlds[1] => TruthDict([p => true, q => false]),
+    worlds[2] => TruthDict([p => true, q => true]),
+    worlds[3] => TruthDict([p => true, q => false]),
+    worlds[4] => TruthDict([p => false, q => false]),
+    worlds[5] => TruthDict([p => false, q => true]),
+ ])
+
+# Kripke Frame and valuation function are merged in a Kripke Model (or Kripke Structure)
+julia> kstruct = KripkeStructure(kframe, valuation)
+
+julia> [w => check(fmodal, kstruct, w) for w in worlds]
+5-element Vector{Pair{SoleLogics.World{Int64}, Bool}}:
+ SoleLogics.World{Int64}(1) => 0
+ SoleLogics.World{Int64}(2) => 1
+ SoleLogics.World{Int64}(3) => 1
+ SoleLogics.World{Int64}(4) => 0
+ SoleLogics.World{Int64}(5) => 0
+```
+
+See also [`SyntaxTree`](@ref), [`AbstractWorld`](@ref), [`KripkeStructure`](@ref).
+"""
 function check(
     φ::SyntaxTree,
     i::AbstractKripkeStructure{W,A,T},
@@ -601,7 +656,7 @@ function check(
     hasformula(memo_structure::AbstractDict{<:AbstractFormula}, φ::AbstractFormula) = haskey(memo_structure, tree(φ))
 
     if perform_normalization
-        φ = normalize(φ; profile = :modelchecking, allow_proposition_flipping = false)
+        φ = normalize(φ; profile = :modelchecking, allow_atom_flipping = false)
     end
 
     memo_structure = begin
@@ -634,7 +689,7 @@ function check(
                 worldset = begin
                     if tok isa AbstractOperator
                         _c(collateworlds(fr, tok, map(f->readformula(memo_structure, f), children(ψ))))
-                    elseif tok isa Proposition
+                    elseif tok isa Atom
                         _f(_w->check(tok, i, _w), _c(allworlds(fr)))
                     else
                         error("Unexpected token encountered in _check: $(typeof(tok))")
@@ -697,7 +752,7 @@ end
 
 frame(i::KripkeStructure) = i.frame
 
-function check(p::Proposition, i::KripkeStructure{W}, w::W) where {W<:AbstractWorld}
+function check(p::Atom, i::KripkeStructure{W}, w::W) where {W<:AbstractWorld}
     check(p, i.assignment[w])
 end
 
@@ -833,7 +888,7 @@ false
 
 julia> modallogic(; alphabet = ["p", "q"]);
 
-julia> modallogic(; alphabet = ExplicitAlphabet([Proposition("p"), Proposition("q")]));
+julia> modallogic(; alphabet = ExplicitAlphabet([Atom("p"), Atom("q")]));
 
 ```
 
@@ -955,16 +1010,12 @@ function diamond(r::AbstractRelation) DiamondRelationalOperator(r) end
 function box() BOX end
 function box(r::AbstractRelation) BoxRelationalOperator(r) end
 
-global_diamond = diamond(globalrel)
-global_box = box(globalrel)
-
-# TODO remove those with the underscore
-globaldiamond = global_diamond
-globalbox = global_box
+globaldiamond = diamond(globalrel) # @deprecate (see deprecate.jl)
+globalbox = box(globalrel)         # ...
 
 const BASE_MULTIMODAL_OPERATORS = [BASE_PROPOSITIONAL_OPERATORS...,
-    global_diamond,
-    global_box,
+    globaldiamond,
+    globalbox,
     diamond(identityrel),
     box(identityrel),
 ]

@@ -43,7 +43,7 @@ collatetruth(a::AbstractAlgebra{T}, ::typeof(⊥), t::NTuple{0,T}) where {T<:Tru
 A singleton type for representing operators defined by a name or a symbol.
 
 # Examples
-The AND operator (logical conjuction) can be defined as the subtype:
+The AND operator (logical conjuction) is defined as the subtype:
 
     const CONJUNCTION = NamedOperator{:∧}()
     const ∧ = CONJUNCTION
@@ -123,6 +123,8 @@ const IMPLICATION = NamedOperator{:→}()
 const → = IMPLICATION
 arity(::Type{typeof(→)}) = 2
 
+Base.operator_precedence(::typeof(IMPLICATION)) = LOW_PRECEDENCE
+
 # Helpers that allow the conjuction/disjuction of more than two tokens/formulas.
 function CONJUNCTION(
     c1::Union{AbstractSyntaxToken,AbstractFormula},
@@ -148,6 +150,7 @@ hasdual(::typeof(∧)) = true
 dual(op::typeof(∧)) = typeof(∨)
 hasdual(::typeof(∨)) = true
 dual(op::typeof(∨))     = typeof(∧)
+
 
 ############################################################################################
 ########################################## ALGEBRA #########################################
@@ -264,7 +267,7 @@ end
 ############################################################################################
 
 
-# This can be useful for standard phrasing of propositional formulas with string propositions.
+# This can be useful for standard phrasing of propositional formulas with string atoms.
 
 """
     const BASE_OPERATORS = [⊤, ⊥, ¬, ∧, ∨, →]
@@ -322,7 +325,7 @@ function _baselogic(;
                     end
                 end
                 if alphabet isa Vector
-                    alphabet = ExplicitAlphabet(map(Proposition, alphabet))
+                    alphabet = ExplicitAlphabet(map(Atom, alphabet))
                 end
                 CompleteFlatGrammar(alphabet, operators)
             # end
@@ -346,7 +349,7 @@ end
     )
 
 Attempt at instantiating a `Formula` from a syntax token/formula,
-by inferring the logic it belongs to. If `infer_logic` is true, then 
+by inferring the logic it belongs to. If `infer_logic` is true, then
 a canonical logic (e.g., propositional logic with all the `BASE_PROPOSITIONAL_OPERATORS`) is
 inferred; if it's false, then a logic with exactly the operators appearing in the syntax tree,
 plus the `additional_operators` is instantiated.
@@ -383,7 +386,7 @@ function baseformula(
 
     ops = isnothing(additional_operators) ? SoleLogics.operators(t) : additional_operators
     # operators = unique([additional_operators..., ops...])
-    # props = propositions(t)
+    # props = atoms(t)
 
     logic = begin
         if issubset(ops, BASE_PROPOSITIONAL_OPERATORS)

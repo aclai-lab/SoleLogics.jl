@@ -14,31 +14,28 @@ include("utils.jl")
 
 export iscrisp, isfinite, isnullary, isunary, isbinary
 
-export Proposition,
-    #
-    AlphabetOfAny,
-    ExplicitAlphabet,
-    #
-    SyntaxTree,
-    #
-    AbstractFormula,
-    Formula
+export AbstractSyntaxToken, Atom,
+    AbstractFormula, Formula,
+    AbstractSyntaxStructure, SyntaxTree,
+    AlphabetOfAny, ExplicitAlphabet,
+    SYNTACTICAL
 
 export syntaxstring
 
 export TOP, ⊤
 export BOTTOM, ⊥
 
-export arity, atomtype, tokentype, tokenstype,
-        propositionstype, operatorstype, truthtype
+export arity, valuetype, tokentype, tokenstype,
+        atomstype, operatorstype, truthtype
 export check
-export atom, token, children, alphabet, formulas
+export value, token, children, alphabet, formulas
 export domain, top, bottom, grammar, algebra, logic, tree
 export istop, isbottom
 
-export tokens, operators, propositions
+export tokens, operators, atoms
+export @atoms, @synexpr
 
-include("general.jl")
+include("core.jl")
 
 export ∧, ¬, ∨, →
 export CONJUNCTION, NEGATION, DISJUNCTION, IMPLICATION
@@ -51,6 +48,7 @@ include("base-logic.jl")
 export propositionallogic
 
 export TruthDict, DefaultedTruthDict
+export truth_table
 
 include("propositional-logic.jl")
 
@@ -69,7 +67,7 @@ export AbstractWorldSet, WorldSet
 
 export Interval, Interval2D, OneWorld
 
-export global_diamond, global_box
+export globaldiamond, globalbox
 
 include("modal-logic.jl")
 
@@ -90,5 +88,7 @@ include("parse.jl")
 export randbaseformula, randformula
 
 include("random.jl")
+
+include("deprecate.jl")
 
 end

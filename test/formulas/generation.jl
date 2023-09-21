@@ -1,6 +1,6 @@
 # TODO adjust
 # # Pool of valid propositional letters used those
-# letters = [SoleLogics.Proposition{Int64}(letter) for letter in string.(collect('a':'z'))]
+# letters = [SoleLogics.Atom{Int64}(letter) for letter in string.(collect('a':'z'))]
 
 # @testset "Formulas fundamental checks" begin
 #     function fxtest(h::Integer, letters::Vector{<:AbstractPropositionalLetter})

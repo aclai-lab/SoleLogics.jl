@@ -20,14 +20,14 @@ conjuctive normal form (CNF) or disjunctive normal form (DNF), defined as:
 # Examples
 ```julia-repl
 julia> LeftmostLinearForm(→, parseformula.(["p", "q", "r"]))
-LeftmostLinearForm{SoleLogics.NamedOperator{:→},SyntaxTree{Proposition{String}}}
+LeftmostLinearForm{SoleLogics.NamedOperator{:→},SyntaxTree{Atom{String}}}
     (p) → (q) → (r)
 
 julia> LeftmostConjunctiveForm(parseformula.(["¬p", "q", "¬r"]))
 LeftmostLinearForm{SoleLogics.NamedOperator{:∧},SyntaxTree}
     (¬(p)) ∧ (q) ∧ (¬(r))
 
-julia> LeftmostDisjunctiveForm{Literal}([Literal(false, Proposition("p")), Literal(true, Proposition("q")), Literal(false, Proposition("r"))])
+julia> LeftmostDisjunctiveForm{Literal}([Literal(false, Atom("p")), Literal(true, Atom("q")), Literal(false, Atom("r"))])
 LeftmostLinearForm{SoleLogics.NamedOperator{:∨},Literal}
     (¬(p)) ∨ (q) ∨ (¬(r))
 
@@ -140,7 +140,7 @@ Base.getindex(lf::LeftmostLinearForm, idx::Integer) = Base.getindex(lf,[idx])
 nchildren(lf::LeftmostLinearForm) = length(children(lf))
 
 # TODO: add parameter remove_redundant_parentheses
-# TODO: add parameter parentheses_at_propositions
+# TODO: add parameter parenthesize_atoms
 function syntaxstring(
     lf::LeftmostLinearForm;
     function_notation = false,
@@ -205,7 +205,7 @@ Base.promote_rule(::Type{LF}, ::Type{SS}) where {LF<:LeftmostLinearForm,SS<:Abst
         prop::T
     end
 
-A proposition or its negation.
+An atom, or its negation.
 
 See also [`CNF`](@ref), [`DNF`](@ref), [`AbstractSyntaxStructure`](@ref).
 """
@@ -231,7 +231,7 @@ end
 ispos(l::Literal) = l.ispos
 prop(l::Literal) = l.prop
 
-propositionstype(::Literal{T}) where {T} = T
+atomstype(::Literal{T}) where {T} = T
 
 tree(l::Literal) = ispos(l) ? SyntaxTree(l.prop) : ¬(SyntaxTree(l.prop))
 
@@ -240,7 +240,7 @@ dual(l::Literal) = Literal(!ispos(l), prop(l))
 
 function Base.show(io::IO, l::Literal)
     println(io,
-        "Literal{$(propositionstype(l))}: " * (ispos(l) ? "" : "¬") * syntaxstring(prop(l))
+        "Literal{$(atomstype(l))}: " * (ispos(l) ? "" : "¬") * syntaxstring(prop(l))
     )
 end
 

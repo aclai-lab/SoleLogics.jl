@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.27
+# v0.19.9
 
 using Markdown
 using InteractiveUtils
@@ -25,7 +25,7 @@ end
 # Instantiate a frame with 5 worlds and 5 edges
 begin
 	using Graphs
-	
+
 	worlds = SoleLogics.World.(1:5)
 	edges = Edge.([ (1, 2), (1, 3), (2, 4), (3, 4), (3, 5)])
 	fr = SoleLogics.ExplicitCrispUniModalFrame(worlds, Graphs.SimpleDiGraph(edges))
@@ -37,12 +37,12 @@ md"""
 """
 
 # ╔═╡ 34342f5e-59a1-4442-8d7d-0bb74b8f4f4d
-# A proposition is a wrapper for anything representing a fact
-Proposition("I am alive")
+# An atom is a wrapper for anything representing a fact
+Atom("I am alive")
 
 # ╔═╡ 48c4a3c2-2334-4f8b-8288-cfa3a8ef7fb9
-# Create propositions
-p, q = Proposition.(["p", "q"])
+# Create atoms
+p, q = Atom.(["p", "q"])
 
 # ╔═╡ 6c7f587e-7aa8-4bf2-adfb-22b315d071e7
 # Manually compose a formula
@@ -69,8 +69,8 @@ end
 φ2 = parseformula("¬(p ∧ q)")
 
 # ╔═╡ 7c9d5c28-f237-4b30-83a0-e3a84d0fd5ab
-# Parse a formula with integer propositions
-φ3 = parseformula("¬(1 ∧ 2)"; proposition_parser = (x -> Proposition(parse(Int64, x))))
+# Parse a formula with integer atoms
+φ3 = parseformula("¬(1 ∧ 2)"; atom_parser = (x -> Atom(parse(Int64, x))))
 
 # ╔═╡ 9da1c680-84a2-400e-a474-8a5c967bd445
 @bind height PlutoUI.Slider(1:10; default = 3)
@@ -78,14 +78,14 @@ end
 # ╔═╡ a1ebd2cb-4677-4839-88c0-f3c57b08a1ab
 begin
 	println("Producing formula of height $height...")
-	
+
 	# Create a random formula
 	φ4 = randformula(Random.MersenneTwister(107), height, [p,q], SoleLogics.BASE_PROPOSITIONAL_OPERATORS)
-	
+
 	φ4 |> syntaxstring |> println
-	
+
 	println("Simplifying...")
-	
+
 	# Minimize the formula (according to pre-defined, simple rules, e.g., De Morgan)
 	normalize(φ4) |> syntaxstring |> println
 end
@@ -109,7 +109,7 @@ end
 begin
 	import SoleLogics: collatetruth
 	SoleLogics.collatetruth(::SoleLogics.BooleanAlgebra, ::typeof(⊕), (t1, t2)::NTuple{2,Bool}) = Base.xor(t1, t2)
-	
+
 	check(φ, I)
 end
 
@@ -139,7 +139,7 @@ begin
 	        worlds[4] => TruthDict([p => false, q => false]),
 	        worlds[5] => TruthDict([p => false, q => true]),
 	     ])
-	
+
 	# Instantiate a Kripke structure
 	K = KripkeStructure(fr, valuation)
 
@@ -158,7 +158,7 @@ SoleLogics = "b002da8f-3cb3-4d91-bbe3-2953433912b5"
 [compat]
 Graphs = "~1.8.0"
 PlutoUI = "~0.7.52"
-SoleLogics = "~0.4.7"
+SoleLogics = "~0.4.8"
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000002
@@ -167,7 +167,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.9.0"
 manifest_format = "2.0"
-project_hash = "d92fe1787acbddee1c2ca763ff217b70e76202d6"
+project_hash = "ee26a39480d2162a7a8b01be2354741dc25f8987"
 
 [[deps.AbstractPlutoDingetjes]]
 deps = ["Pkg"]
@@ -193,9 +193,9 @@ uuid = "2a0f44e3-6c83-55bd-87e4-b1978d98bd5f"
 
 [[deps.CodeTracking]]
 deps = ["InteractiveUtils", "UUIDs"]
-git-tree-sha1 = "d730914ef30a06732bdd9f763f6cc32e92ffbff1"
+git-tree-sha1 = "a1296f0fe01a4c3f9bf0dc2934efbf4416f5db31"
 uuid = "da1fd8a2-8d9e-5ec2-8556-3022fb5608a2"
-version = "1.3.1"
+version = "1.3.4"
 
 [[deps.ColorTypes]]
 deps = ["FixedPointNumbers", "Random"]
@@ -205,9 +205,9 @@ version = "0.11.4"
 
 [[deps.Compat]]
 deps = ["UUIDs"]
-git-tree-sha1 = "5ce999a19f4ca23ea484e92a1774a61b8ca4cf8e"
+git-tree-sha1 = "e460f044ca8b99be31d35fe54fc33a5c33dd8ed7"
 uuid = "34da2185-b29b-5c13-b0c7-acf172513d20"
-version = "4.8.0"
+version = "4.9.0"
 weakdeps = ["Dates", "LinearAlgebra"]
 
     [deps.Compat.extensions]
@@ -230,9 +230,9 @@ version = "1.15.0"
 
 [[deps.DataStructures]]
 deps = ["Compat", "InteractiveUtils", "OrderedCollections"]
-git-tree-sha1 = "cf25ccb972fec4e4817764d01c82386ae94f77b4"
+git-tree-sha1 = "3dbd312d370723b6bb43ba9d02fc36abade4518d"
 uuid = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
-version = "0.18.14"
+version = "0.18.15"
 
 [[deps.DataValueInterfaces]]
 git-tree-sha1 = "bfc1187b79289637fa0ef6d4436ebdfe6905cbd6"
@@ -334,9 +334,9 @@ version = "0.21.4"
 
 [[deps.JuliaInterpreter]]
 deps = ["CodeTracking", "InteractiveUtils", "Random", "UUIDs"]
-git-tree-sha1 = "6a125e6a4cb391e0b9adbd1afa9e771c2179f8ef"
+git-tree-sha1 = "81dc6aefcbe7421bd62cb6ca0e700779330acff8"
 uuid = "aa1ae85d-cabe-5617-a682-6adf51b2e16a"
-version = "0.9.23"
+version = "0.9.25"
 
 [[deps.LaTeXStrings]]
 git-tree-sha1 = "f2355693d6778a178ade15952b7ac47a4ff97996"
@@ -377,9 +377,9 @@ uuid = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 
 [[deps.LogExpFunctions]]
 deps = ["DocStringExtensions", "IrrationalConstants", "LinearAlgebra"]
-git-tree-sha1 = "c3ce8e7420b3a6e071e0fe4745f5d4300e37b13f"
+git-tree-sha1 = "7d6dd4e9212aebaeed356de34ccf262a3cd415aa"
 uuid = "2ab3a3ac-af41-5b50-aa03-7779005ae688"
-version = "0.3.24"
+version = "0.3.26"
 
     [deps.LogExpFunctions.extensions]
     LogExpFunctionsChainRulesCoreExt = "ChainRulesCore"
@@ -407,9 +407,9 @@ version = "0.1.4"
 
 [[deps.MacroTools]]
 deps = ["Markdown", "Random"]
-git-tree-sha1 = "42324d08725e200c23d4dfb549e0d5d89dede2d2"
+git-tree-sha1 = "9ee1618cbf5240e6d4e0371d6f24065083f60c48"
 uuid = "1914dd2f-81c6-5fcd-8719-6d5c9610ff09"
-version = "0.5.10"
+version = "0.5.11"
 
 [[deps.Markdown]]
 deps = ["Base64"]
@@ -466,9 +466,9 @@ version = "0.7.52"
 
 [[deps.PrecompileTools]]
 deps = ["Preferences"]
-git-tree-sha1 = "9673d39decc5feece56ef3940e5dafba15ba0f81"
+git-tree-sha1 = "03b4c25b43cb84cee5c90aa9b5ea0a78fd848d2f"
 uuid = "aea7be01-6a6a-4083-8856-8a6e6704d82a"
-version = "1.1.2"
+version = "1.2.0"
 
 [[deps.Preferences]]
 deps = ["TOML"]
@@ -539,9 +539,9 @@ version = "0.11.0"
 
 [[deps.SoleLogics]]
 deps = ["DataStructures", "Dictionaries", "Graphs", "IterTools", "Lazy", "PrettyTables", "Random", "Reexport", "Revise", "SoleBase", "StatsBase", "ThreadSafeDicts"]
-git-tree-sha1 = "84f4020facf3f0d5d5d12624fceedd128ae9a480"
+git-tree-sha1 = "62735db76083b47f80d292a874f7cdf353b1577f"
 uuid = "b002da8f-3cb3-4d91-bbe3-2953433912b5"
-version = "0.4.7"
+version = "0.4.8"
 
 [[deps.SortingAlgorithms]]
 deps = ["DataStructures"]
@@ -575,15 +575,15 @@ version = "1.9.0"
 
 [[deps.StatsAPI]]
 deps = ["LinearAlgebra"]
-git-tree-sha1 = "45a7769a04a3cf80da1c1c7c60caf932e6f4c9f7"
+git-tree-sha1 = "1ff449ad350c9c4cbc756624d6f8a8c3ef56d3ed"
 uuid = "82ae8749-77ed-4fe6-ae5f-f523153014b0"
-version = "1.6.0"
+version = "1.7.0"
 
 [[deps.StatsBase]]
 deps = ["DataAPI", "DataStructures", "LinearAlgebra", "LogExpFunctions", "Missings", "Printf", "Random", "SortingAlgorithms", "SparseArrays", "Statistics", "StatsAPI"]
-git-tree-sha1 = "75ebe04c5bed70b91614d684259b661c9e6274a4"
+git-tree-sha1 = "d1bf48bfcc554a3761a133fe3a9bb01488e06916"
 uuid = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
-version = "0.34.0"
+version = "0.33.21"
 
 [[deps.StringManipulation]]
 git-tree-sha1 = "46da2434b41f41ac3594ee9816ce5541c6096123"
@@ -632,9 +632,9 @@ uuid = "410a4b4d-49e4-4fbc-ab6d-cb71b17b3775"
 version = "0.1.7"
 
 [[deps.URIs]]
-git-tree-sha1 = "074f993b0ca030848b897beff716d93aca60f06a"
+git-tree-sha1 = "b7a5e99f24892b6824a954199a45e9ffcc1c70f0"
 uuid = "5c2747f8-b7ea-4ff2-ba2e-563bfd36b1d4"
-version = "1.4.2"
+version = "1.5.0"
 
 [[deps.UUIDs]]
 deps = ["Random", "SHA"]

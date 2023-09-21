@@ -8,9 +8,7 @@ import Base: eltype, in, getindex, isiterable, iterate, IteratorSize, length, is
 """
     abstract type AbstractSyntaxToken end
 
-A token in a syntactic structure, most commonly, a syntax tree.
-A syntax tree is a tree-like structure representing a logical formula, where each
-node holds a *token*, and has as many children as the `arity` of the token.
+A token in a syntactic structure.
 
 See also [`SyntaxTree`](@ref), [`AbstractSyntaxStructure`](@ref),
 [`arity`](@ref), [`syntaxstring`](@ref).
@@ -45,7 +43,7 @@ on a boolean algebra,
 Duality can be used to perform synctactic simplifications on formulas.
 For example, since `∧` and `∨` are `dual`s, `¬(¬p ∧ ¬q)` can be simplified to `(p ∧ q)`.
 Duality also applies to nullary operators (`⊤`/`⊥`), operators with
-existential/universal semantics (`◊`/`□`), and `Proposition`s.
+existential/universal semantics (`◊`/`□`), and `Atom`s.
 
 # Implementation
 
@@ -53,10 +51,10 @@ When providing a `dual` for an operator of type `O`, please also provide:
 
     hasdual(::O) = true
 
-The dual of a `Proposition` (that is, the proposition with inverted semantics)
+The dual of an `Atom` (that is, the atom with inverted semantics)
 is defined as:
 
-    dual(p::Proposition{A}) where {A} = Proposition(dual(atom(p)))
+    dual(p::Atom{A}) where {A} = Atom(dual(value(p)))
 
 As such, `hasdual(::A)` and `dual(::A)` should be defined when wrapping objects of type `A`.
 
@@ -69,7 +67,7 @@ hasdual(t::AbstractSyntaxToken) = false
     syntaxstring(φ::AbstractFormula; kwargs...)::String
     syntaxstring(tok::AbstractSyntaxToken; kwargs...)::String
 
-Produces the string representation of a formula or syntax token by performing
+Produce the string representation of a formula or syntax token by performing
 a tree traversal of the syntax tree representation of the formula.
 Note that this representation may introduce redundant parentheses.
 `kwargs` can be used to specify how to display syntax tokens/trees under
@@ -77,17 +75,32 @@ some specific conditions.
 
 The following `kwargs` are currently supported:
 - `function_notation = false::Bool`: when set to `true`, it forces the use of
-function notation for binary operators.
-See [here](https://en.wikipedia.org/wiki/Infix_notation).
+   function notation for binary operators
+   (see [here](https://en.wikipedia.org/wiki/Infix_notation)).
 - `remove_redundant_parentheses = true::Bool`: when set to `false`, it prints a syntaxstring
-where each syntactical element is wrapped in parentheses.
+   where each syntactical element is wrapped in parentheses.
+- `parenthesize_atoms = !remove_redundant_parentheses::Bool`: when set to `true`,
+   it forces the atoms (which are the leafs of a formula's tree structure) to be
+   wrapped in parentheses.
 
 # Examples
 ```julia-repl
-julia> syntaxstring((parsebaseformula("◊((p∧s)→q)")))
+julia> syntaxstring(parsebaseformula("p∧q∧r∧s∧t"))
+"p ∧ q ∧ r ∧ s ∧ t"
+
+julia> syntaxstring(parsebaseformula("p∧q∧r∧s∧t"), function_notation=true)
+"∧(p, ∧(q, ∧(r, ∧(s, t))))"
+
+julia> syntaxstring(parsebaseformula("p∧q∧r∧s∧t"), remove_redundant_parentheses=false)
+"(p) ∧ ((q) ∧ ((r) ∧ ((s) ∧ (t))))"
+
+julia> syntaxstring(parsebaseformula("p∧q∧r∧s∧t"), remove_redundant_parentheses=true, parenthesize_atoms=true)
+"(p) ∧ (q) ∧ (r) ∧ (s) ∧ (t)"
+
+julia> syntaxstring(parsebaseformula("◊((p∧s)→q)"))
 "◊((p ∧ s) → q)"
 
-julia> syntaxstring((parsebaseformula("◊((p∧s)→q)")); function_notation = true)
+julia> syntaxstring(parsebaseformula("◊((p∧s)→q)"); function_notation = true)
 "◊(→(∧(p, s), q))"
 ```
 
@@ -99,22 +112,22 @@ See also [`parsebaseformula`](@ref), [`parsetree`](@ref),
 In the case of a syntax tree, `syntaxstring` is a recursive function that calls
 itself on the syntax children of each node. For a correct functioning, the `syntaxstring`
 must be defined (including `kwargs...`) for every newly defined
-`AbstractSyntaxToken` (e.g., operators and `Proposition`s),
+`AbstractSyntaxToken` (e.g., operators and `Atom`s),
 in a way that it produces a
 *unique* string representation, since `Base.hash` and `Base.isequal`, at least for
 `SyntaxTree`s, rely on it.
 
-In particular, for the case of `Proposition`s, the function calls itself on the atom:
+In particular, for the case of `Atom`s, the function calls itself on the wrapped value:
 
-    syntaxstring(p::Proposition; kwargs...) = syntaxstring(atom(p); kwargs...)
+    syntaxstring(p::Atom; kwargs...) = syntaxstring(value(p); kwargs...)
 
-Then, the syntaxstring for a given atom can be defined. For example, with `String` atoms,
-the function can simply be:
+Then, the syntaxstring for a given value can be defined. For example, with `String`
+(or `Number`) values, it defaults to:
 
-    syntaxstring(atom::String; kwargs...) = atom
+    syntaxstring(value::String; kwargs...) = value
 
 !!! warning
-    The `syntaxstring` for syntax tokens (e.g., propositions, operators) should not be
+    The `syntaxstring` for syntax tokens (e.g., atoms, operators) should not be
     prefixed/suffixed by whitespaces, as this may cause ambiguities upon *parsing*.
     For similar reasons, `syntaxstring`s should not contain parentheses (`'('`, `')'`),
     and, when parsing in function notation, commas (`','`).
@@ -126,69 +139,133 @@ function syntaxstring(tok::AbstractSyntaxToken; kwargs...)::String
 end
 
 # Helper
-syntaxstring(atom::Union{AbstractString,Number,AbstractChar}; kwargs...) = string(atom)
+syntaxstring(value::Union{AbstractString,Number,AbstractChar}; kwargs...) = string(value)
 
 ############################################################################################
 ############################################################################################
 ############################################################################################
 
 """
-    struct Proposition{A} <: AbstractSyntaxToken
-        atom::A
+    struct Atom{A} <: AbstractSyntaxToken
+        value::A
     end
 
-A proposition, sometimes called a propositional letter (or simply *letter*), of type
-`Proposition{A}` wraps a value `atom::A` representing a fact which truth can be assessed on
+An atom, sometimes called an atomic proposition,
+propositional letter (or simply *letter*), of type
+`Atom{A}` wraps a `value::A` representing a fact which truth can be assessed on
 a logical interpretation.
 
-Propositions are nullary tokens (i.e, they are at the leaves of a syntax tree).
-Note that their atom cannot be a Proposition.
+Atoms are nullary tokens (i.e, they are at the leaves of a syntax tree);
+note that their atoms cannot be `Atom`s.
 
 See also [`AbstractSyntaxToken`](@ref), [`AbstractInterpretation`](@ref), [`check`](@ref).
 """
-struct Proposition{A} <: AbstractSyntaxToken
-    atom::A
+struct Atom{A} <: AbstractSyntaxToken
+    value::A
 
-    function Proposition{A}(atom::A) where {A}
-        @assert !(atom isa Union{AbstractSyntaxToken,AbstractFormula}) "Illegal nesting. " *
-            "Cannot instantiate Proposition with atom of type $(typeof(atom))"
-        new{A}(atom)
+    function Atom{A}(value::A) where {A}
+        @assert !(value isa Union{AbstractSyntaxToken,AbstractFormula}) "Illegal nesting. " *
+            "Cannot instantiate Atom with value of type $(typeof(value))"
+        new{A}(value)
     end
-    function Proposition(atom::A) where {A}
-        Proposition{A}(atom)
+    function Atom(value::A) where {A}
+        Atom{A}(value)
     end
-    function Proposition{A}(p::Proposition) where {A}
-        Proposition{A}(atom(p))
+    function Atom{A}(p::Atom) where {A}
+        Atom{A}(value(p))
     end
-    function Proposition(p::Proposition)
+    function Atom(p::Atom)
         p
     end
 end
 
-atom(p::Proposition) = p.atom
+value(p::Atom) = p.value
 
-arity(::Type{<:Proposition}) = 0
-atomtype(::Proposition{A}) where {A} = A
-atomtype(::Type{Proposition{A}}) where {A} = A
+arity(::Type{<:Atom}) = 0
+valuetype(::Atom{A}) where {A} = A
+valuetype(::Type{Atom{A}}) where {A} = A
 
 # Helpers
-Base.convert(::Type{P}, p::Proposition) where {P<:Proposition} = P(p)
-Base.convert(::Type{P}, a) where {P<:Proposition} = P(a)
-# Base.promote_rule(::Type{Union{AbstractString,Number,AbstractChar}}, ::Type{<:Proposition}) = Proposition
-# Base.promote_rule(::Type{<:Proposition}, ::Type{Union{AbstractString,Number,AbstractChar}}) = Proposition
+Base.convert(::Type{P}, p::Atom) where {P<:Atom} = P(p)
+Base.convert(::Type{P}, a) where {P<:Atom} = P(a)
+# Base.promote_rule(::Type{Union{AbstractString,Number,AbstractChar}}, ::Type{<:Atom}) = Atom
+# Base.promote_rule(::Type{<:Atom}, ::Type{Union{AbstractString,Number,AbstractChar}}) = Atom
 
-syntaxstring(p::Proposition; kwargs...) = syntaxstring(atom(p); kwargs...)
+syntaxstring(p::Atom; kwargs...) = syntaxstring(value(p); kwargs...)
 
-Base.isequal(a::Proposition, b::Proposition) = Base.isequal(atom(a), atom(b))
-Base.isequal(a::Proposition, b) = Base.isequal(atom(a), b)
-Base.isequal(a, b::Proposition) = Base.isequal(a, atom(b))
-Base.hash(a::Proposition) = Base.hash(atom(a))
+Base.isequal(a::Atom, b::Atom) = Base.isequal(value(a), value(b))
+Base.isequal(a::Atom, b) = Base.isequal(value(a), b)
+Base.isequal(a, b::Atom) = Base.isequal(a, value(b))
+Base.hash(a::Atom) = Base.hash(value(a))
 
-dual(p::Proposition) = Proposition(dual(atom(p)))
+dual(p::Atom) = Atom(dual(value(p)))
 
 function dual(atom::Any)
     return error("Please, provide method " *
         "SoleLogics.dual(::$(typeof(atom))).")
+end
+
+"""
+@atoms(cast, ps...)
+
+Instantiate a collection of [`Atom`](@ref)s and return them as a vector.
+
+!!! info
+    Atoms instantiated with this macro are defined in the global scope as constants.
+
+# Examples
+```julia-repl
+julia> SoleLogics.@atoms String p q r s
+4-element Vector{Atom{String}}:
+ Atom{String}("p")
+ Atom{String}("q")
+ Atom{String}("r")
+ Atom{String}("s")
+
+julia> p
+Atom{String}("p")
+```
+"""
+macro atoms(ps...)
+    quote
+        $(map(p -> :(const $p = $(string(p) |> Atom)), ps)...)
+        [$(ps...)]
+    end |> esc
+end
+
+# Source:
+#   Symbolics.jl  (https://github.com/JuliaSymbolics/Symbolics.jl)
+#   PAndQ.jl      (https://github.com/jakobjpeters/PAndQ.jl)
+atomize(p::Symbol) = :((@isdefined $p) ? $p : $(string(p) |> Atom))
+atomize(x) = x
+atomize(x::Expr) = Meta.isexpr(x, [:(=), :kw]) ?
+    Expr(x.head, x.args[1], map(atomize, x.args[2:end])...) :
+    Expr(x.head, map(atomize, x.args)...)
+
+"""
+    @synexpr(expression)
+
+Return an expression after automatically instantiating undefined [`Atom`](@ref)s.
+
+!!! info
+Every identified atom is of type `Atom{String}`.
+
+# Examples
+```julia-repl
+julia> @synexpr x = p # Atom{String}("p") is assigned to the global variable x
+Atom{String}("p")
+
+julia> @synexpr st = p ∧ q → r
+(p ∧ q) → r
+
+julia> typeof(st)
+SyntaxTree{SoleLogics.NamedOperator{:→}}
+```
+"""
+macro synexpr(expression)
+    quote
+        $(expression |> atomize)
+    end |> esc
 end
 
 ############################################################################################
@@ -197,20 +274,27 @@ end
     abstract type AbstractOperator <: AbstractSyntaxToken end
 
 An operator is a [logical constant](https://en.wikipedia.org/wiki/Logical_connective)
-which establishes a relation between propositions (i.e., facts).
+which establishes a relation between atoms (i.e., facts).
 For example, the boolean operators AND, OR and IMPLIES (stylized as ∧, ∨ and →)
-are used to connect propositions and/or formulas to express derived concepts.
+are used to connect atoms and/or formulas to express derived concepts.
 
-Since operators display very different algorithmic behaviors,
-all `struct`s that are subtypes of `AbstractOperator` must
-be parametric singleton types, which can be dispatched upon.
+Since operators often display very different algorithmic behaviors,
+leaf subtypes of `AbstractOperator` are
+often singleton types, which can be easily dispatched upon.
 
 # Implementation
+
+When implementing a new custom operator, think about changing its default [precedence and
+associativity](https://docs.julialang.org/en/v1/manual/mathematical-operations/#Operator-Precedence-and-Associativity)
+by providing the methods `Base.operator_precedence(::Type{AbstractOperator})` and
+`isrightassociative(::Type{AbstractOperator})`.
 
 When implementing a new type for a *commutative* operator `O` with arity higher than 1,
 please provide a method `iscommutative(::Type{O})`. This can help model checking operations.
 
-See also [`AbstractSyntaxToken`](@ref), [`NamedOperator`](@ref), [`check`](@ref).
+See also [`AbstractSyntaxToken`](@ref), [`NamedOperator`](@ref),
+[`Base.operator_precedence`](@ref), [`isrightassociative`](@ref), [`iscommutative`](@ref),
+[`check`](@ref).
 """
 abstract type AbstractOperator <: AbstractSyntaxToken end
 
@@ -221,7 +305,7 @@ doc_iscommutative = """
     iscommutative(::Type{AbstractOperator})
     iscommutative(o::AbstractOperator) = iscommutative(typeof(o))
 
-Return whether it is known that an `AbstractOperator` is commutative.
+Return whether an operator is known to be commutative.
 
 # Examples
 ```julia-repl
@@ -254,6 +338,101 @@ end
 
 iscommutative(o::AbstractOperator) = iscommutative(typeof(o))
 
+doc_precedence = """
+    const MAX_PRECEDENCE  = Base.operator_precedence(:(::))
+    const HIGH_PRECEDENCE = Base.operator_precedence(:^)
+    const BASE_PRECEDENCE = Base.operator_precedence(:*)
+    const LOW_PRECEDENCE  = Base.operator_precedence(:+)
+
+Standard integers representing operator precedence;
+operators with high values take precedence over operators with lower values.
+This is needed to establish unambiguous implementations of parsing-related algorithms.
+
+By default, all operators are assigned a `BASE_PRECEDENCE`, except for:
+- nullary operators (e.g., ⊤, ⊥), that are assigned a `MAX_PRECEDENCE`;
+- unary operators (e.g., ¬, ◊), that are assigned a `HIGH_PRECEDENCE`;
+- the implication (→), that is assigned a `LOW_PRECEDENCE`.
+
+In case of tie, operators are evaluated in the left-to-right order.
+
+It is possible to assign a specific precedence to an operator type `O` by providing a method
+`Base.operator_precedence(::Type{O})`.
+
+# Examples
+```julia-repl
+julia> syntaxstring(parseformula("¬a ∧ b ∧ c"))
+"¬a ∧ b ∧ c"
+
+julia> syntaxstring(parseformula("¬a → b ∧ c"))
+"(¬a) → (b ∧ c)"
+
+julia> syntaxstring(parseformula("a ∧ b → c ∧ d"))
+"(a ∧ b) → (c ∧ d)"
+```
+
+See also [`parseformula`](@ref), [`syntaxstring`](@ref).
+"""
+
+"""$(doc_precedence)"""
+const MAX_PRECEDENCE = Base.operator_precedence(:(::))
+"""$(doc_precedence)"""
+const HIGH_PRECEDENCE = Base.operator_precedence(:^)
+"""$(doc_precedence)"""
+const BASE_PRECEDENCE = Base.operator_precedence(:*)
+"""$(doc_precedence)"""
+const LOW_PRECEDENCE  = Base.operator_precedence(:+)
+
+
+"""
+    Base.operator_precedence(op::AbstractOperator)
+    Base.operator_precedence(::typeof(IMPLICATION))
+
+Assign a precedence to an operator.
+
+See also [`AbstractOperator`](@ref), [`MAX_PRECEDENCE`](@ref), [`HIGH_PRECEDENCE`](@ref),
+[`BASE_PRECEDENCE`](@ref), [`LOW_PRECEDENCE`](@ref).
+"""
+function Base.operator_precedence(op::AbstractOperator)
+    if isunary(op)
+        HIGH_PRECEDENCE
+    elseif isnullary(op)
+        MAX_PRECEDENCE
+    else
+        BASE_PRECEDENCE
+    end
+end
+
+
+"""
+    isrightassociative(::Type{AbstractOperator})
+    isrightassociative(o::AbstractOperator) = isrightassociative(typeof(o))
+
+Return whether an `AbstractOperator` is right associative or no.
+
+Associativity establishes how operators of the same precedence are grouped in the absence of
+the parentheses.
+
+Conjunction and disjunction are commutative operators, thus, the left associativity case
+"(p ∧ q) ∧ r" and the right associativity case "p ∧ (q ∧ r)" are equivalent; by convention
+we consider the latter form.
+Implication is right associative, meaning that "p → q → r" is grouped as "p → (q → r)".
+
+By default, an operator is right associative.
+
+# Examples
+```julia-repl
+julia> isrightassociative(∧)
+true
+
+julia> isrightassociative(→)
+true
+```
+
+See also [`AbstractOperator`](@ref).
+"""
+isrightassociative(::Type{<:AbstractOperator}) = true
+isrightassociative(o::AbstractOperator) = isrightassociative(typeof(o))
+
 ############################################################################################
 
 """
@@ -267,14 +446,14 @@ and it can be anchored to a logic (see [`Formula`](@ref)).
 
 # Implementation
 
-When implementing a new formula type `MyCustomFormulaType`, please provide the method
+When implementing a new formula type `MyCustomFormulaType`, please provide a method `tree`
 for extracting its syntax tree representation:
 
     function tree(f::MyCustomFormulaType)::SyntaxTree
         ...
     end
 
-As well as the one used for composing formulas:
+As well as a method used for composing formulas:
 
     function (op::AbstractOperator)(
         children::NTuple{N,Union{AbstractSyntaxToken,MyCustomFormulaType}},
@@ -295,30 +474,29 @@ abstract type AbstractFormula end
     )::F where {N,F<:AbstractFormula}
 
 Return a new formula of type `F` by composing `N` formulas of the same type
-via an operator `op`. This function provides a way for composing formulas,
-but it allows to use operators for a more flexible composition; see the examples
-(and more in the extended help).
+via an operator `op`. This function allows one to use operators for flexibly composing
+formulas (see *Implementation*).
 
 # Examples
 ```julia-repl
 julia> f = parseformula("◊(p→q)");
 
-julia> p = Proposition("p");
+julia> p = Atom("p");
 
-julia> syntaxstring(∧(f, p))
-"(◊(p → q)) ∧ p"
+julia> ∧(f, p)  # Easy way to compose a formula
+SyntaxTree: ◊(p → q) ∧ p
 
-julia> syntaxstring(f ∧ ¬p) # Leverage infix notation ;)
-"(◊(p → q)) ∧ (¬(p))"
+julia> f ∧ ¬p   # Leverage infix notation ;)
+SyntaxTree: ◊(p → q) ∧ ¬p
 
-julia> syntaxstring(∧(f, p, ¬p))
-"(◊(p → q)) ∧ (p ∧ (¬(p)))"
+julia> ∧(f, p, ¬p) # Shortcut for ∧(f, ∧(p, ¬p))
+SyntaxTree: ◊(p → q) ∧ p ∧ ¬p
 ```
 
 # Implementation
 
-Upon `joinformulas` lies a more flexible way of using operators for composing
-formulas and syntax tokens (e.g., propositions), given methods like the following:
+Upon `joinformulas` lies a flexible way of using operators for composing
+formulas and syntax tokens (e.g., atoms), given by methods like the following:
 
     function (op::AbstractOperator)(
         children::NTuple{N,Union{AbstractSyntaxToken,AbstractFormula}},
@@ -384,11 +562,10 @@ end
 """
     abstract type AbstractSyntaxStructure <: AbstractFormula end
 
-A logical formula unanchored to any logic, and solely
-represented by its syntactic component.
-Classically, this structure is implemented as a tree structure (see [`SyntaxTree`](@ref));
-however, the implementation in some cases (e.g., conjuctive/disjuctive normal forms)
-can differ.
+A logical formula, represented by its syntactic component.
+The typical representation is the [`SyntaxTree`](@ref);
+however, different implementations can cover specific synctactic forms
+(e.g., conjuctive/disjuctive normal forms).
 
 See also
 [`tree`](@ref),
@@ -422,13 +599,13 @@ end
 doc_tokopprop = """
     tokens(f::AbstractFormula)::AbstractVector{<:AbstractSyntaxToken}
     operators(f::AbstractFormula)::AbstractVector{<:AbstractOperator}
-    propositions(f::AbstractFormula)::AbstractVector{<:Proposition}
+    atoms(f::AbstractFormula)::AbstractVector{<:Atom}
     ntokens(f::AbstractFormula)::Integer
     noperators(f::AbstractFormula)::Integer
-    npropositions(f::AbstractFormula)::Integer
+    natoms(f::AbstractFormula)::Integer
 
 Return the list or the number of (unique) syntax
-tokens/operators/propositions appearing in a formula.
+tokens/operators/atoms appearing in a formula.
 
 See also [`AbstractSyntaxStructure`](@ref).
 """
@@ -442,16 +619,16 @@ function operators(f::AbstractFormula)::AbstractVector{<:AbstractOperator}
     return operators(tree(f))
 end
 """$(doc_tokopprop)"""
-function propositions(f::AbstractFormula)::AbstractVector{<:Proposition}
-    return propositions(tree(f))
+function atoms(f::AbstractFormula)::AbstractVector{<:Atom}
+    return atoms(tree(f))
 end
 """$(doc_tokopprop)"""
 function ntokens(f::AbstractFormula)::Integer
     return ntokens(tree(f))
 end
 """$(doc_tokopprop)"""
-function npropositions(f::AbstractFormula)::Integer
-    return npropositions(tree(f))
+function natoms(f::AbstractFormula)::Integer
+    return natoms(tree(f))
 end
 """$(doc_tokopprop)"""
 function height(f::AbstractFormula)::Integer
@@ -479,17 +656,17 @@ Base.promote_rule(::Type{<:AbstractSyntaxToken}, ::Type{SS}) where {SS<:Abstract
     end
 
 A syntax tree encoding a logical formula.
-Each node of the syntax tree holds a `token::T`, and
+Each node of the syntax tree holds a `token`, and
 has as many children as the `arity` of the token.
 
 This implementation is *arity-compliant*, in that, upon construction,
 the arity is checked against the number of children provided.
 
 See also [`token`](@ref), [`children`](@ref), [`tokentype`](@ref),
-[`tokens`](@ref), [`operators`](@ref), [`propositions`](@ref),
-[`ntokens`](@ref), [`npropositions`](@ref), [`height`](@ref),
-[`tokenstype`](@ref), [`operatorstype`](@ref), [`propositionstype`](@ref),
-[`AbstractSyntaxToken`](@ref), [`arity`](@ref), [`Proposition`](@ref), [`Operator`](@ref).
+[`tokens`](@ref), [`operators`](@ref), [`atoms`](@ref),
+[`ntokens`](@ref), [`natoms`](@ref), [`height`](@ref),
+[`tokenstype`](@ref), [`operatorstype`](@ref), [`atomstype`](@ref),
+[`AbstractSyntaxToken`](@ref), [`arity`](@ref), [`Atom`](@ref), [`AbstractOperator`](@ref).
 """
 struct SyntaxTree{
     T<:AbstractSyntaxToken,
@@ -547,12 +724,12 @@ children(t::SyntaxTree) = t.children
 tokentype(::SyntaxTree{T}) where {T} = T
 tokenstype(t::SyntaxTree) = Union{tokentype(t),tokenstype.(children(t))...}
 operatorstype(t::SyntaxTree) = typeintersect(AbstractOperator, tokenstype(t))
-propositionstype(t::SyntaxTree) = typeintersect(Proposition, tokenstype(t))
+atomstype(t::SyntaxTree) = typeintersect(Atom, tokenstype(t))
 
 # Shows the type of the syntax tree and its syntaxstring.
 # Base.show(io::IO, t::SyntaxTree) = print(io, "$(typeof(t))($(syntaxstring(t)))")
 function Base.show(io::IO, t::SyntaxTree)
-    print(io, "SyntaxTree: $(syntaxstring(t))")
+    print(io, "$(syntaxstring(t))")
     # print(io, "Allowed token types: $(tokenstype(t))")
 end
 
@@ -573,7 +750,7 @@ end
 
 List all tokens appearing in a syntax tree.
 
-See also [`ntokens`](@ref), [`operators`](@ref), [`propositions`](@ref), [`AbstractSyntaxToken`](@ref).
+See also [`ntokens`](@ref), [`operators`](@ref), [`atoms`](@ref), [`AbstractSyntaxToken`](@ref).
 """
 function tokens(t::SyntaxTree)::AbstractVector{AbstractSyntaxToken}
     return AbstractSyntaxToken[vcat(tokens.(children(t))...)..., token(t)]
@@ -584,7 +761,7 @@ end
 
 List all operators appearing in a syntax tree.
 
-See also [`noperators`](@ref), [`propositions`](@ref), [`tokens`](@ref), [`AbstractOperator`](@ref).
+See also [`noperators`](@ref), [`atoms`](@ref), [`tokens`](@ref), [`AbstractOperator`](@ref).
 """
 function operators(t::SyntaxTree)::AbstractVector{AbstractOperator}
     ops = token(t) isa AbstractOperator ? [token(t)] : []
@@ -592,15 +769,15 @@ function operators(t::SyntaxTree)::AbstractVector{AbstractOperator}
 end
 
 """
-    propositions(t::SyntaxTree)::AbstractVector{Proposition}
+    atoms(t::SyntaxTree)::AbstractVector{Atom}
 
-List all propositions appearing in a syntax tree.
+List all atoms appearing in a syntax tree.
 
-See also [`npropositions`](@ref), [`operators`](@ref), [`tokens`](@ref), [`Proposition`](@ref).
+See also [`natoms`](@ref), [`operators`](@ref), [`tokens`](@ref), [`Atom`](@ref).
 """
-function propositions(t::SyntaxTree)::AbstractVector{Proposition}
-    ps = token(t) isa Proposition ? Proposition[token(t)] : Proposition[]
-    return Proposition[vcat(propositions.(children(t))...)..., ps...]
+function atoms(t::SyntaxTree)::AbstractVector{Atom}
+    ps = token(t) isa Atom ? Atom[token(t)] : Atom[]
+    return Atom[vcat(atoms.(children(t))...)..., ps...]
 end
 
 """
@@ -627,15 +804,15 @@ function noperators(t::SyntaxTree)::Integer
 end
 
 """
-    npropositions(t::SyntaxTree)::Integer
+    natoms(t::SyntaxTree)::Integer
 
-Return the count of all propositions appearing in a syntax tree.
+Return the count of all atoms appearing in a syntax tree.
 
-See also [`propositions`](@ref), [`AbstractSyntaxToken`](@ref).
+See also [`atoms`](@ref), [`AbstractSyntaxToken`](@ref).
 """
-function npropositions(t::SyntaxTree)::Integer
-    pr = token(t) isa Proposition ? 1 : 0
-    return length(children(t)) == 0 ? pr : pr + sum(npropositions(c) for c in children(t))
+function natoms(t::SyntaxTree)::Integer
+    pr = token(t) isa Atom ? 1 : 0
+    return length(children(t)) == 0 ? pr : pr + sum(natoms(c) for c in children(t))
 end
 
 """
@@ -662,51 +839,35 @@ function syntaxstring(
     t::SyntaxTree;
     function_notation = false,
     remove_redundant_parentheses = true,
-    parentheses_at_propositions = !remove_redundant_parentheses,
+    parenthesize_atoms = !remove_redundant_parentheses,
     kwargs...
 )
     ch_kwargs = merge((; kwargs...), (;
         function_notation = function_notation,
         remove_redundant_parentheses = remove_redundant_parentheses,
-        parentheses_at_propositions = parentheses_at_propositions,
+        parenthesize_atoms = parenthesize_atoms,
     ))
 
+    # Parenthesization rules for binary operators in infix notation
     function _binary_infix_syntaxstring(tok::AbstractSyntaxToken, ch::SyntaxTree; relation::Symbol=:left)
-        # syntaxstring triggered by a binary operator in infix notation
         chtok = token(ch)
         chtokstring = syntaxstring(ch; ch_kwargs...)
-        lpar, rpar = "", ""
 
-        if !remove_redundant_parentheses
-            lpar, rpar = "(", ")"
-        end
+        lpar, rpar = (!remove_redundant_parentheses) ? ["(", ")"] : ["", ""]
 
         if arity(chtok) == 0
-            if chtok isa Proposition && parentheses_at_propositions
+            if chtok isa Atom && parenthesize_atoms # Force parenthesization
                 return "($(chtokstring))"
             else
                 return "$(lpar)$(chtokstring)$(rpar)"
             end
         end
 
-        # Conditions are explicited, at the moment, to make them more comprehensible
         tprec = Base.operator_precedence(tok)
         chprec = Base.operator_precedence(chtok)
 
-        if !(
-            (iscommutative(tok) && tok == chtok) ||
-            # this is needed to write "◊¬p ∧ ¬q" instead of "(◊¬p) ∧ (¬q)"
-            (tprec <= chprec)
-            # What follows is a previous idea
-            # each operator is left associative, thus left AST branch can avoid parentheses
-            # (tprec == chprec && relation == :left)
-        )
-            lpar, rpar = "(", ")"
-        end
-
-        if !iscommutative(tok) && tprec <= chprec # tok == chtok
-            # this is needed to write "(q → p) → ¬q" instead of "q → p → ¬q";
-            # note that "q → (p → ¬q)", instead, is not correct since → is not commutative.
+        if ((!iscommutative(tok) || tok != chtok) && (tprec > chprec)) || # "◊¬p ∧ ¬q" instead of "(◊¬p) ∧ (¬q)"
+            (!iscommutative(tok) && tprec <= chprec)                      # "(q → p) → ¬q" instead of "q → p → ¬q"
             lpar, rpar = "(", ")"
         end
 
@@ -715,43 +876,26 @@ function syntaxstring(
 
     tok = token(t)
     tokstr = syntaxstring(tok; ch_kwargs...)
-    # Previous idea
-    #if arity(tok) == 0
-    #    if tok isa Proposition && parentheses_at_propositions
-    #        return "($(tokstr))"
-    #    else
-    #        return tokstr
-    #    end
-    #else
-    if arity(tok) == 0
-        return tokstr
-    elseif arity(tok) == 2 && !function_notation
-        # Previous idea
-        # f = ch->arity(token(ch)) == 0 ?
-        # "$(syntaxstring(ch; ch_kwargs...))" :
-        # "$(lpar)$(syntaxstring(ch; ch_kwargs...))$(rpar)"
-        # "$(f(children(t)[1])) $(tokstr) $(f(children(t)[2]))"
 
-        # Infix notation for binary operator
-        "$(_binary_infix_syntaxstring(tok, children(t)[1]; relation=:left)) $tokstr $(_binary_infix_syntaxstring(tok, children(t)[2]; relation=:right))"
-    else # Function notation
+    if arity(tok) == 0 # A leaf nodes parenthesization is responsability of its parent
+        return tokstr
+    elseif arity(tok) == 2 && !function_notation # Infix notation for binary operators
+        "$(_binary_infix_syntaxstring(tok, children(t)[1]; relation=:left)) "*
+        "$tokstr $(_binary_infix_syntaxstring(tok, children(t)[2]; relation=:right))"
+    else # Infix notation with arity != 2, or function notation
         lpar, rpar = "(", ")"
         charity = arity(token(children(t)[1]))
-        if !function_notation && arity(tok) == 1 && (charity == 1 || (charity == 0 && !parentheses_at_propositions))
-            # when not in function notation, print "¬p" instead of "¬(p)";
+        if !function_notation && arity(tok) == 1 &&
+            (charity == 1 || (charity == 0 && !parenthesize_atoms))
+            # When not in function notation, print "¬p" instead of "¬(p)";
             # note that "◊((p ∧ q) → s)" must not be simplified as "◊(p ∧ q) → s".
             lpar, rpar = "", ""
         end
 
         length(children(t)) == 0 ?
                tokstr :
-               tokstr *
-                "$(lpar)" *
-                join([syntaxstring(c;
-                    ch_kwargs...)
-                    for c in children(t)],
-                    ", ") *
-                "$(rpar)"
+               tokstr * "$(lpar)" * join(
+                    [syntaxstring(c; ch_kwargs...) for c in children(t)], ", ") * "$(rpar)"
     end
 end
 
@@ -795,31 +939,32 @@ tree(t::AbstractSyntaxToken) = SyntaxTree(t)
 """
     abstract type AbstractAlphabet{A} end
 
-Abstract type for representing an alphabet of propositions with atoms of type `A`.
-An alphabet (or *propositional alphabet*) is a set of propositions, and it is assumed to be
-[countable](https://en.wikipedia.org/wiki/Countable_set).
+Abstract type for representing an alphabet of atoms with values of type `A`.
+An alphabet (or *propositional alphabet*) is a set of atoms
+(assumed to be
+[countable](https://en.wikipedia.org/wiki/Countable_set)).
 
 See also [`ExplicitAlphabet`](@ref), [`AlphabetOfAny`](@ref),
-[`propositionstype`](@ref), [`atomtype`](@ref),
-[`Proposition`](@ref), [`AbstractGrammar`](@ref).
+[`atomstype`](@ref), [`valuetype`](@ref),
+[`Atom`](@ref), [`AbstractGrammar`](@ref).
 
 # Examples
 
 ```julia-repl
-julia> Proposition(1) in ExplicitAlphabet(Proposition.(1:10))
+julia> Atom(1) in ExplicitAlphabet(Atom.(1:10))
 true
 
-julia> Proposition(1) in ExplicitAlphabet(1:10)
+julia> Atom(1) in ExplicitAlphabet(1:10)
 true
 
-julia> Proposition(1) in AlphabetOfAny{String}()
+julia> Atom(1) in AlphabetOfAny{String}()
 false
 
-julia> Proposition("mystring") in AlphabetOfAny{String}()
+julia> Atom("mystring") in AlphabetOfAny{String}()
 true
 
 julia> "mystring" in AlphabetOfAny{String}()
-┌ Warning: Please, use Base.in(Proposition(mystring), alphabet::AlphabetOfAny{String}) instead of Base.in(mystring, alphabet::AlphabetOfAny{String})
+┌ Warning: Please, use Base.in(Atom(mystring), alphabet::AlphabetOfAny{String}) instead of Base.in(mystring, alphabet::AlphabetOfAny{String})
 └ @ SoleLogics ...
 true
 ```
@@ -827,83 +972,105 @@ true
 # Implementation
 
 When implementing a new alphabet type `MyAlphabet`, you should provide a method for
-establishing whether a proposition belongs to it or not;
+establishing whether an atom belongs to it or not;
 while, in general, this method should be:
 
-    function Base.in(p::Proposition, a::MyAlphabet)::Bool
+    function Base.in(p::Atom, a::MyAlphabet)::Bool
 
 in the case of *finite* alphabets, it suffices to define a method:
 
-    function propositions(a::AbstractAlphabet)::AbstractVector{propositionstype(a)}
+    function atoms(a::AbstractAlphabet)::AbstractVector{atomstype(a)}
 
 By default, an alphabet is considered finite:
 
     Base.isfinite(::Type{<:AbstractAlphabet}) = true
     Base.isfinite(a::AbstractAlphabet) = Base.isfinite(typeof(a))
-    Base.in(p::Proposition, a::AbstractAlphabet) = Base.isfinite(a) ? Base.in(p, propositions(a)) : error(...)
+    Base.in(p::Atom, a::AbstractAlphabet) = Base.isfinite(a) ? Base.in(p, atoms(a)) : error(...)
 
 """
 abstract type AbstractAlphabet{A} end
 
-Base.eltype(::Type{<:AbstractAlphabet{A}}) where {A} = Proposition{A}
-propositionstype(A::Type{<:AbstractAlphabet}) = eltype(A)
-propositionstype(a::AbstractAlphabet) = propositionstype(typeof(a))
-atomtype(a::Type{<:AbstractAlphabet}) = atomtype(propositionstype(a))
-atomtype(a::AbstractAlphabet) = atomtype(propositionstype(a))
+Base.eltype(::Type{<:AbstractAlphabet{A}}) where {A} = Atom{A}
+atomstype(A::Type{<:AbstractAlphabet}) = eltype(A)
+atomstype(a::AbstractAlphabet) = atomstype(typeof(a))
+valuetype(a::Type{<:AbstractAlphabet}) = valuetype(atomstype(a))
+valuetype(a::AbstractAlphabet) = valuetype(atomstype(a))
 
 # Default behavior
 Base.isfinite(::Type{<:AbstractAlphabet}) = true
 Base.isfinite(a::AbstractAlphabet) = Base.isfinite(typeof(a))
 
 """
-    propositions(a::AbstractAlphabet)::AbstractVector{propositionstype(a)}
+    atoms(a::AbstractAlphabet)::AbstractVector{atomstype(a)}
 
-List the propositions of a *finite* alphabet.
+List the atoms of a *finite* alphabet.
 
 See also [`AbstractAlphabet`](@ref), [`Base.isfinite`](@ref).
 """
-function propositions(a::AbstractAlphabet)::AbstractVector{propositionstype(a)}
+function atoms(a::AbstractAlphabet)::AbstractVector{atomstype(a)}
     if Base.isfinite(a)
-        return error("Please, provide method propositions(::$(typeof(a))).")
+        return error("Please, provide method atoms(::$(typeof(a))).")
     else
-        return error("Cannot list propositions of (infinite) alphabet of type $(typeof(a)).")
+        return error("Cannot list atoms of (infinite) alphabet of type $(typeof(a)).")
     end
 end
 
-function Base.in(p::Proposition, a::AbstractAlphabet)::Bool
+"""
+    Base.in(p::Atom, a::AbstractAlphabet)::Bool
+
+Return whether an atom belongs to an alphabet.
+
+See also [`AbstractAlphabet`](@ref), [`Atom`](@ref).
+"""
+function Base.in(p::Atom, a::AbstractAlphabet)::Bool
     if Base.isfinite(a)
-        Base.in(p, propositions(a))
+        Base.in(p, atoms(a))
     else
-        return error("Cannot establish whether a proposition belongs to " *
+        return error("Cannot establish whether an atom belongs to " *
             "(infinite) alphabet of type $(typeof(a)).")
     end
 end
 
 # Helper
 function Base.in(atom::Union{AbstractString,Number,AbstractChar}, a::AbstractAlphabet)
-    @warn "Please, use Base.in(Proposition($(atom)), alphabet::$(typeof(a))) instead of " *
+    @warn "Please, use Base.in(Atom($(atom)), alphabet::$(typeof(a))) instead of " *
         "Base.in($(atom), alphabet::$(typeof(a)))"
-    Base.in(Proposition(atom), a)
+    Base.in(Atom(atom), a)
 end
 
+"""
+    Base.length(a::AbstractAlphabet)::Bool
+
+Return the alphabet length, if it is finite.
+
+See also [`AbstractAlphabet`](@ref), [`SyntaxTree`](@ref).
+"""
 function Base.length(a::AbstractAlphabet)
     if isfinite(a)
-        return Base.length(propositions(a))
+        return Base.length(atoms(a))
     else
         return error("Cannot compute length of (infinite) alphabet of type $(typeof(a)).")
     end
 end
 
+"""
+    Base.iterate(a::AbstractAlphabet)
+    Base.iterate(a::AbstractAlphabet, state)
+
+Return an iterator to the next element in an alhabet.
+
+See also [`AbstractAlphabet`](@ref), [`SyntaxTree`](@ref).
+"""
 function Base.iterate(a::AbstractAlphabet)
     if isfinite(a)
-        return Base.iterate(propositions(a))
+        return Base.iterate(atoms(a))
     else
         return error("Cannot iterate (infinite) alphabet of type $(typeof(a)).")
     end
 end
 function Base.iterate(a::AbstractAlphabet, state)
     if isfinite(a)
-        return Base.iterate(propositions(a), state)
+        return Base.iterate(atoms(a), state)
     else
         return error("Cannot iterate (infinite) alphabet of type $(typeof(a)).")
     end
@@ -916,41 +1083,41 @@ end
 
 """
     struct ExplicitAlphabet{A} <: AbstractAlphabet{A}
-        propositions::Vector{Proposition{A}}
+        atoms::Vector{Atom{A}}
     end
 
-An alphabet wrapping propositions in a (finite) `Vector`.
+An alphabet wrapping atoms in a (finite) `Vector`.
 
-See also [`propositions`](@ref), [`AbstractAlphabet`](@ref).
+See also [`atoms`](@ref), [`AbstractAlphabet`](@ref).
 """
 struct ExplicitAlphabet{A} <: AbstractAlphabet{A}
-    propositions::Vector{Proposition{A}}
+    atoms::Vector{Atom{A}}
 
-    function ExplicitAlphabet{A}(propositions) where {A}
-        return new{A}(collect(propositions))
+    function ExplicitAlphabet{A}(atoms) where {A}
+        return new{A}(collect(atoms))
     end
 
-    function ExplicitAlphabet(propositions::AbstractVector{Proposition{A}}) where {A}
-        return ExplicitAlphabet{A}(collect(propositions))
+    function ExplicitAlphabet(atoms::AbstractVector{Atom{A}}) where {A}
+        return ExplicitAlphabet{A}(collect(atoms))
     end
 
-    function ExplicitAlphabet(propositions::AbstractVector{A}) where {A}
-        return ExplicitAlphabet{A}(Proposition.(collect(propositions)))
+    function ExplicitAlphabet(atoms::AbstractVector{A}) where {A}
+        return ExplicitAlphabet{A}(Atom.(collect(atoms)))
     end
 end
-propositions(a::ExplicitAlphabet) = a.propositions
+atoms(a::ExplicitAlphabet) = a.atoms
 
-Base.convert(::Type{AbstractAlphabet}, alphabet::Vector{<:Proposition}) = ExplicitAlphabet(alphabet)
+Base.convert(::Type{AbstractAlphabet}, alphabet::Vector{<:Atom}) = ExplicitAlphabet(alphabet)
 """
     struct AlphabetOfAny{A} <: AbstractAlphabet{A} end
 
-An implicit, infinite alphabet that includes all propositions with atoms of a subtype of A.
+An implicit, infinite alphabet that includes all atoms with values of a subtype of A.
 
 See also [`AbstractAlphabet`](@ref).
 """
 struct AlphabetOfAny{A} <: AbstractAlphabet{A} end
 Base.isfinite(::Type{<:AlphabetOfAny}) = false
-Base.in(::Proposition{PA}, ::AlphabetOfAny{AA}) where {PA,AA} = (PA <: AA)
+Base.in(::Atom{PA}, ::AlphabetOfAny{AA}) where {PA,AA} = (PA <: AA)
 
 ############################################################################################
 
@@ -964,7 +1131,7 @@ that consists of all the (singleton) child types of `O`.
 A context-free grammar is a simple structure for defining formulas inductively.
 
 See also [`alphabet`](@ref),
-[`propositionstype`](@ref), [`tokenstype`](@ref),
+[`atomstype`](@ref), [`tokenstype`](@ref),
 [`operatorstype`](@ref), [`alphabettype`](@ref),
 [`AbstractAlphabet`](@ref), [`AbstractOperator`](@ref).
 """
@@ -983,15 +1150,15 @@ See also [`AbstractAlphabet`](@ref), [`AbstractGrammar`](@ref).
 function alphabet(g::AbstractGrammar{A} where {A})::A
     return error("Please, provide method alphabet(::$(typeof(g))).")
 end
-propositionstype(g::AbstractGrammar) = eltype(alphabet(g))
-tokenstype(g::AbstractGrammar) = Union{operatorstype(g),propositionstype(g)}
+atomstype(g::AbstractGrammar) = eltype(alphabet(g))
+tokenstype(g::AbstractGrammar) = Union{operatorstype(g),atomstype(g)}
 
 function Base.in(tok::AbstractSyntaxToken, g::AbstractGrammar)
     return error("Please, provide method Base.in(::$(typeof(tok)), ::$(typeof(g))).")
 end
 
 # Note: when using this file's syntax tokens, these methods suffice:
-Base.in(p::Proposition, g::AbstractGrammar) = Base.in(p, alphabet(g))
+Base.in(p::Atom, g::AbstractGrammar) = Base.in(p, alphabet(g))
 Base.in(op::AbstractOperator, g::AbstractGrammar) = (op <: operatorstype(g))
 
 
@@ -1058,7 +1225,7 @@ Base.hash(a::AbstractGrammar) = Base.hash(alphabet(a)) + Base.hash(operatorstype
     end
 
 A grammar of all well-formed formulas obtained by the arity-complying composition
-of propositions of an alphabet of type `A`, and all operators in `operators`.
+of atoms of an alphabet of type `A`, and all operators in `operators`.
 With n operators, this grammar has exactly n+1 production rules.
 For example, with `operators = [⊥,∧,∨]`, the grammar (in Backus-Naur form) is:
 
@@ -1109,13 +1276,13 @@ operators(g::CompleteFlatGrammar) = g.operators
 
 nonterminals(g::AbstractGrammar) = filter(!isnullary, operators(g))
 function terminals(g::AbstractGrammar)
-    return [propositions(alphabet(g))..., filter(isnullary, operators(g))...]
+    return [atoms(alphabet(g))..., filter(isnullary, operators(g))...]
 end
 
 # A complete grammar includes any *safe* syntax tree that can be built with
 #  the grammar token types.
 function Base.in(t::SyntaxTree, g::CompleteFlatGrammar)::Bool
-    return if token(t) isa Proposition
+    return if token(t) isa Atom
         token(t) in alphabet(g)
     elseif token(t) isa AbstractOperator
         if operatorstype(t) <: operatorstype(g)
@@ -1301,11 +1468,11 @@ syntaxstring(o::TruthOperator; kwargs...) = syntaxstring(value(o))
     abstract type AbstractAlgebra{T<:TruthValue} end
 
 Abstract type for representing algebras. Algebras are used for grounding the
-truth of propositions and the semantics of operators. They typically encode a
+truth of atoms and the semantics of operators. They typically encode a
 [lattice structure](https://en.wikipedia.org/wiki/Lattice_(order)) where two
 elements(or nodes) *⊤* and *⊥* are referred to as *top* (or maximum)
 and *bottom* (or minimum). Each node in the lattice represents a truth value
-that a proposition or a formula can have on an interpretation, and the
+that an atom or a formula can have on an interpretation, and the
 semantics of operators is given in terms of operations between truth values.
 
 # Implementation
@@ -1414,13 +1581,13 @@ operatorstype(l::AbstractLogic) = operatorstype(grammar(l))
 alphabettype(l::AbstractLogic) = alphabettype(grammar(l))
 operators(l::AbstractLogic) = operators(grammar(l))
 alphabet(l::AbstractLogic) = alphabet(grammar(l))
-propositionstype(l::AbstractLogic) = propositionstype(alphabet(l))
+atomstype(l::AbstractLogic) = atomstype(alphabet(l))
 tokenstype(l::AbstractLogic) = tokenstype(grammar(l))
 formulas(l::AbstractLogic, args...; kwargs...) = formulas(grammar(l), args...; kwargs...)
 
 Base.in(op::AbstractOperator, l::AbstractLogic) = Base.in(op, grammar(l))
 Base.in(t::SyntaxTree, l::AbstractLogic) = Base.in(t, grammar(l))
-Base.in(p::Proposition, l::AbstractLogic) = Base.in(p, alphabet(l))
+Base.in(p::Atom, l::AbstractLogic) = Base.in(p, alphabet(l))
 
 """
     algebra(l::AbstractLogic{G,A})::A where {G,A}
@@ -1460,10 +1627,10 @@ on interpretations of the same logic. Note that, here, the logic is represented 
 
 Upon construction, the logic can be passed either directly, or via a RefValue.
 Additionally, the following keyword arguments may be specified:
-- `check_propositions::Bool = false`: whether to perform or not a check that the propositions
+- `check_atoms::Bool = false`: whether to perform or not a check that the atoms
     belong to the alphabet of the logic;
 - `check_tree::Bool = false`: whether to perform or not a check that the formula's syntactic structure
-    honors the grammar (includes the check performed with `check_propositions = true`) (TODO);
+    honors the grammar (includes the check performed with `check_atoms = true`) (TODO);
 
 *Cool feature*: a `Formula` can be used for instating other formulas of the same logic.
 See the examples.
@@ -1503,7 +1670,7 @@ struct Formula{L<:AbstractLogic} <: AbstractFormula
     function Formula{L}(
         l::Union{L,Base.RefValue{L}},
         tokt::Union{AbstractSyntaxToken,AbstractSyntaxStructure};
-        check_propositions::Bool = false,
+        check_atoms::Bool = false,
         check_tree::Bool = false,
     ) where {L<:AbstractLogic}
         _logic = _l(l)
@@ -1512,12 +1679,12 @@ struct Formula{L<:AbstractLogic} <: AbstractFormula
         if check_tree
             return error("TODO implement check_tree parameter when constructing Formula's!")
         end
-        # Check that the propositions belong to the alphabet of the logic
-        if !check_tree && check_propositions
+        # Check that the atoms belong to the alphabet of the logic
+        if !check_tree && check_atoms
             @assert all([p in alphabet(_logic[])
-                         for p in propositions(synstruct)]) "Cannot " *
-                           "instantiate Formula{$(L)} with illegal propositions: " *
-                           "$(filter((p)->!(p in alphabet(_logic[])), propositions(synstruct)))"
+                         for p in atoms(synstruct)]) "Cannot " *
+                           "instantiate Formula{$(L)} with illegal atoms: " *
+                           "$(filter((p)->!(p in alphabet(_logic[])), atoms(synstruct)))"
         end
 
         # Check that the token types of the tree are a subset of the tokens
@@ -1601,10 +1768,10 @@ algebra(f::Formula) = algebra(logic(f))
 Abstract type for representing a propositional
 [interpretation](https://en.wikipedia.org/wiki/Interpretation_(logic))
 (or propositional model)
-that associates truth values of a type `T` to propositional letters of atom type `A`.
+that associates truth values of a type `T` to atoms of value type `A`.
 In the case of
 [propositional logic](https://simple.wikipedia.org/wiki/Propositional_logic),
-is essentially a map *proposition → truth value*.
+is essentially a map *atom → truth value*.
 
 Properties expressed via logical formulas can be `check`ed on logical interpretations.
 
@@ -1612,7 +1779,7 @@ See also [`check`](@ref), [`AbstractAssignment`](@ref), [`AbstractKripkeStructur
 """
 abstract type AbstractInterpretation{A,T<:TruthValue} end
 
-atomtype(::AbstractInterpretation{A,T}) where {A,T} = A
+valuetype(::AbstractInterpretation{A,T}) where {A,T} = A
 truthtype(::AbstractInterpretation{A,T}) where {A,T} = T
 
 """
@@ -1627,8 +1794,27 @@ This process is referred to as
 [model checking](https://en.wikipedia.org/wiki/Model_checking), and there are many
 algorithms for it, typically depending on the complexity of the logic.
 
-See also [`AbstractFormula`](@ref), [`AbstractInterpretation`](@ref).
+# Examples
+```julia-repl
+julia> @atoms String p q
+2-element Vector{Atom{String}}:
+ Atom{String}("p")
+ Atom{String}("q")
 
+julia> td = TruthDict([p => true, q => false])
+TruthDict with values:
+┌────────┬────────┐
+│      q │      p │
+│ String │ String │
+├────────┼────────┤
+│  false │   true │
+└────────┴────────┘
+
+julia> check(CONJUNCTION(p,q), td)
+false
+```
+
+See also [`AbstractFormula`](@ref), [`AbstractInterpretation`](@ref).
 """
 function check(
     f::AbstractFormula,
@@ -1656,15 +1842,15 @@ function Base.in(t::Union{AbstractSyntaxToken,AbstractSyntaxStructure}, a::Abstr
 end
 
 """
-An alphabet of `atomtype` `A` can be used for instantiating propositions of atomtype `A`.
+An alphabet of `valuetype` `A` can be used for instantiating atoms of valuetype `A`.
 """
-(::AbstractAlphabet{A})(a) where {A} = Proposition{A}(a)
+(::AbstractAlphabet{A})(a) where {A} = Atom{A}(a)
 
 """
-An operator can be used to compose syntax tokens (e.g., propositions),
+An operator can be used to compose syntax tokens (e.g., atoms),
 syntax trees and/or formulas. This is quite handy, try it:
 
-    ¬(Proposition(1)) ∨ Proposition(1) ∧ ⊤
+    ¬(Atom(1)) ∨ Atom(1) ∧ ⊤
     ∧(⊤,⊤)
     ⊤()
 """
@@ -1692,3 +1878,13 @@ function (op::AbstractOperator)(
         return joinformulas(op, Base.promote(children...))
     end
 end
+
+"""
+    const SYNTACTICAL = Union{AbstractSyntaxStructure,AbstractSyntaxToken}
+
+Union type representing a generic [`AbstractSyntaxStructure`](@ref) or a single token
+in it.
+
+See also [`AbstractSyntaxStructure`](@ref), [`AbstractSyntaxToken`](@ref).
+"""
+const SYNTACTICAL = Union{AbstractSyntaxStructure,AbstractSyntaxToken}

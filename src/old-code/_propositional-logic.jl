@@ -182,7 +182,7 @@ check(p::Atom, i::AbstractAssignment{AA}, args...) where {AA} = Base.getindex(i,
         truth::D
     end
 
-A logical interpretation instantiated as a dictionary,
+A truth table instantiated as a dictionary,
 explicitly assigning truth values to a *finite* set of atoms.
 If prompted for the value of an unknown atom, it throws an error.
 
@@ -233,6 +233,7 @@ struct TruthDict{
 } <: AbstractAssignment{A,T}
 
     truth::D
+    synstructs::Dict{AbstractSyntaxStructure,T} # nothing if not computed
 
     function TruthDict{A,T,D}(
         d::D,
@@ -241,7 +242,7 @@ struct TruthDict{
         T<:TruthValue,
         D<:AbstractDict{<:Atom{<:A},T},
     }
-        return new{A,T,D}(d)
+        return new{A,T,D}(d,Dict{AbstractSyntaxStructure,T}())
     end
     function TruthDict{A,T}(d::AbstractDict{<:Atom,T}) where {A,T<:TruthValue}
         return TruthDict{A,T,typeof(d)}(d)
@@ -349,8 +350,8 @@ function Base.show(
 
     _hpretty_table(
         io,
-        Iterators.flatten([i.truth |> keys]),
-        Iterators.flatten([i.truth |> values]),
+        Iterators.flatten((i.truth |> keys, i.synstructs |> keys)),
+        Iterators.flatten((i.truth |> values, i.synstructs |> values)),
         i.truth |> values |> first |>length
     )
 end
@@ -488,26 +489,6 @@ end
     Base.values,
 )
 
-
-############################################################################################
-
-# NOTE: the following has to be discussed @mauro-milella
-"""
-    struct TruthTable{A,T<:TruthValue}
-
-Dictionary which associates an [`AbstractAssignment`](@ref)s to the truth value of the
-assignment itself on a [`AbstractSyntaxStructure`](@ref).
-
-See also [`AbstractAssignment`](@ref), [`AbstractSyntaxStructure`](@ref),
-[`TruthValue`](@ref).
-"""
-struct TruthTable{
-    A,
-    T<:TruthValue
-}
-    truth::Dict{<:AbstractAssignment{A,T},Vector{Pair{AbstractSyntaxStructure,T}}}
-end
-
 ############################################################################################
 
 # Helpers:
@@ -534,3 +515,176 @@ convert(::Type{AbstractInterpretation}, i::AbstractVector) = DefaultedTruthDict(
 # Base.getindex(i::AbstractVector, p::Atom) = (value(p) in i)
 # Base.in(p::Atom, i::AbstractVector) = true
 check(p::Atom, i::AbstractVector) = (p in i)
+
+"""
+    function feedtruth!(
+        td::TruthDict{A,T,D},
+        entry::T
+    ) where {A,T<:AbstractVector,D<:AbstractDict{<:Atom{<:A},T}}
+
+Push a new interpretation `entry` in a `TruthDict`.
+
+# Examples
+```julia-repl
+julia> p, q = Atom.(["p", "q"])
+
+julia> td = TruthDict([p => [true], q => [true]])
+TruthDict with values:
+┌────────┬────────┐
+│      q │      p │
+│ String │ String │
+├────────┼────────┤
+│   true │   true │
+└────────┴────────┘
+
+julia> SoleLogics.feedtruth!(td, [true, false])
+┌────────┬────────┐
+│      q │      p │
+│ String │ String │
+├────────┼────────┤
+│   true │   true │
+│   true │  false │
+└────────┴────────┘
+```
+
+See also [`TruthDict`](@ref), [`TruthValue`](@ref).
+"""
+function feedtruth!(
+    td::TruthDict{A,T,D},
+    entry::T
+) where {A,T<:AbstractVector,D<:AbstractDict{<:Atom{<:A},T}}
+    # NOTE: this function could be useful if avoids duplicate entries.
+    # In order to efficiently implement duplicates recognition, a Set could be used to
+    # see the TruthDict keys from a different perspective.
+    [td[k] = vcat(v, e) for (k,v,e) in zip(td.truth|>keys, td.truth|>values, entry)]
+    return td
+end
+
+
+"""
+    function truth_table(
+        st::AbstractSyntaxStructure;
+        truthvals::T=[true, false]
+    ) where {T <: Vector{<:TruthValue}}
+
+Return a [`TruthDict`](@ref) containing the complete truth table of a generic syntax
+structure.
+
+# Arguments
+- `st::AbstractSyntaxStructure`: principal structure of the truth table;
+- `truthvals::T where {T <: Vector{<:TruthValue}}`: vector of legal truth values; every
+    combination of those values is considered when computing the truth table.
+
+# Examples
+```julia-repl
+julia> st = CONJUNCTION(Atom("p"), Atom("q"))
+p ∧ q
+
+julia> truth_table(st, truthvals=[true, false])
+TruthDict with values:
+┌────────┬────────┬────────────┐
+│      q │      p │      p ∧ q │
+│ String │ String │ SyntaxTree │
+├────────┼────────┼────────────┤
+│   true │   true │       true │
+│   true │  false │      false │
+│  false │   true │      false │
+│  false │  false │      false │
+└────────┴────────┴────────────┘
+```
+
+See also [`TruthDict`](@ref), [`TruthValue`](@ref), [`check`](@ref).
+"""
+function truth_table(
+    st::AbstractSyntaxStructure;
+    truthvals::T=[true, false]
+) where {T <: Vector{<:TruthValue}}
+    props = atoms(st)
+    proptypes = typejoin(valuetype.(atoms(st))...)
+    # Interpretations generator
+    intergen = Iterators.product([truthvals for _ in 1:length(props)]...)
+
+    td = TruthDict{proptypes, T, Dict{Atom{proptypes},T} }(
+        Dict([
+            props[p] => vec([
+                i[p]
+                for i in intergen
+            ])
+            for p in 1:length(props)
+        ])
+    )
+
+    function _addentry(
+        i::T
+    ) where {T <: Vector{<:TruthValue}}
+        checkans = check(st, TruthDict([prop => truth for (prop, truth) in zip(props, i)]))
+
+        try
+            push!(td.synstructs[st], checkans)
+        catch e
+            if e isa KeyError
+                td.synstructs[st] = [checkans]
+            end
+        end
+    end
+
+    map(i -> _addentry([i...]), intergen)
+    return td
+end
+
+"""
+    eagercheck(phi::SoleLogics.AbstractSyntaxStructure)
+
+Return a generator that yields applications of `check` algorithm over `phi`, considering
+every possible formula interpretation. Each yielded value is a pair `(i,c)` where `i` is an
+interpretation and c corresponds to `check(phi, i)`.
+
+# Examples
+```julia-repl
+julia> for (interpretation, checkans) in SoleLogics.eagercheck(parseformula("¬(p ∧ q)"))
+        println(interpretation)
+        print("Checking ¬(p ∧ q) using the above interpretation: ")
+        println(checkans)
+    end
+TruthDict with values:
+┌────────┬────────┐
+│      q │      p │
+│ String │ String │
+├────────┼────────┤
+│   true │   true │
+└────────┴────────┘
+
+Checking result using the above interpretation: false
+
+TruthDict with values:
+┌────────┬────────┐
+│      q │      p │
+│ String │ String │
+├────────┼────────┤
+│   true │  false │
+└────────┴────────┘
+
+Checking result using the above interpretation: true
+...
+```
+
+See also [`AbstractAssignment`](@ref), [`check`](@ref).
+"""
+function eagercheck(
+    phi::SoleLogics.AbstractSyntaxStructure;
+    truthvals::Vector{T}=[true, false]
+) where {T <: TruthValue}
+    props = atoms(phi)
+    typejoin(valuetype.(atoms(st))...)
+
+    return (
+        (
+            TruthDict([prop => truth for (prop, truth) in zip(props, interpretation)]),
+            check(
+                phi,
+                TruthDict([prop => truth for (prop, truth) in zip(props, interpretation)])
+            )
+        )
+        for interpretation in Iterators.product([truthvals for _ in 1:length(props)]...)
+    )
+end
