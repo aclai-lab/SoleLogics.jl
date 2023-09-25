@@ -5,73 +5,78 @@ import Base: eltype, in, getindex, isiterable, iterate, IteratorSize, length, is
 Work in progress - what is happening?
 SoleLogics' type hierarchy is being updated following the tree below.
 
-    .
+    Syntactical
     ├── AbstractFormula
     │   ├── AbstractSyntaxStructure
     │   │   ├── AbstractLeaf
     │   │   │   ├── Atom
-    │   │   │   └── TruthValue
-    │   │   └── AbstractCompost
+    │   │   │   └── Truth
+                    └── Top
+                    └── Bottom
+                    └──
+                    └── ...
+    │   │   └── AbstractComposite
     │   │       ├── SyntaxTree
     │   │       ├── LeftmostLinearForm
     │   │       └── ...
     │   └── AbstractMemoFormula
     │       └── TruthTable
+    └── ...
     └── Connective
+    └── NamedConnective
+    └── RelationalConnective
+    └── ...
 
-Also:
-
-    const Operator = Union{Connective,TruthValue}
+    Also:
+    const Operator = Union{Connective,Truth}
     const SyntaxToken = Union{Connective,AbstractLeaf}
+    const BooleanTruth = Union{Top,Bottom}
 =#
 
-""" TODO: @TypeHierarchyUpdate """
-abstract type AbstractFormula end
+""" TODO: @typeHierarchyUpdate """
+abstract type Syntactical end
 
-""" TODO: @TypeHierarchyUpdate """
+""" TODO: @typeHierarchyUpdate """
+abstract type AbstractFormula <: Syntactical end
+
+""" TODO: @typeHierarchyUpdate """
 abstract type AbstractSyntaxStructure <: AbstractFormula end
 
-""" TODO: @TypeHierarchyUpdate """
+""" TODO: @typeHierarchyUpdate """
 abstract type AbstractLeaf <: AbstractSyntaxStructure end
 
-""" TODO: @TypeHierarchyUpdate """
-abstract type AbstractCompost <: AbstractSyntaxStructure end
+""" TODO: @typeHierarchyUpdate """
+abstract type AbstractComposite <: AbstractSyntaxStructure end
 
-""" TODO: @TypeHierarchyUpdate """
+""" TODO: @typeHierarchyUpdate """
 abstract type AbstractMemoFormula <: AbstractFormula end
 
-""" TODO: @TypeHierarchyUpdate """
-struct Connective <: AbstractFormula
+""" TODO: @typeHierarchyUpdate """
+abstract type Connective <: Syntactical end
+
+""" TODO: @typeHierarchyUpdate """
+abstract type Truth <: AbstractLeaf end
+
+""" TODO: @typeHierarchyUpdate @base-logic"""
+struct NamedConnective <: Connective
     value::Symbol
 end
 
-"""
-TODO: @TypeHierarchyUpdate
-"""
-struct TruthValue <: AbstractLeaf
-    value::Symbol
-end
+""" TODO: @typeHierarchyUpdate """
+const Operator = Union{Connective,Truth}
 
-""" TODO: @TypeHierarchyUpdate """
-const Operator = Union{Connective,TruthValue}
-
-""" TODO: @TypeHierarchyUpdate """
+""" TODO: @typeHierarchyUpdate """
 const SyntaxToken = Union{Connective,AbstractLeaf}
 
-function syntaxstring(tok::Union{Operator,SyntaxToken}; kwargs...)::String
-    @assert applicable(string, tok)
-        "Please, provide method syntaxstring(::$(typeof(tok)); kwargs...)."
-    return tok |> syntaxstring
-end
 
-function syntaxstring(tok::TruthValue; kwargs...)::String
-    return tok |> value |> string
+function syntaxstring(tok::Syntactical; kwargs...)::String
+    return error("Please, provide method syntaxstring(::$(typeof(tok)); kwargs...).")
 end
 
 #########################
 
 """
-TODO: @TypeHierarchyUpdate remove this
+TODO: @typeHierarchyUpdate remove this
     abstract type SyntaxToken end
 
 A token in a syntactic structure.
@@ -82,7 +87,7 @@ See also [`SyntaxTree`](@ref), [`AbstractSyntaxStructure`](@ref),
 # abstract type SyntaxToken end
 
 """
-TODO: @TypeHierarchyUpdate
+TODO: @typeHierarchyUpdate
 
     arity(::Type{Operator})::Integer
     arity(tok::Operator)::Integer = arity(typeof(tok))
@@ -93,7 +98,7 @@ to 0, 1 or 2 are called `nullary`, `unary` and `binary`, respectively.
 
 See also [`SyntaxToken`](@ref).
 """
-arity(T::Type{Operator})::Integer = error("Please, provide method arity(::$(Type{T})).")
+arity(T::Type{<:Operator})::Integer = error("Please, provide method arity(::$(Type{T})).")
 arity(t::Operator)::Integer = arity(typeof(t))
 
 isnullary(a) = arity(a) == 0
@@ -101,7 +106,7 @@ isunary(a) = arity(a) == 1
 isbinary(a) = arity(a) == 2
 
 """
-TODO: @TypeHierarchyUpdate
+TODO: @typeHierarchyUpdate
     dual(tok::SyntaxToken)
 
 Return the `dual` of a syntax token.
@@ -133,7 +138,7 @@ dual(t::SyntaxToken) = error("Please, provide method dual(::$(typeof(t))).")
 hasdual(t::SyntaxToken) = false
 
 """
-TODO: @TypeHierarchyUpdate
+TODO: @typeHierarchyUpdate
     syntaxstring(φ::AbstractFormula; kwargs...)::String
     syntaxstring(tok::SyntaxToken; kwargs...)::String
 
@@ -216,7 +221,7 @@ syntaxstring(value::Union{AbstractString,Number,AbstractChar}; kwargs...) = stri
 ############################################################################################
 
 """
-TODO: @TypeHierarchyUpdate
+TODO: @typeHierarchyUpdate
     struct Atom{A} <: AbstractLeaf
         value::A
     end
@@ -235,7 +240,7 @@ struct Atom{A} <: AbstractLeaf
     value::A
 
     function Atom{A}(value::A) where {A}
-        @assert !(value isa AbstractLeaf) "Illegal nesting. " *
+        @assert !(value isa Union{AbstractFormula,Connective}) "Illegal nesting. " *
             "Cannot instantiate Atom with value of type $(typeof(value))"
         new{A}(value)
     end
@@ -342,7 +347,7 @@ end
 ############################################################################################
 
 """
-TODO: @TypeHierarchyUpdate
+TODO: @typeHierarchyUpdate
     abstract type Operator <: SyntaxToken end
 
 An operator is a [logical constant](https://en.wikipedia.org/wiki/Logical_connective)
@@ -1384,31 +1389,31 @@ end
 ############################################################################################
 
 """
-    istop(::TruthValue)::Bool
+    istop(::Truth)::Bool
 
 Return true if the truth value is the top of its algebra.
 For example, in the crisp case, with `Bool` truth values, it is:
 
     istop(t::Bool)::Bool = (t == true)
 
-See also [`isbottom`](@ref), [`TruthValue`](@ref).
+See also [`isbottom`](@ref), [`Truth`](@ref).
 """
-istop(t::TruthValue)::Bool = error("Please, provide method istop(truthvalue::$(typeof(t))).")
+istop(t::Truth)::Bool = error("Please, provide method istop(Truth::$(typeof(t))).")
 
 """
-    isbottom(::TruthValue)::Bool
+    isbottom(::Truth)::Bool
 
 Return true if the truth value is the bottom of its algebra.
 For example, in the crisp case, with `Bool` truth values, it is:
 
     isbottom(t::Bool)::Bool = (t == false)
 
-See also [`istop`](@ref), [`TruthValue`](@ref).
+See also [`istop`](@ref), [`Truth`](@ref).
 """
-isbottom(t::TruthValue)::Bool = error("Please, provide method isbottom(truthvalue::$(typeof(t))).")
+isbottom(t::Truth)::Bool = error("Please, provide method isbottom(Truth::$(typeof(t))).")
 
 """
-   default_algebra(::Type{T})::AbstractAlgebra{<:T} where {T<:TruthValue}
+   default_algebra(::Type{T})::AbstractAlgebra{<:T} where {T<:Truth}
 
 Return the fallback algebra for a given truth value type.
 
@@ -1417,52 +1422,42 @@ Return the fallback algebra for a given truth value type.
 In order to check syntax trees without algebras, truth values should provide
 a default algebra it works with.
 """
-function default_algebra(::Type{T})::AbstractAlgebra{<:T} where {T<:TruthValue}
+function default_algebra(::Type{T})::AbstractAlgebra{<:T} where {T<:Truth}
     return error("Please, provide method " *
                  "default_algebra(::$(typeof(T)))::AbstractAlgebra{<:$(T)}.")
 end
 
 ############################################################################################
 
-arity(::Type{<:TruthValue}) = 0
+arity(::Type{<:Truth}) = 0
 
 doc_TOP = """
-#TODO: @TypeHierarchyUpdate
-    struct TopOperator <: TruthValue end
-    const TOP = TopOperator()
+#TODO: @typeHierarchyUpdate
+    struct Top <: Truth end
+    const TOP = Top()
     const ⊤ = TOP
 
 Canonical truth operator representing the value `true`.
 It can be typed by `\\top<tab>`.
 
-See also [`BOTTOM`](@ref), [`TruthValue`](@ref), [`TruthValue`](@ref).
+See also [`BOTTOM`](@ref), [`Truth`](@ref), [`Truth`](@ref).
 """
 """$(doc_TOP)"""
-TopOperator = TruthValue(:⊤)
-BottomOperator = TruthValue(:⊥)
+struct Top <: Truth end
+"""$(doc_TOP)"""
+const TOP = Top()
+"""$(doc_TOP)"""
+const ⊤ = TOP
 
-"""
-TODO: @TypeHierarchyUpdate
-    struct TruthOperator{T<:TruthValue} <: TruthValue
-        value::T
-    end
-
-A truth operator wrapping a truth value of a given type.
-
-See also [`TruthValue`](@ref), [`TruthValue`](@ref).
-"""
-# struct TruthOperator{T<:TruthValue} <: TruthValue
-#     value::T
-# end
-#
-# value(op::TruthOperator) = op.value
-#
-# syntaxstring(o::TruthOperator; kwargs...) = syntaxstring(value(o))
+#TODO: @typeHierarchyUpdate add docstring
+struct Bottom <: Truth end
+const BOTTOM = Bottom()
+const ⊥ = BOTTOM
 
 ############################################################################################
 
 """
-    abstract type AbstractAlgebra{T<:TruthValue} end
+    abstract type AbstractAlgebra{T<:Truth} end
 
 Abstract type for representing algebras. Algebras are used for grounding the
 truth of atoms and the semantics of operators. They typically encode a
@@ -1481,17 +1476,17 @@ See also [`domain`](@ref), [`top`](@ref), [`bottom`](@ref),
 [`truthtype`](@ref), [`iscrisp`](@ref),
 [``BooleanAlgebra`](@ref), [`Operator`](@ref), [`collatetruth`](@ref).
 """
-abstract type AbstractAlgebra{T<:TruthValue} end
+abstract type AbstractAlgebra{T<:Truth} end
 
 """
-    truthtype(::Type{<:AbstractAlgebra{T}}) where {T<:TruthValue} = T
+    truthtype(::Type{<:AbstractAlgebra{T}}) where {T<:Truth} = T
     truthtype(a::AbstractAlgebra) = truthtype(typeof(a))
 
 The Julia type for representing truth values of the algebra.
 
 See also [`AbstractAlgebra`](@ref).
 """
-truthtype(::Type{<:AbstractAlgebra{T}}) where {T<:TruthValue} = T
+truthtype(::Type{<:AbstractAlgebra{T}}) where {T<:Truth} = T
 truthtype(a::AbstractAlgebra) = truthtype(typeof(a))
 
 """
@@ -1501,12 +1496,12 @@ Return the `domain` of a given algebra.
 
 See also [`AbstractAlgebra`](@ref).
 """
-function domain(a::AbstractAlgebra{T} where {T<:TruthValue})::AbstractVector{T}
+function domain(a::AbstractAlgebra{T} where {T<:Truth})::AbstractVector{T}
     return error("Please, provide method domain(::$(typeof(a))).")
 end
 
 # Note: maybe one day this will have a use?
-# Base.in(t::TruthValue, a::AbstractAlgebra) = Base.in(t, domain(a))
+# Base.in(t::Truth, a::AbstractAlgebra) = Base.in(t, domain(a))
 
 """
     top(a::AbstractAlgebra)
@@ -1760,7 +1755,7 @@ algebra(f::Formula) = algebra(logic(f))
 ############################################################################################
 
 """
-    abstract type AbstractInterpretation{A,T<:TruthValue} end
+    abstract type AbstractInterpretation{A,T<:Truth} end
 
 Abstract type for representing a propositional
 [interpretation](https://en.wikipedia.org/wiki/Interpretation_(logic))
@@ -1774,7 +1769,7 @@ Properties expressed via logical formulas can be `check`ed on logical interpreta
 
 See also [`check`](@ref), [`AbstractAssignment`](@ref), [`AbstractKripkeStructure`](@ref).
 """
-abstract type AbstractInterpretation{A,T<:TruthValue} end
+abstract type AbstractInterpretation{A,T<:Truth} end
 
 valuetype(::AbstractInterpretation{A,T}) where {A,T} = A
 truthtype(::AbstractInterpretation{A,T}) where {A,T} = T
@@ -1784,7 +1779,7 @@ truthtype(::AbstractInterpretation{A,T}) where {A,T} = T
         f::AbstractFormula,
         m::AbstractInterpretation{A,T},
         args...
-    )::T where {A,T<:TruthValue}
+    )::T where {A,T<:Truth}
 
 Check a formula on a logical interpretation (or model), returning a truth value.
 This process is referred to as
@@ -1817,7 +1812,7 @@ function check(
     f::AbstractFormula,
     m::AbstractInterpretation{A,T},
     args...,
-)::T where {A,T<:TruthValue}
+)::T where {A,T<:Truth}
     return error("Please, provide method " *
                  "check(f::$(typeof(f)), m::$(typeof(m)), " *
                  "args...::$(typeof(args))::$(truthtype(m)).")
