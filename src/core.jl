@@ -121,10 +121,8 @@ In particular, for the case of `Atom`s, the function calls itself on the wrapped
 
     syntaxstring(p::Atom; kwargs...) = syntaxstring(value(p); kwargs...)
 
-Then, the syntaxstring for a given value can be defined. For example, with `String`
-(or `Number`) values, it defaults to:
-
-    syntaxstring(value::String; kwargs...) = value
+The `syntaxstring` for any value defaults to its `string` representation, but it can be
+defined by defining the appropriate `syntaxstring` method.
 
 !!! warning
     The `syntaxstring` for syntax tokens (e.g., atoms, operators) should not be
@@ -139,6 +137,7 @@ function syntaxstring(tok::AbstractSyntaxToken; kwargs...)::String
 end
 
 # Helper
+# TODO: default all values to syntaxstring(value; kwargs...) = string(value)
 syntaxstring(value::Union{AbstractString,Number,AbstractChar}; kwargs...) = string(value)
 
 ############################################################################################
