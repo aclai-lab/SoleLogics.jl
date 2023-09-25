@@ -17,8 +17,7 @@ export iscrisp, isfinite, isnullary, isunary, isbinary
 export AbstractSyntaxToken, Atom,
     AbstractFormula, Formula,
     AbstractSyntaxStructure, SyntaxTree,
-    AlphabetOfAny, ExplicitAlphabet,
-    SYNTACTICAL
+    AlphabetOfAny, ExplicitAlphabet
 
 export syntaxstring
 
@@ -37,58 +36,58 @@ export @atoms, @synexpr
 
 include("core.jl")
 
-export ∧, ¬, ∨, →
-export CONJUNCTION, NEGATION, DISJUNCTION, IMPLICATION
-
-export BaseLogic
-
-
-include("base-logic.jl")
-
-export propositionallogic
-
-export TruthDict, DefaultedTruthDict
-export truth_table
-
-include("propositional-logic.jl")
-
-export accessibles
-export ismodal, modallogic
-export DiamondRelationalOperator, BoxRelationalOperator
-export DIAMOND, BOX, ◊, □
-
-export KripkeStructure
-export AbstractRelationalOperator, DiamondRelationalOperator, BoxRelationalOperator
-export relationtype, truthtype, worldtype
-
-export AbstractWorld
-
-export AbstractWorldSet, WorldSet
-
-export Interval, Interval2D, OneWorld
-
-export globaldiamond, globalbox
-
-include("modal-logic.jl")
-
-export LeftmostLinearForm, LeftmostConjunctiveForm, LeftmostDisjunctiveForm, Literal
-
-include("syntax-utils.jl")
-
-export subformulas, normalize
-
-include("check.jl")
-
-include("interpretation-sets.jl")
-
-export parsebaseformula, parseformula, parsetree
-
-include("parse.jl")
-
-export randbaseformula, randformula
-
-include("random.jl")
-
-include("deprecate.jl")
+# export ∧, ¬, ∨, →
+# export CONJUNCTION, NEGATION, DISJUNCTION, IMPLICATION
+#
+# export BaseLogic
+#
+#
+# include("base-logic.jl")
+#
+# export propositionallogic
+#
+# export TruthDict, DefaultedTruthDict
+# export truth_table
+#
+# include("propositional-logic.jl")
+#
+# export accessibles
+# export ismodal, modallogic
+# export DiamondRelationalOperator, BoxRelationalOperator
+# export DIAMOND, BOX, ◊, □
+#
+# export KripkeStructure
+# export AbstractRelationalOperator, DiamondRelationalOperator, BoxRelationalOperator
+# export relationtype, truthtype, worldtype
+#
+# export AbstractWorld
+#
+# export AbstractWorldSet, WorldSet
+#
+# export Interval, Interval2D, OneWorld
+#
+# export globaldiamond, globalbox
+#
+# include("modal-logic.jl")
+#
+# export LeftmostLinearForm, LeftmostConjunctiveForm, LeftmostDisjunctiveForm, Literal
+#
+# include("syntax-utils.jl")
+#
+# export subformulas, normalize
+#
+# include("check.jl")
+#
+# include("interpretation-sets.jl")
+#
+# export parsebaseformula, parseformula, parsetree
+#
+# include("parse.jl")
+#
+# export randbaseformula, randformula
+#
+# include("random.jl")
+#
+# include("deprecate.jl")
 
 end
