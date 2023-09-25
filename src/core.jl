@@ -613,7 +613,7 @@ See also
 [`AbstractFormula`](@ref),
 [`AbstractLogic`](@ref).
 """
-abstract type AbstractSyntaxStructure <: AbstractFormula end
+# abstract type AbstractSyntaxStructure <: AbstractFormula end
 
 """
     Base.in(tok::SyntaxToken, f::AbstractFormula)::Bool
