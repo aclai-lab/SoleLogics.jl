@@ -71,6 +71,7 @@ end
 #########################
 
 """
+TODO: @TypeHierarchyUpdate remove this
     abstract type SyntaxToken end
 
 A token in a syntactic structure.
@@ -81,8 +82,10 @@ See also [`SyntaxTree`](@ref), [`AbstractSyntaxStructure`](@ref),
 # abstract type SyntaxToken end
 
 """
-    arity(::Type{<:SyntaxToken})::Integer
-    arity(tok::SyntaxToken)::Integer = arity(typeof(tok))
+TODO: @TypeHierarchyUpdate
+
+    arity(::Type{Operator})::Integer
+    arity(tok::Operator)::Integer = arity(typeof(tok))
 
 Return the `arity` of a syntax token. The arity of a syntax token is an integer
 representing the number of allowed children in a `SyntaxTree`. Tokens with `arity` equal
@@ -90,14 +93,15 @@ to 0, 1 or 2 are called `nullary`, `unary` and `binary`, respectively.
 
 See also [`SyntaxToken`](@ref).
 """
-arity(T::Type{<:SyntaxToken})::Integer = error("Please, provide method arity(::$(Type{T})).")
-arity(t::SyntaxToken)::Integer = arity(typeof(t))
+arity(T::Type{Operator})::Integer = error("Please, provide method arity(::$(Type{T})).")
+arity(t::Operator)::Integer = arity(typeof(t))
 
 isnullary(a) = arity(a) == 0
 isunary(a) = arity(a) == 1
 isbinary(a) = arity(a) == 2
 
 """
+TODO: @TypeHierarchyUpdate
     dual(tok::SyntaxToken)
 
 Return the `dual` of a syntax token.
@@ -213,7 +217,7 @@ syntaxstring(value::Union{AbstractString,Number,AbstractChar}; kwargs...) = stri
 
 """
 TODO: @TypeHierarchyUpdate
-    struct Atom{A} <: SyntaxToken
+    struct Atom{A} <: AbstractLeaf
         value::A
     end
 
@@ -231,7 +235,7 @@ struct Atom{A} <: AbstractLeaf
     value::A
 
     function Atom{A}(value::A) where {A}
-        @assert !(value isa Union{SyntaxToken,AbstractFormula}) "Illegal nesting. " *
+        @assert !(value isa AbstractLeaf) "Illegal nesting. " *
             "Cannot instantiate Atom with value of type $(typeof(value))"
         new{A}(value)
     end
