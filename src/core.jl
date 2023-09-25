@@ -136,9 +136,8 @@ function syntaxstring(tok::AbstractSyntaxToken; kwargs...)::String
     return error("Please, provide method syntaxstring(::$(typeof(tok)); kwargs...).")
 end
 
-# Helper
-# TODO: default all values to syntaxstring(value; kwargs...) = string(value)
-syntaxstring(value::Union{AbstractString,Number,AbstractChar}; kwargs...) = string(value)
+syntaxstring(value; kwargs...) = string(value)
+# syntaxstring(value::Union{AbstractString,Number,AbstractChar}; kwargs...) = string(value)
 
 ############################################################################################
 ############################################################################################
