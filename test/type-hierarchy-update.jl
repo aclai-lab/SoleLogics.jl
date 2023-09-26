@@ -47,11 +47,16 @@ const SL = SoleLogics # SL.name to reference unexported names
 @test BOTTOM isa Truth
 @test BOTTOM isa BooleanTruth
 
-@test AbstractComposite <: AbstractSyntaxStructure
-@test SyntaxTree <: AbstractComposite
-
 @test Connective <: Syntactical
 @test NamedConnective <: Connective
+
+@test Connective <: Operator
+@test Truth <: Operator
+@test Connective <: SyntaxToken
+@test AbstractLeaf <: SyntaxToken
+
+@test AbstractComposite <: AbstractSyntaxStructure
+@test SyntaxTree <: AbstractComposite
 
 @test NEGATION isa NamedConnective
 @test typeof(¬) <: NamedConnective

@@ -18,6 +18,8 @@ export Syntactical, AbstractFormula, Connective,
     AbstractSyntaxStructure, AbstractLeaf, AbstractComposite,
     AlphabetOfAny, ExplicitAlphabet
 
+export Operator, SyntaxToken
+
 export Atom, SyntaxTree, Truth
 export TOP, ⊤
 export BOTTOM, ⊥
