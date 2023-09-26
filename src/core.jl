@@ -75,7 +75,6 @@ const Operator = Union{Connective,Truth}
 
 """ TODO: @typeHierarchyUpdate """
 const SyntaxToken = Union{Connective,AbstractLeaf}
-
 #########################
 
 """
@@ -663,8 +662,15 @@ function Base.isequal(a::AbstractFormula, b::AbstractFormula)
 end
 Base.hash(a::AbstractFormula) = Base.hash(tree(a))
 
-Base.promote_rule(::Type{SS}, ::Type{<:SyntaxToken}) where {SS<:AbstractSyntaxStructure} = SS
-Base.promote_rule(::Type{<:SyntaxToken}, ::Type{SS}) where {SS<:AbstractSyntaxStructure} = SS
+Base.promote_rule(
+    ::Type{SS},
+    ::Type{<:SyntaxToken}
+) where {SS<:AbstractSyntaxStructure} = AbstractSyntaxStructure
+
+Base.promote_rule(
+    ::Type{<:SyntaxToken},
+    ::Type{SS}
+) where {SS<:AbstractSyntaxStructure} = AbstractSyntaxStructure
 
 ############################################################################################
 
@@ -927,8 +933,8 @@ Base.promote_rule(::Type{<:AbstractSyntaxStructure}, ::Type{S}) where {S<:Syntax
 Base.promote_rule(::Type{S}, ::Type{<:AbstractSyntaxStructure}) where {S<:SyntaxTree} = S
 
 # Helper
-Base.convert(::Type{S}, tok::SyntaxToken) where {S<:SyntaxTree} = S(tok)
-Base.convert(::Type{AbstractSyntaxStructure}, tok::SyntaxToken) = SyntaxTree(tok)
+Base.convert(::Type{S}, tok::AbstractLeaf) where {S<:SyntaxTree} = S(tok)
+Base.convert(::Type{AbstractSyntaxStructure}, tok::AbstractLeaf) = SyntaxTree(tok)
 
 function joinformulas(op::Operator, children::NTuple{N,SyntaxTree}) where {N}
     return SyntaxTree(op, children)
@@ -1441,6 +1447,9 @@ const BOTTOM = Bottom()
 const ⊥ = BOTTOM
 
 syntaxstring(o::Bottom; kwargs...) = "⊥"
+
+""" TODO: @typeHierarchyUpdate """
+const BooleanTruth = Union{Top,Bottom}
 
 ############################################################################################
 

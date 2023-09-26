@@ -169,7 +169,7 @@ and maximum, respectively.
 
 See also [`Truth`](@ref).
 """
-struct BooleanAlgebra <: AbstractAlgebra{Bool} end
+struct BooleanAlgebra <: AbstractAlgebra{BooleanTruth} end
 
 domain(::BooleanAlgebra) = [true, false]
 top(a::BooleanAlgebra) = true
@@ -280,16 +280,16 @@ Basic logical operators.
 See also [`TOP`](@ref), [`BOTTOM`](@ref), [`NEGATION`](@ref),
 [`CONJUCTION`](@ref), [`Operator`](@ref).
 """
-const BASE_OPERATORS = [⊤, ⊥, ¬, ∧, ∨, →]
-const BaseOperators = Union{typeof.(BASE_OPERATORS)...}
-
-const BASE_ALPHABET = AlphabetOfAny{String}()
-
-const BASE_GRAMMAR = CompleteFlatGrammar(BASE_ALPHABET, BASE_OPERATORS)
-const BASE_ALGEBRA = BooleanAlgebra()
-
-const BASE_LOGIC = BaseLogic(BASE_GRAMMAR, BASE_ALGEBRA)
-
+const BASE_OPERATORS = Operator[⊤, ⊥, ¬, ∧, ∨, →]
+# const BaseOperators = Union{typeof.(BASE_OPERATORS)...}
+#
+# const BASE_ALPHABET = AlphabetOfAny{String}()
+#
+# const BASE_GRAMMAR = CompleteFlatGrammar(BASE_ALPHABET, BASE_OPERATORS)
+# const BASE_ALGEBRA = BooleanAlgebra()
+#
+# const BASE_LOGIC = BaseLogic(BASE_GRAMMAR, BASE_ALGEBRA)
+#
 function _baselogic(;
     alphabet::Union{Nothing,Vector,AbstractAlphabet} = nothing,
     operators::Union{Nothing,Vector{<:Operator}} = nothing,
@@ -344,6 +344,7 @@ function _baselogic(;
 end
 
 """
+TODO: @typeHierarchyUpdate
     function baseformula(
         tokf::Union{AbstractSyntaxToken,AbstractFormula};
         infer_logic = true,
@@ -380,7 +381,7 @@ julia> operators(logic(SoleLogics.baseformula(t; additional_operators = SoleLogi
 ```
 """
 function baseformula(
-    tokf::Union{AbstractSyntaxToken,AbstractFormula};
+    tokf::Union{AbstractSyntaxStructure,Connective};
     infer_logic = true,
     additional_operators::Union{Nothing,Vector{<:Operator}} = nothing,
     kwargs...,

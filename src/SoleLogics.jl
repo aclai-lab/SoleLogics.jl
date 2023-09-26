@@ -21,8 +21,10 @@ export AbstractSyntaxToken, Atom,
 
 export syntaxstring
 
+export Truth
 export TOP, ⊤
 export BOTTOM, ⊥
+export BooleanTruth
 
 export arity, valuetype, tokentype, tokenstype,
         atomstype, operatorstype, truthtype
