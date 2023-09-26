@@ -27,8 +27,8 @@ const SL = SoleLogics # SL.name to reference unexported names
     │   └── AbstractMemoFormula
     │       └── TruthTable
     └── Connective
-        └── NamedConnective
-        └── RelationalConnective
+    └── NamedConnective
+    └── RelationalConnective
         └── ...
 
     Also:
@@ -37,34 +37,92 @@ const SL = SoleLogics # SL.name to reference unexported names
     const BooleanTruth = Union{Top,Bottom}
 =#
 
-@test AbstractFormula <: Syntactical
-@test AbstractSyntaxStructure <: AbstractFormula
-@test AbstractLeaf <: AbstractSyntaxStructure
-@test Truth <: AbstractLeaf
+# Declaration section
 
-@test TOP isa Truth
-@test TOP isa BooleanTruth
-@test BOTTOM isa Truth
-@test BOTTOM isa BooleanTruth
+p = Atom("p")
+q = Atom("q")
+r = Atom("r")
 
-@test Connective <: Syntactical
-@test NamedConnective <: Connective
+m = Atom(1)
+n = Atom(2)
 
-@test Connective <: Operator
-@test Truth <: Operator
-@test Connective <: SyntaxToken
-@test AbstractLeaf <: SyntaxToken
+pandq               = SyntaxTree(CONJUNCTION, (p,q))
+pandq_demorgan      = DISJUNCTION(p |> NEGATION, q |> NEGATION) |> NEGATION
+qandp               = SyntaxTree(CONJUNCTION, (q,p))
+pandr               = SyntaxTree(CONJUNCTION, (p,r))
+
+porq                = SyntaxTree(DISJUNCTION, (p,q))
+norm                = SyntaxTree(DISJUNCTION, (m,n))
+
+trees_implication   = SyntaxTree(IMPLICATION, (pandq, porq))
+
+# Test section
+
+@test AbstractFormula           <: Syntactical
+@test AbstractSyntaxStructure   <: AbstractFormula
+@test AbstractLeaf              <: AbstractSyntaxStructure
+@test Truth                     <: AbstractLeaf
+
+@test TOP               isa Truth
+@test TOP               isa BooleanTruth
+@test BOTTOM            isa Truth
+@test BOTTOM            isa BooleanTruth
+
+@test Connective        <: Syntactical
+@test NamedConnective   <: Connective
+
+@test Connective        <: Operator
+@test Truth             <: Operator
+@test Connective        <: SyntaxToken
+@test AbstractLeaf      <: SyntaxToken
 
 @test AbstractComposite <: AbstractSyntaxStructure
-@test SyntaxTree <: AbstractComposite
+@test SyntaxTree        <: AbstractComposite
 
-@test NEGATION isa NamedConnective
-@test typeof(¬) <: NamedConnective
-@test CONJUNCTION isa NamedConnective
-@test typeof(∧) <: NamedConnective
-@test DISJUNCTION isa NamedConnective
-@test typeof(∨) <: NamedConnective
-@test IMPLICATION isa NamedConnective
-@test typeof(→) <: NamedConnective
+@test NEGATION          isa NamedConnective
+@test CONJUNCTION       isa NamedConnective
+@test DISJUNCTION       isa NamedConnective
+@test IMPLICATION       isa NamedConnective
+@test typeof(¬)         <: NamedConnective
+@test typeof(∧)         <: NamedConnective
+@test typeof(∨)         <: NamedConnective
+@test typeof(→)         <: NamedConnective
+
+@test isnullary(p)      == true
+@test syntaxstring(p)   == "p"
+
+@test pandq             |> syntaxstring == CONJUNCTION(p, q)        |> syntaxstring
+@test pandq             |> syntaxstring == (@synexpr p ∧ q)         |> syntaxstring
+@test porq              |> syntaxstring == DISJUNCTION(p, q)        |> syntaxstring
+@test porq              |> syntaxstring == (@synexpr p ∨ q)         |> syntaxstring
+@test trees_implication |> syntaxstring == IMPLICATION(pandq, porq) |> syntaxstring
+@test trees_implication |> syntaxstring == (@synexpr pandq → porq)  |> syntaxstring
+
+@test pandq             |> syntaxstring ==
+    SL.joinformulas(CONJUNCTION, (p, q)) |> syntaxstring
+@test porq              |> syntaxstring ==
+    SL.joinformulas(DISJUNCTION, (p, q)) |> syntaxstring
+@test trees_implication |> syntaxstring ==
+    SL.joinformulas(IMPLICATION, (pandq, porq)) |> syntaxstring
+
+
+@test isequal(p, p)                     == true
+@test isequal(p, q)                     == false
+@test isequal(pandq, porq)              == false
+@test isequal(porq, porq)               == true
+@test isequal(pandq, pandq_demorgan)    == false # This is not semantics, but syntax only.
+
+@test Base.operator_precedence(TOP)         == SL.MAX_PRECEDENCE
+@test Base.operator_precedence(BOTTOM)      == SL.MAX_PRECEDENCE
+@test Base.operator_precedence(NEGATION)    == SL.HIGH_PRECEDENCE
+@test Base.operator_precedence(CONJUNCTION) == SL.BASE_PRECEDENCE
+@test Base.operator_precedence(DISJUNCTION) == SL.BASE_PRECEDENCE
+@test Base.operator_precedence(IMPLICATION) == SL.LOW_PRECEDENCE
+
+@test natoms(pandq)                 == 2
+@test natoms(trees_implication)     == natoms(pandq) + natoms(porq)
+@test Set(atoms(pandq))             == Set(atoms(qandp))
+@test Set(atoms(pandq))             == Set(atoms(porq))
+@test Set(atoms(pandq))             != Set(atoms(pandr))
 
 end

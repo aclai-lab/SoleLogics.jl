@@ -34,7 +34,7 @@ export value, token, children, alphabet, formulas
 export domain, top, bottom, grammar, algebra, logic, tree
 export istop, isbottom
 
-export tokens, operators, atoms
+export tokens, operators, atoms, natoms, height
 export @atoms, @synexpr
 
 include("core.jl")

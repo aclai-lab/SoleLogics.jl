@@ -78,17 +78,17 @@ const SyntaxToken = Union{Connective,AbstractLeaf}
 #########################
 
 """
-    arity(::Type{Operator})::Integer
-    arity(tok::Operator)::Integer = arity(typeof(tok))
+    arity(::Type{SyntaxToken})::Integer
+    arity(tok::SyntaxToken)::Integer = arity(typeof(tok))
 
-Return the `arity` of an `Operator`. The arity of an operator is an integer
+Return the `arity` of an `SyntaxToken`. The arity of an SyntaxToken is an integer
 representing the number of allowed children in a `SyntaxTree`. Tokens with `arity` equal
 to 0, 1 or 2 are called `nullary`, `unary` and `binary`, respectively.
 
-See also [`Operator`](@ref), [`SyntaxTree`](@ref).
+See also [`SyntaxToken`](@ref), [`SyntaxTree`](@ref).
 """
-arity(T::Type{<:Operator})::Integer = error("Please, provide method arity(::$(Type{T})).")
-arity(t::Operator)::Integer = arity(typeof(t))
+arity(T::Type{<:SyntaxToken})::Integer = error("Please, provide method arity(::$(Type{T})).")
+arity(t::SyntaxToken)::Integer = arity(typeof(t))
 
 isnullary(a) = arity(a) == 0
 isunary(a) = arity(a) == 1
@@ -246,6 +246,7 @@ end
 value(p::Atom) = p.value
 
 arity(::Type{<:Atom}) = 0
+
 valuetype(::Atom{A}) where {A} = A
 valuetype(::Type{Atom{A}}) where {A} = A
 
@@ -256,6 +257,7 @@ Base.convert(::Type{P}, a) where {P<:Atom} = P(a)
 # Base.promote_rule(::Type{<:Atom}, ::Type{Union{AbstractString,Number,AbstractChar}}) = Atom
 
 syntaxstring(p::Atom; kwargs...) = syntaxstring(value(p); kwargs...)
+
 
 Base.isequal(a::Atom, b::Atom) = Base.isequal(value(a), value(b))
 Base.isequal(a::Atom, b) = Base.isequal(value(a), b)
@@ -604,13 +606,30 @@ function Base.in(tok::SyntaxToken, f::AbstractSyntaxStructure)::Bool
     return Base.in(tok, tree(f))
 end
 
+"""
+    TODO: @typeHierarchyUpdate change the default dispatch
+
+    The following code
+
+        @atoms p
+        @show p
+
+    produces
+
+        @show p
+        p = Atom{String}
+        syntaxstring: p
+        Atom{String}
+        syntaxstring: p
+
+    which is ugly.
+"""
+function Base.show(io::IO, f::AbstractFormula)
+    print(io, "$(typeof(f))\nsyntaxstring: $(syntaxstring(f))")
+end
 
 function syntaxstring(f::AbstractSyntaxStructure; kwargs...)
     syntaxstring(tree(f); kwargs...)
-end
-
-function Base.show(io::IO, f::AbstractFormula)
-    print(io, "$(typeof(f))\nsyntaxstring: $(syntaxstring(f))")
 end
 
 
@@ -630,37 +649,37 @@ See also [`AbstractSyntaxStructure`](@ref).
 """
 
 """$(doc_tokopprop)"""
-function tokens(f::AbstractFormula)::AbstractVector{<:SyntaxToken}
+function tokens(f::AbstractComposite)::AbstractVector{<:SyntaxToken}
     return tokens(tree(f))
 end
 """$(doc_tokopprop)"""
-function operators(f::AbstractFormula)::AbstractVector{<:Operator}
+function operators(f::AbstractComposite)::AbstractVector{<:Operator}
     return operators(tree(f))
 end
 """$(doc_tokopprop)"""
-function atoms(f::AbstractFormula)::AbstractVector{<:Atom}
+function atoms(f::AbstractComposite)::AbstractVector{<:Atom}
     return atoms(tree(f))
 end
 """$(doc_tokopprop)"""
-function ntokens(f::AbstractFormula)::Integer
+function ntokens(f::AbstractComposite)::Integer
     return ntokens(tree(f))
 end
 """$(doc_tokopprop)"""
-function natoms(f::AbstractFormula)::Integer
+function natoms(f::AbstractComposite)::Integer
     return natoms(tree(f))
 end
 """$(doc_tokopprop)"""
-function height(f::AbstractFormula)::Integer
+function height(f::AbstractComposite)::Integer
     return height(tree(f))
 end
 
 # Helpers that make all AbstractFormula's map to the same
 #  dictionary key. Useful when checking formulas on interpretations.
-# TODO: @typeHierarchyUpdate change AbstractFormula with AbstractSyntaxTree
-function Base.isequal(a::AbstractFormula, b::AbstractFormula)
+# TODO: @typeHierarchyUpdate is AbstractComposite correct?
+function Base.isequal(a::AbstractComposite, b::AbstractComposite)
     Base.isequal(tree(a), tree(b))
 end
-Base.hash(a::AbstractFormula) = Base.hash(tree(a))
+Base.hash(a::AbstractComposite) = Base.hash(tree(a))
 
 Base.promote_rule(
     ::Type{SS},
@@ -804,7 +823,7 @@ See also [`natoms`](@ref), [`operators`](@ref), [`tokens`](@ref), [`Atom`](@ref)
 """
 function atoms(t::SyntaxTree)::AbstractVector{Atom}
     ps = token(t) isa Atom ? Atom[token(t)] : Atom[]
-    return Atom[vcat(atoms.(children(t))...)..., ps...]
+    return Atom[vcat(atoms.(children(t))...)..., ps...] |> unique
 end
 
 """
@@ -942,20 +961,19 @@ end
 
 
 """
-    tree(f::AbstractFormula)::SyntaxTree
+    tree(f::AbstractComposite)::SyntaxTree
 
 Extract the `SyntaxTree` representation of a formula
 (equivalent to `Base.convert(SyntaxTree, f)`).
 
 See also
 [`SyntaxTree`](@ref),
-[`AbstractSyntaxStructure`](@ref).
-[`AbstractFormula`](@ref),
+[`AbstractComposite`](@ref),
 """
-function tree(f::AbstractFormula)::SyntaxTree
+function tree(f::AbstractComposite)::SyntaxTree
     return error("Please, provide method tree(::$(typeof(f)))::SyntaxTree.")
 end
-Base.convert(::Type{SyntaxTree}, f::AbstractFormula) = tree(f)
+Base.convert(::Type{SyntaxTree}, f::AbstractComposite) = tree(f)
 
 tree(t::SyntaxTree) = t
 
