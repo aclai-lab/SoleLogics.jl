@@ -1417,6 +1417,14 @@ end
 
 arity(::Type{<:Truth}) = 0
 
+function syntaxstring(t::Truth; kwargs...)
+    return error("Please, provide method syntaxstring(::$(typeof(t))).")
+end
+
+function Base.show(io::IO, f::Truth)
+    print(io, "$(syntaxstring(f))")
+end
+
 doc_TOP = """
 #TODO: @typeHierarchyUpdate
     struct Top <: Truth end
@@ -1435,10 +1443,14 @@ const TOP = Top()
 """$(doc_TOP)"""
 const ⊤ = TOP
 
+syntaxstring(o::Top; kwargs...) = "⊤"
+
 #TODO: @typeHierarchyUpdate add docstring
 struct Bottom <: Truth end
 const BOTTOM = Bottom()
 const ⊥ = BOTTOM
+
+syntaxstring(o::Bottom; kwargs...) = "⊥"
 
 ############################################################################################
 
