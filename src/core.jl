@@ -11,21 +11,19 @@ SoleLogics' type hierarchy is being updated following the tree below.
     │   │   ├── AbstractLeaf
     │   │   │   ├── Atom
     │   │   │   └── Truth
-                    └── Top
-                    └── Bottom
-                    └──
-                    └── ...
+    │   │   │       └── Top
+    │   │   │       └── Bottom
+    │   │   │       └── ...
     │   │   └── AbstractComposite
     │   │       ├── SyntaxTree
     │   │       ├── LeftmostLinearForm
     │   │       └── ...
     │   └── AbstractMemoFormula
     │       └── TruthTable
-    └── ...
     └── Connective
-    └── NamedConnective
-    └── RelationalConnective
-    └── ...
+        └── NamedConnective
+        └── RelationalConnective
+        └── ...
 
     Also:
     const Operator = Union{Connective,Truth}
@@ -33,13 +31,28 @@ SoleLogics' type hierarchy is being updated following the tree below.
     const BooleanTruth = Union{Top,Bottom}
 =#
 
-""" TODO: @typeHierarchyUpdate """
+""" TODO: @typeHierarchyUpdate
+Master abstract type of all types related to syntax.
+"""
 abstract type Syntactical end
 
 """ TODO: @typeHierarchyUpdate """
 abstract type AbstractFormula <: Syntactical end
 
-""" TODO: @typeHierarchyUpdate """
+"""
+    abstract type AbstractSyntaxStructure <: AbstractFormula end
+
+A logical formula, represented by its syntactic component.
+The typical representation is the [`SyntaxTree`](@ref);
+however, different implementations can cover specific synctactic forms
+(e.g., conjuctive/disjuctive normal forms).
+
+See also
+[`tree`](@ref),
+[`SyntaxTree`](@ref),
+[`AbstractFormula`](@ref),
+[`AbstractLogic`](@ref).
+"""
 abstract type AbstractSyntaxStructure <: AbstractFormula end
 
 """ TODO: @typeHierarchyUpdate """
@@ -57,10 +70,15 @@ abstract type Connective <: Syntactical end
 """ TODO: @typeHierarchyUpdate """
 abstract type Truth <: AbstractLeaf end
 
-""" TODO: @typeHierarchyUpdate @base-logic"""
-struct NamedConnective <: Connective
-    value::Symbol
-end
+""" TODO: @typeHierarchyUpdate @base-logic
+    struct NamedOperator{Symbol} <: AbstractOperator end
+
+A singleton type for representing connectives defined by a name or a symbol.
+"""
+struct NamedConnective{Symbol} <: Connective end
+name(::NamedConnective{S}) where {S} = S
+Base.show(io::IO, op::NamedConnective) = print(io, "$(syntaxstring(op))")
+syntaxstring(op::NamedConnective; kwargs...) = string(name(op))
 
 """ TODO: @typeHierarchyUpdate """
 const Operator = Union{Connective,Truth}
@@ -68,35 +86,17 @@ const Operator = Union{Connective,Truth}
 """ TODO: @typeHierarchyUpdate """
 const SyntaxToken = Union{Connective,AbstractLeaf}
 
-
-function syntaxstring(tok::Syntactical; kwargs...)::String
-    return error("Please, provide method syntaxstring(::$(typeof(tok)); kwargs...).")
-end
-
 #########################
 
 """
-TODO: @typeHierarchyUpdate remove this
-    abstract type SyntaxToken end
-
-A token in a syntactic structure.
-
-See also [`SyntaxTree`](@ref), [`AbstractSyntaxStructure`](@ref),
-[`arity`](@ref), [`syntaxstring`](@ref).
-"""
-# abstract type SyntaxToken end
-
-"""
-TODO: @typeHierarchyUpdate
-
     arity(::Type{Operator})::Integer
     arity(tok::Operator)::Integer = arity(typeof(tok))
 
-Return the `arity` of a syntax token. The arity of a syntax token is an integer
+Return the `arity` of an `Operator`. The arity of an operator is an integer
 representing the number of allowed children in a `SyntaxTree`. Tokens with `arity` equal
 to 0, 1 or 2 are called `nullary`, `unary` and `binary`, respectively.
 
-See also [`SyntaxToken`](@ref).
+See also [`Operator`](@ref), [`SyntaxTree`](@ref).
 """
 arity(T::Type{<:Operator})::Integer = error("Please, provide method arity(::$(Type{T})).")
 arity(t::Operator)::Integer = arity(typeof(t))
@@ -209,11 +209,10 @@ Then, the syntaxstring for a given value can be defined. For example, with `Stri
     See also [`parsebaseformula`](@ref).
 
 """
-# function syntaxstring(tok::SyntaxToken; kwargs...)::String
-#     return error("Please, provide method syntaxstring(::$(typeof(tok)); kwargs...).")
-# end
+function syntaxstring(tok::Syntactical; kwargs...)::String
+    return error("Please, provide method syntaxstring(::$(typeof(tok)); kwargs...).")
+end
 
-# Helper
 syntaxstring(value::Union{AbstractString,Number,AbstractChar}; kwargs...) = string(value)
 
 ############################################################################################
@@ -282,7 +281,7 @@ function dual(atom::Any)
 end
 
 """
-@atoms(cast, ps...)
+    @atoms(ps...)
 
 Instantiate a collection of [`Atom`](@ref)s and return them as a vector.
 
@@ -513,6 +512,7 @@ isrightassociative(o::Operator) = isrightassociative(typeof(o))
 ############################################################################################
 
 """
+TODO: @typeHierarchyUpdate
     joinformulas(
         op::Operator,
         ::NTuple{N,F}
@@ -544,7 +544,7 @@ Upon `joinformulas` lies a flexible way of using operators for composing
 formulas and syntax tokens (e.g., atoms), given by methods like the following:
 
     function (op::Operator)(
-        children::NTuple{N,Union{SyntaxToken,AbstractFormula}},
+        children::NTuple{N,AbstractFormula},
     ) where {N}
         ...
     end
@@ -605,34 +605,18 @@ function joinformulas(op::Operator, children::NTuple{N,SyntaxToken}) where {N}
 end
 
 """
-    abstract type AbstractSyntaxStructure <: AbstractFormula end
-
-A logical formula, represented by its syntactic component.
-The typical representation is the [`SyntaxTree`](@ref);
-however, different implementations can cover specific synctactic forms
-(e.g., conjuctive/disjuctive normal forms).
-
-See also
-[`tree`](@ref),
-[`SyntaxTree`](@ref),
-[`AbstractFormula`](@ref),
-[`AbstractLogic`](@ref).
-"""
-# abstract type AbstractSyntaxStructure <: AbstractFormula end
-
-"""
     Base.in(tok::SyntaxToken, f::AbstractFormula)::Bool
 
 Return whether a syntax token appears in a formula.
 
 See also [`SyntaxToken`](@ref).
 """
-function Base.in(tok::SyntaxToken, f::AbstractFormula)::Bool
+function Base.in(tok::SyntaxToken, f::AbstractSyntaxStructure)::Bool
     return Base.in(tok, tree(f))
 end
 
 
-function syntaxstring(f::AbstractFormula; kwargs...)
+function syntaxstring(f::AbstractSyntaxStructure; kwargs...)
     syntaxstring(tree(f); kwargs...)
 end
 
@@ -642,6 +626,7 @@ end
 
 
 doc_tokopprop = """
+TODO: @typeHierarchyUpdate change AbstractFormula with AbstractSyntaxStructure
     tokens(f::AbstractFormula)::AbstractVector{<:SyntaxToken}
     operators(f::AbstractFormula)::AbstractVector{<:Operator}
     atoms(f::AbstractFormula)::AbstractVector{<:Atom}
@@ -682,6 +667,7 @@ end
 
 # Helpers that make all AbstractFormula's map to the same
 #  dictionary key. Useful when checking formulas on interpretations.
+# TODO: @typeHierarchyUpdate change AbstractFormula with AbstractSyntaxTree
 function Base.isequal(a::AbstractFormula, b::AbstractFormula)
     Base.isequal(tree(a), tree(b))
 end
@@ -695,7 +681,7 @@ Base.promote_rule(::Type{<:SyntaxToken}, ::Type{SS}) where {SS<:AbstractSyntaxSt
 """
     struct SyntaxTree{
         T<:SyntaxToken,
-    } <: AbstractSyntaxStructure
+    } <: AbstractComposite
         token::T
         children::NTuple{N,SyntaxTree} where {N}
     end
@@ -715,7 +701,7 @@ See also [`token`](@ref), [`children`](@ref), [`tokentype`](@ref),
 """
 struct SyntaxTree{
     T<:SyntaxToken,
-} <: AbstractSyntaxStructure
+} <: AbstractComposite
 
     # The syntax token at the current node
     token::T
@@ -731,7 +717,7 @@ struct SyntaxTree{
 
     function SyntaxTree{T}(
         token::T,
-        children::NTuple{N,Union{SyntaxToken,AbstractSyntaxStructure}} = (),
+        children::NTuple{N,Union{SyntaxToken,AbstractComposite}} = (),
     ) where {T<:SyntaxToken,N}
         children = convert.(SyntaxTree, children)
         _aritycheck(N, T, token, children)
@@ -746,7 +732,7 @@ struct SyntaxTree{
 
     function SyntaxTree(
         token::T,
-        children::NTuple{N,Union{SyntaxToken,AbstractSyntaxStructure}} = (),
+        children::NTuple{N,Union{SyntaxToken,AbstractComposite}} = (),
     ) where {T<:SyntaxToken,N}
         children = convert.(SyntaxTree, children)
         _aritycheck(N, T, token, children)
@@ -1847,31 +1833,28 @@ syntax trees and/or formulas. This is quite handy, try it:
     ⊤()
 """
 
-# ERROR: Method dispatch is unimplemented currently for this type signature
-# function (op::Operator)(o::Any)
-#     return error("Cannot apply operator $(op)::$(typeof(op)) to object $(o)::$(typeof(o))")
-# end
+function (op::Operator)(o::Any)
+    return error("Cannot apply operator $(op)::$(typeof(op)) to object $(o)::$(typeof(o))")
+end
 
-# ERROR: Method dispatch is unimplemented currently for this type signature
-# function (op::Operator)(children::Union{SyntaxToken,AbstractFormula}...)
-#     return op(children)
-# end
+function (op::Operator)(children::Union{SyntaxToken,AbstractFormula}...)
+    return op(children)
+end
 
-# ERROR: Method dispatch is unimplemented currently for this type signature
-# function (op::Operator)(
-#     children::NTuple{N,Union{SyntaxToken,AbstractFormula}},
-# ) where {N}
-#     T = Base.promote_type((typeof.(children))...)
-#     if T <: Union{SyntaxTree,SyntaxToken}
-#         return joinformulas(op, tree.(children))
-#     elseif T <: AbstractSyntaxStructure
-#         return joinformulas(op, children) # Force SyntaxTree?
-#         # return joinformulas(op, Base.promote(children...))
-#         # println(typeof.(children))
-#         # println(typeof.(Base.promote(children...)))
-#         # return joinformulas(op, children)
-#     else
-#         # println(typeof.(children))
-#         return joinformulas(op, Base.promote(children...))
-#     end
-# end
+function (op::Operator)(
+    children::NTuple{N,Union{SyntaxToken,AbstractFormula}},
+) where {N}
+    T = Base.promote_type((typeof.(children))...)
+    if T <: Union{SyntaxTree,SyntaxToken}
+        return joinformulas(op, tree.(children))
+    elseif T <: AbstractSyntaxStructure
+        return joinformulas(op, children) # Force SyntaxTree?
+        # return joinformulas(op, Base.promote(children...))
+        # println(typeof.(children))
+        # println(typeof.(Base.promote(children...)))
+        # return joinformulas(op, children)
+    else
+        # println(typeof.(children))
+        return joinformulas(op, Base.promote(children...))
+    end
+end
