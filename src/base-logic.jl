@@ -1,22 +1,22 @@
 """
     collatetruth(
         a::AbstractAlgebra,
-        op::AbstractOperator,
+        op::Operator,
         t::NTuple{N,T},
-    )::T where {N,T<:TruthValue}
+    )::T where {N,T<:Truth}
 
 Return the truth value of a composed formula op(φ1, ..., φN), given the `N`
 truth values of its immediate sub-formulas.
 An algebra must provide a `collatetruth` method for each operator that can be
 interpreted on it.
 
-See also [`AbstractAlgebra`](@ref) [`AbstractOperator`](@ref), [`TruthValue`](@ref).
+See also [`AbstractAlgebra`](@ref) [`Operator`](@ref), [`Truth`](@ref).
 """
 function collatetruth(
     a::AbstractAlgebra{T},
-    op::AbstractOperator,
+    op::Operator,
     t::NTuple{N,T},
-)::T where {N,T<:TruthValue}
+)::T where {N,T<:Truth}
     if truthtype(a) != T
         return error("Cannot collate $(length(t)) truth values of type $(T) " *
                      "with algebra $(typeof(a)) with truth type $(truthtype(a))).")
@@ -30,95 +30,98 @@ function collatetruth(
 end
 
 # Note: `collatetruth` for TOP and BOTTOM relies on the `top` and `bottom` methods.
-collatetruth(a::AbstractAlgebra{T}, ::typeof(⊤), t::NTuple{0,T}) where {T<:TruthValue} = top(a)
-collatetruth(a::AbstractAlgebra{T}, ::typeof(⊥), t::NTuple{0,T}) where {T<:TruthValue} = bottom(a)
+collatetruth(a::AbstractAlgebra{T}, ::typeof(⊤), t::NTuple{0,T}) where {T<:Truth} = top(a)
+collatetruth(a::AbstractAlgebra{T}, ::typeof(⊥), t::NTuple{0,T}) where {T<:Truth} = bottom(a)
 
 ############################################################################################
 ####################################### BASE OPERATORS #####################################
 ############################################################################################
 
 """
-    struct NamedOperator{Symbol} <: AbstractOperator end
+TODO: @typeHierarchyUpdate
 
-A singleton type for representing operators defined by a name or a symbol.
+    struct NamedConnective{Symbol} <: Connective end
+
+A singleton type for representing connectives defined by a name or a symbol.
 
 # Examples
 The AND operator (logical conjuction) is defined as the subtype:
 
-    const CONJUNCTION = NamedOperator{:∧}()
+    const CONJUNCTION = NamedConnective{:∧}()
     const ∧ = CONJUNCTION
     arity(::Type{typeof(∧)}) = 2
 
 See also [`NEGATION`](@ref), [`CONJUNCTION`](@ref), [`DISJUNCTION`](@ref),
-[`IMPLICATION`](@ref), [`AbstractOperator`](@ref).
+[`IMPLICATION`](@ref), [`Operator`](@ref).
 """
-struct NamedOperator{Symbol} <: AbstractOperator end
+struct NamedConnective{Symbol} <: Connective end
 
-name(::NamedOperator{S}) where {S} = S
+name(::NamedConnective{S}) where {S} = S
 
-# Base.show(io::IO, op::NamedOperator) = print(io, "$(syntaxstring(op))")
-syntaxstring(op::NamedOperator; kwargs...) = string(name(op))
+Base.show(io::IO, op::NamedConnective) = print(io, "$(syntaxstring(op))")
+
+syntaxstring(op::NamedConnective; kwargs...) = string(name(op))
 
 doc_NEGATION = """
-    const NEGATION = NamedOperator{:¬}()
+    const NEGATION = NamedConnective{:¬}()
     const ¬ = NEGATION
     arity(::Type{typeof(¬)}) = 1
 
 Logical negation (also referred to as complement).
 It can be typed by `\\neg<tab>`.
 
-See also [`NamedOperator`](@ref), [`AbstractOperator`](@ref).
+See also [`NamedConnective`](@ref), [`Operator`](@ref).
 """
 """$(doc_NEGATION)"""
-const NEGATION = NamedOperator{:¬}()
+const NEGATION = NamedConnective{:¬}()
 """$(doc_NEGATION)"""
 const ¬ = NEGATION
 arity(::Type{typeof(¬)}) = 1
 
 doc_CONJUNCTION = """
-    const CONJUNCTION = NamedOperator{:∧}()
+    const CONJUNCTION = NamedConnective{:∧}()
     const ∧ = CONJUNCTION
     arity(::Type{typeof(∧)}) = 2
 
 Logical conjunction.
 It can be typed by `\\wedge<tab>`.
 
-See also [`NamedOperator`](@ref), [`AbstractOperator`](@ref).
+See also [`NamedConnective`](@ref), [`Operator`](@ref).
 """
 """$(doc_CONJUNCTION)"""
-const CONJUNCTION = NamedOperator{:∧}()
+const CONJUNCTION = NamedConnective{:∧}()
 """$(doc_CONJUNCTION)"""
 const ∧ = CONJUNCTION
 arity(::Type{typeof(∧)}) = 2
 
 doc_DISJUNCTION = """
-    const DISJUNCTION = NamedOperator{:∨}()
+    const DISJUNCTION = NamedConnective{:∨}()
     const ∨ = DISJUNCTION
     arity(::Type{typeof(∨)}) = 2
 
 Logical disjunction.
 It can be typed by `\\vee<tab>`.
 
-See also [`NamedOperator`](@ref), [`AbstractOperator`](@ref).
+See also [`NamedConnective`](@ref), [`Operator`](@ref).
 """
 """$(doc_DISJUNCTION)"""
-const DISJUNCTION = NamedOperator{:∨}()
+const DISJUNCTION = NamedConnective{:∨}()
 """$(doc_DISJUNCTION)"""
 const ∨ = DISJUNCTION
 arity(::Type{typeof(∨)}) = 2
 
 doc_IMPLICATION = """
-    const IMPLICATION = NamedOperator{:→}()
+    const IMPLICATION = NamedConnective{:→}()
     const → = IMPLICATION
     arity(::Type{typeof(→)}) = 2
 
 Logical implication.
 It can be typed by `\\to<tab>`.
 
-See also [`NamedOperator`](@ref), [`AbstractOperator`](@ref).
+See also [`NamedConnective`](@ref), [`Operator`](@ref).
 """
 """$(doc_IMPLICATION)"""
-const IMPLICATION = NamedOperator{:→}()
+const IMPLICATION = NamedConnective{:→}()
 """$(doc_IMPLICATION)"""
 const → = IMPLICATION
 arity(::Type{typeof(→)}) = 2
@@ -127,18 +130,18 @@ Base.operator_precedence(::typeof(IMPLICATION)) = LOW_PRECEDENCE
 
 # Helpers that allow the conjuction/disjuction of more than two tokens/formulas.
 function CONJUNCTION(
-    c1::Union{AbstractSyntaxToken,AbstractFormula},
-    c2::Union{AbstractSyntaxToken,AbstractFormula},
-    c3::Union{AbstractSyntaxToken,AbstractFormula},
-    cs::Union{AbstractSyntaxToken,AbstractFormula}...
+    c1::Union{SyntaxToken,AbstractSyntaxStructure},
+    c2::Union{SyntaxToken,AbstractSyntaxStructure},
+    c3::Union{SyntaxToken,AbstractSyntaxStructure},
+    cs::Union{SyntaxToken,AbstractSyntaxStructure}...
 )
     return CONJUNCTION(c1, CONJUNCTION(c2, c3, cs...))
 end
 function DISJUNCTION(
-    c1::Union{AbstractSyntaxToken,AbstractFormula},
-    c2::Union{AbstractSyntaxToken,AbstractFormula},
-    c3::Union{AbstractSyntaxToken,AbstractFormula},
-    cs::Union{AbstractSyntaxToken,AbstractFormula}...
+    c1::Union{SyntaxToken,AbstractSyntaxStructure},
+    c2::Union{SyntaxToken,AbstractSyntaxStructure},
+    c3::Union{SyntaxToken,AbstractSyntaxStructure},
+    cs::Union{SyntaxToken,AbstractSyntaxStructure}...
 )
     return DISJUNCTION(c1, DISJUNCTION(c2, c3, cs...))
 end
@@ -164,7 +167,7 @@ A [boolean algebra](https://en.wikipedia.org/wiki/Boolean_algebra), defined on t
 conjunction and disjunction (stylized as ¬, ∧, ∨) can be defined as the complement, minimum
 and maximum, respectively.
 
-See also [`TruthValue`](@ref).
+See also [`Truth`](@ref).
 """
 struct BooleanAlgebra <: AbstractAlgebra{Bool} end
 
@@ -275,7 +278,7 @@ end
 Basic logical operators.
 
 See also [`TOP`](@ref), [`BOTTOM`](@ref), [`NEGATION`](@ref),
-[`CONJUCTION`](@ref), [`AbstractOperator`](@ref).
+[`CONJUCTION`](@ref), [`Operator`](@ref).
 """
 const BASE_OPERATORS = [⊤, ⊥, ¬, ∧, ∨, →]
 const BaseOperators = Union{typeof.(BASE_OPERATORS)...}
@@ -289,10 +292,10 @@ const BASE_LOGIC = BaseLogic(BASE_GRAMMAR, BASE_ALGEBRA)
 
 function _baselogic(;
     alphabet::Union{Nothing,Vector,AbstractAlphabet} = nothing,
-    operators::Union{Nothing,Vector{<:AbstractOperator}} = nothing,
+    operators::Union{Nothing,Vector{<:Operator}} = nothing,
     grammar::Union{Nothing,AbstractGrammar} = nothing,
     algebra::Union{Nothing,AbstractAlgebra} = nothing,
-    default_operators::Vector{<:AbstractOperator},
+    default_operators::Vector{<:Operator},
     logictypename::String,
 )
     if !(isnothing(grammar) || (isnothing(alphabet) && isnothing(operators)))
@@ -344,7 +347,7 @@ end
     function baseformula(
         tokf::Union{AbstractSyntaxToken,AbstractFormula};
         infer_logic = true,
-        additional_operators::Union{Nothing,Vector{<:AbstractOperator}} = nothing,
+        additional_operators::Union{Nothing,Vector{<:Operator}} = nothing,
         kwargs...,
     )
 
@@ -359,13 +362,13 @@ plus the `additional_operators` is instantiated.
 julia> t = parseformula("◊((p∧q)→r)");
 
 julia> operators(logic(SoleLogics.baseformula(t)))
-3-element Vector{Union{SoleLogics.NamedOperator{:→}, SoleLogics.NamedOperator{:◊}, SoleLogics.NamedOperator{:∧}}}:
+3-element Vector{Union{SoleLogics.NamedConnective{:→}, SoleLogics.NamedConnective{:◊}, SoleLogics.NamedConnective{:∧}}}:
  ∧
  ◊
  →
 
 julia> operators(logic(SoleLogics.baseformula(t; additional_operators = SoleLogics.BASE_MODAL_OPERATORS)))
-8-element Vector{Union{SoleLogics.BottomOperator, SoleLogics.NamedOperator{:¬}, SoleLogics.NamedOperator{:∧}, SoleLogics.NamedOperator{:∨}, SoleLogics.NamedOperator{:→}, SoleLogics.NamedOperator{:◊}, SoleLogics.NamedOperator{:□}, SoleLogics.TopOperator}}:
+8-element Vector{Union{SoleLogics.BottomOperator, SoleLogics.NamedConnective{:¬}, SoleLogics.NamedConnective{:∧}, SoleLogics.NamedConnective{:∨}, SoleLogics.NamedConnective{:→}, SoleLogics.NamedConnective{:◊}, SoleLogics.NamedConnective{:□}, SoleLogics.TopOperator}}:
  ⊤
  ⊥
  ¬
@@ -379,7 +382,7 @@ julia> operators(logic(SoleLogics.baseformula(t; additional_operators = SoleLogi
 function baseformula(
     tokf::Union{AbstractSyntaxToken,AbstractFormula};
     infer_logic = true,
-    additional_operators::Union{Nothing,Vector{<:AbstractOperator}} = nothing,
+    additional_operators::Union{Nothing,Vector{<:Operator}} = nothing,
     kwargs...,
 )
     t = convert(SyntaxTree, tokf)

@@ -36,14 +36,13 @@ export @atoms, @synexpr
 
 include("core.jl")
 
-# export ∧, ¬, ∨, →
-# export CONJUNCTION, NEGATION, DISJUNCTION, IMPLICATION
-#
-# export BaseLogic
-#
-#
-# include("base-logic.jl")
-#
+export ∧, ¬, ∨, →
+export CONJUNCTION, NEGATION, DISJUNCTION, IMPLICATION
+
+export BaseLogic
+
+include("base-logic.jl")
+
 # export propositionallogic
 #
 # export TruthDict, DefaultedTruthDict

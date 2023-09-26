@@ -70,16 +70,6 @@ abstract type Connective <: Syntactical end
 """ TODO: @typeHierarchyUpdate """
 abstract type Truth <: AbstractLeaf end
 
-""" TODO: @typeHierarchyUpdate @base-logic
-    struct NamedOperator{Symbol} <: AbstractOperator end
-
-A singleton type for representing connectives defined by a name or a symbol.
-"""
-struct NamedConnective{Symbol} <: Connective end
-name(::NamedConnective{S}) where {S} = S
-Base.show(io::IO, op::NamedConnective) = print(io, "$(syntaxstring(op))")
-syntaxstring(op::NamedConnective; kwargs...) = string(name(op))
-
 """ TODO: @typeHierarchyUpdate """
 const Operator = Union{Connective,Truth}
 
@@ -334,7 +324,7 @@ julia> @synexpr st = p ∧ q → r
 (p ∧ q) → r
 
 julia> typeof(st)
-SyntaxTree{SoleLogics.NamedOperator{:→}}
+SyntaxTree{SoleLogics.NamedConnective{:→}}
 ```
 """
 macro synexpr(expression)
@@ -368,7 +358,7 @@ by providing the methods `Base.operator_precedence(::Type{Operator})` and
 When implementing a new type for a *commutative* operator `O` with arity higher than 1,
 please provide a method `iscommutative(::Type{O})`. This can help model checking operations.
 
-See also [`SyntaxToken`](@ref), [`NamedOperator`](@ref),
+See also [`SyntaxToken`](@ref), [`NamedConnective`](@ref),
 [`Base.operator_precedence`](@ref), [`isrightassociative`](@ref), [`iscommutative`](@ref),
 [`check`](@ref).
 """
