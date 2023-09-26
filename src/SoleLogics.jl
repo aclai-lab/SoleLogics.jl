@@ -14,17 +14,16 @@ include("utils.jl")
 
 export iscrisp, isfinite, isnullary, isunary, isbinary
 
-export AbstractSyntaxToken, Atom,
-    AbstractFormula, Formula,
-    AbstractSyntaxStructure, SyntaxTree,
+export Syntactical, AbstractFormula, Connective,
+    AbstractSyntaxStructure, AbstractLeaf, AbstractComposite,
     AlphabetOfAny, ExplicitAlphabet
 
-export syntaxstring
-
-export Truth
+export Atom, SyntaxTree, Truth
 export TOP, ⊤
 export BOTTOM, ⊥
 export BooleanTruth
+
+export syntaxstring
 
 export arity, valuetype, tokentype, tokenstype,
         atomstype, operatorstype, truthtype
@@ -38,6 +37,7 @@ export @atoms, @synexpr
 
 include("core.jl")
 
+export NamedConnective
 export ∧, ¬, ∨, →
 export CONJUNCTION, NEGATION, DISJUNCTION, IMPLICATION
 
