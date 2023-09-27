@@ -47,13 +47,13 @@ export BaseLogic
 
 include("base-logic.jl")
 
-# export propositionallogic
-#
-# export TruthDict, DefaultedTruthDict
-# export truth_table
-#
-# include("propositional-logic.jl")
-#
+export propositionallogic
+
+export TruthDict, DefaultedTruthDict
+export truth_table
+
+include("propositional-logic.jl")
+
 # export accessibles
 # export ismodal, modallogic
 # export DiamondRelationalOperator, BoxRelationalOperator
