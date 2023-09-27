@@ -14,7 +14,7 @@ See also [`AbstractAlgebra`](@ref) [`Operator`](@ref), [`Truth`](@ref).
 """
 function collatetruth(
     a::AbstractAlgebra{T},
-    op::Operator,
+    op::Connective,
     t::NTuple{N,T},
 )::T where {N,T<:Truth}
     if truthtype(a) != T
@@ -175,10 +175,25 @@ domain(::BooleanAlgebra) = [true, false]
 top(a::BooleanAlgebra) = true
 bottom(a::BooleanAlgebra) = false
 
+# TODO: @typeHierarchyUpdate
+# Base.convert(::Type{Bool}, tok::Top) = true
+# Base.convert(::Type{Bool}, tok::Bottom) = false
+
+toval(::Top) = true
+toval(::Bottom) = false
+
+function collatetruth(
+    a::BooleanAlgebra,
+    o::Connective,
+    ch::NTuple{N,BooleanTruth}
+) where {N}
+    _collatetruth(a, o, toval.(ch))
+end
+
 # Standard semantics for NOT, AND, OR, IMPLIES
-collatetruth(::BooleanAlgebra, ::typeof(¬), (t,)::NTuple{1,Bool}) = (!t)
-collatetruth(::BooleanAlgebra, ::typeof(∧), (t1, t2)::NTuple{2,Bool}) = min(t1, t2)
-collatetruth(::BooleanAlgebra, ::typeof(∨), (t1, t2)::NTuple{2,Bool}) = max(t1, t2)
+_collatetruth(::BooleanAlgebra, ::typeof(¬), (t,)::NTuple{1,Bool}) = (!t)
+_collatetruth(::BooleanAlgebra, ::typeof(∧), (t1, t2)::NTuple{2,Bool}) = min(t1, t2)
+_collatetruth(::BooleanAlgebra, ::typeof(∨), (t1, t2)::NTuple{2,Bool}) = max(t1, t2)
 
 # The IMPLIES operator, →, falls back to ¬
 function collatetruth(a::BooleanAlgebra, ::typeof(→), (t1, t2)::NTuple{2,Bool})
@@ -187,9 +202,9 @@ end
 
 
 # Bool values -> Boolean algebra
-istop(t::Bool)::Bool = (t == true)
-isbottom(t::Bool)::Bool = (t == false)
-default_algebra(::Type{Bool}) = BooleanAlgebra()
+istop(t::Top)::Bool = (t == true)
+isbottom(t::Bottom)::Bool = (t == false)
+default_algebra(::Type{<:BooleanTruth}) = BooleanAlgebra()
 
 # # With dense, discrete algebras, floats can be used.
 # istop(t::AbstractFloat)::Bool = isone(t)

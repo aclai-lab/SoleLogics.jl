@@ -1424,7 +1424,7 @@ a default algebra it works with.
 """
 function default_algebra(::Type{T})::AbstractAlgebra{<:T} where {T<:Truth}
     return error("Please, provide method " *
-                 "default_algebra(::$(typeof(T)))::AbstractAlgebra{<:$(T)}.")
+                 "default_algebra(::$(T))::AbstractAlgebra{<:$(T)}.")
 end
 
 ############################################################################################
