@@ -171,23 +171,24 @@ See also [`Truth`](@ref).
 """
 struct BooleanAlgebra <: AbstractAlgebra{BooleanTruth} end
 
-domain(::BooleanAlgebra) = [true, false]
-top(a::BooleanAlgebra) = true
-bottom(a::BooleanAlgebra) = false
+domain(::BooleanAlgebra) = [TOP, BOTTOM]
+
+TOP(a::BooleanAlgebra) = true
+# ⊤(a::BooleanAlgebra) = TOP(a) # already working, since ⊤ is defined as TOP.
+
+BOTTOM(a::BooleanAlgebra) = false
+# ⊥(a::BooleanAlgebra) = BOTTOM(a) # already working, since ⊥ is defined as BOTTOM.
 
 # TODO: @typeHierarchyUpdate
 # Base.convert(::Type{Bool}, tok::Top) = true
 # Base.convert(::Type{Bool}, tok::Bottom) = false
-
-toval(::Top) = true
-toval(::Bottom) = false
 
 function collatetruth(
     a::BooleanAlgebra,
     o::Connective,
     ch::NTuple{N,BooleanTruth}
 ) where {N}
-    _collatetruth(a, o, toval.(ch))
+    _collatetruth(a, o, tuple((c(a) for c in ch)...))
 end
 
 # Standard semantics for NOT, AND, OR, IMPLIES

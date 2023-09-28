@@ -1400,7 +1400,7 @@ end
 """
     istop(::Truth)::Bool
 
-Return true if the truth value is the top of its algebra.
+Return true if the truth value is the TOP of its algebra.
 For example, in the crisp case, with `Bool` truth values, it is:
 
     istop(t::Bool)::Bool = (t == true)
@@ -1412,7 +1412,7 @@ istop(t::Truth)::Bool = error("Please, provide method istop(Truth::$(typeof(t)))
 """
     isbottom(::Truth)::Bool
 
-Return true if the truth value is the bottom of its algebra.
+Return true if the truth value is the BOTTOM of its algebra.
 For example, in the crisp case, with `Bool` truth values, it is:
 
     isbottom(t::Bool)::Bool = (t == false)
@@ -1455,7 +1455,7 @@ doc_TOP = """
     const ⊤ = TOP
 
 Canonical truth operator representing the value `true`.
-It can be typed by `\\top<tab>`.
+It can be typed by `\\TOP<tab>`.
 
 See also [`BOTTOM`](@ref), [`Truth`](@ref), [`Truth`](@ref).
 """
@@ -1483,17 +1483,17 @@ syntaxstring(o::Bottom; kwargs...) = "⊥"
 Abstract type for representing algebras. Algebras are used for grounding the
 truth of atoms and the semantics of operators. They typically encode a
 [lattice structure](https://en.wikipedia.org/wiki/Lattice_(order)) where two
-elements(or nodes) *⊤* and *⊥* are referred to as *top* (or maximum)
-and *bottom* (or minimum). Each node in the lattice represents a truth value
+elements(or nodes) *⊤* and *⊥* are referred to as *TOP* (or maximum)
+and *BOTTOM* (or minimum). Each node in the lattice represents a truth value
 that an atom or a formula can have on an interpretation, and the
 semantics of operators is given in terms of operations between truth values.
 
 # Implementation
 
 When implementing a new algebra type, the methods `domain`,
-`top`, and `bottom` should be implemented.
+`TOP`, and `BOTTOM` should be implemented.
 
-See also [`domain`](@ref), [`top`](@ref), [`bottom`](@ref),
+See also [`domain`](@ref), [`TOP`](@ref), [`BOTTOM`](@ref),
 [`truthtype`](@ref), [`iscrisp`](@ref),
 [``BooleanAlgebra`](@ref), [`Operator`](@ref), [`collatetruth`](@ref).
 """
@@ -1525,25 +1525,25 @@ end
 # Base.in(t::Truth, a::AbstractAlgebra) = Base.in(t, domain(a))
 
 """
-    top(a::AbstractAlgebra)
+    TOP(a::AbstractAlgebra)
 
-Return the `top` of a given algebra.
+Return the `TOP` of a given algebra.
 
 See also [`AbstractAlgebra`](@ref).
 """
-function top(a::AbstractAlgebra{T} where {T})::T
-    return error("Please, provide method top(::$(typeof(a))).")
+function TOP(a::AbstractAlgebra{T} where {T})::T
+    return error("Please, provide method TOP(::$(typeof(a))).")
 end
 
 """
-    bottom(a::AbstractAlgebra)
+    BOTTOM(a::AbstractAlgebra)
 
-Return the `bottom` of a given algebra.
+Return the `BOTTOM` of a given algebra.
 
 See also [`AbstractAlgebra`](@ref).
 """
-function bottom(a::AbstractAlgebra{T} where {T})::T
-    return error("Please, provide method bottom(::$(typeof(a))).")
+function BOTTOM(a::AbstractAlgebra{T} where {T})::T
+    return error("Please, provide method BOTTOM(::$(typeof(a))).")
 end
 
 """
@@ -1614,8 +1614,8 @@ function algebra(l::AbstractLogic{G,A})::A where {G,A}
 end
 
 truthtype(l::AbstractLogic) = truthtype(algebra(l))
-top(l::AbstractLogic) = top(algebra(l))
-bottom(l::AbstractLogic) = bottom(algebra(l))
+TOP(l::AbstractLogic) = TOP(algebra(l))
+BOTTOM(l::AbstractLogic) = BOTTOM(algebra(l))
 iscrisp(l::AbstractLogic) = iscrisp(algebra(l))
 
 function Base.isequal(a::AbstractLogic, b::AbstractLogic)

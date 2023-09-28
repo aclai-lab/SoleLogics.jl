@@ -43,6 +43,8 @@ export NamedConnective
 export ∧, ¬, ∨, →
 export CONJUNCTION, NEGATION, DISJUNCTION, IMPLICATION
 
+export BooleanAlgebra
+
 export BaseLogic
 
 include("base-logic.jl")
