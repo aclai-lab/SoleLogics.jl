@@ -239,15 +239,19 @@ struct TruthDict{
     ) where {
         A,
         T<:Truth,
-        D<:AbstractDict{<:Atom{<:A},T},
+        D<:AbstractDict{<:Atom{<:A},<:Truth},
     }
         return new{A,T,D}(d)
     end
     function TruthDict{A,T}(d::AbstractDict{<:Atom,T}) where {A,T<:Truth}
-        return TruthDict{A,T,typeof(d)}(d)
+        truthtype = supertype(T)
+        d = Dict{Atom{A},truthtype}(d)
+        return TruthDict{A,truthtype,typeof(d)}(d)
     end
     function TruthDict{A}(d::AbstractDict{<:Atom,T}) where {A,T<:Truth}
-        return TruthDict{A,T,typeof(d)}(d)
+        truthtype = supertype(T)
+        d = Dict{Atom{A},truthtype}(d)
+        return TruthDict{A,truthtype,typeof(d)}(d)
     end
     function TruthDict(d::AbstractDict{<:Atom,T}) where {T<:Truth}
         # A = Union{valuetype.(keys(d))...}
@@ -255,11 +259,12 @@ struct TruthDict{
         # println(A)
         # println(d)
         A = typejoin(valuetype.(keys(d))...)
-        d = Dict{Atom{A},T}(d)
-        return TruthDict{A,T,typeof(d)}(d)
+        truthtype = supertype(T)
+        d = Dict{Atom{A},truthtype}(d)
+        return TruthDict{A,truthtype,typeof(d)}(d)
     end
     function TruthDict(d::AbstractDict{A,T}) where {A,T<:Truth}
-        return TruthDict(Dict{Atom{A},T}([(Atom{A}(a),v) for (a,v) in d]))
+        return TruthDict(Dict{Atom{A},supertype(T)}([(Atom{A}(a),v) for (a,v) in d]))
     end
     function TruthDict(v::AbstractVector, truth_value = true)
         if length(v) == 0
@@ -303,7 +308,6 @@ end
 
 # Utility function to represent pretty tables horizontally
 function _hpretty_table(io::IO, keys::Any, values::Any)
-
     # Prepare columns names
     _keys = map(x -> x isa Atom ? value(x) : x, collect(keys))
     header = (_keys, string.(nameof.(typeof.(_keys))))
@@ -316,6 +320,8 @@ function _hpretty_table(io::IO, keys::Any, values::Any)
         if e isa DimensionMismatch
             # If it is not possible to draw a complete table, throw a custom error.
             @error "Some syntax structures are not resolved with all the interpretations "
+        else
+            throw(e)
         end
     end
 end
@@ -333,8 +339,8 @@ function Base.show(
 
     _hpretty_table(
         io,
-        Iterators.flatten([i.truth |> keys]),
-        Iterators.flatten([i.truth |> values])
+        i.truth |> keys,  # Iterators.flatten([i.truth |> keys]),
+        i.truth |> values # Iterators.flatten([i.truth |> values])
     )
 end
 

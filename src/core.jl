@@ -11,8 +11,9 @@ SoleLogics' type hierarchy is being updated following the tree below.
     │   │   ├── AbstractLeaf
     │   │   │   ├── Atom
     │   │   │   └── Truth
-    │   │   │       └── Top
-    │   │   │       └── Bottom
+                    └── BooleanTruth
+    │   │   │           └── TOP
+    │   │   │           └── BOTTOM
     │   │   │       └── ...
     │   │   └── AbstractComposite
     │   │       ├── SyntaxTree
@@ -69,6 +70,9 @@ abstract type Connective <: Syntactical end
 
 """ TODO: @typeHierarchyUpdate """
 abstract type Truth <: AbstractLeaf end
+
+""" TODO: @typeHierarchyUpdate """
+abstract type BooleanTruth <: Truth end
 
 """ TODO: @typeHierarchyUpdate """
 const Operator = Union{Connective,Truth}
@@ -684,12 +688,17 @@ Base.hash(a::AbstractComposite) = Base.hash(tree(a))
 Base.promote_rule(
     ::Type{SS},
     ::Type{<:SyntaxToken}
-) where {SS<:AbstractSyntaxStructure} = AbstractSyntaxStructure
+) where {SS<:AbstractSyntaxStructure} = AbstractFormula
 
 Base.promote_rule(
     ::Type{<:SyntaxToken},
     ::Type{SS}
-) where {SS<:AbstractSyntaxStructure} = AbstractSyntaxStructure
+) where {SS<:AbstractSyntaxStructure} = AbstractFormula
+
+# NOTE: @typeHierarchyUpdate it could be useful to provide a macro to easily create
+# a new set of Truth types. In particular, a new subtree of types must be planted
+# as children of Truth, and new promotion rules are to be defined like below.
+Base.promote_rule(::Type{<:BooleanTruth}, ::Type{<:BooleanTruth}) = BooleanTruth
 
 ############################################################################################
 
@@ -1451,7 +1460,7 @@ It can be typed by `\\top<tab>`.
 See also [`BOTTOM`](@ref), [`Truth`](@ref), [`Truth`](@ref).
 """
 """$(doc_TOP)"""
-struct Top <: Truth end
+struct Top <: BooleanTruth end
 """$(doc_TOP)"""
 const TOP = Top()
 """$(doc_TOP)"""
@@ -1460,14 +1469,11 @@ const ⊤ = TOP
 syntaxstring(o::Top; kwargs...) = "⊤"
 
 #TODO: @typeHierarchyUpdate add docstring
-struct Bottom <: Truth end
+struct Bottom <: BooleanTruth end
 const BOTTOM = Bottom()
 const ⊥ = BOTTOM
 
 syntaxstring(o::Bottom; kwargs...) = "⊥"
-
-""" TODO: @typeHierarchyUpdate """
-const BooleanTruth = Union{Top,Bottom}
 
 ############################################################################################
 

@@ -17,8 +17,9 @@ const SL = SoleLogics # SL.name to reference unexported names
     │   │   ├── AbstractLeaf
     │   │   │   ├── Atom
     │   │   │   └── Truth
-    │   │   │       └── TOP
-    │   │   │       └── BOTTOM
+                    └── BooleanTruth
+    │   │   │           └── TOP
+    │   │   │           └── BOTTOM
     │   │   │       └── ...
     │   │   └── AbstractComposite
     │   │       ├── SyntaxTree
@@ -27,8 +28,8 @@ const SL = SoleLogics # SL.name to reference unexported names
     │   └── AbstractMemoFormula
     │       └── TruthTable
     └── Connective
-    └── NamedConnective
-    └── RelationalConnective
+        └── NamedConnective
+        └── RelationalConnective
         └── ...
 
     Also:
@@ -137,6 +138,8 @@ interp2             = TruthDict(1:4, BOTTOM)
 @test norm |> children |> first |> token            == m
 @test norm |> children |> first |> token |> value   == value(m)
 
-@test_broken interp1[p] = BOTTOM        # Assignment doesn't work
+# See Base.promote_rule(::Type{<:BooleanTruth},::Type{<:BooleanTruth}).
+@test_nowarn interp1[p] = BOTTOM
+
 @test_broken check(pandq, interp1)      # Please, provide method default_algebra
 end
