@@ -260,7 +260,7 @@ function shunting_yard!(
             #  is placed at the top of the stack.
             while !isempty(tokstack) &&
                 (tokstack[end] isa Operator &&
-                 Base.operator_precedence(tokstack[end]) > Base.operator_precedence(tok))
+                 precedence(tokstack[end]) > precedence(tok))
                  push!(postfix, pop!(tokstack))
             end
             # Now push the current operator onto the tokstack
@@ -401,7 +401,7 @@ function parseformula(
             # Stack collapses, composing a new part of the syntax tree
             if tok isa Operator
                 # How associativity affects the token stack to SyntaxTree conversion?
-                # Consider "p → q → r" where "→" is right associative.
+                # Consider "p → q → r" where "→" is right-associative.
                 # The stack is [p, q, r, →, →], and is manipulated like this:
                 #   1) the first → from the left is encountered: [p, q, r, ...→... , →];
                 #   2) q and r are popped: [p, ...→..., →];
@@ -409,7 +409,7 @@ function parseformula(
                 #   4) the next → is found, then p and q→r are popped: [...→...];
                 #   5) the current token → receives p and q→r as children: [p → (q→r)].
                 #
-                # Now consider "p → q → r" where "→" is left associative.
+                # Now consider "p → q → r" where "→" is left-associative.
                 # The stack is [p, q, r, →, →], and is manipulated like this:
                 #   1) the first → from the left is encountered: [p, q, r, ...→... , →];
                 #   2) p and q are popped using popfirst instead of pop: [r, ...→..., →];

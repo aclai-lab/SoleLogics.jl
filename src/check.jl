@@ -278,7 +278,7 @@ function normalize(
     if rotate_commutatives
         newt = begin
             tok, ch = token(newt), children(newt)
-            if tok isa Operator && iscommutative(tok) && arity(tok) > 1
+            if tok isa Connective && iscommutative(tok) && arity(tok) > 1
                 ch = children(LeftmostLinearForm(newt, tok))
                 ch = Vector(sort(collect(_normalize.(ch)), lt=_isless))
                 if tok in [∧,∨] # TODO create trait for this behavior: p ∧ p ∧ p ∧ q   -> p ∧ q

@@ -11,9 +11,9 @@ SoleLogics' type hierarchy is being updated following the tree below.
     │   │   ├── AbstractLeaf
     │   │   │   ├── Atom
     │   │   │   └── Truth
-    │   │   │       └── BooleanTruth
-    │   │   │           └── Top
-    │   │   │           └── Bottom
+    │   │   │       ├── BooleanTruth
+    │   │   │       │   ├── Top
+    │   │   │       │   └── Bottom
     │   │   │       └── ...
     │   │   └── AbstractComposite
     │   │       ├── SyntaxTree
@@ -22,8 +22,8 @@ SoleLogics' type hierarchy is being updated following the tree below.
     │   └── AbstractMemoFormula
     │       └── TruthTable
     └── Connective
-        └── NamedConnective
-        └── RelationalConnective
+        ├── NamedConnective
+        ├── RelationalConnective
         └── ...
 
     Also:
@@ -66,13 +66,13 @@ abstract type AbstractComposite <: AbstractSyntaxStructure end
 abstract type AbstractMemoFormula <: AbstractFormula end
 
 """ TODO: @typeHierarchyUpdate """
-abstract type Connective <: Syntactical end
-
-""" TODO: @typeHierarchyUpdate """
 abstract type Truth <: AbstractLeaf end
 
 """ TODO: @typeHierarchyUpdate """
 abstract type BooleanTruth <: Truth end
+
+""" TODO: @typeHierarchyUpdate """
+abstract type Connective <: Syntactical end
 
 """ TODO: @typeHierarchyUpdate """
 const Operator = Union{Connective,Truth}
@@ -269,72 +269,9 @@ Base.hash(a::Atom) = Base.hash(value(a))
 
 dual(p::Atom) = Atom(dual(value(p)))
 
-function dual(atom::Any)
+function dual(value)
     return error("Please, provide method " *
-        "SoleLogics.dual(::$(typeof(atom))).")
-end
-
-"""
-    @atoms(ps...)
-
-Instantiate a collection of [`Atom`](@ref)s and return them as a vector.
-
-!!! info
-    Atoms instantiated with this macro are defined in the global scope as constants.
-
-# Examples
-```julia-repl
-julia> SoleLogics.@atoms String p q r s
-4-element Vector{Atom{String}}:
- Atom{String}("p")
- Atom{String}("q")
- Atom{String}("r")
- Atom{String}("s")
-
-julia> p
-Atom{String}("p")
-```
-"""
-macro atoms(ps...)
-    quote
-        $(map(p -> :(const $p = $(string(p) |> Atom)), ps)...)
-        [$(ps...)]
-    end |> esc
-end
-
-# Source:
-#   Symbolics.jl  (https://github.com/JuliaSymbolics/Symbolics.jl)
-#   PAndQ.jl      (https://github.com/jakobjpeters/PAndQ.jl)
-atomize(p::Symbol) = :((@isdefined $p) ? $p : $(string(p) |> Atom))
-atomize(x) = x
-atomize(x::Expr) = Meta.isexpr(x, [:(=), :kw]) ?
-    Expr(x.head, x.args[1], map(atomize, x.args[2:end])...) :
-    Expr(x.head, map(atomize, x.args)...)
-
-"""
-    @synexpr(expression)
-
-Return an expression after automatically instantiating undefined [`Atom`](@ref)s.
-
-!!! info
-Every identified atom is of type `Atom{String}`.
-
-# Examples
-```julia-repl
-julia> @synexpr x = p # Atom{String}("p") is assigned to the global variable x
-Atom{String}("p")
-
-julia> @synexpr st = p ∧ q → r
-(p ∧ q) → r
-
-julia> typeof(st)
-SyntaxTree{SoleLogics.NamedConnective{:→}}
-```
-"""
-macro synexpr(expression)
-    quote
-        $(expression |> atomize)
-    end |> esc
+        "SoleLogics.dual(::$(typeof(value))).")
 end
 
 ############################################################################################
@@ -355,15 +292,20 @@ often singleton types, which can be easily dispatched upon.
 # Implementation
 
 When implementing a new custom operator, think about changing its default [precedence and
-associativity](https://docs.julialang.org/en/v1/manual/mathematical-operations/#Operator-Precedence-and-Associativity)
-by providing the methods `Base.operator_precedence(::Type{Operator})` and
-`isrightassociative(::Type{Operator})`.
+associativity](https://docs.julialang.org/en/v1/manual/mathematical-operations/#Operator-Precedence-and-Associativity),
+by providing the methods `precedence(::Type{<:Connective})` and
+`isrightassociative(::Type{<:Connective})`.
+If the custom operator is a `NamedOperator` and renders as something considered as a
+`math symbol` (for example, `⊙`, see https://stackoverflow.com/a/60321302/5646732),
+by the Julia parser, `Base.operator_precedence`
+and `Base.operator_associativity` are used to define these behaviors, and
+you might want to avoid providing these methods at all.
 
-When implementing a new type for a *commutative* operator `O` with arity higher than 1,
-please provide a method `iscommutative(::Type{O})`. This can help model checking operations.
+When implementing a new type for a *commutative* connective `C` with arity higher than 1,
+please provide a method `iscommutative(::Type{C})`. This can help model checking operations.
 
 See also [`SyntaxToken`](@ref), [`NamedConnective`](@ref),
-[`Base.operator_precedence`](@ref), [`isrightassociative`](@ref), [`iscommutative`](@ref),
+[`precedence`](@ref), [`isrightassociative`](@ref), [`iscommutative`](@ref),
 [`check`](@ref).
 """
 # abstract type Operator <: SyntaxToken end
@@ -372,10 +314,10 @@ See also [`SyntaxToken`](@ref), [`NamedConnective`](@ref),
 # Base.show(io::IO, o::Operator) = print(io, syntaxstring(o))
 
 doc_iscommutative = """
-    iscommutative(::Type{Operator})
-    iscommutative(o::Operator) = iscommutative(typeof(o))
+    iscommutative(::Type{<:Connective})
+    iscommutative(o::Connective) = iscommutative(typeof(o))
 
-Return whether an operator is known to be commutative.
+Return whether a connective is known to be commutative.
 
 # Examples
 ```julia-repl
@@ -386,19 +328,19 @@ julia> iscommutative(→)
 false
 ```
 
-Note that nullary and unary operators are considered commutative.
+Note that nullary and unary connectives are considered commutative.
 
-See also [`Operator`](@ref).
+See also [`Connective`](@ref).
 
 # Implementation
 
-When implementing a new type for a *commutative* operator `O` with arity higher than 1,
-please provide a method `iscommutative(::Type{O})`. This can help model checking operations.
+When implementing a new type for a *commutative* connective `C` with arity higher than 1,
+please provide a method `iscommutative(::Type{C})`. This can help model checking operations.
 """
 
 """$(doc_iscommutative)"""
-function iscommutative(O::Type{<:Operator})
-    if arity(O) <= 1
+function iscommutative(C::Type{<:Connective})
+    if arity(C) <= 1
         return true
     else
         return false
@@ -406,30 +348,39 @@ function iscommutative(O::Type{<:Operator})
     end
 end
 
-iscommutative(o::Operator) = iscommutative(typeof(o))
+iscommutative(c::Connective) = iscommutative(typeof(c))
 
-doc_precedence = """
-    const MAX_PRECEDENCE  = Base.operator_precedence(:(::))
-    const HIGH_PRECEDENCE = Base.operator_precedence(:^)
-    const BASE_PRECEDENCE = Base.operator_precedence(:*)
-    const LOW_PRECEDENCE  = Base.operator_precedence(:+)
 
-Standard integers representing operator precedence;
-operators with high values take precedence over operators with lower values.
-This is needed to establish unambiguous implementations of parsing-related algorithms.
+"""
+    precedence(c::Connective)
 
-By default, all operators are assigned a `BASE_PRECEDENCE`, except for:
-- nullary operators (e.g., ⊤, ⊥), that are assigned a `MAX_PRECEDENCE`;
-- unary operators (e.g., ¬, ◊), that are assigned a `HIGH_PRECEDENCE`;
-- the implication (→), that is assigned a `LOW_PRECEDENCE`.
+Return the precedence of a (binary) connective.
 
-In case of tie, operators are evaluated in the left-to-right order.
+When using infix notation, and in the absence of parentheses,
+`precedence` establishes how binary connectives are interpreted.
+A precedence value is a standard integer, and
+connectives with high precedence take precedence over connectives with lower precedences.
+This affects how formulas are shown (via `syntaxstring`) and parsed (via `parsetree`).
 
-It is possible to assign a specific precedence to an operator type `O` by providing a method
-`Base.operator_precedence(::Type{O})`.
+By default, the value for a `NamedConnective` is derived from the `Base.operator_precedence`
+of its symbol (`name`).
+Because of this, when dealing with a custom connective `⊙`,
+it will be the case that `parsetree("p ⊙ q ∧ r") == (@synexpr p ⊙ q ∧ r)`.
+
+It is possible to assign a specific precedence to an connective type `C` by providing a method
+`Base.operator_precedence(::C)`.
 
 # Examples
 ```julia-repl
+julia> precedence(∧) == Base.operator_precedence(:∧)
+true
+
+julia> precedence(¬) == Base.operator_precedence(:¬)
+true
+
+julia> precedence(∧), precedence(∨), precedence(→)
+∨(12, 11, 4)
+
 julia> syntaxstring(parseformula("¬a ∧ b ∧ c"))
 "¬a ∧ b ∧ c"
 
@@ -440,68 +391,47 @@ julia> syntaxstring(parseformula("a ∧ b → c ∧ d"))
 "(a ∧ b) → (c ∧ d)"
 ```
 
-See also [`parseformula`](@ref), [`syntaxstring`](@ref).
+See also [`isrightassociative`](@ref), [`Connective`](@ref).
 """
-
-"""$(doc_precedence)"""
-const MAX_PRECEDENCE = Base.operator_precedence(:(::))
-"""$(doc_precedence)"""
-const HIGH_PRECEDENCE = Base.operator_precedence(:^)
-"""$(doc_precedence)"""
-const BASE_PRECEDENCE = Base.operator_precedence(:*)
-"""$(doc_precedence)"""
-const LOW_PRECEDENCE  = Base.operator_precedence(:+)
-
-
-"""
-    Base.operator_precedence(op::Operator)
-    Base.operator_precedence(::typeof(IMPLICATION))
-
-Assign a precedence to an operator.
-
-See also [`Operator`](@ref), [`MAX_PRECEDENCE`](@ref), [`HIGH_PRECEDENCE`](@ref),
-[`BASE_PRECEDENCE`](@ref), [`LOW_PRECEDENCE`](@ref).
-"""
-function Base.operator_precedence(op::Operator)
-    if isunary(op)
-        HIGH_PRECEDENCE
-    elseif isnullary(op)
-        MAX_PRECEDENCE
-    else
-        BASE_PRECEDENCE
-    end
+function precedence(c::Connective)
+    return error("Please, provide method precedence(c::$(typeof(c))).")
 end
 
-
 """
-    isrightassociative(::Type{Operator})
-    isrightassociative(o::Operator) = isrightassociative(typeof(o))
+    isrightassociative(::Connective)
 
-Return whether an `Operator` is right associative or no.
+Return whether a (binary) connective is right-associative.
 
-Associativity establishes how operators of the same precedence are grouped in the absence of
-the parentheses.
+When using infix notation, and in the absence of parentheses,
+associativity establish how binary connectives of the same `precedence`
+are interpreted. This affects how formulas are
+shown (via `syntaxstring`) and parsed (via `parsetree`).
 
-Conjunction and disjunction are commutative operators, thus, the left associativity case
-"(p ∧ q) ∧ r" and the right associativity case "p ∧ (q ∧ r)" are equivalent; by convention
-we consider the latter form.
-Implication is right associative, meaning that "p → q → r" is grouped as "p → (q → r)".
-
-By default, an operator is right associative.
+By default, the value for a `NamedConnective` is derived from the `Base.operator_precedence`
+of its symbol (`name`); thus, for example, most connectives are left-associative
+(e.g., `∧` and `∨`), while `→` is right-associative.
+Because of this, when dealing with a custom connective `⊙`,
+it will be the case that `parsetree("p ⊙ q ∧ r") == (@synexpr p ⊙ q ∧ r)`.
 
 # Examples
 ```julia-repl
 julia> isrightassociative(∧)
-true
+false
 
 julia> isrightassociative(→)
 true
+
+julia> syntaxstring(parsetree("p → q → r"); remove_redundant_parentheses = false)
+"p → (q → r)"
+
+julia> syntaxstring(parsetree("p ∧ q ∨ r"); remove_redundant_parentheses = false)
+"(p ∧ q) ∨ r"
 ```
 
-See also [`Operator`](@ref).
+See also [`precedence`](@ref), [`syntaxstring`](@ref),
+    [`parsetree`](@ref), [`Connective`](@ref).
 """
-isrightassociative(::Type{<:Operator}) = true
-isrightassociative(o::Operator) = isrightassociative(typeof(o))
+isrightassociative(c::Connective) = false
 
 ############################################################################################
 
@@ -525,7 +455,7 @@ julia> p = Atom("p");
 julia> ∧(f, p)  # Easy way to compose a formula
 SyntaxTree: ◊(p → q) ∧ p
 
-julia> f ∧ ¬p   # Leverage infix notation ;)
+julia> f ∧ ¬p   # Leverage infix notation ;) See https://stackoverflow.com/a/60321302/5646732
 SyntaxTree: ◊(p → q) ∧ ¬p
 
 julia> ∧(f, p, ¬p) # Shortcut for ∧(f, ∧(p, ¬p))
@@ -917,8 +847,8 @@ function syntaxstring(
             end
         end
 
-        tprec = Base.operator_precedence(tok)
-        chprec = Base.operator_precedence(chtok)
+        tprec = precedence(tok)
+        chprec = precedence(chtok)
 
         if ((!iscommutative(tok) || tok != chtok) && (tprec > chprec)) || # "◊¬p ∧ ¬q" instead of "(◊¬p) ∧ (¬q)"
             (!iscommutative(tok) && tprec <= chprec)                      # "(q → p) → ¬q" instead of "q → p → ¬q"
@@ -1085,10 +1015,10 @@ function Base.in(p::Atom, a::AbstractAlphabet)::Bool
 end
 
 # Helper
-function Base.in(atom::Union{AbstractString,Number,AbstractChar}, a::AbstractAlphabet)
-    @warn "Please, use Base.in(Atom($(atom)), alphabet::$(typeof(a))) instead of " *
-        "Base.in($(atom), alphabet::$(typeof(a)))"
-    Base.in(Atom(atom), a)
+function Base.in(value::Union{AbstractString,Number,AbstractChar}, a::AbstractAlphabet)
+    @warn "Please, use Base.in(Atom($(value)), alphabet::$(typeof(a))) instead of " *
+        "Base.in($(value), alphabet::$(typeof(a)))"
+    Base.in(Atom(value), a)
 end
 
 """

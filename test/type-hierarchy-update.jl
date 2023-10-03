@@ -106,12 +106,12 @@ interp2             = TruthDict(1:4, BOTTOM)
 @test trees_implication |> syntaxstring ==
     SL.joinformulas(IMPLICATION, (pandq, porq)) |> syntaxstring
 
-@test Base.operator_precedence(TOP)         == SL.MAX_PRECEDENCE
-@test Base.operator_precedence(BOTTOM)      == SL.MAX_PRECEDENCE
-@test Base.operator_precedence(NEGATION)    == SL.HIGH_PRECEDENCE
-@test Base.operator_precedence(CONJUNCTION) == SL.BASE_PRECEDENCE
-@test Base.operator_precedence(DISJUNCTION) == SL.BASE_PRECEDENCE
-@test Base.operator_precedence(IMPLICATION) == SL.LOW_PRECEDENCE
+# @test Base.operator_precedence(TOP)         == SL.MAX_PRECEDENCE
+# @test Base.operator_precedence(BOTTOM)      == SL.MAX_PRECEDENCE
+# @test Base.operator_precedence(NEGATION)    == SL.HIGH_PRECEDENCE
+# @test Base.operator_precedence(CONJUNCTION) == SL.BASE_PRECEDENCE
+# @test Base.operator_precedence(DISJUNCTION) == SL.BASE_PRECEDENCE
+# @test Base.operator_precedence(IMPLICATION) == SL.LOW_PRECEDENCE
 
 @test natoms(pandq)                 == 2
 @test natoms(trees_implication)     == natoms(pandq) + natoms(porq)

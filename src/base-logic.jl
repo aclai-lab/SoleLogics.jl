@@ -62,6 +62,14 @@ Base.show(io::IO, op::NamedConnective) = print(io, "$(syntaxstring(op))")
 
 syntaxstring(op::NamedConnective; kwargs...) = string(name(op))
 
+function precedence(c::NamedConnective)
+    Base.operator_precedence(SoleLogics.name(c))
+end
+
+function isrightassociative(c::NamedConnective)
+    Base.operator_associativity(SoleLogics.name(c)) == :right
+end
+
 doc_NEGATION = """
     const NEGATION = NamedConnective{:¬}()
     const ¬ = NEGATION
@@ -125,8 +133,6 @@ const IMPLICATION = NamedConnective{:→}()
 """$(doc_IMPLICATION)"""
 const → = IMPLICATION
 arity(::Type{typeof(→)}) = 2
-
-Base.operator_precedence(::typeof(IMPLICATION)) = LOW_PRECEDENCE
 
 # Helpers that allow the conjuction/disjuction of more than two tokens/formulas.
 function CONJUNCTION(
