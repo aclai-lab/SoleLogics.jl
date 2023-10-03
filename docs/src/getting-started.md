@@ -12,7 +12,7 @@ At the leaf nodes of a syntax tree are atoms (simple, atomic statements) or trut
 while at the internal nodes are logical connectives that allow for the composition of formulas to represent complex concepts.
 
 In SoleLogics, an Atom is a wrapper for any value (accessible via the `value` method).
-
+TODO
 arity
 
 ```@docs
