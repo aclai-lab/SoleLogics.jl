@@ -70,7 +70,7 @@ julia> leftree |> token |> arity
 ```@docs
 AbstractSyntaxStructure
 AbstractSyntaxToken
-SoleLogics.arity(::Type{<:AbstractSyntaxToken})
+SoleLogics.arity(::AbstractSyntaxToken)
 ```
 
 ### Connectives

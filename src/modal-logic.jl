@@ -817,7 +817,7 @@ doc_DIAMOND = """
     const DIAMOND = NamedConnective{:◊}()
     const ◊ = DIAMOND
     ismodal(::NamedConnective{:◊}) = true
-    arity(::Type{typeof(◊)}) = 1
+    arity(::typeof(◊)) = 1
 
 Logical diamond operator, typically interpreted as the modal existential quantifier.
 See [here](https://en.wikipedia.org/wiki/Modal_operator).
@@ -830,13 +830,13 @@ const DIAMOND = NamedConnective{:◊}()
 const ◊ = DIAMOND
 ismodal(::Type{typeof(◊)}) = true
 isbox(::Type{typeof(◊)}) = false
-arity(::Type{typeof(◊)}) = 1
+arity(::typeof(◊)) = 1
 
 
 doc_BOX = """
     const BOX = NamedConnective{:□}()
     const □ = BOX
-    arity(::Type{typeof(□)}) = 1
+    arity(::typeof(□)) = 1
 
 Logical box operator, typically interpreted as the modal universal quantifier.
 See [here](https://en.wikipedia.org/wiki/Modal_operator).
@@ -849,7 +849,7 @@ const BOX = NamedConnective{:□}()
 const □ = BOX
 ismodal(::Type{typeof(□)}) = true
 isbox(::Type{typeof(□)}) = true
-arity(::Type{typeof(□)}) = 1
+arity(::typeof(□)) = 1
 
 hasdual(::typeof(DIAMOND)) = true
 dual(::typeof(DIAMOND)) = BOX

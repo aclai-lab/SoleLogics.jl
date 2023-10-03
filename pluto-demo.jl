@@ -95,7 +95,7 @@ end
 begin
 	import SoleLogics: arity
 	const ⊕ = SoleLogics.NamedOperator{:⊕}()
-	SoleLogics.arity(::Type{SoleLogics.NamedOperator{:⊕}}) = 2
+	SoleLogics.arity(::typeof(⊕)) = 2
 
 	# Compose a formula with `⊕`
 	parseformula("¬p ∧ q") ⊕ p |> syntaxstring |> println

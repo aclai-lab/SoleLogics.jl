@@ -49,7 +49,7 @@ The AND operator (logical conjuction) is defined as the subtype:
 
     const CONJUNCTION = NamedConnective{:∧}()
     const ∧ = CONJUNCTION
-    arity(::Type{typeof(∧)}) = 2
+    arity(::typeof(∧)) = 2
 
 See also [`NEGATION`](@ref), [`CONJUNCTION`](@ref), [`DISJUNCTION`](@ref),
 [`IMPLICATION`](@ref), [`Operator`](@ref).
@@ -73,7 +73,7 @@ end
 doc_NEGATION = """
     const NEGATION = NamedConnective{:¬}()
     const ¬ = NEGATION
-    arity(::Type{typeof(¬)}) = 1
+    arity(::typeof(¬)) = 1
 
 Logical negation (also referred to as complement).
 It can be typed by `\\neg<tab>`.
@@ -84,12 +84,12 @@ See also [`NamedConnective`](@ref), [`Operator`](@ref).
 const NEGATION = NamedConnective{:¬}()
 """$(doc_NEGATION)"""
 const ¬ = NEGATION
-arity(::Type{typeof(¬)}) = 1
+arity(::typeof(¬)) = 1
 
 doc_CONJUNCTION = """
     const CONJUNCTION = NamedConnective{:∧}()
     const ∧ = CONJUNCTION
-    arity(::Type{typeof(∧)}) = 2
+    arity(::typeof(∧)) = 2
 
 Logical conjunction.
 It can be typed by `\\wedge<tab>`.
@@ -100,12 +100,12 @@ See also [`NamedConnective`](@ref), [`Operator`](@ref).
 const CONJUNCTION = NamedConnective{:∧}()
 """$(doc_CONJUNCTION)"""
 const ∧ = CONJUNCTION
-arity(::Type{typeof(∧)}) = 2
+arity(::typeof(∧)) = 2
 
 doc_DISJUNCTION = """
     const DISJUNCTION = NamedConnective{:∨}()
     const ∨ = DISJUNCTION
-    arity(::Type{typeof(∨)}) = 2
+    arity(::typeof(∨)) = 2
 
 Logical disjunction.
 It can be typed by `\\vee<tab>`.
@@ -116,12 +116,12 @@ See also [`NamedConnective`](@ref), [`Operator`](@ref).
 const DISJUNCTION = NamedConnective{:∨}()
 """$(doc_DISJUNCTION)"""
 const ∨ = DISJUNCTION
-arity(::Type{typeof(∨)}) = 2
+arity(::typeof(∨)) = 2
 
 doc_IMPLICATION = """
     const IMPLICATION = NamedConnective{:→}()
     const → = IMPLICATION
-    arity(::Type{typeof(→)}) = 2
+    arity(::typeof(→)) = 2
 
 Logical implication.
 It can be typed by `\\to<tab>`.
@@ -132,7 +132,7 @@ See also [`NamedConnective`](@ref), [`Operator`](@ref).
 const IMPLICATION = NamedConnective{:→}()
 """$(doc_IMPLICATION)"""
 const → = IMPLICATION
-arity(::Type{typeof(→)}) = 2
+arity(::typeof(→)) = 2
 
 # Helpers that allow the conjuction/disjuction of more than two tokens/formulas.
 function CONJUNCTION(
@@ -152,8 +152,8 @@ function DISJUNCTION(
     return DISJUNCTION(c1, DISJUNCTION(c2, c3, cs...))
 end
 
-iscommutative(::Type{typeof(∧)}) = true
-iscommutative(::Type{typeof(∨)}) = true
+iscommutative(::typeof(∧)) = true
+iscommutative(::typeof(∨)) = true
 
 hasdual(::typeof(∧)) = true
 dual(op::typeof(∧)) = typeof(∨)

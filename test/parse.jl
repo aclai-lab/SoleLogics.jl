@@ -172,10 +172,10 @@ fxs = ["→(→(q, p), ¬q)", "∧(∧(q, p), ¬q)"]
 # custom operators ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 TERNOP = SoleLogics.NamedOperator{:⇶}()
-SoleLogics.arity(::Type{typeof(TERNOP)}) = 3
+SoleLogics.arity(::typeof(TERNOP)) = 3
 
 QUATERNOP = SoleLogics.NamedOperator{:⩰}()
-SoleLogics.arity(::Type{typeof(QUATERNOP)}) = 4
+SoleLogics.arity(::typeof(QUATERNOP)) = 4
 
 @test_nowarn parsetree("⇶(p, q, r)", [TERNOP]; function_notation=true)
 @test_nowarn parsetree("⇶(p1, q1, ⇶(p2, q2, r2))", [TERNOP]; function_notation=true)

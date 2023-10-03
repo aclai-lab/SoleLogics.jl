@@ -18,10 +18,10 @@ end
 @testset "Random+Parsing" begin
 
 TERNOP = SoleLogics.NamedOperator{:⇶}()
-SoleLogics.arity(::Type{typeof(TERNOP)}) = 3
+SoleLogics.arity(::typeof(TERNOP)) = 3
 
 QUATERNOP = SoleLogics.NamedOperator{:⩰}()
-SoleLogics.arity(::Type{typeof(QUATERNOP)}) = 4
+SoleLogics.arity(::typeof(QUATERNOP)) = 4
 
 _alphabet = ExplicitAlphabet(["p", "q", "r", "s"])
 _operators = [NEGATION, CONJUNCTION, IMPLICATION,

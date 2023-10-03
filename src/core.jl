@@ -82,17 +82,15 @@ const SyntaxToken = Union{Connective,AbstractLeaf}
 #########################
 
 """
-    arity(::Type{SyntaxToken})::Integer
-    arity(tok::SyntaxToken)::Integer = arity(typeof(tok))
+    arity(tok::SyntaxToken)::Integer
 
-Return the `arity` of an `SyntaxToken`. The arity of an SyntaxToken is an integer
+Return the `arity` of a `SyntaxToken`, an integer
 representing the number of allowed children in a `SyntaxTree`. Tokens with `arity` equal
 to 0, 1 or 2 are called `nullary`, `unary` and `binary`, respectively.
 
 See also [`SyntaxToken`](@ref), [`SyntaxTree`](@ref).
 """
-arity(T::Type{<:SyntaxToken})::Integer = error("Please, provide method arity(::$(Type{T})).")
-arity(t::SyntaxToken)::Integer = arity(typeof(t))
+arity(t::SyntaxToken)::Integer = error("Please, provide method arity(::$(typeof(t))).")
 
 isnullary(a) = arity(a) == 0
 isunary(a) = arity(a) == 1
@@ -248,7 +246,7 @@ end
 
 value(p::Atom) = p.value
 
-arity(::Type{<:Atom}) = 0
+arity(::Atom) = 0
 
 valuetype(::Atom{A}) where {A} = A
 valuetype(::Type{Atom{A}}) where {A} = A
@@ -299,8 +297,8 @@ by the Julia parser, `Base.operator_precedence`
 and `Base.operator_associativity` are used to define these behaviors, and
 you might want to avoid providing these methods at all.
 
-When implementing a new type for a *commutative* connective `C` with arity higher than 1,
-please provide a method `iscommutative(::Type{C})`. This can help model checking operations.
+When implementing a new type `C` for a *commutative* connective with arity higher than 1,
+please provide a method `iscommutative(::C)`. This can help model checking operations.
 
 See also [`SyntaxToken`](@ref), [`NamedConnective`](@ref),
 [`precedence`](@ref), [`associativity`](@ref), [`iscommutative`](@ref),
@@ -312,8 +310,7 @@ See also [`SyntaxToken`](@ref), [`NamedConnective`](@ref),
 # Base.show(io::IO, o::Operator) = print(io, syntaxstring(o))
 
 doc_iscommutative = """
-    iscommutative(::Type{<:Connective})
-    iscommutative(o::Connective) = iscommutative(typeof(o))
+    iscommutative(c::Connective)
 
 Return whether a connective is known to be commutative.
 
@@ -333,21 +330,18 @@ See also [`Connective`](@ref).
 # Implementation
 
 When implementing a new type for a *commutative* connective `C` with arity higher than 1,
-please provide a method `iscommutative(::Type{C})`. This can help model checking operations.
+please provide a method `iscommutative(::C)`. This can help model checking operations.
 """
 
 """$(doc_iscommutative)"""
-function iscommutative(C::Type{<:Connective})
-    if arity(C) <= 1
+function iscommutative(c::Connective)
+    if arity(c) <= 1
         return true
     else
         return false
-        # return error("Please, provide method iscommutative(O::Type{$(O)}).")
+        # return error("Please, provide method iscommutative(c::$(typeof(c))).")
     end
 end
-
-iscommutative(c::Connective) = iscommutative(typeof(c))
-
 
 """
     precedence(c::Connective)
@@ -1365,7 +1359,7 @@ end
 
 ############################################################################################
 
-arity(::Type{<:Truth}) = 0
+arity(::Truth) = 0
 
 function syntaxstring(t::Truth; kwargs...)
     return error("Please, provide method syntaxstring(::$(typeof(t))).")
