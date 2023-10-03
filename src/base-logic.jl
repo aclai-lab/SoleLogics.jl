@@ -180,8 +180,8 @@ BOTTOM(a::BooleanAlgebra) = false
 # ⊥(a::BooleanAlgebra) = BOTTOM(a) # already working, since ⊥ is defined as BOTTOM.
 
 # TODO: @typeHierarchyUpdate
-# Base.convert(::Type{Bool}, tok::Top) = true
-# Base.convert(::Type{Bool}, tok::Bottom) = false
+Base.convert(::Bool, tok::Top) = true
+Base.convert(::Bool, tok::Bottom) = false
 
 function collatetruth(
     a::BooleanAlgebra,
