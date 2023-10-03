@@ -11,7 +11,7 @@ SoleLogics' type hierarchy is being updated following the tree below.
     │   │   ├── AbstractLeaf
     │   │   │   ├── Atom
     │   │   │   └── Truth
-                    └── BooleanTruth
+    │   │   │       └── BooleanTruth
     │   │   │           └── TOP
     │   │   │           └── BOTTOM
     │   │   │       └── ...
