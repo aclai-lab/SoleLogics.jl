@@ -291,10 +291,8 @@ often singleton types, which can be easily dispatched upon.
 
 # Implementation
 
-When implementing a new custom operator, think about changing its default [precedence and
-associativity](https://docs.julialang.org/en/v1/manual/mathematical-operations/#Operator-Precedence-and-Associativity),
-by providing the methods `precedence(::Type{<:Connective})` and
-`isrightassociative(::Type{<:Connective})`.
+When implementing a new custom operator, one can override the default `precedence` and
+`associativity` (see https://docs.julialang.org/en/v1/manual/mathematical-operations/#Operator-Precedence-and-Associativity).
 If the custom operator is a `NamedOperator` and renders as something considered as a
 `math symbol` (for example, `⊙`, see https://stackoverflow.com/a/60321302/5646732),
 by the Julia parser, `Base.operator_precedence`
@@ -305,7 +303,7 @@ When implementing a new type for a *commutative* connective `C` with arity highe
 please provide a method `iscommutative(::Type{C})`. This can help model checking operations.
 
 See also [`SyntaxToken`](@ref), [`NamedConnective`](@ref),
-[`precedence`](@ref), [`isrightassociative`](@ref), [`iscommutative`](@ref),
+[`precedence`](@ref), [`associativity`](@ref), [`iscommutative`](@ref),
 [`check`](@ref).
 """
 # abstract type Operator <: SyntaxToken end
@@ -391,19 +389,19 @@ julia> syntaxstring(parseformula("a ∧ b → c ∧ d"))
 "(a ∧ b) → (c ∧ d)"
 ```
 
-See also [`isrightassociative`](@ref), [`Connective`](@ref).
+See also [`associativity`](@ref), [`Connective`](@ref).
 """
 function precedence(c::Connective)
     return error("Please, provide method precedence(c::$(typeof(c))).")
 end
 
 """
-    isrightassociative(::Connective)
+    associativity(::Connective)
 
 Return whether a (binary) connective is right-associative.
 
 When using infix notation, and in the absence of parentheses,
-associativity establish how binary connectives of the same `precedence`
+`associativity establishes how binary connectives of the same `precedence`
 are interpreted. This affects how formulas are
 shown (via `syntaxstring`) and parsed (via `parsetree`).
 
@@ -415,11 +413,11 @@ it will be the case that `parsetree("p ⊙ q ∧ r") == (@synexpr p ⊙ q ∧ r)
 
 # Examples
 ```julia-repl
-julia> isrightassociative(∧)
-false
+julia> associativity(∧)
+:left
 
-julia> isrightassociative(→)
-true
+julia> associativity(→)
+:right
 
 julia> syntaxstring(parsetree("p → q → r"); remove_redundant_parentheses = false)
 "p → (q → r)"
@@ -431,7 +429,7 @@ julia> syntaxstring(parsetree("p ∧ q ∨ r"); remove_redundant_parentheses = f
 See also [`precedence`](@ref), [`syntaxstring`](@ref),
     [`parsetree`](@ref), [`Connective`](@ref).
 """
-isrightassociative(c::Connective) = false
+associativity(c::Connective) = :left
 
 ############################################################################################
 

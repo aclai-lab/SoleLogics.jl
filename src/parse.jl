@@ -417,7 +417,7 @@ function parseformula(
                 #      pushfirst is used to obtain: [p→q, r, →];
                 #   4) the next → is found, r and p→q are removed using popfirst: [...→...];
                 #   5) the current token → receives q→r and r as children: [(p→q) → r].
-                if (isrightassociative(tok))
+                if associativity(tok) == :right
                     children = [pop!(stack) for _ in 1:arity(tok)]
                     push!(stack, SyntaxTree(tok, Tuple(reverse(children))))
                 else

@@ -66,8 +66,8 @@ function precedence(c::NamedConnective)
     Base.operator_precedence(SoleLogics.name(c))
 end
 
-function isrightassociative(c::NamedConnective)
-    Base.operator_associativity(SoleLogics.name(c)) == :right
+function associativity(c::NamedConnective)
+    Base.operator_associativity(SoleLogics.name(c))
 end
 
 doc_NEGATION = """

@@ -86,7 +86,7 @@ SoleLogics.AbstractOperator
 ```@docs
 SoleLogics.NamedOperator
 SoleLogics.precedence
-SoleLogics.isrightassociative
+SoleLogics.associativity
 SoleLogics.iscommutative
 ```
 
@@ -116,7 +116,7 @@ SoleLogics.jl allows you to:
 - Extract the string representation of a formula (via `syntaxstring`);
 - Parse formulas from strings (via `parsetree`).
 
-These features are highly customizable, and leverage three properties of syntactical tokens: [`arity`](@ref), connective precedence ([`precedence`](@ref)) and connective associativity ([`isrightassociative`](@ref)).
+These features are highly customizable, and leverage three properties of syntactical tokens: [`arity`](@ref), connective [`precedence`](@ref) and connective [`associativity`](@ref).
 
 ```@docs
 syntaxstring
