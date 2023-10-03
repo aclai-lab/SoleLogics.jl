@@ -18,8 +18,8 @@ const SL = SoleLogics # SL.name to reference unexported names
     │   │   │   ├── Atom
     │   │   │   └── Truth
                     └── BooleanTruth
-    │   │   │           └── TOP
-    │   │   │           └── BOTTOM
+    │   │   │           └── Top
+    │   │   │           └── Bottom
     │   │   │       └── ...
     │   │   └── AbstractComposite
     │   │       ├── SyntaxTree
@@ -138,8 +138,8 @@ interp2             = TruthDict(1:4, BOTTOM)
 @test norm |> children |> first |> token            == m
 @test norm |> children |> first |> token |> value   == value(m)
 
-# See Base.promote_rule(::Type{<:BooleanTruth},::Type{<:BooleanTruth}).
 @test_nowarn interp1[p] = BOTTOM
+@test_broken check(pandq, interp1)
 
-@test_broken check(pandq, interp1)      # Please, provide method default_algebra
+
 end

@@ -144,7 +144,7 @@ doc_randformula = """
     randformula(
         height::Integer,
         alphabet,
-        operators::Vector{<:AbstractOperator};
+        operators::Vector{<:Operator};
         rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG
     )::SyntaxTree
 
@@ -157,7 +157,7 @@ doc_randformula = """
     function randbaseformula(
         height::Integer,
         alphabet,
-        operators::Vector{<:AbstractOperator};
+        operators::Vector{<:Operator};
         rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG
     )::Formula
 
@@ -166,7 +166,7 @@ Return a pseudo-randomic `SyntaxTree` or `Formula`.
 # Arguments
 - `height::Integer`: height of the generated structure;
 - `alphabet::AbstractAlphabet`: collection from which atoms are chosen randomly;
-- `operators::Vector{<:AbstractOperator}`: vector from which legal operators are chosen;
+- `operators::Vector{<:Operator}`: vector from which legal operators are chosen;
 - `g::AbstractGrammar`: alternative to passing alphabet and operators separately.
 
 # Keyword Arguments
@@ -204,7 +204,7 @@ end
 function randbaseformula(
     height::Integer,
     alphabet,
-    operators::Vector{<:AbstractOperator};
+    operators::Vector{<:Operator};
     picker::Function=rand,
     kwargs...
 )::Formula
@@ -220,7 +220,7 @@ end
 function randformula(
     height::Integer,
     alphabet,
-    operators::Vector{<:AbstractOperator};
+    operators::Vector{<:Operator};
     modaldepth::Integer = height,
     rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG,
     picker::Function = rand,

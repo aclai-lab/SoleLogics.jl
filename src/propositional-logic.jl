@@ -156,7 +156,7 @@ function check(
     tree::SyntaxTree,
     i::AbstractAssignment{A,T},
     args...
-)::T where {A,T<:Truth}
+) where {A,T<:Truth}
     if token(tree) isa Atom
         return Base.getindex(i, token(tree), args...)
     elseif token(tree) isa Operator
@@ -239,19 +239,17 @@ struct TruthDict{
     ) where {
         A,
         T<:Truth,
-        D<:AbstractDict{<:Atom{<:A},<:Truth},
+        D<:AbstractDict{<:Atom{<:A},T},
     }
-        return new{A,T,D}(d)
+        truthtype = supertype(T)
+        d = Dict{Atom{A},truthtype}(d)
+        return new{A,truthtype,typeof(d)}(d)
     end
     function TruthDict{A,T}(d::AbstractDict{<:Atom,T}) where {A,T<:Truth}
-        truthtype = supertype(T)
-        d = Dict{Atom{A},truthtype}(d)
-        return TruthDict{A,truthtype,typeof(d)}(d)
+        return TruthDict{A,T,typeof(d)}(d)
     end
     function TruthDict{A}(d::AbstractDict{<:Atom,T}) where {A,T<:Truth}
-        truthtype = supertype(T)
-        d = Dict{Atom{A},truthtype}(d)
-        return TruthDict{A,truthtype,typeof(d)}(d)
+        return TruthDict{A,T,typeof(d)}(d)
     end
     function TruthDict(d::AbstractDict{<:Atom,T}) where {T<:Truth}
         # A = Union{valuetype.(keys(d))...}
@@ -259,9 +257,8 @@ struct TruthDict{
         # println(A)
         # println(d)
         A = typejoin(valuetype.(keys(d))...)
-        truthtype = supertype(T)
-        d = Dict{Atom{A},truthtype}(d)
-        return TruthDict{A,truthtype,typeof(d)}(d)
+
+        return TruthDict{A,T,typeof(d)}(d)
     end
     function TruthDict(d::AbstractDict{A,T}) where {A,T<:Truth}
         return TruthDict(Dict{Atom{A},supertype(T)}([(Atom{A}(a),v) for (a,v) in d]))

@@ -44,7 +44,7 @@ end
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Input and construction ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-const STACK_TOKEN_TYPE = Union{<:AbstractSyntaxToken,Symbol}
+const STACK_TOKEN_TYPE = Union{<:SyntaxToken,Symbol}
 
 # Special symbols: syntax tokens cannot contain these:
 const DEFAULT_OPENING_PARENTHESIS = "("
@@ -67,14 +67,14 @@ const BASE_PARSABLE_OPERATORS = [
 # Check if a specific unary operator is in a valid position, during token recognition
 function _check_unary_validity(
     tokens::Vector{STACK_TOKEN_TYPE},
-    op::AbstractOperator,
+    op::Operator,
     opening_parenthesis::Symbol,
     arg_delim::Symbol
 )
     # A unary operator is always preceeded by some other operator or a opening_parenthesis
     if (arity(op) == 1 && !isempty(tokens) &&
         (tokens[end] !== opening_parenthesis && tokens[end] !== arg_delim &&
-        !(tokens[end] isa AbstractOperator))
+        !(tokens[end] isa Operator))
     )
         error("Malformed input: operator `" * syntaxstring(op) *
               "` encountered following `" *
@@ -146,7 +146,7 @@ end
 # Raw tokens are interpreted and, thus, made processable by a parser
 function _interpret_tokens(
     raw_tokens::Vector{String},
-    string_to_op::Dict{String,AbstractOperator},
+    string_to_op::Dict{String,Operator},
     atom_parser::Base.Callable;
     opening_parenthesis::Symbol,
     closing_parenthesis::Symbol,
@@ -187,7 +187,7 @@ end
 # A simple lexer capable of distinguish operators in a string.
 function tokenizer(
     expression::String,
-    operators::Vector{<:AbstractOperator},
+    operators::Vector{<:Operator},
     atom_parser::Base.Callable,
     additional_whitespaces::Vector{Char},
     opening_parenthesis::Symbol = Symbol(DEFAULT_OPENING_PARENTHESIS),
@@ -233,7 +233,7 @@ function shunting_yard!(
     opening_parenthesis::Symbol = Symbol(DEFAULT_OPENING_PARENTHESIS),
     closing_parenthesis::Symbol = Symbol(DEFAULT_CLOSING_PARENTHESIS))
     tokstack = STACK_TOKEN_TYPE[] # support structure
-    postfix = AbstractSyntaxToken[] # returned structure: tokens rearranged in postfix
+    postfix = SyntaxToken[] # returned structure: tokens rearranged in postfix
 
     for tok in tokens
         if tok isa Symbol
@@ -255,11 +255,11 @@ function shunting_yard!(
                 error("Unexpected special symbol encountered: `$(tok)`.")
             end
 
-        elseif tok isa AbstractOperator
+        elseif tok isa Operator
             # If tok is an operator, something must be done until another operator
             #  is placed at the top of the stack.
             while !isempty(tokstack) &&
-                (tokstack[end] isa AbstractOperator &&
+                (tokstack[end] isa Operator &&
                  Base.operator_precedence(tokstack[end]) > Base.operator_precedence(tok))
                  push!(postfix, pop!(tokstack))
             end
@@ -278,7 +278,7 @@ function shunting_yard!(
         popped = pop!(tokstack)
 
         # Starting expression is not well formatted, or a opening_parenthesis is found
-        if !(popped isa AbstractOperator)
+        if !(popped isa Operator)
             error("Parsing error! Mismatching parentheses detected.")
         end
         push!(postfix, popped)
@@ -290,7 +290,7 @@ end
 """
     parsetree(
         expression::String,
-        additional_operators::Union{Nothing,Vector{<:AbstractOperator}} = nothing;
+        additional_operators::Union{Nothing,Vector{<:Operator}} = nothing;
         function_notation::Bool = false,
         atom_parser::Base.Callable = Atom{String},
         additional_whitespaces::Vector{Char} = Char[],
@@ -308,7 +308,7 @@ additional operators may be provided as a second argument.
 
 # Arguments
 - `expression::String`: expression to be parsed;
-- `additional_operators::Vector{<:AbstractOperator}`: additional, non-standard operators
+- `additional_operators::Vector{<:Operator}`: additional, non-standard operators
     needed to correctly parse the expression.
     When left unset, only the operators in `SoleLogics.BASE_PARSABLE_OPERATORS` are
     correctly parsed: $(join(repr(BASE_PARSABLE_OPERATORS), ", "));
@@ -362,7 +362,7 @@ parsetree(str, args...; kwargs...) = parseformula(SyntaxTree, str, args...; kwar
 function parseformula(
     ::Type{SyntaxTree},
     expression::String,
-    additional_operators::Union{Nothing,Vector{<:AbstractOperator}} = nothing;
+    additional_operators::Union{Nothing,Vector{<:Operator}} = nothing;
     function_notation::Bool = false,
     atom_parser::Base.Callable = Atom{String},
     additional_whitespaces::Vector{Char} = Char[],
@@ -371,9 +371,9 @@ function parseformula(
     arg_delim::String = DEFAULT_ARG_DELIM,
 )
     additional_operators = (
-        isnothing(additional_operators) ? AbstractOperator[] : additional_operators)
+        isnothing(additional_operators) ? Operator[] : additional_operators)
     operators = unique(
-        AbstractOperator[BASE_PARSABLE_OPERATORS..., additional_operators...])
+        Operator[BASE_PARSABLE_OPERATORS..., additional_operators...])
 
     # TODO: expand special sequences to special *sequences* (strings of characters)
     # TODO: check that no special sequence is a substring of another one.
@@ -393,13 +393,13 @@ function parseformula(
 
     # Build a formula starting from its postfix notation, preprocessed with shunting yard.
     #  In other words, all special symbols (e.g. opening_parenthesis) are already filtered
-    #  out and only AbstractSyntaxToken are considered.
-    function _postfixbuild(postfix::Vector{<:AbstractSyntaxToken})
+    #  out and only SyntaxToken are considered.
+    function _postfixbuild(postfix::Vector{<:SyntaxToken})
         stack = SyntaxTree[]
 
         for tok in postfix
             # Stack collapses, composing a new part of the syntax tree
-            if tok isa AbstractOperator
+            if tok isa Operator
                 # How associativity affects the token stack to SyntaxTree conversion?
                 # Consider "p → q → r" where "→" is right associative.
                 # The stack is [p, q, r, →, →], and is manipulated like this:
@@ -458,16 +458,16 @@ function parseformula(
         for tok in reverse(prefix)
             if tok isa Symbol || tok isa Atom
                 push!(stack, tok)
-            elseif tok isa AbstractOperator
+            elseif tok isa Operator
                 if (arity(tok) == 1 && stack[end] isa
-                    Union{AbstractSyntaxToken, AbstractSyntaxStructure})
+                    Union{SyntaxToken, AbstractSyntaxStructure})
                     # If operator arity is 1, then what follows could be a single AST
                     newtok = SyntaxTree(tok, stack[end])
                     pop!(stack)
                     push!(stack, newtok)
                 elseif (length(stack) >= (1 + 2*arity(tok)))
                     # Else, follow this general procedure;
-                    # consider 1 opening parenthesis, `arity` AbstractSyntaxToken,
+                    # consider 1 opening parenthesis, `arity` SyntaxToken,
                     # `arity`-1 delims and 1 closing parenthesis for a total of
                     # 1 + (arity) + (arity-1) + 1 = (1 + 2*arity) tokens to read.
                     #
@@ -488,7 +488,7 @@ function parseformula(
 
                     children =
                         [popped[s] for s in 2:length(popped) if popped[s] isa
-                            Union{AbstractSyntaxToken, AbstractSyntaxStructure}]
+                            Union{SyntaxToken, AbstractSyntaxStructure}]
                     delims =
                         [s for s in 3:(length(popped)-2) if popped[s] == arg_delim]
 
@@ -543,8 +543,8 @@ end
 """
     function parsebaseformula(
         expression::String,
-        additional_operators::Union{Nothing,Vector{<:AbstractOperator}} = nothing;
-        operators::Union{Nothing,Vector{<:AbstractOperator}},
+        additional_operators::Union{Nothing,Vector{<:Operator}} = nothing;
+        operators::Union{Nothing,Vector{<:Operator}},
         grammar::Union{Nothing,AbstractGrammar} = nothing,
         algebra::Union{Nothing,AbstractAlgebra} = nothing,
         kwargs...
@@ -568,7 +568,7 @@ parsebaseformula(str, args...; kwargs...) = parseformula(Formula, str, args...; 
 function parseformula(
     ::Type{Formula},
     expression::String,
-    additional_operators::Union{Nothing,Vector{<:AbstractOperator}} = nothing;
+    additional_operators::Union{Nothing,Vector{<:Operator}} = nothing;
     # TODO add alphabet parameter add custom parser for atoms
     # alphabet::Union{Nothing,Vector,AbstractAlphabet} = nothing,
     grammar::Union{Nothing,AbstractGrammar} = nothing,
@@ -576,13 +576,13 @@ function parseformula(
     kwargs...
 )
     additional_operators =
-        (isnothing(additional_operators) ? AbstractOperator[] : additional_operators)
+        (isnothing(additional_operators) ? Operator[] : additional_operators)
 
     t = parsetree(expression, additional_operators; kwargs...)
     baseformula(t;
-        # additional_operators = unique(AbstractOperator[operators..., SoleLogics.operators(t)...]),
+        # additional_operators = unique(Operator[operators..., SoleLogics.operators(t)...]),
         additional_operators = length(additional_operators) == 0 ? nothing :
-            unique(AbstractOperator[additional_operators..., SoleLogics.operators(t)...]),
+            unique(Operator[additional_operators..., SoleLogics.operators(t)...]),
         # alphabet = alphabet,
         alphabet = AlphabetOfAny{String}(),
         grammar = grammar,
@@ -601,7 +601,7 @@ end
 
 # function parsebaseformula(
 #     expression::String;
-#     operators::Union{Nothing,Vector{<:AbstractOperator}} = nothing,
+#     operators::Union{Nothing,Vector{<:Operator}} = nothing,
 #     kwargs...,
 # )
 #     parsebaseformula(expression; additional_operators = operators, kwargs...)

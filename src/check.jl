@@ -208,7 +208,7 @@ function normalize(
     # Simplify constants
     newt = begin
         tok, ch = token(newt), children(newt)
-        if simplify_constants && tok isa AbstractOperator
+        if simplify_constants && tok isa Operator
             if (tok == ∨) && arity(tok) == 2
                 if     token(ch[1]) == ⊥  ch[2]          # ⊥ ∨ φ ≡ φ
                 elseif token(ch[2]) == ⊥  ch[1]          # φ ∨ ⊥ ≡ φ
@@ -253,7 +253,7 @@ function normalize(
 
     newt = begin
         tok, ch = token(newt), children(newt)
-        if remove_boxes && tok isa AbstractOperator && SoleLogics.isbox(tok) && arity(tok) == 1
+        if remove_boxes && tok isa Operator && SoleLogics.isbox(tok) && arity(tok) == 1
             # remove_boxes -> substitute every [X]φ with ¬⟨X⟩¬φ
             child = ch[1]
             dual_op = dual(tok)
@@ -278,7 +278,7 @@ function normalize(
     if rotate_commutatives
         newt = begin
             tok, ch = token(newt), children(newt)
-            if tok isa AbstractOperator && iscommutative(tok) && arity(tok) > 1
+            if tok isa Operator && iscommutative(tok) && arity(tok) > 1
                 ch = children(LeftmostLinearForm(newt, tok))
                 ch = Vector(sort(collect(_normalize.(ch)), lt=_isless))
                 if tok in [∧,∨] # TODO create trait for this behavior: p ∧ p ∧ p ∧ q   -> p ∧ q
@@ -320,12 +320,12 @@ isgrounded(t::SyntaxTree)::Bool =
     # (println(token(t)); println(children(t)); true) &&
     (token(t) isa SoleLogics.AbstractRelationalOperator && isgrounding(relation(token(t)))) ||
     # (token(t) in [◊,□]) ||
-    (token(t) isa AbstractOperator && all(c->isgrounded(c), children(t)))
+    (token(t) isa Operator && all(c->isgrounded(c), children(t)))
 
 """
     function collateworlds(
         fr::AbstractFrame{W},
-        op::AbstractOperator,
+        op::Operator,
         t::NTuple{N,WorldSetType},
     )::AbstractWorldSet{<:W} where {N,W<:AbstractWorld,WorldSetType<:AbstractWorldSet}
 
@@ -334,11 +334,11 @@ return the set of worlds where a composed formula op(φ1, ..., φN) is true, giv
 sets of worlds where the each immediate sub-formula is true.
 
 See also [`check`](@ref), [`iscrisp`](@ref),
-[`AbstractOperator`](@ref), [`AbstractFrame`](@ref).
+[`Operator`](@ref), [`AbstractFrame`](@ref).
 """
 function collateworlds(
     fr::AbstractFrame{W},
-    op::AbstractOperator,
+    op::Operator,
     t::NTuple{N,<:AbstractWorldSet},
 )::AbstractWorldSet{<:W} where {N,W<:AbstractWorld}
     if arity(op) != length(t)

@@ -121,7 +121,7 @@ end
 # TODO Mauro
 # Association "(w1,w2) => truth_value". Not recommended in sparse scenarios.
 # """
-# struct AdjMatUniModalFrame{W<:AbstractWorld,T<:TruthValue} <: AbstractUniModalFrame{W}
+# struct AdjMatUniModalFrame{W<:AbstractWorld,T<:Truth} <: AbstractUniModalFrame{W}
 #     adjacents::NamedMatrix{T,Matrix{T},Tuple{OrderedDict{W,Int64},OrderedDict{W,Int64}}}
 # end
 # Upon construction, check that the type is not "OneWorld"
@@ -485,7 +485,7 @@ include("algebras/frames.jl")
 ############################################################################################
 
 # """
-#     abstract type AbstractModalAssignment{W<:AbstractWorld,A,T<:TruthValue} end
+#     abstract type AbstractModalAssignment{W<:AbstractWorld,A,T<:Truth} end
 
 # A modal assignment is a mapping from `World`s to propositional assignments;
 # or equivalently, a mapping from `World`s, `Atom`s of value type `A`
@@ -493,16 +493,16 @@ include("algebras/frames.jl")
 
 # See also [`AbstractAssignment`](@ref), [`AbstractFrame`](@ref).
 # """
-# abstract type AbstractModalAssignment{W<:AbstractWorld,A,T<:TruthValue} <: AbstractDict{W,<:AbstractAssignment{A,T}} end
+# abstract type AbstractModalAssignment{W<:AbstractWorld,A,T<:Truth} <: AbstractDict{W,<:AbstractAssignment{A,T}} end
 
 # """
 # TODO
 # """
-# function check(::Atom{A}, ::AbstractModalAssignment{W,A,T}, ::W)::T where {W<:AbstractWorld,A,T<:TruthValue}
+# function check(::Atom{A}, ::AbstractModalAssignment{W,A,T}, ::W)::T where {W<:AbstractWorld,A,T<:Truth}
 #     return error("Please, provide ...")
 # end
 
-# struct GenericModalAssignment{W<:AbstractWorld,A,T<:TruthValue} <: AbstractModalAssignment{W,A,T}
+# struct GenericModalAssignment{W<:AbstractWorld,A,T<:Truth} <: AbstractModalAssignment{W,A,T}
 #     dict::Dict{W,AbstractAssignment{A,T}}
 # end
 
@@ -513,7 +513,7 @@ include("algebras/frames.jl")
     abstract type AbstractKripkeStructure{
         W<:AbstractWorld,
         A,
-        T<:TruthValue,
+        T<:Truth,
         FR<:AbstractFrame{W},
     } <: AbstractInterpretation{A,T} end
 
@@ -529,7 +529,7 @@ See also [`AbstractInterpretation`](@ref).
 abstract type AbstractKripkeStructure{
     W<:AbstractWorld,
     A,
-    T<:TruthValue,
+    T<:Truth,
     FR<:AbstractFrame{W},
 } <: AbstractInterpretation{A,T} end
 
@@ -537,7 +537,7 @@ function check(
     ::Atom,
     ::AbstractKripkeStructure{W,A,T},
     ::W,
-)::T where {W<:AbstractWorld,A,T<:TruthValue}
+)::T where {W<:AbstractWorld,A,T<:Truth}
     return error("Please, provide ...")
 end
 
@@ -545,34 +545,34 @@ function check(
     ::AbstractFormula,
     ::AbstractKripkeStructure{W,A,T},
     ::Union{W,Nothing},
-)::T where {W<:AbstractWorld,A,T<:TruthValue}
+)::T where {W<:AbstractWorld,A,T<:Truth}
     return error("Please, provide ...")
 end
 
-function frame(i::AbstractKripkeStructure{W,A,T,FR})::FR where {W<:AbstractWorld,A,T<:TruthValue,FR<:AbstractFrame{W}}
+function frame(i::AbstractKripkeStructure{W,A,T,FR})::FR where {W<:AbstractWorld,A,T<:Truth,FR<:AbstractFrame{W}}
     return error("Please, provide method frame(i::$(typeof(i))).")
 end
 
 """
-    truthtype(::Type{<:AbstractKripkeStructure{W,A,T}}) where {W<:AbstractWorld,A,T<:TruthValue} = T
+    truthtype(::Type{<:AbstractKripkeStructure{W,A,T}}) where {W<:AbstractWorld,A,T<:Truth} = T
     truthtype(a::AbstractKripkeStructure) = truthtype(typeof(a))
 
 The truth type of the model.
 
 See also [`AbstractKripkeStructure`](@ref).
 """
-truthtype(::Type{<:AbstractKripkeStructure{W,A,T}}) where {W<:AbstractWorld,A,T<:TruthValue} = T
+truthtype(::Type{<:AbstractKripkeStructure{W,A,T}}) where {W<:AbstractWorld,A,T<:Truth} = T
 truthtype(a::AbstractKripkeStructure) = truthtype(typeof(a))
 
 """
-    worldtype(::Type{<:AbstractKripkeStructure{W,A,T}}) where {W<:AbstractWorld,A,T<:TruthValue} = W
+    worldtype(::Type{<:AbstractKripkeStructure{W,A,T}}) where {W<:AbstractWorld,A,T<:Truth} = W
     worldtype(a::AbstractKripkeStructure) = worldtype(typeof(a))
 
 The world type of the model.
 
 See also [`AbstractKripkeStructure`](@ref).
 """
-worldtype(::Type{<:AbstractKripkeStructure{W,A,T}}) where {W<:AbstractWorld,A,T<:TruthValue} = W
+worldtype(::Type{<:AbstractKripkeStructure{W,A,T}}) where {W<:AbstractWorld,A,T<:Truth} = W
 worldtype(a::AbstractKripkeStructure) = worldtype(typeof(a))
 
 accessibles(i::AbstractKripkeStructure, args...) = accessibles(frame(i), args...)
@@ -587,7 +587,7 @@ function check(
     use_memo::Union{Nothing,AbstractDict{<:AbstractFormula,<:WorldSet}} = nothing,
     perform_normalization::Bool = true,
     memo_max_height::Union{Nothing,Int} = nothing,
-)::T where {W<:AbstractWorld,A,T<:TruthValue}
+)::T where {W<:AbstractWorld,A,T<:Truth}
 
 Check a formula on a specific word in a [`KripkeStructure`](@ref).
 
@@ -641,7 +641,7 @@ function check(
     use_memo::Union{Nothing,AbstractDict{<:AbstractFormula,<:WorldSet}} = nothing,
     perform_normalization::Bool = true,
     memo_max_height::Union{Nothing,Int} = nothing,
-)::T where {W<:AbstractWorld,A,T<:TruthValue}
+)::T where {W<:AbstractWorld,A,T<:Truth}
 
     if isnothing(w)
         if nworlds(frame(i)) == 1
@@ -687,7 +687,7 @@ function check(
                 tok = token(ψ)
 
                 worldset = begin
-                    if tok isa AbstractOperator
+                    if tok isa Connective
                         _c(collateworlds(fr, tok, map(f->readformula(memo_structure, f), children(ψ))))
                     elseif tok isa Atom
                         _f(_w->check(tok, i, _w), _c(allworlds(fr)))
@@ -725,7 +725,7 @@ end
     struct KripkeStructure{
         W<:AbstractWorld,
         A,
-        T<:TruthValue,
+        T<:Truth,
         FR<:AbstractFrame{W},
         AS<:AbstractDict{W,A where A<:AbstractAssignment{A,T}}
     } <: AbstractKripkeStructure{W,A,T,FR}
@@ -741,7 +741,7 @@ each world.
 struct KripkeStructure{
     W<:AbstractWorld,
     A,
-    T<:TruthValue,
+    T<:Truth,
     FR<:AbstractFrame{W},
     AS<:AbstractAssignment{A,T},
     MAS<:AbstractDict{W,AS}
@@ -765,17 +765,17 @@ function Base.show(io::IO, i::KripkeStructure)
 end
 
 # TODO maybe this yields the worlds where a certain formula is true...?
-# function check(i::KripkeStructure{W,A,T}, f::AbstractFormula)::AbstractVector{W} where {W<:AbstractWorld,A,T<:TruthValue}
+# function check(i::KripkeStructure{W,A,T}, f::AbstractFormula)::AbstractVector{W} where {W<:AbstractWorld,A,T<:Truth}
 
 ############################################################################################
 ############################################################################################
 ############################################################################################
 
 """
-    ismodal(::Type{<:AbstractOperator})::Bool = false
-    ismodal(o::AbstractOperator)::Bool = ismodal(typeof(o))
+    ismodal(::Type{<:Connective})::Bool = false
+    ismodal(o::Connective)::Bool = ismodal(typeof(o))
 
-Return whether it is known that an `AbstractOperator` is modal.
+Return whether it is known that an `Connective` is modal.
 
 # Examples
 ```julia-repl
@@ -786,14 +786,14 @@ julia> ismodal(∧)
 false
 ```
 """
-ismodal(::Type{<:AbstractOperator})::Bool = false
-ismodal(o::AbstractOperator)::Bool = ismodal(typeof(o))
+ismodal(::Type{<:Connective})::Bool = false
+ismodal(o::Connective)::Bool = ismodal(typeof(o))
 
 """
-    isbox(::Type{<:AbstractOperator})::Bool = false
-    isbox(o::AbstractOperator)::Bool = isbox(typeof(o))
+    isbox(::Type{<:Connective})::Bool = false
+    isbox(o::Connective)::Bool = isbox(typeof(o))
 
-Return whether it is known that an `AbstractOperator` is a box (i.e., universal) operator.
+Return whether it is known that an `Connective` is a box (i.e., universal) operator.
 
 # Examples
 ```julia-repl
@@ -807,25 +807,25 @@ julia> SoleLogics.isbox(□)
 true
 ```
 """
-isbox(::Type{<:AbstractOperator})::Bool = false
-isbox(o::AbstractOperator)::Bool = isbox(typeof(o))
+isbox(::Type{<:Connective})::Bool = false
+isbox(o::Connective)::Bool = isbox(typeof(o))
 
-isdiamond(O::Type{<:AbstractOperator})::Bool = ismodal(O) && !isbox(O)
-isdiamond(o::AbstractOperator)::Bool = isdiamond(typeof(o))
+isdiamond(O::Type{<:Connective})::Bool = ismodal(O) && !isbox(O)
+isdiamond(o::Connective)::Bool = isdiamond(typeof(o))
 
 doc_DIAMOND = """
-    const DIAMOND = NamedOperator{:◊}()
+    const DIAMOND = NamedConnective{:◊}()
     const ◊ = DIAMOND
-    ismodal(::NamedOperator{:◊}) = true
+    ismodal(::NamedConnective{:◊}) = true
     arity(::Type{typeof(◊)}) = 1
 
 Logical diamond operator, typically interpreted as the modal existential quantifier.
 See [here](https://en.wikipedia.org/wiki/Modal_operator).
 
-See also [`BOX`](@ref), [`NamedOperator`](@ref), [`AbstractOperator`](@ref).
+See also [`BOX`](@ref), [`NamedConnective`](@ref), [`Connective`](@ref).
 """
 """$(doc_DIAMOND)"""
-const DIAMOND = NamedOperator{:◊}()
+const DIAMOND = NamedConnective{:◊}()
 """$(doc_DIAMOND)"""
 const ◊ = DIAMOND
 ismodal(::Type{typeof(◊)}) = true
@@ -834,17 +834,17 @@ arity(::Type{typeof(◊)}) = 1
 
 
 doc_BOX = """
-    const BOX = NamedOperator{:□}()
+    const BOX = NamedConnective{:□}()
     const □ = BOX
     arity(::Type{typeof(□)}) = 1
 
 Logical box operator, typically interpreted as the modal universal quantifier.
 See [here](https://en.wikipedia.org/wiki/Modal_operator).
 
-See also [`DIAMOND`](@ref), [`NamedOperator`](@ref), [`AbstractOperator`](@ref).
+See also [`DIAMOND`](@ref), [`NamedConnective`](@ref), [`Connective`](@ref).
 """
 """$(doc_BOX)"""
-const BOX = NamedOperator{:□}()
+const BOX = NamedConnective{:□}()
 """$(doc_BOX)"""
 const □ = BOX
 ismodal(::Type{typeof(□)}) = true
@@ -858,7 +858,7 @@ dual(::typeof(BOX))     = DIAMOND
 
 ############################################################################################
 
-const BASE_MODAL_OPERATORS = [BASE_PROPOSITIONAL_OPERATORS..., ◊, □]
+const BASE_MODAL_OPERATORS = Operator[BASE_PROPOSITIONAL_OPERATORS..., ◊, □]
 const BaseModalOperators = Union{typeof.(BASE_MODAL_OPERATORS)...}
 
 """
@@ -882,7 +882,7 @@ julia> (□) isa operatorstype(modallogic());
 true
 
 julia> (□) isa operatorstype(modallogic(; operators = [¬, ∨]))
-┌ Warning: Instantiating modal logic (via `modallogic`) with solely propositional operators (SoleLogics.NamedOperator[¬, ∨]). Consider using propositionallogic instead.
+┌ Warning: Instantiating modal logic (via `modallogic`) with solely propositional operators (SoleLogics.NamedConnective[¬, ∨]). Consider using propositionallogic instead.
 └ @ SoleLogics ~/.julia/dev/SoleLogics/src/modal-logic.jl:642
 false
 
@@ -896,7 +896,7 @@ See also [`propositionallogic`](@ref), [`AbstractAlphabet`](@ref), [`AbstractAlg
 """
 function modallogic(;
     alphabet::Union{Nothing,Vector,AbstractAlphabet} = nothing,
-    operators::Union{Nothing,Vector{<:AbstractOperator}} = nothing,
+    operators::Union{Nothing,Vector{<:Connective}} = nothing,
     grammar::Union{Nothing,AbstractGrammar} = nothing,
     algebra::Union{Nothing,AbstractAlgebra} = nothing,
     default_operators = BASE_MODAL_OPERATORS,
@@ -921,7 +921,7 @@ const BaseModalLogic = AbstractLogic{G,A} where {ALP,G<:AbstractGrammar{ALP,<:Ba
 ############################################################################################
 
 """
-    abstract type AbstractRelationalOperator{R<:AbstractRelation} <: AbstractOperator end
+    abstract type AbstractRelationalOperator{R<:AbstractRelation} <: Connective end
 
 Abstract type for relational logical operators. A relational operator
 allows for semantic quantification across relational structures (e.g., Krikpe structures).
@@ -932,7 +932,7 @@ See, for example [temporal modal logic](https://en.wikipedia.org/wiki/Temporal_l
 See also [`DiamondRelationalOperator`](@ref), [`BoxRelationalOperator`](@ref),
 [`AbstractKripkeStructure`](@ref), [`AbstractFrame`](@ref).
 """
-abstract type AbstractRelationalOperator{R<:AbstractRelation} <: AbstractOperator end
+abstract type AbstractRelationalOperator{R<:AbstractRelation} <: Connective end
 
 arity(::Type{<:AbstractRelationalOperator{R}}) where {R<:AbstractRelation} = arity(R)-1
 
@@ -1013,7 +1013,7 @@ function box(r::AbstractRelation) BoxRelationalOperator(r) end
 globaldiamond = diamond(globalrel) # @deprecate (see deprecate.jl)
 globalbox = box(globalrel)         # ...
 
-const BASE_MULTIMODAL_OPERATORS = [BASE_PROPOSITIONAL_OPERATORS...,
+const BASE_MULTIMODAL_OPERATORS = Operator[BASE_PROPOSITIONAL_OPERATORS...,
     globaldiamond,
     globalbox,
     diamond(identityrel),

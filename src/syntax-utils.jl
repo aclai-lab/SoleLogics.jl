@@ -2,7 +2,7 @@ import Base: show, promote_rule, length, getindex
 using SoleBase
 
 doc_lmlf = """
-    struct LeftmostLinearForm{O<:AbstractOperator,SS<:AbstractSyntaxStructure} <: AbstractSyntaxStructure
+    struct LeftmostLinearForm{O<:Connective,SS<:AbstractSyntaxStructure} <: AbstractSyntaxStructure
         children::Vector{<:SS}
     end
 
@@ -43,12 +43,12 @@ See also [`AbstractSyntaxStructure`](@ref), [`SyntaxTree`](@ref),
 [`LeftmostConjunctiveForm`](@ref), [`LeftmostDisjunctiveForm`](@ref),
 [`Literal`](@ref).
 """
-struct LeftmostLinearForm{O<:AbstractOperator,SS<:AbstractSyntaxStructure} <: AbstractSyntaxStructure
+struct LeftmostLinearForm{O<:Connective,SS<:AbstractSyntaxStructure} <: AbstractSyntaxStructure
     children::Vector{SS}
 
     function LeftmostLinearForm{O,SS}(
         children::Vector,
-    ) where {O<:AbstractOperator,SS<:AbstractSyntaxStructure}
+    ) where {O<:Connective,SS<:AbstractSyntaxStructure}
         a = arity(O)
         n_children = length(children)
 
@@ -70,21 +70,21 @@ struct LeftmostLinearForm{O<:AbstractOperator,SS<:AbstractSyntaxStructure} <: Ab
 
     function LeftmostLinearForm{O}(
         children::Vector,
-    ) where {O<:AbstractOperator}
+    ) where {O<:Connective}
         length(children) > 0 || error("Cannot instantiate LeftmostLinearForm{$(O)} with no children.")
         SS = SoleBase._typejoin(typeof.(children)...)
         LeftmostLinearForm{O,SS}(children)
     end
 
     function LeftmostLinearForm(
-        O::Type{<:SoleLogics.AbstractOperator},
+        O::Type{<:SoleLogics.Connective},
         children::Vector,
     )
         LeftmostLinearForm{O}(children)
     end
 
     function LeftmostLinearForm(
-        op::AbstractOperator,
+        op::Connective,
         children::Vector,
     )
         LeftmostLinearForm(typeof(op), children)
@@ -92,11 +92,11 @@ struct LeftmostLinearForm{O<:AbstractOperator,SS<:AbstractSyntaxStructure} <: Ab
 
     function LeftmostLinearForm(
         tree::SyntaxTree,
-        operator::Union{<:SoleLogics.AbstractOperator,Nothing} = nothing
+        operator::Union{<:SoleLogics.Connective,Nothing} = nothing
     )
         # Check operator correctness; it should not be nothing (thus, auto inferred) if
-        # tree root contains something that is not an AbstractOperator
-        if (!(token(tree) isa AbstractOperator) && !isnothing(operator))
+        # tree root contains something that is not an Connective
+        if (!(token(tree) isa Connective) && !isnothing(operator))
             error("Syntax tree cannot be converted to a LeftmostLinearForm:" *
                 "tree root is $(token(tree))")
         end
@@ -109,7 +109,7 @@ struct LeftmostLinearForm{O<:AbstractOperator,SS<:AbstractSyntaxStructure} <: Ab
         # call LeftmostLinearForm constructor.
         _children = AbstractSyntaxStructure[]
 
-        function _dig_and_retrieve(tree::SyntaxTree, operator::SoleLogics.AbstractOperator)
+        function _dig_and_retrieve(tree::SyntaxTree, operator::SoleLogics.Connective)
             token(tree) != operator ?
             push!(_children, tree) :    # Lexical scope
             for c in children(tree)
@@ -200,7 +200,7 @@ Base.promote_rule(::Type{LF}, ::Type{SS}) where {LF<:LeftmostLinearForm,SS<:Abst
 ############################################################################################
 
 """
-    struct Literal{T<:AbstractSyntaxToken} <: AbstractSyntaxStructure
+    struct Literal{T<:SyntaxToken} <: AbstractSyntaxStructure
         ispos::Bool
         prop::T
     end
@@ -209,21 +209,21 @@ An atom, or its negation.
 
 See also [`CNF`](@ref), [`DNF`](@ref), [`AbstractSyntaxStructure`](@ref).
 """
-struct Literal{T<:AbstractSyntaxToken} <: AbstractSyntaxStructure
+struct Literal{T<:SyntaxToken} <: AbstractSyntaxStructure
     ispos::Bool
     prop::T
 
     function Literal{T}(
         ispos::Bool,
         prop::T,
-    ) where {T<:AbstractSyntaxToken}
+    ) where {T<:SyntaxToken}
         new{T}(ispos, prop)
     end
 
     function Literal(
         ispos::Bool,
         prop::T,
-    ) where {T<:AbstractSyntaxToken}
+    ) where {T<:SyntaxToken}
         Literal{T}(ispos, prop)
     end
 end

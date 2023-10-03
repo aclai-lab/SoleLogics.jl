@@ -12,8 +12,8 @@ SoleLogics' type hierarchy is being updated following the tree below.
     │   │   │   ├── Atom
     │   │   │   └── Truth
     │   │   │       └── BooleanTruth
-    │   │   │           └── TOP
-    │   │   │           └── BOTTOM
+    │   │   │           └── Top
+    │   │   │           └── Bottom
     │   │   │       └── ...
     │   │   └── AbstractComposite
     │   │       ├── SyntaxTree
