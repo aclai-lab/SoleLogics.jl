@@ -498,7 +498,7 @@ include("algebras/frames.jl")
 # """
 # TODO
 # """
-# function check(::Atom{A}, ::AbstractModalAssignment{W,A,T}, ::W)::T where {W<:AbstractWorld,A,T<:TruthValue}
+# function check(::Atom{A}, ::AbstractModalAssignment{W,A,T}, ::W) where {W<:AbstractWorld,A,T<:TruthValue}
 #     return error("Please, provide ...")
 # end
 
