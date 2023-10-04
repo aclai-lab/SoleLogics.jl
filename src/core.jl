@@ -23,8 +23,10 @@ SoleLogics' type hierarchy is being updated following the tree below.
     │       └── TruthTable
     └── Connective
         ├── NamedConnective
-        ├── RelationalConnective
-        └── ...
+        ├── AbstractRelationalOperator
+            ├── DiamondRelationalOperator
+            ├── BoxRelationalOperator
+            └── ...
 
     Also:
     const Operator = Union{Connective,Truth}
@@ -512,7 +514,7 @@ function joinformulas(op::Operator, children::Vararg{F,N})::F where {N,F<:Abstra
 end
 
 # Resolve ambiguity with nullary operators
-function joinformulas(op::Operator, children::NTuple{0})
+function joinformulas(op::Truth, children::NTuple{0})
     return SyntaxTree(op, children)
 end
 
@@ -606,15 +608,17 @@ function Base.isequal(a::AbstractComposite, b::AbstractComposite)
 end
 Base.hash(a::AbstractComposite) = Base.hash(tree(a))
 
+#= NOTE: this could be useful
 Base.promote_rule(
     ::Type{SS},
-    ::Type{<:SyntaxToken}
+    ::Type{<:AbstractLeaf}
 ) where {SS<:AbstractSyntaxStructure} = AbstractFormula
 
 Base.promote_rule(
-    ::Type{<:SyntaxToken},
+    ::Type{<:AbstractLeaf},
     ::Type{SS}
 ) where {SS<:AbstractSyntaxStructure} = AbstractFormula
+=#
 
 # NOTE: @typeHierarchyUpdate it could be useful to provide a macro to easily create
 # a new set of Truth types. In particular, a new subtree of types must be planted

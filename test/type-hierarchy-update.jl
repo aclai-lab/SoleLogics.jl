@@ -17,9 +17,9 @@ const SL = SoleLogics # SL.name to reference unexported names
     │   │   ├── AbstractLeaf
     │   │   │   ├── Atom
     │   │   │   └── Truth
-                    └── BooleanTruth
-    │   │   │           └── Top
-    │   │   │           └── Bottom
+    │   │   │       ├── BooleanTruth
+    │   │   │       │   ├── Top
+    │   │   │       │   └── Bottom
     │   │   │       └── ...
     │   │   └── AbstractComposite
     │   │       ├── SyntaxTree
@@ -28,8 +28,10 @@ const SL = SoleLogics # SL.name to reference unexported names
     │   └── AbstractMemoFormula
     │       └── TruthTable
     └── Connective
-        └── NamedConnective
-        └── RelationalConnective
+        ├── NamedConnective
+        ├── AbstractRelationalOperator
+        ├── DiamondRelationalOperator
+        ├── BoxRelationalOperator
         └── ...
 
     Also:

@@ -146,7 +146,7 @@ end
 # Raw tokens are interpreted and, thus, made processable by a parser
 function _interpret_tokens(
     raw_tokens::Vector{String},
-    string_to_op::Dict{String,Operator},
+    string_to_op::Dict{String,<:Operator},
     atom_parser::Base.Callable;
     opening_parenthesis::Symbol,
     closing_parenthesis::Symbol,
@@ -199,7 +199,7 @@ function tokenizer(
         strip_whitespaces(expression, additional_whitespaces = additional_whitespaces))
 
     # Get the string representions of the given `operators`
-    string_to_op = Dict([syntaxstring(op) => op for op in operators])
+    string_to_op = Dict{String,Operator}([syntaxstring(op) => op for op in operators])
 
     # Operators whose syntaxstring is padded with spaces might cause ambiguities
     invalidops = filter(o -> syntaxstring(o) !=
@@ -260,8 +260,9 @@ function shunting_yard!(
             #  is placed at the top of the stack.
             while !isempty(tokstack) &&
                 (tokstack[end] isa Operator &&
-                 precedence(tokstack[end]) > precedence(tok))
-                 push!(postfix, pop!(tokstack))
+                precedence(tokstack[end]) >= precedence(tok) &&
+                associativity(tok) == :left)
+                push!(postfix, pop!(tokstack))
             end
             # Now push the current operator onto the tokstack
             push!(tokstack, tok)
@@ -395,35 +396,15 @@ function parseformula(
     #  In other words, all special symbols (e.g. opening_parenthesis) are already filtered
     #  out and only SyntaxToken are considered.
     function _postfixbuild(postfix::Vector{<:SyntaxToken})
+        println(postfix)
+
         stack = SyntaxTree[]
 
         for tok in postfix
             # Stack collapses, composing a new part of the syntax tree
             if tok isa Operator
-                # How associativity affects the token stack to SyntaxTree conversion?
-                # Consider "p → q → r" where "→" is right-associative.
-                # The stack is [p, q, r, →, →], and is manipulated like this:
-                #   1) the first → from the left is encountered: [p, q, r, ...→... , →];
-                #   2) q and r are popped: [p, ...→..., →];
-                #   3) the current token → receives q and r as children: [p, q→r, →];
-                #   4) the next → is found, then p and q→r are popped: [...→...];
-                #   5) the current token → receives p and q→r as children: [p → (q→r)].
-                #
-                # Now consider "p → q → r" where "→" is left-associative.
-                # The stack is [p, q, r, →, →], and is manipulated like this:
-                #   1) the first → from the left is encountered: [p, q, r, ...→... , →];
-                #   2) p and q are popped using popfirst instead of pop: [r, ...→..., →];
-                #   3) the current token → receives p and q as children. Instead of push,
-                #      pushfirst is used to obtain: [p→q, r, →];
-                #   4) the next → is found, r and p→q are removed using popfirst: [...→...];
-                #   5) the current token → receives q→r and r as children: [(p→q) → r].
-                if associativity(tok) == :right
-                    children = [pop!(stack) for _ in 1:arity(tok)]
-                    push!(stack, SyntaxTree(tok, Tuple(reverse(children))))
-                else
-                    children = [popfirst!(stack) for _ in 1:arity(tok)]
-                    pushfirst!(stack, SyntaxTree(tok, Tuple(children)))
-                end
+                children = [pop!(stack) for _ in 1:arity(tok)]
+                push!(stack, SyntaxTree(tok, Tuple(reverse(children))))
             elseif tok isa Atom
                 push!(stack, SyntaxTree(tok))
             else
