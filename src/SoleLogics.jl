@@ -28,7 +28,8 @@ export BooleanTruth
 export syntaxstring
 
 export arity, valuetype, tokentype, tokenstype,
-        atomstype, operatorstype, truthtype
+        atomstype, operatorstype, truthtype,
+        associativity, precedence
 export check
 export value, token, children, alphabet, formulas
 export domain, top, bottom, grammar, algebra, logic, tree

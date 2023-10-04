@@ -831,6 +831,7 @@ const ◊ = DIAMOND
 ismodal(::Type{typeof(◊)}) = true
 isbox(::Type{typeof(◊)}) = false
 arity(::typeof(◊)) = 1
+precedence(::typeof(◊)) = precedence(NEGATION)
 
 
 doc_BOX = """
@@ -850,6 +851,7 @@ const □ = BOX
 ismodal(::Type{typeof(□)}) = true
 isbox(::Type{typeof(□)}) = true
 arity(::typeof(□)) = 1
+precedence(::typeof(□)) = 15
 
 hasdual(::typeof(DIAMOND)) = true
 dual(::typeof(DIAMOND)) = BOX
