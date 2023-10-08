@@ -396,8 +396,6 @@ function parseformula(
     #  In other words, all special symbols (e.g. opening_parenthesis) are already filtered
     #  out and only SyntaxToken are considered.
     function _postfixbuild(postfix::Vector{<:SyntaxToken})
-        println(postfix)
-
         stack = SyntaxTree[]
 
         for tok in postfix

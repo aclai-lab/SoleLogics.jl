@@ -23,7 +23,7 @@ SoleLogics' type hierarchy is being updated following the tree below.
     │       └── TruthTable
     └── Connective
         ├── NamedConnective
-        ├── AbstractRelationalOperator
+        └── AbstractRelationalOperator
             ├── DiamondRelationalOperator
             ├── BoxRelationalOperator
             └── ...
@@ -34,12 +34,23 @@ SoleLogics' type hierarchy is being updated following the tree below.
     const BooleanTruth = Union{Top,Bottom}
 =#
 
-""" TODO: @typeHierarchyUpdate
+"""
+    abstract type Syntactical end;
+
 Master abstract type of all types related to syntax.
 """
 abstract type Syntactical end
 
-""" TODO: @typeHierarchyUpdate """
+"""
+    abstract type AbstractFormula end;
+
+A generic construct devoted to represent and organize a syntactical structure with specific
+properties. Examples of `AbstractFormula`s are `AbstractLeaf`s (for example, `Atom`s and
+`Truth` values), `AbstractComposite`s (for example, `SyntaxTree`s and `LeftmostLinearForm`s)
+and `AbstractMemoFormula`s (for example, `TruthTable`s).
+
+See also [`AbstractComposite`](@ref), [`AbstractLeaf`](@ref), [`AbstractMemoFormula`](@ref).
+"""
 abstract type AbstractFormula <: Syntactical end
 
 """
@@ -50,67 +61,143 @@ The typical representation is the [`SyntaxTree`](@ref);
 however, different implementations can cover specific synctactic forms
 (e.g., conjuctive/disjuctive normal forms).
 
-See also
-[`tree`](@ref),
-[`SyntaxTree`](@ref),
-[`AbstractFormula`](@ref),
-[`AbstractLogic`](@ref).
+See also [`AbstractFormula`](@ref), [`AbstractLogic`](@ref), [`SyntaxTree`](@ref),
+[`tree`](@ref).
 """
 abstract type AbstractSyntaxStructure <: AbstractFormula end
 
-""" TODO: @typeHierarchyUpdate """
+"""
+    abstract type AbstractLeaf <: AbstractSyntaxStructure end;
+
+Syntactic component that can be an `AbstractSyntaxStructure`'s leaf. The particularity of
+`AbstractLeaf` subtypes is that their `arity` is always 0, meaning that they are not
+allowed to have children in tree-like syntactical structures.
+
+See also [`AbstractSyntaxStructure`](@ref),  [`arity`](@ref), [`SyntaxTree`](@ref).
+"""
 abstract type AbstractLeaf <: AbstractSyntaxStructure end
 
-""" TODO: @typeHierarchyUpdate """
+"""
+    abstract type AbstractComposite <: AbstractSyntaxStructure end
+
+Organized composition of syntactical elements.
+
+See also [`LeftmostLinearForm`](@ref), [`SyntaxTree`](@ref).
+"""
 abstract type AbstractComposite <: AbstractSyntaxStructure end
 
-""" TODO: @typeHierarchyUpdate """
+"""
+    abstract type AbstractMemoFormula <: AbstractFormula end
+
+Enriched representation of an `AbstractSyntaxStructure`. This is useful to display more
+informations related to a certain syntactical structure, or save computational time by
+exploiting [memoization](https://en.wikipedia.org/wiki/Memoization).
+"""
 abstract type AbstractMemoFormula <: AbstractFormula end
 
-""" TODO: @typeHierarchyUpdate """
+"""
+    abstract type Truth <: AbstractLeaf end
+
+Syntactical, manipulable representation of a truth value.
+
+# Implementation
+
+TODO: when implementing a new custom `Truth` subtype...
+
+See also [`Top`](@ref), [`Bottom`](@ref), [`BooleanTruth`](@ref), [`arity`](@ref);
+"""
 abstract type Truth <: AbstractLeaf end
 
-""" TODO: @typeHierarchyUpdate """
+"""
+    abstract type BooleanTruth <: Truth end
+
+Super type of `Top` and `Bottom`, where `Top` is true and `Bottom` is false.
+
+See also [`Bottom`](@ref), [`Top`](@ref).
+"""
 abstract type BooleanTruth <: Truth end
 
-""" TODO: @typeHierarchyUpdate """
+"""
+    abstract type Connective <: Syntactical end
+
+A connective is a [logical constant](https://en.wikipedia.org/wiki/Logical_connective)
+which establishes a relation between `AbstractLeaf`s (i.e., facts).
+For example, the boolean connectives AND, OR and IMPLIES (stylized as ∧, ∨ and →)
+are used to connect `AbstractLeaf`s and/or formulas to express derived concepts.
+
+# Implementation
+
+When implementing a new custom connective, one can override the default `precedence` and
+`associativity` (see https://docs.julialang.org/en/v1/manual/mathematical-operations/#Operator-Precedence-and-Associativity).
+If the custom connective is a `NamedConnective` and renders as something considered as a
+`math symbol` (for example, `⊙`, see https://stackoverflow.com/a/60321302/5646732),
+by the Julia parser, `Base.operator_precedence`
+and `Base.operator_associativity` are used to define these behaviors, and
+you might want to avoid providing these methods at all.
+
+When implementing a new type `C` for a *commutative* connective with arity higher than 1,
+please provide a method `iscommutative(::C)`. This can help model checking operations.
+
+See also [`AbstractLeaf`](@ref), [`associativity`](@ref), [`check`](@ref),
+[`iscommutative`](@ref), [`NamedConnective`](@ref), [`precedence`](@ref),
+[`Syntactical`](@ref).
+"""
 abstract type Connective <: Syntactical end
 
-""" TODO: @typeHierarchyUpdate """
+"""
+    const Operator = Union{Connective,Truth}
+
+Logical constants which establishes relations between facts, or are truth values itself.
+
+See also [`Connective`](@ref), [`Truth`](@ref).
+"""
 const Operator = Union{Connective,Truth}
 
-""" TODO: @typeHierarchyUpdate """
+"""
+    const SyntaxToken = Union{Connective,AbstractLeaf}
+
+Every type from which an `AbstractComposite` can be composed.
+
+!!! Warning
+    NOTE: @typeHierarchyUpdate SyntaxToken type might disappear soon (this is a wip).
+
+See also [`AbstractComposite`](@ref), [`AbstractLeaf`](@ref), [`Connective`](@ref).
+"""
 const SyntaxToken = Union{Connective,AbstractLeaf}
 #########################
 
 """
-    arity(tok::SyntaxToken)::Integer
+    arity(tok::Connective)::Integer
+    arity(t::AbstractLeaf)::Integer
 
-Return the `arity` of a `SyntaxToken`, an integer
-representing the number of allowed children in a `SyntaxTree`. Tokens with `arity` equal
-to 0, 1 or 2 are called `nullary`, `unary` and `binary`, respectively.
+Return the `arity` of a `Connective` or an `AbstractLeaf`. The `arity` is an integer
+representing the number of allowed children in a `SyntaxTree`. `Connective`s with `arity`
+equal to 0, 1 or 2 are called `nullary`, `unary` and `binary`, respectively.
+`AbstractLeaf`s (`Atom`s and `Truth` values) are always nullary.
 
-See also [`SyntaxToken`](@ref), [`SyntaxTree`](@ref).
+See also [`AbstractLeaf`](@ref), [`Connective`](@ref), [`SyntaxTree`](@ref).
 """
-arity(t::SyntaxToken)::Integer = error("Please, provide method arity(::$(typeof(t))).")
+arity(t::Connective)::Integer = error("Please, provide method arity(::$(typeof(t))).")
+arity(t::AbstractLeaf)::Integer = 0;
 
 isnullary(a) = arity(a) == 0
 isunary(a) = arity(a) == 1
 isbinary(a) = arity(a) == 2
 
 """
-TODO: @typeHierarchyUpdate
-    dual(tok::SyntaxToken)
+    dual(op::SyntaxToken)
 
-Return the `dual` of a syntax token.
-Given a token `tok` of arity `n`, the dual `dtok` is such that,
-on a boolean algebra,
-`tok(ch_1, ..., ch_n)` ≡ `¬dtok(¬ch_1, ..., ¬ch_n)`.
+Return the `dual` of an `Operator`.
+Given an operator `op` of arity `n`, the dual `dop` is such that, on a boolean algebra,
+`op(ch_1, ..., ch_n)` ≡ `¬dop(¬ch_1, ..., ¬ch_n)`.
 
 Duality can be used to perform synctactic simplifications on formulas.
 For example, since `∧` and `∨` are `dual`s, `¬(¬p ∧ ¬q)` can be simplified to `(p ∧ q)`.
-Duality also applies to nullary operators (`⊤`/`⊥`), operators with
-existential/universal semantics (`◊`/`□`), and `Atom`s.
+Duality also applies to `Truth` values (`⊤`/`⊥`), with existential/universal
+semantics (`◊`/`□`), and `Atom`s.
+
+NOTE: @typeHierarchyUpdate SyntaxToken type:
+    keep it or substitute it by writing explicitly Union{Connective,Truth}?
 
 # Implementation
 
@@ -131,11 +218,10 @@ dual(t::SyntaxToken) = error("Please, provide method dual(::$(typeof(t))).")
 hasdual(t::SyntaxToken) = false
 
 """
-TODO: @typeHierarchyUpdate
     syntaxstring(φ::AbstractFormula; kwargs...)::String
     syntaxstring(tok::SyntaxToken; kwargs...)::String
 
-Produce the string representation of a formula or syntax token by performing
+Produce the string representation of an `AbstractFormula` or a `SyntaxToken` by performing
 a tree traversal of the syntax tree representation of the formula.
 Note that this representation may introduce redundant parentheses.
 `kwargs` can be used to specify how to display syntax tokens/trees under
@@ -153,26 +239,26 @@ The following `kwargs` are currently supported:
 
 # Examples
 ```julia-repl
-julia> syntaxstring(parsebaseformula("p∧q∧r∧s∧t"))
+julia> syntaxstring(parsetree("p∧q∧r∧s∧t"))
 "p ∧ q ∧ r ∧ s ∧ t"
 
-julia> syntaxstring(parsebaseformula("p∧q∧r∧s∧t"), function_notation=true)
-"∧(p, ∧(q, ∧(r, ∧(s, t))))"
+julia> syntaxstring(parsetree("p∧q∧r∧s∧t"), function_notation=true)
+"∧(∧(∧(∧(p, q), r), s), t)"
 
-julia> syntaxstring(parsebaseformula("p∧q∧r∧s∧t"), remove_redundant_parentheses=false)
-"(p) ∧ ((q) ∧ ((r) ∧ ((s) ∧ (t))))"
+julia> syntaxstring(parsetree("p∧q∧r∧s∧t"), remove_redundant_parentheses=false)
+"((((p) ∧ (q)) ∧ (r)) ∧ (s)) ∧ (t)""
 
-julia> syntaxstring(parsebaseformula("p∧q∧r∧s∧t"), remove_redundant_parentheses=true, parenthesize_atoms=true)
+julia> syntaxstring(parsetree("p∧q∧r∧s∧t"), remove_redundant_parentheses=true, parenthesize_atoms=true)
 "(p) ∧ (q) ∧ (r) ∧ (s) ∧ (t)"
 
-julia> syntaxstring(parsebaseformula("◊((p∧s)→q)"))
+julia> syntaxstring(parsetree("◊((p∧s)→q)"))
 "◊((p ∧ s) → q)"
 
-julia> syntaxstring(parsebaseformula("◊((p∧s)→q)"); function_notation = true)
+julia> syntaxstring(parsetree("◊((p∧s)→q)"); function_notation = true)
 "◊(→(∧(p, s), q))"
 ```
 
-See also [`parsebaseformula`](@ref), [`parsetree`](@ref),
+See also [`parsetree`](@ref), [`parsetree`](@ref),
 [`SyntaxTree`](@ref), [`SyntaxToken`](@ref).
 
 # Implementation
@@ -180,7 +266,7 @@ See also [`parsebaseformula`](@ref), [`parsetree`](@ref),
 In the case of a syntax tree, `syntaxstring` is a recursive function that calls
 itself on the syntax children of each node. For a correct functioning, the `syntaxstring`
 must be defined (including `kwargs...`) for every newly defined
-`SyntaxToken` (e.g., operators and `Atom`s),
+`SyntaxToken` (e.g., `AbstractLeaf`s, that is, `Atom`s and `Truth` values, and `Operator`s),
 in a way that it produces a
 *unique* string representation, since `Base.hash` and `Base.isequal`, at least for
 `SyntaxTree`s, rely on it.
@@ -197,8 +283,8 @@ defined by defining the appropriate `syntaxstring` method.
     prefixed/suffixed by whitespaces, as this may cause ambiguities upon *parsing*.
     For similar reasons, `syntaxstring`s should not contain parentheses (`'('`, `')'`),
     and, when parsing in function notation, commas (`','`).
-    See also [`parsebaseformula`](@ref).
 
+See also [`AbstractLeaf`](@ref), [`Operator`](@ref), [`parsetree`](@ref).
 """
 function syntaxstring(tok::Syntactical; kwargs...)::String
     return error("Please, provide method syntaxstring(::$(typeof(tok)); kwargs...).")
@@ -212,7 +298,6 @@ syntaxstring(value; kwargs...) = string(value)
 ############################################################################################
 
 """
-TODO: @typeHierarchyUpdate
     struct Atom{A} <: AbstractLeaf
         value::A
     end
@@ -225,7 +310,7 @@ a logical interpretation.
 Atoms are nullary tokens (i.e, they are at the leaves of a syntax tree);
 note that their atoms cannot be `Atom`s.
 
-See also [`SyntaxToken`](@ref), [`AbstractInterpretation`](@ref), [`check`](@ref).
+See also [`AbstractInterpretation`](@ref), [`check`](@ref), [`SyntaxToken`](@ref).
 """
 struct Atom{A} <: AbstractLeaf
     value::A
@@ -261,7 +346,6 @@ Base.convert(::Type{P}, a) where {P<:Atom} = P(a)
 
 syntaxstring(p::Atom; kwargs...) = syntaxstring(value(p); kwargs...)
 
-
 Base.isequal(a::Atom, b::Atom) = Base.isequal(value(a), value(b))
 Base.isequal(a::Atom, b) = Base.isequal(value(a), b)
 Base.isequal(a, b::Atom) = Base.isequal(a, value(b))
@@ -275,41 +359,6 @@ function dual(value)
 end
 
 ############################################################################################
-
-"""
-TODO: @typeHierarchyUpdate
-    abstract type Operator <: SyntaxToken end
-
-An operator is a [logical constant](https://en.wikipedia.org/wiki/Logical_connective)
-which establishes a relation between atoms (i.e., facts).
-For example, the boolean operators AND, OR and IMPLIES (stylized as ∧, ∨ and →)
-are used to connect atoms and/or formulas to express derived concepts.
-
-Since operators often display very different algorithmic behaviors,
-leaf subtypes of `Operator` are
-often singleton types, which can be easily dispatched upon.
-
-# Implementation
-
-When implementing a new custom operator, one can override the default `precedence` and
-`associativity` (see https://docs.julialang.org/en/v1/manual/mathematical-operations/#Operator-Precedence-and-Associativity).
-If the custom operator is a `NamedOperator` and renders as something considered as a
-`math symbol` (for example, `⊙`, see https://stackoverflow.com/a/60321302/5646732),
-by the Julia parser, `Base.operator_precedence`
-and `Base.operator_associativity` are used to define these behaviors, and
-you might want to avoid providing these methods at all.
-
-When implementing a new type `C` for a *commutative* connective with arity higher than 1,
-please provide a method `iscommutative(::C)`. This can help model checking operations.
-
-See also [`SyntaxToken`](@ref), [`NamedConnective`](@ref),
-[`precedence`](@ref), [`associativity`](@ref), [`iscommutative`](@ref),
-[`check`](@ref).
-"""
-# abstract type Operator <: SyntaxToken end
-
-# Since, in general, operators are singletons, we show them via their syntaxstring
-# Base.show(io::IO, o::Operator) = print(io, syntaxstring(o))
 
 doc_iscommutative = """
     iscommutative(c::Connective)
@@ -333,16 +382,13 @@ See also [`Connective`](@ref).
 
 When implementing a new type for a *commutative* connective `C` with arity higher than 1,
 please provide a method `iscommutative(::C)`. This can help model checking operations.
+
+See also [`Connective`](@ref).
 """
 
 """$(doc_iscommutative)"""
 function iscommutative(c::Connective)
-    if arity(c) <= 1
-        return true
-    else
-        return false
-        # return error("Please, provide method iscommutative(c::$(typeof(c))).")
-    end
+    return arity(c) <= 1
 end
 
 """
@@ -422,22 +468,21 @@ julia> syntaxstring(parsetree("p ∧ q ∨ r"); remove_redundant_parentheses = f
 "(p ∧ q) ∨ r"
 ```
 
-See also [`precedence`](@ref), [`syntaxstring`](@ref),
-    [`parsetree`](@ref), [`Connective`](@ref).
+See also [`Connective`](@ref), [`parsetree`](@ref), [`precedence`](@ref),
+[`syntaxstring`](@ref).
 """
 associativity(c::Connective) = :left
 
 ############################################################################################
 
 """
-TODO: @typeHierarchyUpdate
     joinformulas(
-        op::Operator,
+        op::Connective,
         ::NTuple{N,F}
     )::F where {N,F<:AbstractFormula}
 
 Return a new formula of type `F` by composing `N` formulas of the same type
-via an operator `op`. This function allows one to use operators for flexibly composing
+via a connective `op`. This function allows one to use connectives for flexibly composing
 formulas (see *Implementation*).
 
 # Examples
@@ -458,10 +503,10 @@ SyntaxTree: ◊(p → q) ∧ p ∧ ¬p
 
 # Implementation
 
-Upon `joinformulas` lies a flexible way of using operators for composing
+Upon `joinformulas` lies a flexible way of using connectives for composing
 formulas and syntax tokens (e.g., atoms), given by methods like the following:
 
-    function (op::Operator)(
+    function (op::Connective)(
         children::NTuple{N,AbstractFormula},
     ) where {N}
         ...
@@ -475,9 +520,9 @@ promotion from/to other `AbstractFormula`s should be taken care of (see
 and [here](https://github.com/JuliaLang/julia/blob/master/base/promotion.jl)).
 
 Similarly,
-for allowing a (possibly newly defined) operator to be applied on a number of
+for allowing a (possibly newly defined) connective to be applied on a number of
 syntax tokens/formulas that differs from its arity,
-for any newly defined operator `op`, new methods
+for any newly defined connective `op`, new methods
 similar to the two above should be defined.
 For example, although ∧ and ∨ are binary, (i.e., have arity equal to 2),
 compositions such as `∧(f, f2, f3, ...)` and `∨(f, f2, f3, ...)` can be done
@@ -500,25 +545,18 @@ thanks to the following two methods that were defined in SoleLogics:
         return ∨(c1, ∨(c2, c3, cs...))
     end
 
-See also
-[`AbstractFormula`](@ref),
-[`Operator`](@ref).
+See also [`AbstractFormula`](@ref), [`Connective`](@ref).
 """
-function joinformulas(op::Operator, ::NTuple{N,F})::F where {N,F<:AbstractFormula}
+function joinformulas(op::Connective, ::NTuple{N,F})::F where {N,F<:AbstractFormula}
     return error("Please, provide method " *
-        "joinformulas(op::Operator, children::NTuple{N,$(F)}) where {N}.")
+        "joinformulas(op::Connective, children::NTuple{N,$(F)}) where {N}.")
 end
 
-function joinformulas(op::Operator, children::Vararg{F,N})::F where {N,F<:AbstractFormula}
+function joinformulas(op::Connective, children::Vararg{F,N})::F where {N,F<:AbstractFormula}
     joinformulas(op, children)
 end
 
-# Resolve ambiguity with nullary operators
-function joinformulas(op::Truth, children::NTuple{0})
-    return SyntaxTree(op, children)
-end
-
-function joinformulas(op::Operator, children::NTuple{N,SyntaxToken}) where {N}
+function joinformulas(op::Connective, children::NTuple{N,SyntaxToken}) where {N}
     return SyntaxTree(op, children)
 end
 
@@ -527,7 +565,7 @@ end
 
 Return whether a syntax token appears in a formula.
 
-See also [`SyntaxToken`](@ref).
+See also [`AbstractFormula`](@ref), [`SyntaxToken`](@ref).
 """
 function Base.in(tok::SyntaxToken, f::AbstractSyntaxStructure)::Bool
     return Base.in(tok, tree(f))
@@ -553,6 +591,10 @@ end
 """
 function Base.show(io::IO, f::AbstractFormula)
     print(io, "$(typeof(f))\nsyntaxstring: $(syntaxstring(f))")
+end
+
+function Base.show(io::IO, t::SyntaxToken)
+    print(io, syntaxstring(t))
 end
 
 function syntaxstring(f::AbstractSyntaxStructure; kwargs...)

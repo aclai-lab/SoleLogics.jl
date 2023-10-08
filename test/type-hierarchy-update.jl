@@ -145,7 +145,9 @@ interp2             = TruthDict(1:4, BOTTOM)
 @test norm |> children |> first |> token |> value   == value(m)
 
 @test_nowarn interp1[p] = BOTTOM
-@test_broken check(pandq, interp1)
+@test_nowarn interp1[p] = TOP
+
+@test check(pandq, interp1) == true
 
 
 end

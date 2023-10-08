@@ -307,15 +307,15 @@ See also [`TOP`](@ref), [`BOTTOM`](@ref), [`NEGATION`](@ref),
 [`CONJUCTION`](@ref), [`Operator`](@ref).
 """
 const BASE_OPERATORS = Operator[⊤, ⊥, ¬, ∧, ∨, →]
-# const BaseOperators = Union{typeof.(BASE_OPERATORS)...}
-#
-# const BASE_ALPHABET = AlphabetOfAny{String}()
-#
-# const BASE_GRAMMAR = CompleteFlatGrammar(BASE_ALPHABET, BASE_OPERATORS)
-# const BASE_ALGEBRA = BooleanAlgebra()
-#
-# const BASE_LOGIC = BaseLogic(BASE_GRAMMAR, BASE_ALGEBRA)
-#
+const BaseOperators = Union{typeof.(BASE_OPERATORS)...}
+
+const BASE_ALPHABET = AlphabetOfAny{String}()
+
+const BASE_GRAMMAR = CompleteFlatGrammar(BASE_ALPHABET, BASE_OPERATORS)
+const BASE_ALGEBRA = BooleanAlgebra()
+
+const BASE_LOGIC = BaseLogic(BASE_GRAMMAR, BASE_ALGEBRA)
+
 function _baselogic(;
     alphabet::Union{Nothing,Vector,AbstractAlphabet} = nothing,
     operators::Union{Nothing,Vector{<:Operator}} = nothing,
