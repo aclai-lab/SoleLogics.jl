@@ -238,7 +238,7 @@ The following `kwargs` are currently supported:
    wrapped in parentheses.
 
 # Examples
-```julia-repl
+```jldoctest
 julia> syntaxstring(parsetree("p∧q∧r∧s∧t"))
 "p ∧ q ∧ r ∧ s ∧ t"
 
@@ -366,7 +366,7 @@ doc_iscommutative = """
 Return whether a connective is known to be commutative.
 
 # Examples
-```julia-repl
+```jldoctest
 julia> iscommutative(∧)
 true
 
@@ -411,7 +411,7 @@ It is possible to assign a specific precedence to an connective type `C` by prov
 `Base.operator_precedence(::C)`.
 
 # Examples
-```julia-repl
+```jldoctest
 julia> precedence(∧) == Base.operator_precedence(:∧)
 true
 
@@ -454,7 +454,7 @@ Because of this, when dealing with a custom connective `⊙`,
 it will be the case that `parsetree("p ⊙ q ∧ r") == (@synexpr p ⊙ q ∧ r)`.
 
 # Examples
-```julia-repl
+```jldoctest
 julia> associativity(∧)
 :left
 
@@ -486,7 +486,7 @@ via a connective `op`. This function allows one to use connectives for flexibly 
 formulas (see *Implementation*).
 
 # Examples
-```julia-repl
+```jldoctest
 julia> f = parseformula("◊(p→q)");
 
 julia> p = Atom("p");
@@ -571,24 +571,6 @@ function Base.in(tok::SyntaxToken, f::AbstractSyntaxStructure)::Bool
     return Base.in(tok, tree(f))
 end
 
-"""
-    TODO: @typeHierarchyUpdate change the default dispatch
-
-    The following code
-
-        @atoms p
-        @show p
-
-    produces
-
-        @show p
-        p = Atom{String}
-        syntaxstring: p
-        Atom{String}
-        syntaxstring: p
-
-    which is ugly.
-"""
 function Base.show(io::IO, f::AbstractFormula)
     print(io, "$(typeof(f))\nsyntaxstring: $(syntaxstring(f))")
 end
@@ -603,18 +585,16 @@ end
 
 
 doc_tokopprop = """
-TODO: @typeHierarchyUpdate change AbstractFormula with AbstractSyntaxStructure
-    tokens(f::AbstractFormula)::AbstractVector{<:SyntaxToken}
-    operators(f::AbstractFormula)::AbstractVector{<:Operator}
-    atoms(f::AbstractFormula)::AbstractVector{<:Atom}
-    ntokens(f::AbstractFormula)::Integer
-    noperators(f::AbstractFormula)::Integer
-    natoms(f::AbstractFormula)::Integer
+    tokens(f::AbstractComposite)::AbstractVector{<:SyntaxToken}
+    operators(f::AbstractComposite)::AbstractVector{<:Operator}
+    atoms(f::AbstractComposite)::AbstractVector{<:Atom}
+    ntokens(f::AbstractComposite)::Integer
+    noperators(f::AbstractComposite)::Integer
+    natoms(f::AbstractComposite)::Integer
 
-Return the list or the number of (unique) syntax
-tokens/operators/atoms appearing in a formula.
+Return the list or the number of (unique) `SyntaxToken`s appearing in a formula.
 
-See also [`AbstractSyntaxStructure`](@ref).
+See also [`AbstractComposite`](@ref), [`SyntaxToken`](@ref).
 """
 
 """$(doc_tokopprop)"""
@@ -642,9 +622,8 @@ function height(f::AbstractComposite)::Integer
     return height(tree(f))
 end
 
-# Helpers that make all AbstractFormula's map to the same
-#  dictionary key. Useful when checking formulas on interpretations.
-# TODO: @typeHierarchyUpdate is AbstractComposite correct?
+# Helpers that make all AbstractFormula's map to the same dictionary key.
+# Useful when checking formulas on interpretations.
 function Base.isequal(a::AbstractComposite, b::AbstractComposite)
     Base.isequal(tree(a), tree(b))
 end
@@ -684,11 +663,10 @@ has as many children as the `arity` of the token.
 This implementation is *arity-compliant*, in that, upon construction,
 the arity is checked against the number of children provided.
 
-See also [`token`](@ref), [`children`](@ref), [`tokentype`](@ref),
-[`tokens`](@ref), [`operators`](@ref), [`atoms`](@ref),
-[`ntokens`](@ref), [`natoms`](@ref), [`height`](@ref),
-[`tokenstype`](@ref), [`operatorstype`](@ref), [`atomstype`](@ref),
-[`SyntaxToken`](@ref), [`arity`](@ref), [`Atom`](@ref), [`Operator`](@ref).
+See also [`arity`](@ref), [`Atom`](@ref), [`atoms`](@ref), [`atomstype`](@ref),
+[`children`](@ref), [`height`](@ref),[`natoms`](@ref), [`ntokens`](@ref),
+[`Operator`](@ref),[`operators`](@ref), [`operatorstype`](@ref), [`SyntaxToken`](@ref),
+[`token`](@ref), [`tokens`](@ref), [`tokenstype`](@ref), [`tokentype`](@ref).
 """
 struct SyntaxTree{
     T<:SyntaxToken,
@@ -759,9 +737,9 @@ end
 """
     Base.in(tok::SyntaxToken, tree::SyntaxTree)::Bool
 
-Return whether a token appears in a syntax tree or not.
+Return whether a `SyntaxToken` appears in a syntax tree or not.
 
-See also [`tokens`](@ref), [`SyntaxTree`](@ref).
+See also [`SyntaxToken`](@ref), [`SyntaxTree`](@ref), [`tokens`](@ref).
 """
 function Base.in(tok::SyntaxToken, tree::SyntaxTree)
     return tok == token(tree) || any([Base.in(tok, c) for c in children(tree)])
@@ -772,7 +750,7 @@ end
 
 List all tokens appearing in a syntax tree.
 
-See also [`ntokens`](@ref), [`operators`](@ref), [`atoms`](@ref), [`SyntaxToken`](@ref).
+See also [`atoms`](@ref), [`ntokens`](@ref), [`operators`](@ref), [`SyntaxToken`](@ref).
 """
 function tokens(t::SyntaxTree)::AbstractVector{SyntaxToken}
     return SyntaxToken[vcat(tokens.(children(t))...)..., token(t)]
@@ -783,7 +761,7 @@ end
 
 List all operators appearing in a syntax tree.
 
-See also [`noperators`](@ref), [`atoms`](@ref), [`tokens`](@ref), [`Operator`](@ref).
+See also [`atoms`](@ref), [`noperators`](@ref), [`Operator`](@ref), [`tokens`](@ref).
 """
 function operators(t::SyntaxTree)::AbstractVector{Operator}
     ops = token(t) isa Operator ? [token(t)] : []
@@ -793,9 +771,9 @@ end
 """
     atoms(t::SyntaxTree)::AbstractVector{Atom}
 
-List all atoms appearing in a syntax tree.
+List all `Atom`s appearing in a syntax tree.
 
-See also [`natoms`](@ref), [`operators`](@ref), [`tokens`](@ref), [`Atom`](@ref).
+See also [`Atom`](@ref), [`natoms`](@ref), [`operators`](@ref), [`tokens`](@ref).
 """
 function atoms(t::SyntaxTree)::AbstractVector{Atom}
     ps = token(t) isa Atom ? Atom[token(t)] : Atom[]
@@ -807,7 +785,7 @@ end
 
 Return the count of all tokens appearing in a syntax tree.
 
-See also [`tokens`](@ref), [`SyntaxToken`](@ref).
+See also [`SyntaxToken`](@ref), [`tokens`](@ref).
 """
 function ntokens(t::SyntaxTree)::Integer
     length(children(t)) == 0 ? 1 : 1 + sum(ntokens(c) for c in children(t))
@@ -816,9 +794,9 @@ end
 """
     noperators(t::SyntaxTree)::Integer
 
-Return the count of all operators appearing in a syntax tree.
+Return the count of all `Operator`s appearing in a syntax tree.
 
-See also [`operaters`](@ref), [`SyntaxToken`](@ref).
+See also [`operators`](@ref), [`SyntaxToken`](@ref).
 """
 function noperators(t::SyntaxTree)::Integer
     op = token(t) isa Operator ? 1 : 0
@@ -828,7 +806,7 @@ end
 """
     natoms(t::SyntaxTree)::Integer
 
-Return the count of all atoms appearing in a syntax tree.
+Return the count of all `Atom`s appearing in a syntax tree.
 
 See also [`atoms`](@ref), [`SyntaxToken`](@ref).
 """
@@ -842,7 +820,7 @@ end
 
 Return the height of a syntax tree.
 
-See also [`tokens`](@ref), [`SyntaxToken`](@ref).
+See also [`SyntaxToken`](@ref), [`tokens`](@ref).
 """
 function height(t::SyntaxTree)::Integer
     length(children(t)) == 0 ? 0 : 1 + maximum(height(c) for c in children(t))
@@ -871,7 +849,7 @@ function syntaxstring(
     ))
 
     # Parenthesization rules for binary operators in infix notation
-    function _binary_infix_syntaxstring(tok::SyntaxToken, ch::SyntaxTree; relation::Symbol=:left)
+    function _binary_infix_syntaxstring(tok::SyntaxToken, ch::SyntaxTree)
         chtok = token(ch)
         chtokstring = syntaxstring(ch; ch_kwargs...)
 
@@ -888,8 +866,10 @@ function syntaxstring(
         tprec = precedence(tok)
         chprec = precedence(chtok)
 
-        if ((!iscommutative(tok) || tok != chtok) && (tprec > chprec)) || # "◊¬p ∧ ¬q" instead of "(◊¬p) ∧ (¬q)"
-            (!iscommutative(tok) && tprec <= chprec)                      # "(q → p) → ¬q" instead of "q → p → ¬q"
+        # 1st condition, before "||" -> "◊¬p ∧ ¬q" instead of "(◊¬p) ∧ (¬q)"
+        # 2nd condition, after  "||" -> "(q → p) → ¬q" instead of "q → p → ¬q"
+        if ((!iscommutative(tok) || tok != chtok) && (tprec > chprec)) ||
+            (!iscommutative(tok) && tprec <= chprec)
             lpar, rpar = "(", ")"
         end
 
@@ -899,12 +879,15 @@ function syntaxstring(
     tok = token(t)
     tokstr = syntaxstring(tok; ch_kwargs...)
 
-    if arity(tok) == 0 # A leaf nodes parenthesization is responsability of its parent
+    if arity(tok) == 0
+        # Leaf nodes parenthesization is parent's respsonsability
         return tokstr
-    elseif arity(tok) == 2 && !function_notation # Infix notation for binary operators
-        "$(_binary_infix_syntaxstring(tok, children(t)[1]; relation=:left)) "*
-        "$tokstr $(_binary_infix_syntaxstring(tok, children(t)[2]; relation=:right))"
-    else # Infix notation with arity != 2, or function notation
+    elseif arity(tok) == 2 && !function_notation
+        # Infix notation for binary operators
+        "$(_binary_infix_syntaxstring(tok, children(t)[1])) "*
+        "$tokstr $(_binary_infix_syntaxstring(tok, children(t)[2]))"
+    else
+        # Infix notation with arity != 2, or function notation
         lpar, rpar = "(", ")"
         charity = arity(token(children(t)[1]))
         if !function_notation && arity(tok) == 1 &&
@@ -942,9 +925,7 @@ end
 Extract the `SyntaxTree` representation of a formula
 (equivalent to `Base.convert(SyntaxTree, f)`).
 
-See also
-[`SyntaxTree`](@ref),
-[`AbstractComposite`](@ref),
+See also [`AbstractComposite`](@ref), [`SyntaxTree`](@ref).
 """
 function tree(f::AbstractComposite)::SyntaxTree
     return error("Please, provide method tree(::$(typeof(f)))::SyntaxTree.")
@@ -965,13 +946,9 @@ An alphabet (or *propositional alphabet*) is a set of atoms
 (assumed to be
 [countable](https://en.wikipedia.org/wiki/Countable_set)).
 
-See also [`ExplicitAlphabet`](@ref), [`AlphabetOfAny`](@ref),
-[`atomstype`](@ref), [`valuetype`](@ref),
-[`Atom`](@ref), [`AbstractGrammar`](@ref).
-
 # Examples
 
-```julia-repl
+```jldoctest
 julia> Atom(1) in ExplicitAlphabet(Atom.(1:10))
 true
 
@@ -1008,6 +985,8 @@ By default, an alphabet is considered finite:
     Base.isfinite(a::AbstractAlphabet) = Base.isfinite(typeof(a))
     Base.in(p::Atom, a::AbstractAlphabet) = Base.isfinite(a) ? Base.in(p, atoms(a)) : error(...)
 
+See also [`AbstractGrammar`](@ref), [`AlphabetOfAny`](@ref), [`Atom`](@ref),
+[`ExplicitAlphabet`](@ref), [`atomstype`](@ref),  [`valuetype`](@ref).
 """
 abstract type AbstractAlphabet{A} end
 
@@ -1109,7 +1088,7 @@ end
 
 An alphabet wrapping atoms in a (finite) `Vector`.
 
-See also [`atoms`](@ref), [`AbstractAlphabet`](@ref).
+See also [`AbstractAlphabet`](@ref), [`atoms`](@ref).
 """
 struct ExplicitAlphabet{A} <: AbstractAlphabet{A}
     atoms::Vector{Atom{A}}
@@ -1186,8 +1165,7 @@ Base.in(op::Operator, g::AbstractGrammar) = (op <: operatorstype(g))
 """
     Base.in(t::SyntaxTree, g::AbstractGrammar)::Bool
 
-Return whether a formula,
-encoded as a `SyntaxTree`, belongs to a grammar.
+Return whether a `SyntaxTree`, belongs to a grammar.
 
 See also [`AbstractGrammar`](@ref), [`SyntaxTree`](@ref).
 """
@@ -1255,10 +1233,8 @@ For example, with `operators = [⊥,∧,∨]`, the grammar (in Backus-Naur form)
 with p ∈ alphabet. Note: it is *flat* in the sense that all rules substitute the same
 (unique and starting) non-terminal symbol φ.
 
-See also [`alphabet`](@ref), [`operators`](@ref),
-[`nonterminals`](@ref), [`terminals`](@ref),
-[`formulas`](@ref),
-[`Operator`](@ref), [`AbstractGrammar`](@ref).
+See also [`AbstractGrammar`](@ref),[`Operator`](@ref), [`alphabet`](@ref),
+[`formulas`](@ref),[`nonterminals`](@ref), [`operators`](@ref), [`terminals`](@ref).
 """
 struct CompleteFlatGrammar{A<:AbstractAlphabet,O<:Operator} <: AbstractGrammar{A,O}
     alphabet::A
@@ -1323,9 +1299,9 @@ end
         nformulas::Union{Nothing,Integer} = nothing
     )::Vector{SyntaxTree}
 
-Generate all formulas with syntax trees that are not taller than a given `maxdepth`.
+Generate all formulas whose `SyntaxTree`s that are not taller than a given `maxdepth`.
 
-See also [`AbstractGrammar`](@ref).
+See also [`AbstractGrammar`](@ref), [`SyntaxTree`](@ref).
 """
 function formulas(
     g::CompleteFlatGrammar{A,O} where {A,O};
@@ -1367,7 +1343,7 @@ end
 """
     istop(::Truth)::Bool
 
-Return true if the truth value is the TOP of its algebra.
+Return true if the `Truth` value is the TOP of its algebra.
 For example, in the crisp case, with `Bool` truth values, it is:
 
     istop(t::Bool)::Bool = (t == true)
@@ -1379,7 +1355,7 @@ istop(t::Truth)::Bool = error("Please, provide method istop(Truth::$(typeof(t)))
 """
     isbottom(::Truth)::Bool
 
-Return true if the truth value is the BOTTOM of its algebra.
+Return true if the `Truth` value is the BOTTOM of its algebra.
 For example, in the crisp case, with `Bool` truth values, it is:
 
     isbottom(t::Bool)::Bool = (t == false)
@@ -1391,12 +1367,14 @@ isbottom(t::Truth)::Bool = error("Please, provide method isbottom(Truth::$(typeo
 """
    default_algebra(::Type{T})::AbstractAlgebra{<:T} where {T<:Truth}
 
-Return the fallback algebra for a given truth value type.
+Return the fallback algebra for a given `Truth` value type.
 
 # Implementation
 
 In order to check syntax trees without algebras, truth values should provide
 a default algebra it works with.
+
+See also [`Truth`](@ref).
 """
 function default_algebra(::Type{T})::AbstractAlgebra{<:T} where {T<:Truth}
     return error("Please, provide method " *
@@ -1416,7 +1394,6 @@ function Base.show(io::IO, f::Truth)
 end
 
 doc_TOP = """
-#TODO: @typeHierarchyUpdate
     struct Top <: Truth end
     const TOP = Top()
     const ⊤ = TOP
@@ -1424,7 +1401,7 @@ doc_TOP = """
 Canonical truth operator representing the value `true`.
 It can be typed by `\\TOP<tab>`.
 
-See also [`BOTTOM`](@ref), [`Truth`](@ref), [`Truth`](@ref).
+See also [`BOTTOM`](@ref), [`TOP`](@ref), [`Truth`](@ref).
 """
 """$(doc_TOP)"""
 struct Top <: BooleanTruth end
@@ -1616,7 +1593,7 @@ Additionally, the following keyword arguments may be specified:
 See the examples.
 
 # Examples
-```julia-repl
+```jldoctest
 julia> f = parsebaseformula("◊(p→q)");
 
 julia> f2 = f(parseformula("p"));
@@ -1775,7 +1752,7 @@ This process is referred to as
 algorithms for it, typically depending on the complexity of the logic.
 
 # Examples
-```julia-repl
+```jldoctest
 julia> @atoms String p q
 2-element Vector{Atom{String}}:
  Atom{String}("p")
