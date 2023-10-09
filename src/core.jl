@@ -1399,9 +1399,9 @@ doc_TOP = """
     const ⊤ = TOP
 
 Canonical truth operator representing the value `true`.
-It can be typed by `\\TOP<tab>`.
+It can be typed by `\\top<tab>`.
 
-See also [`BOTTOM`](@ref), [`TOP`](@ref), [`Truth`](@ref).
+See also [`BOTTOM`](@ref), [`Truth`](@ref).
 """
 """$(doc_TOP)"""
 struct Top <: BooleanTruth end
@@ -1412,9 +1412,21 @@ const ⊤ = TOP
 
 syntaxstring(o::Top; kwargs...) = "⊤"
 
-#TODO: @typeHierarchyUpdate add docstring
+doc_BOTTOM = """
+    struct Bottom <: Truth end
+    const BOTTOM = Bottom()
+    const ⊥ = BOTTOM
+
+Canonical truth operator representing the value `false`.
+It can be typed by `\\bot<tab>`.
+
+See also [`TOP`](@ref), [`Truth`](@ref).
+"""
+"""$(doc_BOTTOM)"""
 struct Bottom <: BooleanTruth end
+"""$(doc_BOTTOM)"""
 const BOTTOM = Bottom()
+"""$(doc_BOTTOM)"""
 const ⊥ = BOTTOM
 
 syntaxstring(o::Bottom; kwargs...) = "⊥"
@@ -1437,9 +1449,8 @@ semantics of operators is given in terms of operations between truth values.
 When implementing a new algebra type, the methods `domain`,
 `TOP`, and `BOTTOM` should be implemented.
 
-See also [`domain`](@ref), [`TOP`](@ref), [`BOTTOM`](@ref),
-[`truthtype`](@ref), [`iscrisp`](@ref),
-[``BooleanAlgebra`](@ref), [`Operator`](@ref), [`collatetruth`](@ref).
+See also [`BOTTOM`](@ref), [`BooleanAlgebra`](@ref), [`Operator`](@ref), [`TOP`](@ref),
+[`collatetruth`](@ref), [`domain`](@ref), [`iscrisp`](@ref), [`truthtype`](@ref).
 """
 abstract type AbstractAlgebra{T<:Truth} end
 
@@ -1515,7 +1526,7 @@ an algebra (*semantics*).
 When implementing a new logic type,
 the methods `grammar` and `algebra` should be implemented.
 
-See also [`AbstractGrammar`](@ref), [`AbstractAlgebra`](@ref).
+See also [`AbstractAlgebra`](@ref), [`AbstractGrammar`](@ref).
 """
 abstract type AbstractLogic{G<:AbstractGrammar,A<:AbstractAlgebra} end
 
@@ -1524,11 +1535,9 @@ abstract type AbstractLogic{G<:AbstractGrammar,A<:AbstractAlgebra} end
 
 Return the `grammar` of a given logic.
 
-See also [`grammar`](@ref), [`algebra`](@ref),
-[`operators`](@ref), [`alphabet`](@ref),
-[`truthtype`](@ref),
-[`formulas`](@ref),
-[`AbstractGrammar`](@ref), [`AbstractLogic`](@ref).
+See also [`AbstractGrammar`](@ref), [`AbstractLogic`](@ref), [`algebra`](@ref),
+[`alphabet`](@ref), [`formulas`](@ref), [`grammar`](@ref), [`operators`](@ref),
+[`truthtype`](@ref).
 """
 function grammar(l::AbstractLogic{G})::G where {G}
     return error("Please, provide method grammar(::$(typeof(l))).")
@@ -1570,24 +1579,25 @@ Base.hash(a::AbstractLogic) = Base.hash(grammar(a)) + Base.hash(algebra(a))
 
 ############################################################################################
 
+# TODO: see check_tree optional parameter
 """
     struct Formula{L<:AbstractLogic} <: AbstractFormula
         _logic::Base.RefValue{L}
         synstruct::AbstractSyntaxStructure
     end
 
-A formula anchored to a logic of type `L`,
-and wrapping a syntax structure.
-The structure encodes a formula belonging to the grammar
-of the logic, and the truth of the formula can be evaluated
-on interpretations of the same logic. Note that, here, the logic is represented by a reference.
+A formula anchored to a logic of type `L`, and wrapping a syntax structure.
+The structure encodes a formula belonging to the grammar of the logic, and the truth of the
+formula can be evaluated on interpretations of the same logic. Note that, here, the logic is
+represented by a reference.
 
 Upon construction, the logic can be passed either directly, or via a RefValue.
 Additionally, the following keyword arguments may be specified:
 - `check_atoms::Bool = false`: whether to perform or not a check that the atoms
     belong to the alphabet of the logic;
-- `check_tree::Bool = false`: whether to perform or not a check that the formula's syntactic structure
-    honors the grammar (includes the check performed with `check_atoms = true`) (TODO);
+- `check_tree::Bool = false`: whether to perform or not a check that the formula's
+    syntactic structure honors the grammar
+    (includes the check performed with `check_atoms = true`);
 
 *Cool feature*: a `Formula` can be used for instating other formulas of the same logic.
 See the examples.
@@ -1612,10 +1622,8 @@ julia> @assert ◊ isa operatorstype(logic(f2))
 
 ```
 
-See also
-[`tree`](@ref), [`logic`](@ref),
-[`SyntaxToken`](@ref), [`SyntaxTree`](@ref),
-[`AbstractLogic`](@ref).
+See also [`AbstractLogic`](@ref), [`logic`](@ref), [`SyntaxToken`](@ref),
+[`SyntaxTree`](@ref), [`tree`](@ref).
 """
 struct Formula{L<:AbstractLogic} <: AbstractFormula
     _logic::Base.RefValue{L}
@@ -1792,7 +1800,8 @@ end
 ######################################### UTILS ############################################
 ############################################################################################
 
-# We provide an extra safety layer by complementing Base.in with syntax tokens/trees and alphabets.
+# We provide an extra safety layer by complementing
+# Base.in with syntax tokens/trees and alphabets.
 function Base.in(t::Union{SyntaxToken,AbstractSyntaxStructure}, a::AbstractAlphabet)
     return error("Attempting Base.in($(typeof(t)), ::$(typeof(a))), " *
                  "but objects of type $(typeof(t)) cannot belong to alphabets.")
