@@ -1,31 +1,31 @@
 """
     collatetruth(
         a::AbstractAlgebra,
-        op::Operator,
+        c::Connective,
         t::NTuple{N,T},
     )::T where {N,T<:Truth}
 
-Return the truth value of a composed formula op(φ1, ..., φN), given the `N`
+Return the truth value of a composed formula c(φ1, ..., φN), given the `N`
 truth values of its immediate sub-formulas.
-An algebra must provide a `collatetruth` method for each operator that can be
+An algebra must provide a `collatetruth` method for each connective that can be
 interpreted on it.
 
-See also [`AbstractAlgebra`](@ref) [`Operator`](@ref), [`Truth`](@ref).
+See also [`AbstractAlgebra`](@ref) [`Connective`](@ref), [`Truth`](@ref).
 """
 function collatetruth(
     a::AbstractAlgebra{T},
-    op::Connective,
+    c::Connective,
     t::NTuple{N,T},
 )::T where {N,T<:Truth}
     if truthtype(a) != T
         return error("Cannot collate $(length(t)) truth values of type $(T) " *
                      "with algebra $(typeof(a)) with truth type $(truthtype(a))).")
-    elseif arity(op) != length(t)
+    elseif arity(c) != length(t)
         return error("Cannot collate $(length(t)) truth values for " *
-                     "operator $(typeof(op)) with arity $(arity(op))).")
+                     "connective $(typeof(c)) with arity $(arity(c))).")
     else
-        return error("Please, provide method collatetruth(::$(typeof(a)), ::$(typeof(op)), " *
-                     "::NTuple{$(arity(op)),$(truthtype(a))}).")
+        return error("Please, provide method collatetruth(::$(typeof(a)), ::$(typeof(c)), " *
+                     "::NTuple{$(arity(c)),$(truthtype(a))}).")
     end
 end
 
@@ -34,7 +34,7 @@ collatetruth(a::AbstractAlgebra{T}, ::typeof(⊤), t::NTuple{0,T}) where {T<:Tru
 collatetruth(a::AbstractAlgebra{T}, ::typeof(⊥), t::NTuple{0,T}) where {T<:Truth} = bottom(a)
 
 ############################################################################################
-####################################### BASE OPERATORS #####################################
+##################################### BASE CONNECTIVES #####################################
 ############################################################################################
 
 """
@@ -45,22 +45,22 @@ TODO: @typeHierarchyUpdate
 A singleton type for representing connectives defined by a name or a symbol.
 
 # Examples
-The AND operator (logical conjuction) is defined as the subtype:
+The AND connective (logical conjuction) is defined as the subtype:
 
     const CONJUNCTION = NamedConnective{:∧}()
     const ∧ = CONJUNCTION
     arity(::typeof(∧)) = 2
 
 See also [`NEGATION`](@ref), [`CONJUNCTION`](@ref), [`DISJUNCTION`](@ref),
-[`IMPLICATION`](@ref), [`Operator`](@ref).
+[`IMPLICATION`](@ref), [`Connective`](@ref).
 """
 struct NamedConnective{Symbol} <: Connective end
 
 name(::NamedConnective{S}) where {S} = S
 
-Base.show(io::IO, op::NamedConnective) = print(io, "$(syntaxstring(op))")
+Base.show(io::IO, c::NamedConnective) = print(io, "$(syntaxstring(c))")
 
-syntaxstring(op::NamedConnective; kwargs...) = string(name(op))
+syntaxstring(c::NamedConnective; kwargs...) = string(name(c))
 
 function precedence(c::NamedConnective)
     Base.operator_precedence(SoleLogics.name(c))
@@ -78,7 +78,7 @@ doc_NEGATION = """
 Logical negation (also referred to as complement).
 It can be typed by `\\neg<tab>`.
 
-See also [`NamedConnective`](@ref), [`Operator`](@ref).
+See also [`NamedConnective`](@ref), [`Connective`](@ref).
 """
 """$(doc_NEGATION)"""
 const NEGATION = NamedConnective{:¬}()
@@ -95,7 +95,7 @@ doc_CONJUNCTION = """
 Logical conjunction.
 It can be typed by `\\wedge<tab>`.
 
-See also [`NamedConnective`](@ref), [`Operator`](@ref).
+See also [`NamedConnective`](@ref), [`Connective`](@ref).
 """
 """$(doc_CONJUNCTION)"""
 const CONJUNCTION = NamedConnective{:∧}()
@@ -112,7 +112,7 @@ doc_DISJUNCTION = """
 Logical disjunction.
 It can be typed by `\\vee<tab>`.
 
-See also [`NamedConnective`](@ref), [`Operator`](@ref).
+See also [`NamedConnective`](@ref), [`Connective`](@ref).
 """
 """$(doc_DISJUNCTION)"""
 const DISJUNCTION = NamedConnective{:∨}()
@@ -129,7 +129,7 @@ doc_IMPLICATION = """
 Logical implication.
 It can be typed by `\\to<tab>`.
 
-See also [`NamedConnective`](@ref), [`Operator`](@ref).
+See also [`NamedConnective`](@ref), [`Connective`](@ref).
 """
 """$(doc_IMPLICATION)"""
 const IMPLICATION = NamedConnective{:→}()
@@ -160,9 +160,9 @@ iscommutative(::typeof(∧)) = true
 iscommutative(::typeof(∨)) = true
 
 hasdual(::typeof(∧)) = true
-dual(op::typeof(∧)) = typeof(∨)
+dual(c::typeof(∧)) = typeof(∨)
 hasdual(::typeof(∨)) = true
-dual(op::typeof(∨))     = typeof(∧)
+dual(c::typeof(∨))     = typeof(∧)
 
 
 ############################################################################################
@@ -195,10 +195,10 @@ Base.convert(::Bool, tok::Bottom) = false
 
 function collatetruth(
     a::BooleanAlgebra,
-    o::Connective,
+    c::Connective,
     ch::NTuple{N,BooleanTruth}
 ) where {N}
-    _collatetruth(a, o, tuple((c(a) for c in ch)...))
+    _collatetruth(a, c, tuple((child(a) for child in ch)...))
 end
 
 # Standard semantics for NOT, AND, OR, IMPLIES
@@ -261,7 +261,7 @@ struct BaseLogic{G<:AbstractGrammar,A<:AbstractAlgebra} <: AbstractLogic{G,A}
         grammar::G = BASE_GRAMMAR,
         algebra::A = BooleanAlgebra(),
     ) where {G<:AbstractGrammar,A<:AbstractAlgebra}
-        # @assert all([goeswith(op, algebra) for op in operators(grammar)]) "Cannot instantiate BaseLogic{$(G),$(A)}: operators $(operators(grammar)[[goeswith(op, algebra) for op in operators(grammar)]]) cannot be interpreted on $(algebra)." # requires `goeswith` trait
+        # @assert all([goeswith(c, algebra) for c in operators(grammar)]) "Cannot instantiate BaseLogic{$(G),$(A)}: operators $(operators(grammar)[[goeswith(c, algebra) for c in operators(grammar)]]) cannot be interpreted on $(algebra)." # requires `goeswith` trait
         return new{G,A}(grammar, algebra)
     end
 
@@ -304,7 +304,7 @@ end
 Basic logical operators.
 
 See also [`TOP`](@ref), [`BOTTOM`](@ref), [`NEGATION`](@ref),
-[`CONJUCTION`](@ref), [`Operator`](@ref).
+[`CONJUCTION`](@ref), [`Connective`](@ref).
 """
 const BASE_OPERATORS = Operator[⊤, ⊥, ¬, ∧, ∨, →]
 const BaseOperators = Union{typeof.(BASE_OPERATORS)...}

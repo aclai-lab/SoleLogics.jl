@@ -773,7 +773,7 @@ end
 
 """
     ismodal(::Type{<:Connective})::Bool = false
-    ismodal(o::Connective)::Bool = ismodal(typeof(o))
+    ismodal(c::Connective)::Bool = ismodal(typeof(c))
 
 Return whether it is known that an `Connective` is modal.
 
@@ -787,11 +787,11 @@ false
 ```
 """
 ismodal(::Type{<:Connective})::Bool = false
-ismodal(o::Connective)::Bool = ismodal(typeof(o))
+ismodal(c::Connective)::Bool = ismodal(typeof(c))
 
 """
     isbox(::Type{<:Connective})::Bool = false
-    isbox(o::Connective)::Bool = isbox(typeof(o))
+    isbox(c::Connective)::Bool = isbox(typeof(c))
 
 Return whether it is known that an `Connective` is a box (i.e., universal) operator.
 
@@ -808,10 +808,10 @@ true
 ```
 """
 isbox(::Type{<:Connective})::Bool = false
-isbox(o::Connective)::Bool = isbox(typeof(o))
+isbox(c::Connective)::Bool = isbox(typeof(c))
 
-isdiamond(O::Type{<:Connective})::Bool = ismodal(O) && !isbox(O)
-isdiamond(o::Connective)::Bool = isdiamond(typeof(o))
+isdiamond(C::Type{<:Connective})::Bool = ismodal(C) && !isbox(C)
+isdiamond(c::Connective)::Bool = isdiamond(typeof(c))
 
 doc_DIAMOND = """
     const DIAMOND = NamedConnective{:◊}()

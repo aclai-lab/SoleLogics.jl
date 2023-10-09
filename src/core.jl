@@ -407,7 +407,7 @@ of its symbol (`name`).
 Because of this, when dealing with a custom connective `⊙`,
 it will be the case that `parsetree("p ⊙ q ∧ r") == (@synexpr p ⊙ q ∧ r)`.
 
-It is possible to assign a specific precedence to an connective type `C` by providing a method
+It is possible to assign a specific precedence to a connective type `C` by providing a method
 `Base.operator_precedence(::C)`.
 
 # Examples
@@ -477,12 +477,12 @@ associativity(c::Connective) = :left
 
 """
     joinformulas(
-        op::Connective,
+        c::Connective,
         ::NTuple{N,F}
     )::F where {N,F<:AbstractFormula}
 
 Return a new formula of type `F` by composing `N` formulas of the same type
-via a connective `op`. This function allows one to use connectives for flexibly composing
+via a connective `c`. This function allows one to use connectives for flexibly composing
 formulas (see *Implementation*).
 
 # Examples
@@ -506,7 +506,7 @@ SyntaxTree: ◊(p → q) ∧ p ∧ ¬p
 Upon `joinformulas` lies a flexible way of using connectives for composing
 formulas and syntax tokens (e.g., atoms), given by methods like the following:
 
-    function (op::Connective)(
+    function (c::Connective)(
         children::NTuple{N,AbstractFormula},
     ) where {N}
         ...
@@ -522,7 +522,7 @@ and [here](https://github.com/JuliaLang/julia/blob/master/base/promotion.jl)).
 Similarly,
 for allowing a (possibly newly defined) connective to be applied on a number of
 syntax tokens/formulas that differs from its arity,
-for any newly defined connective `op`, new methods
+for any newly defined connective `c`, new methods
 similar to the two above should be defined.
 For example, although ∧ and ∨ are binary, (i.e., have arity equal to 2),
 compositions such as `∧(f, f2, f3, ...)` and `∨(f, f2, f3, ...)` can be done
@@ -547,17 +547,17 @@ thanks to the following two methods that were defined in SoleLogics:
 
 See also [`AbstractFormula`](@ref), [`Connective`](@ref).
 """
-function joinformulas(op::Connective, ::NTuple{N,F})::F where {N,F<:AbstractFormula}
+function joinformulas(c::Connective, ::NTuple{N,F})::F where {N,F<:AbstractFormula}
     return error("Please, provide method " *
-        "joinformulas(op::Connective, children::NTuple{N,$(F)}) where {N}.")
+        "joinformulas(c::Connective, children::NTuple{N,$(F)}) where {N}.")
 end
 
-function joinformulas(op::Connective, children::Vararg{F,N})::F where {N,F<:AbstractFormula}
-    joinformulas(op, children)
+function joinformulas(c::Connective, children::Vararg{F,N})::F where {N,F<:AbstractFormula}
+    joinformulas(c, children)
 end
 
-function joinformulas(op::Connective, children::NTuple{N,SyntaxToken}) where {N}
-    return SyntaxTree(op, children)
+function joinformulas(c::Connective, children::NTuple{N,SyntaxToken}) where {N}
+    return SyntaxTree(c, children)
 end
 
 """
@@ -1813,7 +1813,7 @@ An alphabet of `valuetype` `A` can be used for instantiating atoms of valuetype 
 (::AbstractAlphabet{A})(a) where {A} = Atom{A}(a)
 
 """
-    functino (op::Operator)(o::Any)
+    function (op::Operator)(o::Any)
 
 An `Operator` can be used to compose syntax tokens (e.g., atoms),
 syntax trees and/or formulas.

@@ -2,12 +2,12 @@ import Base: show, promote_rule, length, getindex
 using SoleBase
 
 doc_lmlf = """
-    struct LeftmostLinearForm{O<:Connective,SS<:AbstractSyntaxStructure} <: AbstractSyntaxStructure
+    struct LeftmostLinearForm{C<:Connective,SS<:AbstractSyntaxStructure} <: AbstractSyntaxStructure
         children::Vector{<:SS}
     end
 
 A syntax structure representing the `foldl` of a set of other syntax structure of type `SS`
-by means of an operator `O`. This structure enables a structured instantiation of
+by means of a connective `C`. This structure enables a structured instantiation of
 formulas in conjuctive/disjunctive forms, and
 conjuctive normal form (CNF) or disjunctive normal form (DNF), defined as:
 
@@ -43,13 +43,13 @@ See also [`AbstractSyntaxStructure`](@ref), [`SyntaxTree`](@ref),
 [`LeftmostConjunctiveForm`](@ref), [`LeftmostDisjunctiveForm`](@ref),
 [`Literal`](@ref).
 """
-struct LeftmostLinearForm{O<:Connective,SS<:AbstractSyntaxStructure} <: AbstractSyntaxStructure
+struct LeftmostLinearForm{C<:Connective,SS<:AbstractSyntaxStructure} <: AbstractSyntaxStructure
     children::Vector{SS}
 
-    function LeftmostLinearForm{O,SS}(
+    function LeftmostLinearForm{C,SS}(
         children::Vector,
-    ) where {O<:Connective,SS<:AbstractSyntaxStructure}
-        a = arity(O)
+    ) where {C<:Connective,SS<:AbstractSyntaxStructure}
+        a = arity(C)
         n_children = length(children)
 
         if a == 0
@@ -65,22 +65,22 @@ struct LeftmostLinearForm{O<:Connective,SS<:AbstractSyntaxStructure} <: Abstract
                 error("Mismatching number of children ($n_children) and operator's arity ($a).")
         end
 
-        new{O,SS}(children)
+        new{C,SS}(children)
     end
 
-    function LeftmostLinearForm{O}(
+    function LeftmostLinearForm{C}(
         children::Vector,
-    ) where {O<:Connective}
-        length(children) > 0 || error("Cannot instantiate LeftmostLinearForm{$(O)} with no children.")
+    ) where {C<:Connective}
+        length(children) > 0 || error("Cannot instantiate LeftmostLinearForm{$(C)} with no children.")
         SS = SoleBase._typejoin(typeof.(children)...)
-        LeftmostLinearForm{O,SS}(children)
+        LeftmostLinearForm{C,SS}(children)
     end
 
     function LeftmostLinearForm(
-        O::Type{<:SoleLogics.Connective},
+        C::Type{<:SoleLogics.Connective},
         children::Vector,
     )
-        LeftmostLinearForm{O}(children)
+        LeftmostLinearForm{C}(children)
     end
 
     function LeftmostLinearForm(
@@ -95,7 +95,7 @@ struct LeftmostLinearForm{O<:Connective,SS<:AbstractSyntaxStructure} <: Abstract
         operator::Union{<:SoleLogics.Connective,Nothing} = nothing
     )
         # Check operator correctness; it should not be nothing (thus, auto inferred) if
-        # tree root contains something that is not an Connective
+        # tree root contains something that is not a connective
         if (!(token(tree) isa Connective) && !isnothing(operator))
             error("Syntax tree cannot be converted to a LeftmostLinearForm:" *
                 "tree root is $(token(tree))")
@@ -123,17 +123,17 @@ struct LeftmostLinearForm{O<:Connective,SS<:AbstractSyntaxStructure} <: Abstract
 end
 
 children(lf::LeftmostLinearForm) = lf.children
-op(::LeftmostLinearForm{O}) where {O} = O()
+connective(::LeftmostLinearForm{C}) where {C} = C()
 
-operatortype(::LeftmostLinearForm{O}) where {O} = O
-childrentype(::LeftmostLinearForm{O,SS}) where {O,SS} = SS
+operatortype(::LeftmostLinearForm{C}) where {C} = C
+childrentype(::LeftmostLinearForm{C,SS}) where {C,SS} = SS
 
 Base.length(lf::LeftmostLinearForm) = Base.length(children(lf))
 function Base.getindex(
-    lf::LeftmostLinearForm{O,SS},
+    lf::LeftmostLinearForm{C,SS},
     idxs::AbstractVector
-) where {O,SS}
-    return LeftmostLinearForm{O,SS}(children(lf)[idxs])
+) where {C,SS}
+    return LeftmostLinearForm{C,SS}(children(lf)[idxs])
 end
 Base.getindex(lf::LeftmostLinearForm, idx::Integer) = Base.getindex(lf,[idx])
 
@@ -151,19 +151,19 @@ function syntaxstring(
     else
         ch = children(lf)
         if length(ch) == 0
-            syntaxstring(op(lf); kwargs...)
+            syntaxstring(connective(lf); kwargs...)
         else
             children_ss = map(
                 c->syntaxstring(c; kwargs...),
                 ch
             )
-            "(" * join(children_ss, ") $(syntaxstring(op(lf); kwargs...)) (") * ")"
+            "(" * join(children_ss, ") $(syntaxstring(connective(lf); kwargs...)) (") * ")"
         end
     end
 end
 
 function tree(lf::LeftmostLinearForm)
-    operator = op(lf)
+    operator = connective(lf)
     a = arity(operator)
     cs = children(lf)
 
@@ -188,8 +188,8 @@ function tree(lf::LeftmostLinearForm)
     return st
 end
 
-function Base.show(io::IO, lf::LeftmostLinearForm{O,SS}) where {O,SS}
-    println(io, "LeftmostLinearForm{$(O),$(SS)} with $(nchildren(lf)) children")
+function Base.show(io::IO, lf::LeftmostLinearForm{C,SS}) where {C,SS}
+    println(io, "LeftmostLinearForm{$(C),$(SS)} with $(nchildren(lf)) children")
     println(io, "\t$(syntaxstring(lf))")
 end
 
