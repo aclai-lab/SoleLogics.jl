@@ -22,7 +22,7 @@ export Operator, SyntaxToken
 
 export Atom, SyntaxTree, Truth
 export TOP, ⊤
-export BOTTOM, ⊥
+export BOT, ⊥
 export BooleanTruth
 
 export syntaxstring
@@ -32,8 +32,8 @@ export arity, valuetype, tokentype, tokenstype,
         associativity, precedence
 export check
 export value, token, children, alphabet, formulas
-export domain, top, bottom, grammar, algebra, logic, tree
-export istop, isbottom
+export domain, top, bot, grammar, algebra, logic, tree
+export istop, isbot
 
 export tokens, operators, atoms, natoms, height
 export @atoms, @synexpr

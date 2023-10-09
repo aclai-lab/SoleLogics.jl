@@ -19,7 +19,7 @@ const SL = SoleLogics # SL.name to reference unexported names
     │   │   │   └── Truth
     │   │   │       ├── BooleanTruth
     │   │   │       │   ├── Top
-    │   │   │       │   └── Bottom
+    │   │   │       │   └── Bot
     │   │   │       └── ...
     │   │   └── AbstractComposite
     │   │       ├── SyntaxTree
@@ -37,7 +37,7 @@ const SL = SoleLogics # SL.name to reference unexported names
     Also:
     const Operator = Union{Connective,Truth}
     const SyntaxToken = Union{Connective,AbstractLeaf}
-    const BooleanTruth = Union{Top,Bottom}
+    const BooleanTruth = Union{Top,Bot}
 =#
 
 # Declaration section
@@ -57,7 +57,7 @@ norm                = SyntaxTree(DISJUNCTION, (m,n))
 trees_implication   = SyntaxTree(IMPLICATION, (pandq, porq))
 
 interp1             = TruthDict([p => TOP, q => TOP])
-interp2             = TruthDict(1:4, BOTTOM)
+interp2             = TruthDict(1:4, BOT)
 
 # Test section
 
@@ -68,8 +68,8 @@ interp2             = TruthDict(1:4, BOTTOM)
 
 @test TOP               isa Truth
 @test TOP               isa BooleanTruth
-@test BOTTOM            isa Truth
-@test BOTTOM            isa BooleanTruth
+@test BOT            isa Truth
+@test BOT            isa BooleanTruth
 
 @test Connective        <: Syntactical
 @test NamedConnective   <: Connective
@@ -109,7 +109,7 @@ interp2             = TruthDict(1:4, BOTTOM)
     SL.joinformulas(IMPLICATION, (pandq, porq)) |> syntaxstring
 
 # @test Base.operator_precedence(TOP)         == SL.MAX_PRECEDENCE
-# @test Base.operator_precedence(BOTTOM)      == SL.MAX_PRECEDENCE
+# @test Base.operator_precedence(BOT)      == SL.MAX_PRECEDENCE
 # @test Base.operator_precedence(NEGATION)    == SL.HIGH_PRECEDENCE
 # @test Base.operator_precedence(CONJUNCTION) == SL.BASE_PRECEDENCE
 # @test Base.operator_precedence(DISJUNCTION) == SL.BASE_PRECEDENCE
@@ -144,7 +144,7 @@ interp2             = TruthDict(1:4, BOTTOM)
 @test norm |> children |> first |> token            == m
 @test norm |> children |> first |> token |> value   == value(m)
 
-@test_nowarn interp1[p] = BOTTOM
+@test_nowarn interp1[p] = BOT
 @test_nowarn interp1[p] = TOP
 
 @test check(pandq, interp1) == true

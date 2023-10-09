@@ -1,37 +1,34 @@
 """
     collatetruth(
-        a::AbstractAlgebra,
         c::Connective,
-        t::NTuple{N,T},
+        ts::NTuple{N,T},
     )::T where {N,T<:Truth}
 
 Return the truth value of a composed formula c(φ1, ..., φN), given the `N`
 truth values of its immediate sub-formulas.
-An algebra must provide a `collatetruth` method for each connective that can be
-interpreted on it.
 
 See also [`AbstractAlgebra`](@ref) [`Connective`](@ref), [`Truth`](@ref).
 """
 function collatetruth(
-    a::AbstractAlgebra{T},
     c::Connective,
-    t::NTuple{N,T},
+    ts::NTuple{N,T},
 )::T where {N,T<:Truth}
-    if truthtype(a) != T
-        return error("Cannot collate $(length(t)) truth values of type $(T) " *
-                     "with algebra $(typeof(a)) with truth type $(truthtype(a))).")
-    elseif arity(c) != length(t)
-        return error("Cannot collate $(length(t)) truth values for " *
+    # if truthtype(a) != T
+    #     return error("Cannot collate $(length(ts)) truth values of type $(T) " *
+    #                  "with algebra $(typeof(a)) with truth type $(truthtype(a))).")
+    # else
+    if arity(c) != length(ts)
+        return error("Cannot collate $(length(ts)) truth values for " *
                      "connective $(typeof(c)) with arity $(arity(c))).")
     else
-        return error("Please, provide method collatetruth(::$(typeof(a)), ::$(typeof(c)), " *
-                     "::NTuple{$(arity(c)),$(truthtype(a))}).")
+        return error("Please, provide method collatetruth(::$(typeof(c)), " *
+                     "::NTuple{$(arity(c)),$(T)}).")
     end
 end
 
-# Note: `collatetruth` for TOP and BOTTOM relies on the `top` and `bottom` methods.
-collatetruth(a::AbstractAlgebra{T}, ::typeof(⊤), t::NTuple{0,T}) where {T<:Truth} = top(a)
-collatetruth(a::AbstractAlgebra{T}, ::typeof(⊥), t::NTuple{0,T}) where {T<:Truth} = bottom(a)
+# Note: `collatetruth` for any truth value returns itself.
+# Thus collatetruth is defined for every operator. TODO fix this note
+collatetruth(t::Truth, ts::NTuple{0,<:Truth}) = t
 
 ############################################################################################
 ##################################### BASE CONNECTIVES #####################################
@@ -160,82 +157,138 @@ iscommutative(::typeof(∧)) = true
 iscommutative(::typeof(∨)) = true
 
 hasdual(::typeof(∧)) = true
-dual(c::typeof(∧)) = typeof(∨)
+dual(c::typeof(∧))   = typeof(∨)
 hasdual(::typeof(∨)) = true
-dual(c::typeof(∨))     = typeof(∧)
+dual(c::typeof(∨))   = typeof(∧)
 
 
 ############################################################################################
-########################################## ALGEBRA #########################################
+###################################### BOOLEAN ALGEBRA #####################################
 ############################################################################################
+
+"""
+    abstract type BooleanTruth <: Truth end
+
+Supertype of `Top` and `Bot`, the two truth values of `BooleanAlgebra`
+
+See also [`Bot`](@ref), [`Top`](@ref), [`BooleanAlgebra`](@ref).
+"""
+abstract type BooleanTruth <: Truth end
+
+doc_TOP = """
+    struct Top <: Truth end
+    const TOP = Top()
+    const ⊤ = TOP
+
+Canonical truth operator representing the value `true`.
+It can be typed by `\\top<tab>`.
+
+See also [`BOT`](@ref), [`Truth`](@ref).
+"""
+"""$(doc_TOP)"""
+struct Top <: BooleanTruth end
+"""$(doc_TOP)"""
+const TOP = Top()
+"""$(doc_TOP)"""
+const ⊤ = TOP
+
+syntaxstring(o::Top; kwargs...) = "⊤"
+
+istop(t::Top) = true
+
+doc_BOTTOM = """
+    struct Bot <: Truth end
+    const BOT = Bot()
+    const ⊥ = BOT
+
+Canonical truth operator representing the value `false`.
+It can be typed by `\\bot<tab>`.
+
+See also [`TOP`](@ref), [`Truth`](@ref).
+"""
+"""$(doc_BOTTOM)"""
+struct Bot <: BooleanTruth end
+"""$(doc_BOTTOM)"""
+const BOT = Bot()
+"""$(doc_BOTTOM)"""
+const ⊥ = BOT
+
+syntaxstring(o::Bot; kwargs...) = "⊥"
+
+isbot(t::Bot) = true
+
+# NOTE: @typeHierarchyUpdate it could be useful to provide a macro to easily create
+# a new set of Truth types. In particular, a new subtree of types must be planted
+# as children of Truth, and new promotion rules are to be defined like below.
+Base.promote_rule(::Type{<:BooleanTruth}, ::Type{<:BooleanTruth}) = BooleanTruth
+
+Base.convert(::Type{Bool}, ::Top) = true
+Base.convert(::Type{Bool}, ::Bot) = false
+
+# TODO are these useful?
+hasdual(::typeof(⊤)) = true
+dual(c::typeof(⊤))   = typeof(⊥)
+hasdual(::typeof(⊥)) = true
+dual(c::typeof(⊥))   = typeof(⊤)
+
 
 """
     struct BooleanAlgebra <: AbstractAlgebra{Bool} end
 
 A [boolean algebra](https://en.wikipedia.org/wiki/Boolean_algebra), defined on the values
-`true` (for top) and `false` (for bottom). For this algebra, the basic operators negation,
+Top (representing `true`) and Bot (for bottom, representing `false`).
+For this algebra, the basic operators negation,
 conjunction and disjunction (stylized as ¬, ∧, ∨) can be defined as the complement, minimum
-and maximum, respectively.
+and maximum, of the integer cast of `true` and `false`, respectively.
 
 See also [`Truth`](@ref).
 """
 struct BooleanAlgebra <: AbstractAlgebra{BooleanTruth} end
 
-domain(::BooleanAlgebra) = [TOP, BOTTOM]
-
-TOP(a::BooleanAlgebra) = true
-# ⊤(a::BooleanAlgebra) = TOP(a) # already working, since ⊤ is defined as TOP.
-
-BOTTOM(a::BooleanAlgebra) = false
-# ⊥(a::BooleanAlgebra) = BOTTOM(a) # already working, since ⊥ is defined as BOTTOM.
+domain(::BooleanAlgebra) = [TOP, BOT]
 
 # TODO: @typeHierarchyUpdate
-Base.convert(::Bool, tok::Top) = true
-Base.convert(::Bool, tok::Bottom) = false
+top(::BooleanAlgebra) = TOP
+bot(::BooleanAlgebra) = BOT
+
 
 function collatetruth(
-    a::BooleanAlgebra,
     c::Connective,
-    ch::NTuple{N,BooleanTruth}
-) where {N}
-    _collatetruth(a, c, tuple((child(a) for child in ch)...))
+    ch::NTuple{N,T}
+)::BooleanTruth where {N,T<:BooleanTruth}
+    _collatetruth(c, convert.(Bool, ch)) == true ? TOP : BOT
 end
 
 # Standard semantics for NOT, AND, OR, IMPLIES
-_collatetruth(::BooleanAlgebra, ::typeof(¬), (t,)::NTuple{1,Bool}) = (!t)
-_collatetruth(::BooleanAlgebra, ::typeof(∧), (t1, t2)::NTuple{2,Bool}) = min(t1, t2)
-_collatetruth(::BooleanAlgebra, ::typeof(∨), (t1, t2)::NTuple{2,Bool}) = max(t1, t2)
+_collatetruth(::typeof(¬), (ts,)::NTuple{1,Bool}) = (!ts)
+_collatetruth(::typeof(∧), (t1, t2)::NTuple{2,Bool}) = min(t1, t2)
+_collatetruth(::typeof(∨), (t1, t2)::NTuple{2,Bool}) = max(t1, t2)
 
 # The IMPLIES operator, →, falls back to ¬
-function collatetruth(a::BooleanAlgebra, ::typeof(→), (t1, t2)::NTuple{2,Bool})
-    return collatetruth(a, ∨, (collatetruth(a, ¬, (t1,)), t2))
+function _collatetruth(::typeof(→), (t1, t2)::NTuple{2,Bool})
+    return _collatetruth(∨, (_collatetruth(¬, (t1,)), t2))
 end
 
+############################################################################################
 
-# Bool values -> Boolean algebra
-istop(t::Top)::Bool = (t == true)
-isbottom(t::Bottom)::Bool = (t == false)
-default_algebra(::Type{<:BooleanTruth}) = BooleanAlgebra()
-
-# # With dense, discrete algebras, floats can be used.
-# istop(t::AbstractFloat)::Bool = isone(t)
-# isbottom(t::AbstractFloat)::Bool = iszero(t)
+# With dense, discrete algebras, floats can be used.
+# These are sketches for a few ideas. Note that truth values should be wrapped into Truth substructures:
+# istop(ts::AbstractFloat)::Bool = isone(ts)
+# isbot(ts::AbstractFloat)::Bool = iszero(ts)
 
 # # TODO idea: use full range for numbers!
-# # istop(t::AbstractFloat)::Bool = t == typemax(typeof(t))
-# # isbottom(t::AbstractFloat)::Bool = t == typemin(typeof(t))
-# istop(t::Integer)::Bool = t == typemax(typeof(t))
-# isbottom(t::Integer)::Bool = t == typemin(typeof(t))
+# # istop(ts::AbstractFloat)::Bool = ts == typemax(typeof(ts))
+# # isbot(ts::AbstractFloat)::Bool = ts == typemin(typeof(ts))
+# istop(ts::Integer)::Bool = ts == typemax(typeof(ts))
+# isbot(ts::Integer)::Bool = ts == typemin(typeof(ts))
 
 # TODO:
 # struct DiscreteChainAlgebra{T} <: AbstractAlgebra{T} domain::Vector{T} end
 # struct DenseChainAlgebra{T<:AbstractFloat} <: AbstractAlgebra{T} end
-# default_algebra(::Type{T}) where {T<:AbstractFloat} = DenseChainAlgebra{T}()
 
 # TODO:
 # struct HeytingNode{T} end
 # struct HeytingAlgebra{T} <: AbstractAlgebra{HeytingNode{T}} ... end
-# default_algebra(::Type{<:HeytingNode{T}}) = error("...")
 
 ############################################################################################
 ########################################### LOGIC ##########################################
@@ -303,7 +356,7 @@ end
 
 Basic logical operators.
 
-See also [`TOP`](@ref), [`BOTTOM`](@ref), [`NEGATION`](@ref),
+See also [`TOP`](@ref), [`BOT`](@ref), [`NEGATION`](@ref),
 [`CONJUCTION`](@ref), [`Connective`](@ref).
 """
 const BASE_OPERATORS = Operator[⊤, ⊥, ¬, ∧, ∨, →]

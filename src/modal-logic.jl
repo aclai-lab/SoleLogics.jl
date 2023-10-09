@@ -498,7 +498,7 @@ include("algebras/frames.jl")
 # """
 # TODO
 # """
-# function check(::Atom{A}, ::AbstractModalAssignment{W,A,T}, ::W) where {W<:AbstractWorld,A,T<:Truth}
+# function interpret(::Atom{A}, ::AbstractModalAssignment{W,A,T}, ::W) where {W<:AbstractWorld,A,T<:Truth}
 #     return error("Please, provide ...")
 # end
 
@@ -533,7 +533,7 @@ abstract type AbstractKripkeStructure{
     FR<:AbstractFrame{W},
 } <: AbstractInterpretation{A,T} end
 
-function check(
+function interpret(
     ::Atom,
     ::AbstractKripkeStructure{W,A,T},
     ::W,
@@ -541,7 +541,7 @@ function check(
     return error("Please, provide ...")
 end
 
-function check(
+function interpret(
     ::AbstractFormula,
     ::AbstractKripkeStructure{W,A,T},
     ::Union{W,Nothing},
@@ -752,8 +752,8 @@ end
 
 frame(i::KripkeStructure) = i.frame
 
-function check(p::Atom, i::KripkeStructure{W}, w::W) where {W<:AbstractWorld}
-    check(p, i.assignment[w])
+function interpret(p::Atom, i::KripkeStructure{W}, w::W) where {W<:AbstractWorld}
+    interpret(p, i.assignment[w])
 end
 
 function Base.show(io::IO, i::KripkeStructure)

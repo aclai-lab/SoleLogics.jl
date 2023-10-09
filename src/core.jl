@@ -13,7 +13,7 @@ SoleLogics' type hierarchy is being updated following the tree below.
     │   │   │   └── Truth
     │   │   │       ├── BooleanTruth
     │   │   │       │   ├── Top
-    │   │   │       │   └── Bottom
+    │   │   │       │   └── Bot
     │   │   │       └── ...
     │   │   └── AbstractComposite
     │   │       ├── SyntaxTree
@@ -31,7 +31,6 @@ SoleLogics' type hierarchy is being updated following the tree below.
     Also:
     const Operator = Union{Connective,Truth}
     const SyntaxToken = Union{Connective,AbstractLeaf}
-    const BooleanTruth = Union{Top,Bottom}
 =#
 
 """
@@ -102,20 +101,11 @@ Syntactical, manipulable representation of a truth value.
 
 # Implementation
 
-TODO: when implementing a new custom `Truth` subtype...
+TODO: when implementing a new custom `Truth` subtype..., provide istop, isbot
 
-See also [`Top`](@ref), [`Bottom`](@ref), [`BooleanTruth`](@ref), [`arity`](@ref);
+See also [`Top`](@ref), [`Bot`](@ref), [`BooleanTruth`](@ref), [`arity`](@ref);
 """
 abstract type Truth <: AbstractLeaf end
-
-"""
-    abstract type BooleanTruth <: Truth end
-
-Super type of `Top` and `Bottom`, where `Top` is true and `Bottom` is false.
-
-See also [`Bottom`](@ref), [`Top`](@ref).
-"""
-abstract type BooleanTruth <: Truth end
 
 """
     abstract type Connective <: Syntactical end
@@ -640,11 +630,6 @@ Base.promote_rule(
     ::Type{SS}
 ) where {SS<:AbstractSyntaxStructure} = AbstractFormula
 =#
-
-# NOTE: @typeHierarchyUpdate it could be useful to provide a macro to easily create
-# a new set of Truth types. In particular, a new subtree of types must be planted
-# as children of Truth, and new promotion rules are to be defined like below.
-Base.promote_rule(::Type{<:BooleanTruth}, ::Type{<:BooleanTruth}) = BooleanTruth
 
 ############################################################################################
 
@@ -1341,115 +1326,22 @@ end
 ############################################################################################
 
 """
-    istop(::Truth)::Bool
-
-Return true if the `Truth` value is the TOP of its algebra.
-For example, in the crisp case, with `Bool` truth values, it is:
-
-    istop(t::Bool)::Bool = (t == true)
-
-See also [`isbottom`](@ref), [`Truth`](@ref).
-"""
-istop(t::Truth)::Bool = error("Please, provide method istop(Truth::$(typeof(t))).")
-
-"""
-    isbottom(::Truth)::Bool
-
-Return true if the `Truth` value is the BOTTOM of its algebra.
-For example, in the crisp case, with `Bool` truth values, it is:
-
-    isbottom(t::Bool)::Bool = (t == false)
-
-See also [`istop`](@ref), [`Truth`](@ref).
-"""
-isbottom(t::Truth)::Bool = error("Please, provide method isbottom(Truth::$(typeof(t))).")
-
-"""
-   default_algebra(::Type{T})::AbstractAlgebra{<:T} where {T<:Truth}
-
-Return the fallback algebra for a given `Truth` value type.
-
-# Implementation
-
-In order to check syntax trees without algebras, truth values should provide
-a default algebra it works with.
-
-See also [`Truth`](@ref).
-"""
-function default_algebra(::Type{T})::AbstractAlgebra{<:T} where {T<:Truth}
-    return error("Please, provide method " *
-                 "default_algebra(::$(T))::AbstractAlgebra{<:$(T)}.")
-end
-
-############################################################################################
-
-arity(::Truth) = 0
-
-function syntaxstring(t::Truth; kwargs...)
-    return error("Please, provide method syntaxstring(::$(typeof(t))).")
-end
-
-function Base.show(io::IO, f::Truth)
-    print(io, "$(syntaxstring(f))")
-end
-
-doc_TOP = """
-    struct Top <: Truth end
-    const TOP = Top()
-    const ⊤ = TOP
-
-Canonical truth operator representing the value `true`.
-It can be typed by `\\top<tab>`.
-
-See also [`BOTTOM`](@ref), [`Truth`](@ref).
-"""
-"""$(doc_TOP)"""
-struct Top <: BooleanTruth end
-"""$(doc_TOP)"""
-const TOP = Top()
-"""$(doc_TOP)"""
-const ⊤ = TOP
-
-syntaxstring(o::Top; kwargs...) = "⊤"
-
-doc_BOTTOM = """
-    struct Bottom <: Truth end
-    const BOTTOM = Bottom()
-    const ⊥ = BOTTOM
-
-Canonical truth operator representing the value `false`.
-It can be typed by `\\bot<tab>`.
-
-See also [`TOP`](@ref), [`Truth`](@ref).
-"""
-"""$(doc_BOTTOM)"""
-struct Bottom <: BooleanTruth end
-"""$(doc_BOTTOM)"""
-const BOTTOM = Bottom()
-"""$(doc_BOTTOM)"""
-const ⊥ = BOTTOM
-
-syntaxstring(o::Bottom; kwargs...) = "⊥"
-
-############################################################################################
-
-"""
     abstract type AbstractAlgebra{T<:Truth} end
 
 Abstract type for representing algebras. Algebras are used for grounding the
 truth of atoms and the semantics of operators. They typically encode a
 [lattice structure](https://en.wikipedia.org/wiki/Lattice_(order)) where two
 elements(or nodes) *⊤* and *⊥* are referred to as *TOP* (or maximum)
-and *BOTTOM* (or minimum). Each node in the lattice represents a truth value
+and *bot* (or minimum). Each node in the lattice represents a truth value
 that an atom or a formula can have on an interpretation, and the
 semantics of operators is given in terms of operations between truth values.
 
 # Implementation
 
 When implementing a new algebra type, the methods `domain`,
-`TOP`, and `BOTTOM` should be implemented.
+`TOP`, and `bot` should be implemented.
 
-See also [`BOTTOM`](@ref), [`BooleanAlgebra`](@ref), [`Operator`](@ref), [`TOP`](@ref),
+See also [`bot`](@ref), [`BooleanAlgebra`](@ref), [`Operator`](@ref), [`TOP`](@ref),
 [`collatetruth`](@ref), [`domain`](@ref), [`iscrisp`](@ref), [`truthtype`](@ref).
 """
 abstract type AbstractAlgebra{T<:Truth} end
@@ -1480,38 +1372,62 @@ end
 # Base.in(t::Truth, a::AbstractAlgebra) = Base.in(t, domain(a))
 
 """
-    TOP(a::AbstractAlgebra)
+    top(a::AbstractAlgebra)
 
-Return the `TOP` of a given algebra.
+Return the top of a given algebra.
 
-See also [`AbstractAlgebra`](@ref).
+See also [`bot`](@ref), [`AbstractAlgebra`](@ref).
 """
-function TOP(a::AbstractAlgebra{T} where {T})::T
-    return error("Please, provide method TOP(::$(typeof(a))).")
+function top(a::AbstractAlgebra{T} where {T})::T
+    return error("Please, provide method top(::$(typeof(a))).")
 end
 
 """
-    BOTTOM(a::AbstractAlgebra)
+    bot(a::AbstractAlgebra)
 
-Return the `BOTTOM` of a given algebra.
+Return the bottom of a given algebra.
 
-See also [`AbstractAlgebra`](@ref).
+See also [`top`](@ref), [`AbstractAlgebra`](@ref).
 """
-function BOTTOM(a::AbstractAlgebra{T} where {T})::T
-    return error("Please, provide method BOTTOM(::$(typeof(a))).")
+function bot(a::AbstractAlgebra{T} where {T})::T
+    return error("Please, provide method bot(::$(typeof(a))).")
 end
 
 """
-    iscrisp(A::Type{<:AbstractAlgebra}) = (truthtype(A) == Bool)
     iscrisp(a::AbstractAlgebra) = iscrisp(typeof(a))
 
-An algebra is crisp (or *boolean*) when its domain type is... `Bool`, quite literally!
-The antonym of crisp is *fuzzy*.
+An algebra is crisp (or *boolean*) when its domain only has two values, namely,
+the top and the bottom. The antonym of crisp is *fuzzy*.
 
 See also [`AbstractAlgebra`](@ref).
 """
-iscrisp(A::Type{<:AbstractAlgebra}) = (truthtype(A) == Bool)
-iscrisp(a::AbstractAlgebra) = iscrisp(typeof(a))
+iscrisp(a::AbstractAlgebra) = (length(domain(a)) == 2)
+
+############################################################################################
+
+"""
+    istop(::Truth)::Bool
+
+Return true if the `Truth` value is the top of its algebra.
+For example, in the crisp case, with `Bool` truth values, it is:
+
+    istop(t::Bool)::Bool = (t == true)
+
+See also [`isbot`](@ref), [`Truth`](@ref).
+"""
+istop(t::Truth)::Bool = false
+
+"""
+    isbot(::Truth)::Bool
+
+Return true if the `Truth` value is the bottom of its algebra.
+For example, in the crisp case, with `Bool` truth values, it is:
+
+    isbot(t::Bool)::Bool = (t == false)
+
+See also [`istop`](@ref), [`Truth`](@ref).
+"""
+isbot(t::Truth)::Bool = false
 
 ############################################################################################
 
@@ -1567,8 +1483,8 @@ function algebra(l::AbstractLogic{G,A})::A where {G,A}
 end
 
 truthtype(l::AbstractLogic) = truthtype(algebra(l))
-TOP(l::AbstractLogic) = TOP(algebra(l))
-BOTTOM(l::AbstractLogic) = BOTTOM(algebra(l))
+top(l::AbstractLogic) = top(algebra(l))
+bot(l::AbstractLogic) = bot(algebra(l))
 iscrisp(l::AbstractLogic) = iscrisp(algebra(l))
 
 function Base.isequal(a::AbstractLogic, b::AbstractLogic)
@@ -1748,14 +1664,18 @@ valuetype(::AbstractInterpretation{A,T}) where {A,T} = A
 truthtype(::AbstractInterpretation{A,T}) where {A,T} = T
 
 """
+TODO @typeHierarchyUpdate fix example
+
     check(
         f::AbstractFormula,
-        m::AbstractInterpretation{A,T},
-        args...
-    )::T where {A,T<:Truth}
+        i::AbstractInterpretation,
+        args...;
+        kwargs...
+    )::Bool
 
-Check a formula on a logical interpretation (or model), returning a truth value.
-This process is referred to as
+Check a formula on a logical interpretation (or model), returning `true` if the truth value
+for the formula `istop`.
+This process is referred to as (finite)
 [model checking](https://en.wikipedia.org/wiki/Model_checking), and there are many
 algorithms for it, typically depending on the complexity of the logic.
 
@@ -1779,21 +1699,72 @@ julia> check(CONJUNCTION(p,q), td)
 false
 ```
 
-See also [`AbstractFormula`](@ref), [`AbstractInterpretation`](@ref).
+See also [`interpret`](@ref), [`AbstractFormula`](@ref), [`AbstractInterpretation`](@ref),
+[`TruthDict`](@ref).
 """
 function check(
     f::AbstractFormula,
-    m::AbstractInterpretation{A,T},
-    args...,
-)::T where {A,T<:Truth}
-    return error("Please, provide method " *
-                 "check(f::$(typeof(f)), m::$(typeof(m)), " *
-                 "args...::$(typeof(args))::$(truthtype(m)).")
+    i::AbstractInterpretation,
+    args...;
+    kwargs...
+)::Bool
+    istop(interpret(f, i, args...; kwargs...))
 end
 
-# Helper: use default algebra when checking on an abstract syntax tree
-function check(t::AbstractSyntaxStructure, m::AbstractInterpretation, args...)
-    return check(default_algebra(truthtype(m)), t, m, args...)
+"""
+TODO @typeHierarchyUpdate check docstring
+
+    interpret(
+        f::AbstractFormula,
+        i::AbstractInterpretation,
+        args...;
+        kwargs...
+    )::Bool
+
+Return the truth value for a formula on a logical interpretation (or model).
+
+# Examples
+```jldoctest
+julia> @atoms String p q
+2-element Vector{Atom{String}}:
+ Atom{String}("p")
+ Atom{String}("q")
+
+julia> td = TruthDict([p => true, q => false])
+TruthDict with values:
+┌────────┬────────┐
+│      q │      p │
+│ String │ String │
+├────────┼────────┤
+│  false │   true │
+└────────┴────────┘
+
+julia> interpret(CONJUNCTION(p,q), td)
+⊥
+```
+
+See also [`check`](@ref), [`AbstractFormula`](@ref), [`AbstractInterpretation`](@ref),
+[`AbstractAlgebra`](@ref).
+"""
+function interpret(
+    f::AbstractFormula,
+    i::AbstractInterpretation{A,T},
+    args...;
+    kwargs...
+)::T where {A,T<:Truth}
+    interpret(tree(f), i, args...; kwargs...)
+end
+
+function interpret(
+    f::SyntaxTree,
+    i::AbstractInterpretation{A,T},
+    args...;
+    kwargs...
+)::T where {A,T<:Truth}
+    return error("Please, provide method " *
+                 "interpret(f::SyntaxTree, i::$(typeof(i)), " *
+                 "args...::$(typeof(args)); " *
+                 "kwargs...::$(typeof(kwargs))::$(truthtype(i)).")
 end
 
 ############################################################################################

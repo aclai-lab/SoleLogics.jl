@@ -122,54 +122,29 @@ function inlinedisplay(i::AbstractAssignment)
     return error("Please, provide method inlinedisplay(::$(typeof(i)))::String.")
 end
 
-# # Implementation
+# Implementation
 
-# With propositional logic, the fallback method extracts the formula's syntax tree and checks it using the logic's
-# algebra.
-
-#     check(
-#         a::AbstractAlgebra,
-#         tree::SyntaxTree,
-#         i::AbstractAssignment{A,T},
-#         args...
-#     )::T where {A,T<:Truth}
-"""
-    check(
-        f::AbstractFormula,
-        i::AbstractAssignment::{A,T},
-        args...
-    )::T where {A,T<:Truth}
-
-Check a logical formula on an assigment, returning a truth value.
-The (finite) [model checking](https://en.wikipedia.org/wiki/Model_checking) algorithm depends
-on the given logic.
-
-See also
-[`TruthDict`](@ref),
-[`SyntaxTree`](@ref), [`AbstractFormula`](@ref),
-[`AbstractAlgebra`](@ref), [`AbstractInterpretation`](@ref).
-"""
-check(f::Formula, i::AbstractAssignment, args...) = check(algebra(f), tree(f), i, args...)
-
-function check(
-    a::AbstractAlgebra,
+function interpret(
     tree::SyntaxTree,
-    i::AbstractAssignment{A,T},
+    i::AbstractAssignment,
     args...
-) where {A,T<:Truth}
+)::AbstractFormula
     if token(tree) isa Atom
         return Base.getindex(i, token(tree), args...)
     elseif token(tree) isa Operator
-        ts = Tuple([check(a, childtree, i, args...) for childtree in children(tree)])
-        return collatetruth(a, token(tree), ts)
+        ts = Tuple([check(childtree, i, args...) for childtree in children(tree)])
+        return collatetruth(token(tree), ts)
     else
         return error("Unknown token type encountered when checking formula " *
                      "on interpretation of type $(typeof(i)): $(typeof(token(tree))).")
     end
 end
 
+
 # Helper: an atom can be checked on an interpretation; a simple lookup is performed.
-check(p::Atom, i::AbstractAssignment{AA}, args...) where {AA} = Base.getindex(i, p, args...)
+check(p::Atom, i::AbstractAssignment{AA}, args...) where {AA} = istop(Base.getindex(i, p, args...))
+
+interpret(p::Atom, i::AbstractAssignment{AA}, args...) where {AA} = Base.getindex(i, p, args...) # TODO actually, if the lookup fails, this should return p.
 
 ############################################################################################
 
@@ -499,14 +474,13 @@ end
 # Helpers:
 #  we let any AbstractDict and AbstractVector be used as an interpretation when model checking.
 
-check(f::Formula, i::Union{AbstractDict,AbstractVector}, args...) = check(algebra(f), tree(f), i, args...)
+check(f::Formula, i::Union{AbstractDict,AbstractVector}, args...) = check(tree(f), i, args...)
 function check(
-    a::AbstractAlgebra,
     tree::SyntaxTree,
     i::Union{AbstractDict,AbstractVector},
     args...
 )
-    check(a, tree, convert(AbstractInterpretation, i), args...)
+    check(tree, convert(AbstractInterpretation, i), args...)
 end
 
 # A dictionary is interpreted as the map from atoms to truth values
