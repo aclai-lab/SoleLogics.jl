@@ -54,15 +54,15 @@ struct LeftmostLinearForm{C<:Connective,SS<:AbstractSyntaxStructure} <: Abstract
 
         if a == 0
             n_children == 0 ||
-                error("Mismatching number of children ($n_children) and operator's arity ($a).")
+                error("Mismatching number of children ($n_children) and connective's arity ($a).")
         elseif a == 1
             n_children == 1 ||
-                error("Mismatching number of children ($n_children) and operator's arity ($a).")
+                error("Mismatching number of children ($n_children) and connective's arity ($a).")
         else
             h = (n_children-1)/(a-1)
             (isinteger(h) && h >= 0) ||
             # TODO figure out whether the base case n_children = 0 makes sense
-                error("Mismatching number of children ($n_children) and operator's arity ($a).")
+                error("Mismatching number of children ($n_children) and connective's arity ($a).")
         end
 
         new{C,SS}(children)
@@ -92,33 +92,33 @@ struct LeftmostLinearForm{C<:Connective,SS<:AbstractSyntaxStructure} <: Abstract
 
     function LeftmostLinearForm(
         tree::SyntaxTree,
-        operator::Union{<:SoleLogics.Connective,Nothing} = nothing
+        conn::Union{<:SoleLogics.Connective,Nothing} = nothing
     )
-        # Check operator correctness; it should not be nothing (thus, auto inferred) if
+        # Check conn correctness; it should not be nothing (thus, auto inferred) if
         # tree root contains something that is not a connective
-        if (!(token(tree) isa Connective) && !isnothing(operator))
+        if (!(token(tree) isa Connective) && !isnothing(conn))
             error("Syntax tree cannot be converted to a LeftmostLinearForm:" *
                 "tree root is $(token(tree))")
         end
 
-        if isnothing(operator)
-            operator = token(tree)
+        if isnothing(conn)
+            conn = token(tree)
         end
 
-        # Get a vector of `SyntaxTree`s, having `operator` as common ancestor, then,
+        # Get a vector of `SyntaxTree`s, having `conn` as common ancestor, then,
         # call LeftmostLinearForm constructor.
         _children = AbstractSyntaxStructure[]
 
-        function _dig_and_retrieve(tree::SyntaxTree, operator::SoleLogics.Connective)
-            token(tree) != operator ?
+        function _dig_and_retrieve(tree::SyntaxTree, conn::SoleLogics.Connective)
+            token(tree) != conn ?
             push!(_children, tree) :    # Lexical scope
             for c in children(tree)
-                _dig_and_retrieve(c, operator)
+                _dig_and_retrieve(c, conn)
             end
         end
-        _dig_and_retrieve(tree, operator)
+        _dig_and_retrieve(tree, conn)
 
-        LeftmostLinearForm(operator, _children)
+        LeftmostLinearForm(conn, _children)
     end
 end
 
@@ -163,23 +163,23 @@ function syntaxstring(
 end
 
 function tree(lf::LeftmostLinearForm)
-    operator = connective(lf)
-    a = arity(operator)
+    conn = connective(lf)
+    a = arity(conn)
     cs = children(lf)
 
     st = begin
         if length(cs) == 0
             # No children
-            SyntaxTree(operator)
+            SyntaxTree(conn)
         elseif length(cs) == 1
             # Only child
             tree(cs[1])
         else
             function _tree(childs::Vector{<:SyntaxTree})
-                @assert (length(childs) != 0) "$(childs); $(lf); $(operator); $(a); $(cs)"
+                @assert (length(childs) != 0) "$(childs); $(lf); $(conn); $(a); $(cs)"
                 return length(childs) == a ?
-                    SyntaxTree(operator, childs...) :
-                    SyntaxTree(operator, childs[1:(a-1)]..., _tree(childs[a:end]))
+                    SyntaxTree(conn, childs...) :
+                    SyntaxTree(conn, childs[1:(a-1)]..., _tree(childs[a:end]))
             end
             _tree(tree.(children(lf)))
         end
