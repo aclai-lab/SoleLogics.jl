@@ -1813,14 +1813,18 @@ An alphabet of `valuetype` `A` can be used for instantiating atoms of valuetype 
 (::AbstractAlphabet{A})(a) where {A} = Atom{A}(a)
 
 """
-An operator can be used to compose syntax tokens (e.g., atoms),
-syntax trees and/or formulas. This is quite handy, try it:
+    functino (op::Operator)(o::Any)
 
+An `Operator` can be used to compose syntax tokens (e.g., atoms),
+syntax trees and/or formulas.
+
+# Examples
+```jldoctest
     ¬(Atom(1)) ∨ Atom(1) ∧ ⊤
     ∧(⊤,⊤)
     ⊤()
+```
 """
-
 function (op::Operator)(o::Any)
     return error("Cannot apply operator $(op)::$(typeof(op)) to object $(o)::$(typeof(o))")
 end
