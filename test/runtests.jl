@@ -13,6 +13,7 @@ end
 println("Julia version: ", VERSION)
 
 test_suites = [
+    ("Pluto Demo", ["$(dirname(dirname(pathof(SoleLogics))))/pluto-demo.jl", ]),
     ("Base", [
         "core.jl",
         "parse.jl",
