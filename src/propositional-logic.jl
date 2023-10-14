@@ -126,19 +126,23 @@ end
 
 # TODO: get inspiration from PAndQ package and write interpret function.
 # TODO: change collatetruth name (concepts are "unite and simplify")
-
-function interpret(phi::Any, i::AbstractAssignment, args...; kwargs...)::AbstractFormula
-    return error("Unknown token type encountered when checking formula " *
-                     "on interpretation of type $(typeof(i)): $(typeof(token(tree))).")
-end
-
-function interpret(tree::AbstractComposite, i::AbstractAssignment, args...; kwargs...)
+function interpret(
+    tree::SyntaxTree,
+    i::AbstractAssignment{AA},
+    args...;
+    kwargs...
+) where {AA}
     # Keyword argument :children passed to handle interpret(c::Connective, ...) dispatch
     return interpret(token(tree), i, args...; children=children(tree))
 end
 
 # When interpreting a single atom, if the lookup fails then return the atom itself
-function interpret(p::Atom, i::AbstractAssignment{AA}, args...; kwargs...) where {AA}
+function interpret(
+    p::Atom,
+    i::AbstractAssignment{AA},
+    args...;
+    kwargs...
+) where {AA}
     try
         Base.getindex(i, p, args...)
     catch e
@@ -151,14 +155,19 @@ function interpret(p::Atom, i::AbstractAssignment{AA}, args...; kwargs...) where
 end
 
 # When interpreting a connective, children must be passed from caller as kwargs :tree
-function interpret(c::Connective, i::AbstractAssignment{AA}, args...; kwargs...) where {AA}
+function interpret(
+    c::Connective,
+    i::AbstractAssignment{AA},
+    args...;
+    kwargs...
+) where {AA}
     kwargs = Dict(kwargs)
 
     @assert haskey(kwargs, :children)
         "interpret(c::Connective, i::AbstractAssignment{AA}, args...; kwargs...) where {AA} " *
         "dispatch called without specifying kwargs :children."
 
-    childtree = children(kwargs[:children])
+    childtree = kwargs[:children]
 
     @assert length(childtree) == arity(c)
         "Connective $(syntaxstring(c)) cannot be applied over $(childtree)."

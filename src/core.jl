@@ -1642,6 +1642,8 @@ iscrisp(f::Formula) = iscrisp(logic(f))
 grammar(f::Formula) = grammar(logic(f))
 algebra(f::Formula) = algebra(logic(f))
 
+syntaxstring(f::Formula; kwargs...) = syntaxstring(f.synstruct; kwargs...)
+
 
 ############################################################################################
 
