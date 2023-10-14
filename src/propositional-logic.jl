@@ -124,27 +124,74 @@ end
 
 # Implementation
 
-function interpret(
-    tree::SyntaxTree,
-    i::AbstractAssignment,
-    args...
-)::AbstractFormula
-    if token(tree) isa Atom
-        return Base.getindex(i, token(tree), args...)
-    elseif token(tree) isa Operator
-        ts = Tuple([check(childtree, i, args...) for childtree in children(tree)])
-        return collatetruth(token(tree), ts)
-    else
-        return error("Unknown token type encountered when checking formula " *
+# TODO: get inspiration from PAndQ package and write interpret function.
+# TODO: change collatetruth name (concepts are "unite and simplify")
+
+function interpret(phi::Any, i::AbstractAssignment, args...; kwargs...)::AbstractFormula
+    return error("Unknown token type encountered when checking formula " *
                      "on interpretation of type $(typeof(i)): $(typeof(token(tree))).")
+end
+
+function interpret(tree::AbstractComposite, i::AbstractAssignment, args...; kwargs...)
+    # Keyword argument :children passed to handle interpret(c::Connective, ...) dispatch
+    return interpret(token(tree), i, args...; children=children(tree))
+end
+
+# When interpreting a single atom, if the lookup fails then return the atom itself
+function interpret(p::Atom, i::AbstractAssignment{AA}, args...; kwargs...) where {AA}
+    try
+        Base.getindex(i, p, args...)
+    catch e
+        if e isa BoundsError
+            p
+        else
+            rethrow(e)
+        end
     end
 end
 
+# When interpreting a connective, children must be passed from caller as kwargs :tree
+function interpret(c::Connective, i::AbstractAssignment{AA}, args...; kwargs...) where {AA}
+    kwargs = Dict(kwargs)
+
+    @assert haskey(kwargs, :children)
+        "interpret(c::Connective, i::AbstractAssignment{AA}, args...; kwargs...) where {AA} " *
+        "dispatch called without specifying kwargs :children."
+
+    childtree = children(kwargs[:children])
+
+    @assert length(childtree) == arity(c)
+        "Connective $(syntaxstring(c)) cannot be applied over $(childtree)."
+
+    return collatetruth(c, Tuple(
+        [interpret(singlechild, i, args...) for singlechild in childtree]
+    ))
+end
+
+interpret(t::Truth, args...; kwargs...) = t
 
 # Helper: an atom can be checked on an interpretation; a simple lookup is performed.
-check(p::Atom, i::AbstractAssignment{AA}, args...) where {AA} = istop(Base.getindex(i, p, args...))
+check(p::Atom, i::AbstractAssignment{AA}, args...) where {AA} =
+    istop(Base.getindex(i, p, args...))
 
-interpret(p::Atom, i::AbstractAssignment{AA}, args...) where {AA} = Base.getindex(i, p, args...) # TODO actually, if the lookup fails, this should return p.
+# check performs the same task as interpret, and returns whether the result is top or no
+check(tree::SyntaxTree, i::AbstractAssignment, args...) = istop(interpret(tree, i, args...))
+
+# Different ways to call interpret
+# i[p] -> (p itself, or a single Truth value!)
+# This has to be user-defined when creating a custom AbstractAssignment concrete type.
+# Otherwise, an error is thrown noticing the user (see our most general dispatch).
+
+# i[φ] -> φ
+Base.getindex(i::AbstractAssignment, tree::SyntaxTree, args...) =
+    interpret(tree, i, args...)
+
+# φ[i] -> φ
+Base.getindex(tree::SyntaxTree, i::AbstractAssignment, args...) =
+    interpret(tree, i, args...)
+
+    # CONJUNCTION(p,q)(i) -> φ
+(tree::SyntaxTree)(i::AbstractAssignment, args...) = interpret(tree, i, args...)
 
 ############################################################################################
 

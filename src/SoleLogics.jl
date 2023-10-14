@@ -98,4 +98,7 @@ include("ui.jl")
 
 include("deprecate.jl")
 
+# Deprecated exports
+export Formula
+
 end

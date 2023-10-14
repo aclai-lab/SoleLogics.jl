@@ -26,17 +26,21 @@ function collatetruth(
     end
 end
 
-# Note: `collatetruth` for any truth value returns itself.
-# Thus collatetruth is defined for every operator. TODO fix this note
+# collatetruth is defined for every operator, both Connectives and Truth values.
+
+# `collatetruth` for any truth value returns itself.
 collatetruth(t::Truth, ts::NTuple{0,<:Truth}) = t
 
+function collatetruth(c::Connective, ts::NTuple{N,T}) where {N,T<:AbstractFormula}
+    @assert arity(c) == N
+        "Connective $(syntaxstring(c)) cannot be applied on its children $(ts)"
+    c(ts...)
+end
 ############################################################################################
 ##################################### BASE CONNECTIVES #####################################
 ############################################################################################
 
 """
-TODO: @typeHierarchyUpdate
-
     struct NamedConnective{Symbol} <: Connective end
 
 A singleton type for representing connectives defined by a name or a symbol.

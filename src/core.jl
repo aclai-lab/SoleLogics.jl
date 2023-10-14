@@ -2,8 +2,7 @@ import Base: convert, promote_rule, _promote
 import Base: eltype, in, getindex, isiterable, iterate, IteratorSize, length, isequal, hash
 
 #=
-Work in progress - what is happening?
-SoleLogics' type hierarchy is being updated following the tree below.
+    New syntactical type hierarchy
 
     Syntactical
     ├── AbstractFormula
@@ -23,14 +22,15 @@ SoleLogics' type hierarchy is being updated following the tree below.
     │       └── TruthTable
     └── Connective
         ├── NamedConnective
-        └── AbstractRelationalOperator
-            ├── DiamondRelationalOperator
-            ├── BoxRelationalOperator
-            └── ...
+        ├── AbstractRelationalOperator
+        ├── DiamondRelationalOperator
+        ├── BoxRelationalOperator
+        └── ...
 
     Also:
     const Operator = Union{Connective,Truth}
     const SyntaxToken = Union{Connective,AbstractLeaf}
+    const BooleanTruth = Union{Top,Bot}
 =#
 
 """
@@ -711,6 +711,10 @@ tokenstype(t::SyntaxTree) = Union{tokentype(t),tokenstype.(children(t))...}
 operatorstype(t::SyntaxTree) = typeintersect(Operator, tokenstype(t))
 atomstype(t::SyntaxTree) = typeintersect(Atom, tokenstype(t))
 
+function joinformulas(op::Connective, children::NTuple{N,SyntaxTree}) where {N}
+    return SyntaxTree(op, children)
+end
+
 # Shows the type of the syntax tree and its syntaxstring.
 # Base.show(io::IO, t::SyntaxTree) = print(io, "$(typeof(t))($(syntaxstring(t)))")
 function Base.show(io::IO, t::SyntaxTree)
@@ -898,11 +902,6 @@ Base.promote_rule(::Type{S}, ::Type{<:AbstractSyntaxStructure}) where {S<:Syntax
 # Helper
 Base.convert(::Type{S}, tok::AbstractLeaf) where {S<:SyntaxTree} = S(tok)
 Base.convert(::Type{AbstractSyntaxStructure}, tok::AbstractLeaf) = SyntaxTree(tok)
-
-function joinformulas(op::Operator, children::NTuple{N,SyntaxTree}) where {N}
-    return SyntaxTree(op, children)
-end
-
 
 """
     tree(f::AbstractComposite)::SyntaxTree
@@ -1403,6 +1402,9 @@ See also [`AbstractAlgebra`](@ref).
 """
 iscrisp(a::AbstractAlgebra) = (length(domain(a)) == 2)
 
+joinformulas(c::Truth, ::Tuple{}) = SyntaxTree(c)
+(c::Truth)(::Tuple{}) = SyntaxTree(c)
+
 ############################################################################################
 
 """
@@ -1606,17 +1608,17 @@ function Base.show(io::IO, f::Formula)
     Base.show(io, logic(f))
 end
 
-# Note that, since `op` might not be in the logic of the child formulas,
+# Note that, since `c` might not be in the logic of the child formulas,
 #  the resulting formula may be of a different logic.
-function joinformulas(op::Operator, children::NTuple{N,Formula}) where {N}
+function joinformulas(c::Connective, children::NTuple{N,Formula}) where {N}
     ls = unique(logic.(children)) # Uses Base.isequal
     @assert length(ls) == 1 "Cannot " *
                 "build formula by combination of formulas with different logics: $(ls)."
     l = first(ls)
-    # "TODO expand logic's set of operators (op is not in it: $(typeof(op)) ∉ $(operatorstype(l)))."
-    @assert typeof(op) <: operatorstype(l) "Cannot join $(N) formulas via operator $(op): " *
-        "this operator does not belong to the logic. $(typeof(op)) <: $(operatorstype(l)) should hold!"
-    return Formula(l, joinformulas(op, map(synstruct, children)))
+    # "TODO expand logic's set of operators (c is not in it: $(typeof(c)) ∉ $(operatorstype(l)))."
+    @assert typeof(c) <: operatorstype(l) "Cannot join $(N) formulas via operator $(c): " *
+        "this operator does not belong to the logic. $(typeof(c)) <: $(operatorstype(l)) should hold!"
+    return Formula(l, joinformulas(c, map(synstruct, children)))
 end
 
 # When constructing a new formula from a syntax tree, the logic is passed by reference.
