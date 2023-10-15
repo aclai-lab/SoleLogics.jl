@@ -517,7 +517,7 @@ convert(::Type{AbstractInterpretation}, i::AbstractVector) = DefaultedTruthDict(
 check(p::Atom, i::AbstractVector) = (p in i)
 
 """
-    function feedtruth!(
+    feedtruth!(
         td::TruthDict{A,T,D},
         entry::T
     ) where {A,T<:AbstractVector,D<:AbstractDict{<:Atom{<:A},T}}
@@ -562,7 +562,7 @@ end
 
 
 """
-    function truth_table(
+    truth_table(
         st::AbstractSyntaxStructure;
         truthvals::T=[true, false]
     ) where {T <: Vector{<:Truth}}

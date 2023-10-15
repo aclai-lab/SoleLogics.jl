@@ -59,7 +59,7 @@ function getinstance(s::AbstractInterpretationSet, i_instance::Integer)
 end
 
 """
-    function check(
+    check(
         f::Formula,
         s::AbstractInterpretationSet,
         i_instance::Integer,
@@ -83,7 +83,7 @@ function check(
 end
 
 """
-    function check(
+    check(
         f::Formula,
         s::AbstractInterpretationSet,
         args...;

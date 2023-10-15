@@ -1642,7 +1642,7 @@ An alphabet of `valuetype` `A` can be used for instantiating atoms of valuetype 
 (::AbstractAlphabet{A})(a) where {A} = Atom{A}(a)
 
 """
-    function (op::Operator)(o::Any)
+    (op::Operator)(o::Any)
 
 An `Operator` can be used to compose syntax tokens (e.g., atoms),
 syntax trees and/or formulas.

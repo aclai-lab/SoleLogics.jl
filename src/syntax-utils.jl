@@ -272,7 +272,7 @@ subtrees(tree::SyntaxTree) = [Iterators.flatten(_subtrees.(children(tree)))...]
 _subtrees(tree::SyntaxTree) = [tree, Iterators.flatten(_subtrees.(children(tree)))...]
 
 """
-    function treewalk(
+    treewalk(
         st::SyntaxTree,
         args...;
         rng::AbstractRNG = Random.GLOBAL_RNG,

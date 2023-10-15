@@ -720,7 +720,7 @@ end
 
 
 """
-    function collateworlds(
+    collateworlds(
         fr::AbstractFrame{W},
         op::Operator,
         t::NTuple{N,WorldSetType},

@@ -229,7 +229,7 @@ end
 
 
 """
-    function parsebaseformula(
+    parsebaseformula(
         expression::String,
         additional_operators::Union{Nothing,Vector{<:Operator}} = nothing;
         operators::Union{Nothing,Vector{<:Operator}},

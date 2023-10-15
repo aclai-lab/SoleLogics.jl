@@ -13,7 +13,7 @@ import StatsBase: sample
 # sample(..., probability distribution)
 
 """
-    function Base.rand(
+    Base.rand(
         [rng::AbstractRNG = Random.GLOBAL_RNG, ]
         alphabet,
         args...;
@@ -82,7 +82,7 @@ function StatsBase.sample(
 end
 
 """
-    function StatsBase.sample(
+    StatsBase.sample(
         [rng::AbstractRNG = Random.GLOBAL_RNG, ]
         g::AbstractGrammar,
         height::Integer,
