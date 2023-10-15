@@ -5,7 +5,7 @@ import Base: eltype, in, getindex, isiterable, iterate, IteratorSize, length, is
     New syntactical type hierarchy
 
     Syntactical
-    ├── AbstractFormula
+    ├── Formula
     │   ├── AbstractSyntaxStructure
     │   │   ├── AbstractLeaf
     │   │   │   ├── Atom
@@ -40,29 +40,29 @@ Master abstract type of all types related to syntax.
 abstract type Syntactical end
 
 """
-    abstract type AbstractFormula end;
+    abstract type Formula end;
 
 A generic construct devoted to represent and organize a syntactical structure with specific
-properties. Examples of `AbstractFormula`s are `AbstractLeaf`s (for example, `Atom`s and
+properties. Examples of `Formula`s are `AbstractLeaf`s (for example, `Atom`s and
 `Truth` values), `AbstractComposite`s (for example, `SyntaxTree`s and `LeftmostLinearForm`s)
 and `AbstractMemoFormula`s (for example, `TruthTable`s).
 
 See also [`AbstractComposite`](@ref), [`AbstractLeaf`](@ref), [`AbstractMemoFormula`](@ref).
 """
-abstract type AbstractFormula <: Syntactical end
+abstract type Formula <: Syntactical end
 
 """
-    abstract type AbstractSyntaxStructure <: AbstractFormula end
+    abstract type AbstractSyntaxStructure <: Formula end
 
 A logical formula, represented by its syntactic component.
 The typical representation is the [`SyntaxTree`](@ref);
 however, different implementations can cover specific synctactic forms
 (e.g., conjuctive/disjuctive normal forms).
 
-See also [`AbstractFormula`](@ref), [`AbstractLogic`](@ref), [`SyntaxTree`](@ref),
+See also [`Formula`](@ref), [`AbstractLogic`](@ref), [`SyntaxTree`](@ref),
 [`tree`](@ref).
 """
-abstract type AbstractSyntaxStructure <: AbstractFormula end
+abstract type AbstractSyntaxStructure <: Formula end
 
 """
     abstract type AbstractLeaf <: AbstractSyntaxStructure end;
@@ -85,13 +85,13 @@ See also [`LeftmostLinearForm`](@ref), [`SyntaxTree`](@ref).
 abstract type AbstractComposite <: AbstractSyntaxStructure end
 
 """
-    abstract type AbstractMemoFormula <: AbstractFormula end
+    abstract type AbstractMemoFormula <: Formula end
 
 Enriched representation of an `AbstractSyntaxStructure`. This is useful to display more
 informations related to a certain syntactical structure, or save computational time by
 exploiting [memoization](https://en.wikipedia.org/wiki/Memoization).
 """
-abstract type AbstractMemoFormula <: AbstractFormula end
+abstract type AbstractMemoFormula <: Formula end
 
 """
     abstract type Truth <: AbstractLeaf end
@@ -207,10 +207,10 @@ dual(t::SyntaxToken) = error("Please, provide method dual(::$(typeof(t))).")
 hasdual(t::SyntaxToken) = false
 
 """
-    syntaxstring(φ::AbstractFormula; kwargs...)::String
+    syntaxstring(φ::Formula; kwargs...)::String
     syntaxstring(tok::SyntaxToken; kwargs...)::String
 
-Produce the string representation of an `AbstractFormula` or a `SyntaxToken` by performing
+Produce the string representation of an `Formula` or a `SyntaxToken` by performing
 a tree traversal of the syntax tree representation of the formula.
 Note that this representation may introduce redundant parentheses.
 `kwargs` can be used to specify how to display syntax tokens/trees under
@@ -305,7 +305,7 @@ struct Atom{A} <: AbstractLeaf
     value::A
 
     function Atom{A}(value::A) where {A}
-        @assert !(value isa Union{AbstractFormula,Connective}) "Illegal nesting. " *
+        @assert !(value isa Union{Formula,Connective}) "Illegal nesting. " *
             "Cannot instantiate Atom with value of type $(typeof(value))"
         new{A}(value)
     end
@@ -468,7 +468,7 @@ associativity(c::Connective) = :left
     joinformulas(
         c::Connective,
         ::NTuple{N,F}
-    )::F where {N,F<:AbstractFormula}
+    )::F where {N,F<:Formula}
 
 Return a new formula of type `F` by composing `N` formulas of the same type
 via a connective `c`. This function allows one to use connectives for flexibly composing
@@ -496,15 +496,15 @@ Upon `joinformulas` lies a flexible way of using connectives for composing
 formulas and syntax tokens (e.g., atoms), given by methods like the following:
 
     function (c::Connective)(
-        children::NTuple{N,AbstractFormula},
+        children::NTuple{N,Formula},
     ) where {N}
         ...
     end
 
 These allow composing formulas as in `∧(f, ¬p)`, and in order to access this composition
-with any newly defined subtype of `AbstractFormula`,
+with any newly defined subtype of `Formula`,
 a new method for `joinformulas` should be defined, together with
-promotion from/to other `AbstractFormula`s should be taken care of (see
+promotion from/to other `Formula`s should be taken care of (see
 [here](https://docs.julialang.org/en/v1/manual/conversion-and-promotion/)
 and [here](https://github.com/JuliaLang/julia/blob/master/base/promotion.jl)).
 
@@ -518,30 +518,30 @@ compositions such as `∧(f, f2, f3, ...)` and `∨(f, f2, f3, ...)` can be done
 thanks to the following two methods that were defined in SoleLogics:
 
     function ∧(
-        c1::Union{SyntaxToken,AbstractFormula},
-        c2::Union{SyntaxToken,AbstractFormula},
-        c3::Union{SyntaxToken,AbstractFormula},
-        cs::Union{SyntaxToken,AbstractFormula}...
+        c1::Union{SyntaxToken,Formula},
+        c2::Union{SyntaxToken,Formula},
+        c3::Union{SyntaxToken,Formula},
+        cs::Union{SyntaxToken,Formula}...
     )
         return ∧(c1, ∧(c2, c3, cs...))
     end
     function ∨(
-        c1::Union{SyntaxToken,AbstractFormula},
-        c2::Union{SyntaxToken,AbstractFormula},
-        c3::Union{SyntaxToken,AbstractFormula},
-        cs::Union{SyntaxToken,AbstractFormula}...
+        c1::Union{SyntaxToken,Formula},
+        c2::Union{SyntaxToken,Formula},
+        c3::Union{SyntaxToken,Formula},
+        cs::Union{SyntaxToken,Formula}...
     )
         return ∨(c1, ∨(c2, c3, cs...))
     end
 
-See also [`AbstractFormula`](@ref), [`Connective`](@ref).
+See also [`Formula`](@ref), [`Connective`](@ref).
 """
-function joinformulas(c::Connective, ::NTuple{N,F})::F where {N,F<:AbstractFormula}
+function joinformulas(c::Connective, ::NTuple{N,F})::F where {N,F<:Formula}
     return error("Please, provide method " *
         "joinformulas(c::Connective, children::NTuple{N,$(F)}) where {N}.")
 end
 
-function joinformulas(c::Connective, children::Vararg{F,N})::F where {N,F<:AbstractFormula}
+function joinformulas(c::Connective, children::Vararg{F,N})::F where {N,F<:Formula}
     joinformulas(c, children)
 end
 
@@ -550,17 +550,17 @@ function joinformulas(c::Connective, children::NTuple{N,SyntaxToken}) where {N}
 end
 
 """
-    Base.in(tok::SyntaxToken, f::AbstractFormula)::Bool
+    Base.in(tok::SyntaxToken, f::Formula)::Bool
 
 Return whether a syntax token appears in a formula.
 
-See also [`AbstractFormula`](@ref), [`SyntaxToken`](@ref).
+See also [`Formula`](@ref), [`SyntaxToken`](@ref).
 """
 function Base.in(tok::SyntaxToken, f::AbstractSyntaxStructure)::Bool
     return Base.in(tok, tree(f))
 end
 
-function Base.show(io::IO, f::AbstractFormula)
+function Base.show(io::IO, f::Formula)
     print(io, "$(typeof(f))\nsyntaxstring: $(syntaxstring(f))")
 end
 
@@ -611,7 +611,7 @@ function height(f::AbstractComposite)::Integer
     return height(tree(f))
 end
 
-# Helpers that make all AbstractFormula's map to the same dictionary key.
+# Helpers that make all Formula's map to the same dictionary key.
 # Useful when checking formulas on interpretations.
 function Base.isequal(a::AbstractComposite, b::AbstractComposite)
     Base.isequal(tree(a), tree(b))
@@ -622,12 +622,12 @@ Base.hash(a::AbstractComposite) = Base.hash(tree(a))
 Base.promote_rule(
     ::Type{SS},
     ::Type{<:AbstractLeaf}
-) where {SS<:AbstractSyntaxStructure} = AbstractFormula
+) where {SS<:AbstractSyntaxStructure} = Formula
 
 Base.promote_rule(
     ::Type{<:AbstractLeaf},
     ::Type{SS}
-) where {SS<:AbstractSyntaxStructure} = AbstractFormula
+) where {SS<:AbstractSyntaxStructure} = Formula
 =#
 
 ############################################################################################
@@ -1498,155 +1498,6 @@ function Base.isequal(a::AbstractLogic, b::AbstractLogic)
 end
 Base.hash(a::AbstractLogic) = Base.hash(grammar(a)) + Base.hash(algebra(a))
 
-############################################################################################
-
-# TODO: see check_tree optional parameter
-"""
-    struct Formula{L<:AbstractLogic} <: AbstractFormula
-        _logic::Base.RefValue{L}
-        synstruct::AbstractSyntaxStructure
-    end
-
-A formula anchored to a logic of type `L`, and wrapping a syntax structure.
-The structure encodes a formula belonging to the grammar of the logic, and the truth of the
-formula can be evaluated on interpretations of the same logic. Note that, here, the logic is
-represented by a reference.
-
-Upon construction, the logic can be passed either directly, or via a RefValue.
-Additionally, the following keyword arguments may be specified:
-- `check_atoms::Bool = false`: whether to perform or not a check that the atoms
-    belong to the alphabet of the logic;
-- `check_tree::Bool = false`: whether to perform or not a check that the formula's
-    syntactic structure honors the grammar
-    (includes the check performed with `check_atoms = true`);
-
-*Cool feature*: a `Formula` can be used for instating other formulas of the same logic.
-See the examples.
-
-# Examples
-```jldoctest
-julia> f = parsebaseformula("◊(p→q)");
-
-julia> f2 = f(parseformula("p"));
-
-julia> syntaxstring(f)
-"◊(→(p, q))"
-
-julia> syntaxstring(f2)
-"p"
-
-julia> @assert logic(f) == logic(f2)
-
-julia> @assert ◊ in operators(logic(f2))
-
-julia> @assert ◊ isa operatorstype(logic(f2))
-
-```
-
-See also [`AbstractLogic`](@ref), [`logic`](@ref), [`SyntaxToken`](@ref),
-[`SyntaxTree`](@ref), [`tree`](@ref).
-"""
-struct Formula{L<:AbstractLogic} <: AbstractFormula
-    _logic::Base.RefValue{L}
-    synstruct::AbstractSyntaxStructure
-
-    _l(l::AbstractLogic) = Base.RefValue(l)
-    _l(l::Base.RefValue) = l
-
-    function Formula{L}(
-        l::Union{L,Base.RefValue{L}},
-        tokt::Union{SyntaxToken,AbstractSyntaxStructure};
-        check_atoms::Bool = false,
-        check_tree::Bool = false,
-    ) where {L<:AbstractLogic}
-        _logic = _l(l)
-        synstruct = convert(AbstractSyntaxStructure, tokt)
-
-        if check_tree
-            return error("TODO implement check_tree parameter when constructing Formula's!")
-        end
-        # Check that the atoms belong to the alphabet of the logic
-        if !check_tree && check_atoms
-            @assert all([p in alphabet(_logic[])
-                         for p in atoms(synstruct)]) "Cannot " *
-                           "instantiate Formula{$(L)} with illegal atoms: " *
-                           "$(filter((p)->!(p in alphabet(_logic[])), atoms(synstruct)))"
-        end
-
-        # Check that the token types of the tree are a subset of the tokens
-        #  allowed by the logic
-        @assert tokenstype(synstruct) <: tokenstype(_logic[]) "Cannot " *
-                             "instantiate Formula{$(L)} with illegal token types $(tokenstype(synstruct)). " *
-                             "Token types should be <: $(tokenstype(_logic[]))."
-
-        return new{L}(_logic, synstruct)
-    end
-
-    # function Formula{L}(
-    #     l::Union{L,Base.RefValue{L}},
-    #     tokt::Union{SyntaxToken,AbstractSyntaxStructure};
-    #     kwargs...
-    # ) where {L<:AbstractLogic}
-    #     t = convert(SyntaxTree, tokt)
-    #     return Formula{L,typeof(t)}(l, t; kwargs...)
-    # end
-
-    function Formula(
-        l::Union{L,Base.RefValue{L}},
-        tokt;
-        kwargs...
-    ) where {L<:AbstractLogic}
-        return Formula{L}(l, tokt; kwargs...)
-    end
-end
-
-_logic(f::Formula) = f._logic
-logic(f::Formula) = f._logic[]
-synstruct(f::Formula) = f.synstruct
-tree(f::Formula) = tree(f.synstruct)
-
-function Base.show(io::IO, f::Formula)
-    println(io, "Formula: $(syntaxstring(f))")
-    print(io, "Anchored to logic: ")
-    Base.show(io, logic(f))
-end
-
-# Note that, since `c` might not be in the logic of the child formulas,
-#  the resulting formula may be of a different logic.
-function joinformulas(c::Connective, children::NTuple{N,Formula}) where {N}
-    ls = unique(logic.(children)) # Uses Base.isequal
-    @assert length(ls) == 1 "Cannot " *
-                "build formula by combination of formulas with different logics: $(ls)."
-    l = first(ls)
-    # "TODO expand logic's set of operators (c is not in it: $(typeof(c)) ∉ $(operatorstype(l)))."
-    @assert typeof(c) <: operatorstype(l) "Cannot join $(N) formulas via operator $(c): " *
-        "this operator does not belong to the logic. $(typeof(c)) <: $(operatorstype(l)) should hold!"
-    return Formula(l, joinformulas(c, map(synstruct, children)))
-end
-
-# When constructing a new formula from a syntax tree, the logic is passed by reference.
-(f::Formula)(t::AbstractSyntaxStructure, args...) = Formula(_logic(f), t, args...)
-
-# A logic can be used to instantiate `Formula`s out of syntax trees.
-(l::AbstractLogic)(t::AbstractSyntaxStructure, args...) = Formula(Base.RefValue(l), t; args...)
-
-# Adapted from https://github.com/JuliaLang/julia/blob/master/base/promotion.jl
-function Base._promote(x::Formula, y::AbstractSyntaxStructure)
-    @inline
-    return (x, x(y))
-end
-
-function Base._promote(x::Formula, y::SyntaxToken)
-    Base._promote(x, Base.convert(SyntaxTree, y))
-end
-Base._promote(x::Union{SyntaxToken,AbstractSyntaxStructure}, y::Formula) = reverse(Base._promote(y, x))
-
-iscrisp(f::Formula) = iscrisp(logic(f))
-grammar(f::Formula) = grammar(logic(f))
-algebra(f::Formula) = algebra(logic(f))
-
-syntaxstring(f::Formula; kwargs...) = syntaxstring(f.synstruct; kwargs...)
-
 
 ############################################################################################
 
@@ -1674,7 +1525,7 @@ truthtype(::AbstractInterpretation{A,T}) where {A,T} = T
 TODO @typeHierarchyUpdate fix example
 
     check(
-        f::AbstractFormula,
+        f::Formula,
         i::AbstractInterpretation,
         args...;
         kwargs...
@@ -1706,11 +1557,11 @@ julia> check(CONJUNCTION(p,q), td)
 false
 ```
 
-See also [`interpret`](@ref), [`AbstractFormula`](@ref), [`AbstractInterpretation`](@ref),
+See also [`interpret`](@ref), [`Formula`](@ref), [`AbstractInterpretation`](@ref),
 [`TruthDict`](@ref).
 """
 function check(
-    f::AbstractFormula,
+    f::Formula,
     i::AbstractInterpretation,
     args...;
     kwargs...
@@ -1722,7 +1573,7 @@ end
 TODO @typeHierarchyUpdate check docstring
 
     interpret(
-        f::AbstractFormula,
+        f::Formula,
         i::AbstractInterpretation,
         args...;
         kwargs...
@@ -1750,11 +1601,11 @@ julia> interpret(CONJUNCTION(p,q), td)
 ⊥
 ```
 
-See also [`check`](@ref), [`AbstractFormula`](@ref), [`AbstractInterpretation`](@ref),
+See also [`check`](@ref), [`Formula`](@ref), [`AbstractInterpretation`](@ref),
 [`AbstractAlgebra`](@ref).
 """
 function interpret(
-    f::AbstractFormula,
+    f::Formula,
     i::AbstractInterpretation{A,T},
     args...;
     kwargs...
@@ -1807,12 +1658,12 @@ function (op::Operator)(o::Any)
     return error("Cannot apply operator $(op)::$(typeof(op)) to object $(o)::$(typeof(o))")
 end
 
-function (op::Operator)(children::Union{SyntaxToken,AbstractFormula}...)
+function (op::Operator)(children::Union{SyntaxToken,Formula}...)
     return op(children)
 end
 
 function (op::Operator)(
-    children::NTuple{N,Union{SyntaxToken,AbstractFormula}},
+    children::NTuple{N,Union{SyntaxToken,Formula}},
 ) where {N}
     T = Base.promote_type((typeof.(children))...)
     if T <: Union{SyntaxTree,SyntaxToken}

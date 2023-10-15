@@ -178,11 +178,11 @@ interpret(t::Truth, args...; kwargs...) = t
 #  Probably. Therefore, these should be moved to core and AbstractAssignment->AbstractInterpretation.
 
 # i[φ] -> φ
-Base.getindex(i::AbstractAssignment, φ::AbstractFormula, args...; kwargs...) =
+Base.getindex(i::AbstractAssignment, φ::Formula, args...; kwargs...) =
     interpret(φ, i, args...; kwargs...)
 
 # φ(i) -> φ
-(φ::AbstractFormula)(i::AbstractAssignment, args...; kwargs...) =
+(φ::Formula)(i::AbstractAssignment, args...; kwargs...) =
     interpret(φ, i, args...; kwargs...)
 
 ############################################################################################
@@ -518,13 +518,12 @@ end
 # Helpers:
 #  we let any AbstractDict and AbstractVector be used as an interpretation when model checking.
 
-check(f::Formula, i::Union{AbstractDict,AbstractVector}, args...) = check(tree(f), i, args...)
 function check(
-    tree::SyntaxTree,
+    φ::Formula,
     i::Union{AbstractDict,AbstractVector},
     args...
 )
-    check(tree, convert(AbstractInterpretation, i), args...)
+    check(φ, convert(AbstractInterpretation, i), args...)
 end
 
 # A dictionary is interpreted as the map from atoms to truth values

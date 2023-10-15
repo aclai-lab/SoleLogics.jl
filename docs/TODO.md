@@ -14,11 +14,11 @@
 #     # Usage
 #     ## Parsing Formulas
 #     Consider the string representation of a logical formula (in infix notation, e.g., "p∧q" or in function notation, e.g. "∧(p,q)". Such expressions can easily be parsed to a `SyntaxTree` representation using the method `parsebaseformula`. As you can see from the documentation, it is highly customizable, allowing parsing custom-defined operators and changing how recognized atoms must be interpreted (e.g. in "true∧false" atoms are booleans, while in "1∧0" they are integers).
-#     The `SyntaxTree` returned by `parsebaseformula` can be paired with a logic (a grammar and an algebra) using `parsebaseformula`, thus returning a Formula: the latter method disposes of the same flexibility of `parsetree` TODO not true.
+#     The `SyntaxTree` returned by `parsebaseformula` can be paired with a logic (a grammar and an algebra) using `parsebaseformula`, thus returning a AnchoredFormula: the latter method disposes of the same flexibility of `parsetree` TODO not true.
 #     ## Generating random formulas
 #     Random formulas generation is provided by the following methods:
 #     - randformula (which returns a SyntaxTree);
-#     - randbaseformula (which returns a SyntaxTree anchored to a Logic, thus, a Formula).
+#     - randbaseformula (which returns a SyntaxTree anchored to a Logic, thus, a AnchoredFormula).
 #     Both allow customizing the generation process by setting an alphabet (that is, which propositional letters are in play), an operators vector, the maximum height of the SyntaxTree and the maximum modal depth (that is, the maximum number of modal operators, if any, in each SyntaxTree path).
 #     Notes for Giovanni; 
 #     1) many important definitions are introduced here: is this the correct place to explain them or it's better to just link the documentation? 

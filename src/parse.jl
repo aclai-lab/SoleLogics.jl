@@ -1,7 +1,7 @@
 import Base: parse
 
 function Base.parse(
-    F::Type{<:AbstractFormula},
+    F::Type{<:Formula},
     str::AbstractString,
     args...;
     kwargs...
@@ -11,7 +11,7 @@ end
 
 """
     function parseformula(
-        F::Type{<:AbstractFormula},
+        F::Type{<:Formula},
         str::AbstractString,
         args...;
         kwargs...
@@ -23,7 +23,7 @@ Parses a formula of type `F` from a string. When `F` is not specified, it defaul
 See also [`parsetree`](@ref), [`parsebaseformula`](@ref).
 """
 function parseformula(
-    F::Type{<:AbstractFormula},
+    F::Type{<:Formula},
     str::AbstractString,
     args...;
     kwargs...
@@ -518,65 +518,6 @@ function parseformula(
     kwargs...
 )
     parseformula(F, expression, operators(logic); kwargs...)
-end
-
-"""
-    function parsebaseformula(
-        expression::String,
-        additional_operators::Union{Nothing,Vector{<:Operator}} = nothing;
-        operators::Union{Nothing,Vector{<:Operator}},
-        grammar::Union{Nothing,AbstractGrammar} = nothing,
-        algebra::Union{Nothing,AbstractAlgebra} = nothing,
-        kwargs...
-    )::Formula
-
-Return a `Formula` which is the result of parsing `expression`
- via the [Shunting yard](https://en.wikipedia.org/wiki/Shunting_yard_algorithm)
- algorithm.
-By default, this function is only able to parse operators in
-`SoleLogics.BASE_PARSABLE_OPERATORS`; additional operators may be provided as
-a second argument.
-
-The `grammar` and `algebra` of the associated logic is inferred using
-the `baseformula` function from the operators encountered
-in the expression, and those in `additional_operators`.
-
-See [`parsetree`](@ref), [`baseformula`](@ref).
-"""
-parsebaseformula(str, args...; kwargs...) = parseformula(Formula, str, args...; kwargs...)
-
-function parseformula(
-    ::Type{Formula},
-    expression::String,
-    additional_operators::Union{Nothing,Vector{<:Operator}} = nothing;
-    # TODO add alphabet parameter add custom parser for atoms
-    # alphabet::Union{Nothing,Vector,AbstractAlphabet} = nothing,
-    grammar::Union{Nothing,AbstractGrammar} = nothing,
-    algebra::Union{Nothing,AbstractAlgebra} = nothing,
-    kwargs...
-)
-    additional_operators =
-        (isnothing(additional_operators) ? Operator[] : additional_operators)
-
-    t = parsetree(expression, additional_operators; kwargs...)
-    baseformula(t;
-        # additional_operators = unique(Operator[operators..., SoleLogics.operators(t)...]),
-        additional_operators = length(additional_operators) == 0 ? nothing :
-            unique(Operator[additional_operators..., SoleLogics.operators(t)...]),
-        # alphabet = alphabet,
-        alphabet = AlphabetOfAny{String}(),
-        grammar = grammar,
-        algebra = algebra
-    )
-end
-
-function parseformula(
-    ::Type{Formula},
-    expression::String,
-    logic::AbstractLogic;
-    kwargs...,
-)
-    Formula(logic, parsetree(expression, operators(logic); kwargs...))
 end
 
 # function parsebaseformula(

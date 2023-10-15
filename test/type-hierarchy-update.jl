@@ -12,7 +12,7 @@ const SL = SoleLogics # SL.name to reference unexported names
     New syntactical type hierarchy
 
     Syntactical
-    ├── AbstractFormula
+    ├── Formula
     │   ├── AbstractSyntaxStructure
     │   │   ├── AbstractLeaf
     │   │   │   ├── Atom
@@ -60,8 +60,8 @@ interp2             = TruthDict(1:4, BOT)
 
 # Test section
 
-@test AbstractFormula           <: Syntactical
-@test AbstractSyntaxStructure   <: AbstractFormula
+@test Formula           <: Syntactical
+@test AbstractSyntaxStructure   <: Formula
 @test AbstractLeaf              <: AbstractSyntaxStructure
 @test Truth                     <: AbstractLeaf
 

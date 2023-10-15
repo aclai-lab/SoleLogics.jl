@@ -135,7 +135,7 @@ end
 #     )::T where {A,T<:Truth}
 """
     check(
-        f::AbstractFormula,
+        f::Formula,
         i::AbstractAssignment::{A,T},
         args...
     )::T where {A,T<:Truth}
@@ -146,7 +146,7 @@ on the given logic.
 
 See also
 [`TruthDict`](@ref),
-[`SyntaxTree`](@ref), [`AbstractFormula`](@ref),
+[`SyntaxTree`](@ref), [`Formula`](@ref),
 [`AbstractAlgebra`](@ref), [`AbstractInterpretation`](@ref).
 """
 check(f::Formula, i::AbstractAssignment, args...) = check(algebra(f), tree(f), i, args...)

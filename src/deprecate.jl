@@ -1,7 +1,7 @@
 export global_diamond, global_box
 
 Base.@deprecate check(
-    φ::SoleLogics.AbstractFormula,
+    φ::SoleLogics.Formula,
     X::AbstractInterpretationSet{<:AbstractKripkeStructure},
     i_instance::Integer,
     args...;
@@ -27,7 +27,3 @@ const Bottom = Bot
 
 Base.@deprecate bottom(a) bot(a)
 Base.@deprecate isbottom(a) isbot(a)
-
-
-# Deprecated exports
-export Formula

@@ -542,7 +542,7 @@ function interpret(
 end
 
 function interpret(
-    ::AbstractFormula,
+    ::Formula,
     ::AbstractKripkeStructure{W,A,T},
     ::Union{W,Nothing},
 )::T where {W<:AbstractWorld,A,T<:Truth}
@@ -584,7 +584,7 @@ function check(
     φ::SyntaxTree,
     i::AbstractKripkeStructure{W,A,T},
     w::Union{Nothing,<:AbstractWorld} = nothing;
-    use_memo::Union{Nothing,AbstractDict{<:AbstractFormula,<:WorldSet}} = nothing,
+    use_memo::Union{Nothing,AbstractDict{<:Formula,<:WorldSet}} = nothing,
     perform_normalization::Bool = true,
     memo_max_height::Union{Nothing,Int} = nothing,
 )::T where {W<:AbstractWorld,A,T<:Truth}
@@ -638,7 +638,7 @@ function check(
     φ::SyntaxTree,
     i::AbstractKripkeStructure{W,A,T},
     w::Union{Nothing,<:AbstractWorld} = nothing; # TODO remove defaulting
-    use_memo::Union{Nothing,AbstractDict{<:AbstractFormula,<:WorldSet}} = nothing,
+    use_memo::Union{Nothing,AbstractDict{<:Formula,<:WorldSet}} = nothing,
     perform_normalization::Bool = true,
     memo_max_height::Union{Nothing,Int} = nothing,
 )::T where {W<:AbstractWorld,A,T<:Truth}
@@ -651,9 +651,9 @@ function check(
     @assert isgrounded(φ) || !isnothing(w) "Please, specify a world in order " *
         "to check non-grounded formula: $(syntaxstring(φ))."
 
-    setformula(memo_structure::AbstractDict{<:AbstractFormula}, φ::AbstractFormula, val) = memo_structure[tree(φ)] = val
-    readformula(memo_structure::AbstractDict{<:AbstractFormula}, φ::AbstractFormula) = memo_structure[tree(φ)]
-    hasformula(memo_structure::AbstractDict{<:AbstractFormula}, φ::AbstractFormula) = haskey(memo_structure, tree(φ))
+    setformula(memo_structure::AbstractDict{<:Formula}, φ::Formula, val) = memo_structure[tree(φ)] = val
+    readformula(memo_structure::AbstractDict{<:Formula}, φ::Formula) = memo_structure[tree(φ)]
+    hasformula(memo_structure::AbstractDict{<:Formula}, φ::Formula) = haskey(memo_structure, tree(φ))
 
     if perform_normalization
         φ = normalize(φ; profile = :modelchecking, allow_atom_flipping = false)
@@ -765,7 +765,7 @@ function Base.show(io::IO, i::KripkeStructure)
 end
 
 # TODO maybe this yields the worlds where a certain formula is true...?
-# function check(i::KripkeStructure{W,A,T}, f::AbstractFormula)::AbstractVector{W} where {W<:AbstractWorld,A,T<:Truth}
+# function check(i::KripkeStructure{W,A,T}, f::Formula)::AbstractVector{W} where {W<:AbstractWorld,A,T<:Truth}
 
 ############################################################################################
 ############################################################################################

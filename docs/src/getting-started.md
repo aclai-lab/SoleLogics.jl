@@ -97,17 +97,17 @@ To learn more about operators, refer to [Propositional Logic](@ref) and [Modal L
 TODO: the following definition might be unclear, since "evaluation" and "logic" are not concepts already read by the user. When the Logic structure will be removed from SoleLogics, this section will be expanded with semantics-related concepts.
 
 ```@docs
-AbstractFormula
+Formula
 ```
 
 !!! note
-    SoleLogics.jl offers the possibility to implement a custom [`Formula`](@ref) type. To see an in-depth example, please refer to section [Customization](@ref customization-section).
+    SoleLogics.jl offers the possibility to implement a custom [`Formula`](@ref) subtype. To see an in-depth example, please refer to section [Customization](@ref customization-section).
 
 ```@docs
 joinformulas
-tokens(f::AbstractFormula)
+tokens(f::Formula)
 SoleLogics.height(t::SyntaxTree)
-SoleLogics.tree(f::AbstractFormula)
+SoleLogics.tree(f::Formula)
 ```
 
 ### Parsing & Printing

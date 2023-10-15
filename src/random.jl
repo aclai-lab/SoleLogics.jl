@@ -88,7 +88,7 @@ end
         height::Integer,
         args...;
         kwargs...
-    )::AbstractFormula
+    )::Formula
 
 Randomly sample a logic formula of given `height` from a grammar `g`.
 
@@ -154,26 +154,20 @@ doc_randformula = """
         rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG
     )::SyntaxTree
 
+    # TODO @Mauro implement this method.
     function randbaseformula(
         height::Integer,
         g::AbstractGrammar;
         rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG
-    )::Formula
+    )::SyntaxTree
 
-    function randbaseformula(
-        height::Integer,
-        alphabet,
-        operators::Vector{<:Operator};
-        rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG
-    )::Formula
-
-Return a pseudo-randomic `SyntaxTree` or `Formula`.
+Return a pseudo-randomic `SyntaxTree`.
 
 # Arguments
 - `height::Integer`: height of the generated structure;
 - `alphabet::AbstractAlphabet`: collection from which atoms are chosen randomly;
 - `operators::Vector{<:Operator}`: vector from which legal operators are chosen;
-- `g::AbstractGrammar`: alternative to passing alphabet and operators separately.
+- `g::AbstractGrammar`: alternative to passing alphabet and operators separately. (TODO explain?)
 
 # Keyword Arguments
 - `rng::Union{Intger,AbstractRNG} = Random.GLOBAL_RNG`: random number generator;
@@ -189,38 +183,6 @@ julia> syntaxstring(randformula(4, ExplicitAlphabet([1,2]), [NEGATION, CONJUNCTI
 
 See also [`AbstractAlphabet`](@ref), [`SyntaxTree`](@ref).
 """
-
-"""$(doc_randformula)"""
-function randbaseformula(
-    height::Integer,
-    g::AbstractGrammar;
-    picker::Function=rand,
-    kwargs...
-)::Formula
-    _alphabet = alphabet(g)
-    _operators = operators(g)
-    baseformula(
-        randformula(height, _alphabet, _operators; picker=picker, kwargs...);
-        alphabet = _alphabet,
-        additional_operators = _operators
-    )
-end
-
-"""$(doc_randformula)"""
-function randbaseformula(
-    height::Integer,
-    alphabet,
-    operators::Vector{<:Operator};
-    picker::Function=rand,
-    kwargs...
-)::Formula
-    alphabet = convert(AbstractAlphabet, alphabet)
-    baseformula(
-        randformula(height, alphabet, operators; picker=picker, kwargs...);
-        alphabet = alphabet,
-        additional_operators = operators,
-    )
-end
 
 """$(doc_randformula)"""
 function randformula(

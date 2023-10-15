@@ -27,7 +27,7 @@ truthtype(::Type{AbstractInterpretationSet{M}}) where {M} = truthtype(M)
 truthtype(s::AbstractInterpretationSet) = truthtype(typeof(s))
 
 function check(
-    φ::AbstractFormula,
+    φ::Formula,
     d::AbstractInterpretationSet{M},
     i_instance::Integer,
     args...;
@@ -38,7 +38,7 @@ end
 
 # Check on a dataset = map check on the instances
 function check(
-    φ::AbstractFormula,
+    φ::Formula,
     d::AbstractInterpretationSet{M},
     args...;
     # use_memo::Union{Nothing,AbstractVector} = nothing,
@@ -79,7 +79,7 @@ Base.getindex(ms::InterpretationSet, i_instance::Integer) = Base.getindex(ms.ins
 
 """
     function check(
-        f::AbstractFormula,
+        f::Formula,
         is::InterpretationSet,
         i_instance::Integer,
         args...
@@ -89,10 +89,10 @@ Dispatch to check a specific [`AbstractInterpretation`](@ref) in a
 [`InterpretationSet`](@ref) over a formula.
 
 See also [`AbstractInterpretation`](@ref), [`InterpretationSet`](@ref),
-[`AbstractFormula`](@ref).
+[`Formula`](@ref).
 """
 function check(
-    f::AbstractFormula,
+    f::Formula,
     is::InterpretationSet,
     i_instance::Integer,
     args...

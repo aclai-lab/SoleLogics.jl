@@ -15,7 +15,7 @@ include("utils.jl")
 export iscrisp, isfinite, isnullary, isunary, isbinary
 
 export Syntactical,
-    AbstractFormula, AbstractSyntaxStructure, AbstractLeaf, AbstractComposite
+    Formula, AbstractSyntaxStructure, AbstractLeaf, AbstractComposite
 
 export AlphabetOfAny, ExplicitAlphabet
 
@@ -94,6 +94,8 @@ include("parse.jl")
 export randbaseformula, randformula
 
 include("random.jl")
+
+include("anchored-formula.jl")
 
 include("ui.jl")
 

@@ -31,7 +31,7 @@ end
 # `collatetruth` for any truth value returns itself.
 collatetruth(t::Truth, ts::NTuple{0,<:Truth}) = t
 
-function collatetruth(c::Connective, ts::NTuple{N,T}) where {N,T<:AbstractFormula}
+function collatetruth(c::Connective, ts::NTuple{N,T}) where {N,T<:Formula}
     @assert arity(c) == N
         "Connective $(syntaxstring(c)) cannot be applied on its children $(ts)"
     c(ts...)
@@ -427,79 +427,4 @@ function _baselogic(;
     algebra = isnothing(algebra) ? BASE_ALGEBRA : algebra
 
     return BaseLogic(grammar, algebra)
-end
-
-"""
-TODO: @typeHierarchyUpdate
-    function baseformula(
-        tokf::Union{AbstractSyntaxToken,AbstractFormula};
-        infer_logic = true,
-        additional_operators::Union{Nothing,Vector{<:Operator}} = nothing,
-        kwargs...,
-    )
-
-Attempt at instantiating a `Formula` from a syntax token/formula,
-by inferring the logic it belongs to. If `infer_logic` is true, then
-a canonical logic (e.g., propositional logic with all the `BASE_PROPOSITIONAL_OPERATORS`) is
-inferred; if it's false, then a logic with exactly the operators appearing in the syntax tree,
-plus the `additional_operators` is instantiated.
-
-# Examples
-```julia-repl
-julia> t = parseformula("◊((p∧q)→r)");
-
-julia> operators(logic(SoleLogics.baseformula(t)))
-3-element Vector{Union{SoleLogics.NamedConnective{:→}, SoleLogics.NamedConnective{:◊}, SoleLogics.NamedConnective{:∧}}}:
- ∧
- ◊
- →
-
-julia> operators(logic(SoleLogics.baseformula(t; additional_operators = SoleLogics.BASE_MODAL_OPERATORS)))
-8-element Vector{Union{SoleLogics.BottomOperator, SoleLogics.NamedConnective{:¬}, SoleLogics.NamedConnective{:∧}, SoleLogics.NamedConnective{:∨}, SoleLogics.NamedConnective{:→}, SoleLogics.NamedConnective{:◊}, SoleLogics.NamedConnective{:□}, SoleLogics.TopOperator}}:
- ⊤
- ⊥
- ¬
- ∧
- ∨
- →
- ◊
- □
-```
-"""
-function baseformula(
-    tokf::Union{AbstractSyntaxStructure,Connective};
-    infer_logic = true,
-    additional_operators::Union{Nothing,Vector{<:Operator}} = nothing,
-    kwargs...,
-)
-    t = convert(SyntaxTree, tokf)
-
-    ops = isnothing(additional_operators) ? SoleLogics.operators(t) : additional_operators
-    # operators = unique([additional_operators..., ops...])
-    # props = atoms(t)
-
-    logic = begin
-        if issubset(ops, BASE_PROPOSITIONAL_OPERATORS)
-            propositionallogic(;
-                operators = (infer_logic ? BASE_PROPOSITIONAL_OPERATORS : ops),
-                kwargs...,
-            )
-        elseif issubset(ops, BASE_MODAL_OPERATORS)
-            modallogic(;
-                operators = (infer_logic ? BASE_MODAL_OPERATORS : ops),
-                default_operators = BASE_MODAL_OPERATORS,
-                kwargs...,
-            )
-        elseif issubset(ops, BASE_MULTIMODAL_OPERATORS)
-            modallogic(;
-                operators = (infer_logic ? BASE_MULTIMODAL_OPERATORS : ops),
-                default_operators = BASE_MULTIMODAL_OPERATORS,
-                kwargs...,
-            )
-        else
-            unknown_ops = setdiff(ops, BASE_PROPOSITIONAL_OPERATORS, BASE_MODAL_OPERATORS, BASE_MULTIMODAL_OPERATORS)
-            error("Could not infer logic from object of type $(typeof(tokf)): $(t). Unknown operators: $(unknown_ops).")
-        end
-    end
-    Formula(logic, t)
 end

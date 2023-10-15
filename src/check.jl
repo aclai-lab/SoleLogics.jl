@@ -1,6 +1,6 @@
 
 """
-    subformulas(f::AbstractFormula; sorted=true)
+    subformulas(f::Formula; sorted=true)
 
 Return all sub-formulas (sorted by size when `sorted=true`)
 of a given formula.
@@ -18,10 +18,9 @@ julia> syntaxstring.(SoleLogics.subformulas(parsebaseformula("◊((p∧q)→r)")
 ```
 
 See also
-[`SyntaxTree`](@ref)), [`AbstractFormula`](@ref).
+[`SyntaxTree`](@ref)), [`Formula`](@ref).
 """
 subformulas(f::AbstractSyntaxStructure; kwargs...) = subformulas(tree(f); kwargs...)
-subformulas(f::Formula; kwargs...) = f.(subformulas(tree(f); kwargs...))
 function subformulas(t::SyntaxTree; sorted=true)
     # function _subformulas(_t::SyntaxTree)
     #     SyntaxTree[
@@ -47,7 +46,7 @@ end
 # TODO explain profile's and other parameters
 """
     normalize(
-        f::AbstractFormula;
+        f::Formula;
         remove_boxes = true,
         reduce_negations = true,
         allow_atom_flipping = true,
@@ -60,7 +59,7 @@ but different syntax. This is useful when dealing with the truth of many
 BEWARE: it currently assumes the underlying algebra is Boolean!
 
 # Arguments
-- `f::AbstractFormula`: when set to `true`,
+- `f::Formula`: when set to `true`,
     the formula;
 - `remove_boxes::Bool`: converts all uni-modal and multi-modal box operators by using the
     equivalence ◊φ ≡ ¬□¬φ. Note: this assumes an underlying Boolean algebra.
@@ -88,10 +87,9 @@ julia> syntaxstring(SoleLogics.normalize(f; profile = :readability, allow_atom_f
 ```
 
 See also
-[`SyntaxTree`](@ref)), [`AbstractFormula`](@ref).
+[`SyntaxTree`](@ref)), [`Formula`](@ref).
 """
 normalize(f::AbstractSyntaxStructure; kwargs...) = normalize(tree(f); kwargs...)
-normalize(f::Formula; kwargs...) = f(normalize(tree(f); kwargs...))
 function normalize(
     t::SyntaxTree;
     profile = :readability,
@@ -295,7 +293,7 @@ function normalize(
 end
 
 """
-    isgrounded(f::AbstractFormula)::Bool
+    isgrounded(f::Formula)::Bool
 
 Return `true` if the formula is grounded, that is, if it can be inferred from its syntactic
 structure that, given any frame-based model, the truth value of the formula is the same
@@ -313,9 +311,9 @@ true
 ```
 
 See also
-[`isgrounding`](@ref)), [`SyntaxTree`](@ref)), [`AbstractFormula`](@ref).
+[`isgrounding`](@ref)), [`SyntaxTree`](@ref)), [`Formula`](@ref).
 """
-isgrounded(f::AbstractFormula)::Bool = isgrounded(tree(f))
+isgrounded(f::Formula)::Bool = isgrounded(tree(f))
 isgrounded(t::SyntaxTree)::Bool =
     # (println(token(t)); println(children(t)); true) &&
     (token(t) isa SoleLogics.AbstractRelationalOperator && isgrounding(relation(token(t)))) ||

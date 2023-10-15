@@ -99,12 +99,12 @@ logic_int = BaseLogic(grammar_int, SoleLogics.BooleanAlgebra())
 @test Atom("aoeu") in propositionallogic()
 @test ! (Atom(1) in propositionallogic())
 
-@test_nowarn Formula(Base.RefValue(logic_int), t1_int)
-f_int = @test_nowarn Formula(logic_int, t1_int)
-@test_nowarn Formula(logic_int, p1)
-@test_nowarn Formula(logic_int, p1; check_atoms = true)
-@test_nowarn Formula(logic_int, p100)
-@test_throws AssertionError Formula(logic_int, p100; check_atoms = true)
+@test_nowarn AnchoredFormula(Base.RefValue(logic_int), t1_int)
+f_int = @test_nowarn AnchoredFormula(logic_int, t1_int)
+@test_nowarn AnchoredFormula(logic_int, p1)
+@test_nowarn AnchoredFormula(logic_int, p1; check_atoms = true)
+@test_nowarn AnchoredFormula(logic_int, p100)
+@test_throws AssertionError AnchoredFormula(logic_int, p100; check_atoms = true)
 
 @test_throws MethodError 1 in f_int
 @test p1 in f_int
@@ -175,8 +175,8 @@ f_conj_int = @test_nowarn CONJUNCTION(f_int, f_int, f_int)
 @test_nowarn ∧((¬(f_int), f_int),)
 
 # @test promote_type(typeof(f_int), typeof(t2_int)) == typeof(f_int)
-# @test promote_type(Formula, SyntaxTree) == Formula
-# @test promote_type(SyntaxTree, Formula) == Formula
+# @test promote_type(AnchoredFormula, SyntaxTree) == AnchoredFormula
+# @test promote_type(SyntaxTree, AnchoredFormula) == AnchoredFormula
 
 @test_nowarn ∧((¬(f_int), f_int),)
 @test_nowarn ∧((¬(f_int), t2_int),)
