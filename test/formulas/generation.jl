@@ -47,8 +47,8 @@
 #     end
 # end
 
-alp = ExplicitAlphabet(["p", "q"])
-ops = Operator[⊥,∧,∨] # Needed because, otherwise, this is a Vector{Syntactical}
+alp = ExplicitAlphabet(["p", "q", "r"])
+ops = [∧,∨]
 gr = SoleLogics.CompleteFlatGrammar(alp, ops)
 
 @test length(formulas(gr; maxdepth=3)) == 1631721

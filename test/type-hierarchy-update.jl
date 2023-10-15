@@ -37,7 +37,6 @@ const SL = SoleLogics # SL.name to reference unexported names
     Also:
     const Operator = Union{Connective,Truth}
     const SyntaxToken = Union{Connective,AbstractLeaf}
-    const BooleanTruth = Union{Top,Bot}
 =#
 
 # Declaration section

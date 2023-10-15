@@ -356,14 +356,17 @@ end
 # This can be useful for standard phrasing of propositional formulas with string atoms.
 
 """
-    const BASE_OPERATORS = [⊤, ⊥, ¬, ∧, ∨, →]
+    const BASE_OPERATORS = [¬, ∧, ∨, →]
 
 Basic logical operators.
 
-See also [`TOP`](@ref), [`BOT`](@ref), [`NEGATION`](@ref),
-[`CONJUCTION`](@ref), [`Connective`](@ref).
+See also [`NEGATION`](@ref),
+[`CONJUCTION`](@ref),
+[`DISJUNCTION`](@ref),
+[`IMPLICATION`](@ref),
+[`Connective`](@ref).
 """
-const BASE_OPERATORS = Operator[⊤, ⊥, ¬, ∧, ∨, →]
+const BASE_OPERATORS = [¬, ∧, ∨, →]
 const BaseOperators = Union{typeof.(BASE_OPERATORS)...}
 
 const BASE_ALPHABET = AlphabetOfAny{String}()

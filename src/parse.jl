@@ -59,6 +59,7 @@ Those are the vector $(repr(BASE_PARSABLE_OPERATORS)).
 See also [`parsetree`](@ref).
 """
 const BASE_PARSABLE_OPERATORS = [
+    ⊤, ⊥,
     BASE_PROPOSITIONAL_OPERATORS...,
     BASE_MODAL_OPERATORS...,
     BASE_MULTIMODAL_OPERATORS...,
@@ -374,7 +375,7 @@ function parseformula(
     additional_operators = (
         isnothing(additional_operators) ? Operator[] : additional_operators)
     operators = unique(
-        Operator[BASE_PARSABLE_OPERATORS..., additional_operators...])
+        [BASE_PARSABLE_OPERATORS..., additional_operators...])
 
     # TODO: expand special sequences to special *sequences* (strings of characters)
     # TODO: check that no special sequence is a substring of another one.

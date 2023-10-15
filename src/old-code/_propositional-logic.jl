@@ -34,7 +34,7 @@ See also [`modallogic`](@ref), [`AbstractAlphabet`](@ref), [`AbstractAlgebra`](@
 """
 function propositionallogic(;
     alphabet::Union{Nothing,Vector,AbstractAlphabet} = nothing,
-    operators::Union{Nothing,Vector{<:AbstractOperator}} = nothing,
+    operators::Union{Nothing,Vector{<:Operator}} = nothing,
     grammar::Union{Nothing,AbstractGrammar} = nothing,
     algebra::Union{Nothing,AbstractAlgebra} = nothing,
 )
@@ -51,7 +51,7 @@ end
 ############################################################################################
 
 """
-    abstract type AbstractAssignment{A,T<:TruthValue} <: AbstractInterpretation{A,T} end
+    abstract type AbstractAssignment{A,T<:Truth} <: AbstractInterpretation{A,T} end
 
 A propositional assigment (or, simply, an *assigment*) is a propositional interpretation,
 encoding a mapping from `Atom`s of value type `A`
@@ -59,10 +59,10 @@ to truth values of type `T`.
 
 See also [`AbstractInterpretation`](@ref).
 """
-abstract type AbstractAssignment{A,T<:TruthValue} <: AbstractInterpretation{A,T} end
+abstract type AbstractAssignment{A,T<:Truth} <: AbstractInterpretation{A,T} end
 
 """
-    Base.getindex(i::AbstractAssignment{AA,T}, p::Atom, args...)::T where {AA,T<:TruthValue}
+    Base.getindex(i::AbstractAssignment{AA,T}, p::Atom, args...)::T where {AA,T<:Truth}
 
 Return the truth value of an atom, given an assignment.
 
@@ -72,7 +72,7 @@ function Base.getindex(
     i::AbstractAssignment{AA,T},
     ::Atom,
     args...
-)::T where {AA,T<:TruthValue}
+)::T where {AA,T<:Truth}
     return error("Please, provide method " *
                  "Base.getindex(::$(typeof(i)), " *
                  "::Atom, " *
@@ -97,7 +97,7 @@ function Base.getindex(
     i::AbstractAssignment{AA,T},
     a,
     args...
-)::T where {AA,T<:TruthValue}
+)::T where {AA,T<:Truth}
     # if !(a isa Atom)
         Base.getindex(i, Atom(a))
     # else
@@ -132,13 +132,13 @@ end
 #         tree::SyntaxTree,
 #         i::AbstractAssignment{A,T},
 #         args...
-#     )::T where {A,T<:TruthValue}
+#     )::T where {A,T<:Truth}
 """
     check(
         f::AbstractFormula,
         i::AbstractAssignment::{A,T},
         args...
-    )::T where {A,T<:TruthValue}
+    )::T where {A,T<:Truth}
 
 Check a logical formula on an assigment, returning a truth value.
 The (finite) [model checking](https://en.wikipedia.org/wiki/Model_checking) algorithm depends
@@ -156,10 +156,10 @@ function check(
     tree::SyntaxTree,
     i::AbstractAssignment{A,T},
     args...
-)::T where {A,T<:TruthValue}
+)::T where {A,T<:Truth}
     if token(tree) isa Atom
         return Base.getindex(i, token(tree), args...)
-    elseif token(tree) isa AbstractOperator
+    elseif token(tree) isa Operator
         ts = Tuple([check(a, childtree, i, args...) for childtree in children(tree)])
         return collatetruth(a, token(tree), ts)
     else
@@ -176,7 +176,7 @@ check(p::Atom, i::AbstractAssignment{AA}, args...) where {AA} = Base.getindex(i,
 """
     struct TruthDict{
         A,
-        T<:TruthValue,
+        T<:Truth,
         D<:AbstractDict{<:Atom{<:A},T}
     } <: AbstractAssignment{A,T}
         truth::D
@@ -228,7 +228,7 @@ See also
 """
 struct TruthDict{
     A,
-    T<:TruthValue,
+    T<:Truth,
     D<:AbstractDict{<:Atom{<:A},T}
 } <: AbstractAssignment{A,T}
 
@@ -239,18 +239,18 @@ struct TruthDict{
         d::D,
     ) where {
         A,
-        T<:TruthValue,
+        T<:Truth,
         D<:AbstractDict{<:Atom{<:A},T},
     }
         return new{A,T,D}(d,Dict{AbstractSyntaxStructure,T}())
     end
-    function TruthDict{A,T}(d::AbstractDict{<:Atom,T}) where {A,T<:TruthValue}
+    function TruthDict{A,T}(d::AbstractDict{<:Atom,T}) where {A,T<:Truth}
         return TruthDict{A,T,typeof(d)}(d)
     end
-    function TruthDict{A}(d::AbstractDict{<:Atom,T}) where {A,T<:TruthValue}
+    function TruthDict{A}(d::AbstractDict{<:Atom,T}) where {A,T<:Truth}
         return TruthDict{A,T,typeof(d)}(d)
     end
-    function TruthDict(d::AbstractDict{<:Atom,T}) where {T<:TruthValue}
+    function TruthDict(d::AbstractDict{<:Atom,T}) where {T<:Truth}
         # A = Union{valuetype.(keys(d))...}
         # P = Union{[Atom{_A} for _A in valuetype.(keys(d))]...}
         # println(A)
@@ -259,7 +259,7 @@ struct TruthDict{
         d = Dict{Atom{A},T}(d)
         return TruthDict{A,T,typeof(d)}(d)
     end
-    function TruthDict(d::AbstractDict{A,T}) where {A,T<:TruthValue}
+    function TruthDict(d::AbstractDict{A,T}) where {A,T<:Truth}
         return TruthDict(Dict{Atom{A},T}([(Atom{A}(a),v) for (a,v) in d]))
     end
     function TruthDict(v::AbstractVector, truth_value = true)
@@ -284,14 +284,14 @@ struct TruthDict{
     end
     function TruthDict{A,T,D}() where {
         A,
-        T<:TruthValue,
+        T<:Truth,
         D<:AbstractDict{<:Atom{<:A},T},
     }
         return TruthDict{A,T,D}(Dict{Atom{A},T}())
     end
     function TruthDict()
-        d = Dict{Atom{Any},TruthValue}([])
-        return TruthDict{Any,TruthValue,typeof(d)}(d)
+        d = Dict{Atom{Any},Truth}([])
+        return TruthDict{Any,Truth,typeof(d)}(d)
     end
 end
 
@@ -308,7 +308,7 @@ function _hpretty_table(
     keys::Any,
     values::Any,
     nvalues::Int; # This is required since "values" might be a generator
-    defaulttruth::Union{Nothing,TruthValue} = nothing
+    defaulttruth::Union{Nothing,Truth} = nothing
 )
     # Prepare columns names
     _keys = map(x -> x isa Atom ? value(x) : x, collect(keys))
@@ -340,7 +340,7 @@ end
 function Base.show(
     io::IO,
     i::TruthDict{A,T,D},
-) where {A,T<:TruthValue,D<:AbstractDict{<:Atom{<:A},T}}
+) where {A,T<:Truth,D<:AbstractDict{<:Atom{<:A},T}}
     if isempty(i.truth)
         print(io, "Empty TruthDict")
         return
@@ -370,7 +370,7 @@ end
 """
     struct DefaultedTruthDict{
         A,
-        T<:TruthValue,
+        T<:Truth,
         D<:AbstractDict{<:Atom{<:A},T}
     } <: AbstractAssignment{A,T}
         truth::D
@@ -408,7 +408,7 @@ See also
 """
 struct DefaultedTruthDict{
     A,
-    T<:TruthValue,
+    T<:Truth,
     D<:AbstractDict{<:Atom{<:A},T}
 } <: AbstractAssignment{A,T}
 
@@ -421,7 +421,7 @@ struct DefaultedTruthDict{
         default_truth::T = false,
     ) where {
         A,
-        T<:TruthValue,
+        T<:Truth,
         D<:AbstractDict{<:Atom{<:A},T},
     }
         return new{A,T,D}(d, default_truth)
@@ -432,7 +432,7 @@ struct DefaultedTruthDict{
         default_truth::T = false,
     ) where {
         A,
-        T<:TruthValue,
+        T<:Truth,
         D<:AbstractDict{<:Atom{<:A},T}
     }
         return DefaultedTruthDict{A,T,D}(d.truth, default_truth)
@@ -448,7 +448,7 @@ struct DefaultedTruthDict{
             Tuple,
         },
         default_truth::T = false,
-    ) where {A,T<:TruthValue}
+    ) where {A,T<:Truth}
         if length(a) == 0
             return DefaultedTruthDict(default_truth)
         else
@@ -458,7 +458,7 @@ struct DefaultedTruthDict{
 
     function DefaultedTruthDict(
         default_truth::T = false,
-    ) where {T<:TruthValue}
+    ) where {T<:Truth}
         d = Dict{Atom{Any},T}([])
         return DefaultedTruthDict{Any,T,typeof(d)}(d, default_truth)
     end
@@ -476,7 +476,7 @@ end
 function Base.show(
     io::IO,
     i::DefaultedTruthDict{A,T,D},
-) where {A,T<:TruthValue,D<:AbstractDict{<:Atom{<:A},T}}
+) where {A,T<:Truth,D<:AbstractDict{<:Atom{<:A},T}}
     println(io, "DefaultedTruthDict with default truth `$(i.default_truth)` and values:")
     _hpretty_table(io, i.truth |> keys, i.truth |> values, i.truth |> values |> length)
 end
@@ -547,7 +547,7 @@ julia> SoleLogics.feedtruth!(td, [true, false])
 └────────┴────────┘
 ```
 
-See also [`TruthDict`](@ref), [`TruthValue`](@ref).
+See also [`TruthDict`](@ref), [`Truth`](@ref).
 """
 function feedtruth!(
     td::TruthDict{A,T,D},
@@ -565,14 +565,14 @@ end
     function truth_table(
         st::AbstractSyntaxStructure;
         truthvals::T=[true, false]
-    ) where {T <: Vector{<:TruthValue}}
+    ) where {T <: Vector{<:Truth}}
 
 Return a [`TruthDict`](@ref) containing the complete truth table of a generic syntax
 structure.
 
 # Arguments
 - `st::AbstractSyntaxStructure`: principal structure of the truth table;
-- `truthvals::T where {T <: Vector{<:TruthValue}}`: vector of legal truth values; every
+- `truthvals::T where {T <: Vector{<:Truth}}`: vector of legal truth values; every
     combination of those values is considered when computing the truth table.
 
 # Examples
@@ -593,12 +593,12 @@ TruthDict with values:
 └────────┴────────┴────────────┘
 ```
 
-See also [`TruthDict`](@ref), [`TruthValue`](@ref), [`check`](@ref).
+See also [`TruthDict`](@ref), [`Truth`](@ref), [`check`](@ref).
 """
 function truth_table(
     st::AbstractSyntaxStructure;
     truthvals::T=[true, false]
-) where {T <: Vector{<:TruthValue}}
+) where {T <: Vector{<:Truth}}
     props = atoms(st)
     proptypes = typejoin(valuetype.(atoms(st))...)
     # Interpretations generator
@@ -616,7 +616,7 @@ function truth_table(
 
     function _addentry(
         i::T
-    ) where {T <: Vector{<:TruthValue}}
+    ) where {T <: Vector{<:Truth}}
         checkans = check(st, TruthDict([prop => truth for (prop, truth) in zip(props, i)]))
 
         try
@@ -673,7 +673,7 @@ See also [`AbstractAssignment`](@ref), [`check`](@ref).
 function eagercheck(
     phi::SoleLogics.AbstractSyntaxStructure;
     truthvals::Vector{T}=[true, false]
-) where {T <: TruthValue}
+) where {T <: Truth}
     props = atoms(phi)
     typejoin(valuetype.(atoms(st))...)
 

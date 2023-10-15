@@ -212,8 +212,8 @@ tdict = TruthDict(Dict([p => false for p in atoms(f3_int)]))
 @test check(f3_int, DefaultedTruthDict(true))
 @test !check(f3_int, DefaultedTruthDict(false))
 
-@test_nowarn propositionallogic(; operators = SoleLogics.AbstractOperator[])
-emptylogic = @test_nowarn propositionallogic(; operators = SoleLogics.AbstractOperator[], alphabet = ExplicitAlphabet([]))
+@test_nowarn propositionallogic(; operators = SoleLogics.Operator[])
+emptylogic = @test_nowarn propositionallogic(; operators = SoleLogics.Operator[], alphabet = ExplicitAlphabet([]))
 @test length(formulas(emptylogic, maxdepth = 2, nformulas = 2)) == 0
 
 

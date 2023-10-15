@@ -860,7 +860,7 @@ dual(::typeof(BOX))     = DIAMOND
 
 ############################################################################################
 
-const BASE_MODAL_OPERATORS = Operator[BASE_PROPOSITIONAL_OPERATORS..., ◊, □]
+const BASE_MODAL_OPERATORS = [BASE_PROPOSITIONAL_OPERATORS..., ◊, □]
 const BaseModalOperators = Union{typeof.(BASE_MODAL_OPERATORS)...}
 
 """
@@ -1015,7 +1015,7 @@ function box(r::AbstractRelation) BoxRelationalOperator(r) end
 globaldiamond = diamond(globalrel) # @deprecate (see deprecate.jl)
 globalbox = box(globalrel)         # ...
 
-const BASE_MULTIMODAL_OPERATORS = Operator[BASE_PROPOSITIONAL_OPERATORS...,
+const BASE_MULTIMODAL_OPERATORS = [BASE_PROPOSITIONAL_OPERATORS...,
     globaldiamond,
     globalbox,
     diamond(identityrel),

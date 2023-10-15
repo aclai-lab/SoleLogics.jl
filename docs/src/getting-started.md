@@ -17,8 +17,8 @@ arity
 
 ```@docs
 Atom
-TruthValue
-AbstractOperator
+Truth
+Connective
 SyntaxTree
 ```
 
@@ -78,7 +78,7 @@ SoleLogics.arity(::AbstractSyntaxToken)
 TODO
 
 ```@docs
-SoleLogics.AbstractOperator
+SoleLogics.Connective
 ```
 !!! note
     SoleLogics.jl offers the possibility to implement custom operators. To see an in-depth example, please refer to section [Customization](@ref customization-section).
@@ -146,7 +146,7 @@ alphabet(g::AbstractGrammar{A} where {A})
 Base.in(t::SyntaxTree, g::AbstractGrammar)
 formulas(g::AbstractGrammar; maxdepth::Integer, nformulas::Union{Nothing,Integer} = nothing, args...)
 
-CompleteFlatGrammar{A<:AbstractAlphabet,O<:AbstractOperator}
+CompleteFlatGrammar{A<:AbstractAlphabet,O<:Operator}
 formulas(g::CompleteFlatGrammar{A,O} where {A,O}; maxdepth::Integer, nformulas::Union{Nothing,Integer} = nothing)
 ```
 

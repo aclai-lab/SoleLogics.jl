@@ -27,3 +27,7 @@ const Bottom = Bot
 
 Base.@deprecate bottom(a) bot(a)
 Base.@deprecate isbottom(a) isbot(a)
+
+
+# Deprecated exports
+export Formula

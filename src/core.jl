@@ -30,7 +30,6 @@ import Base: eltype, in, getindex, isiterable, iterate, IteratorSize, length, is
     Also:
     const Operator = Union{Connective,Truth}
     const SyntaxToken = Union{Connective,AbstractLeaf}
-    const BooleanTruth = Union{Top,Bot}
 =#
 
 """
@@ -1210,9 +1209,9 @@ Base.hash(a::AbstractGrammar) = Base.hash(alphabet(a)) + Base.hash(operatorstype
 A grammar of all well-formed formulas obtained by the arity-complying composition
 of atoms of an alphabet of type `A`, and all operators in `operators`.
 With n operators, this grammar has exactly n+1 production rules.
-For example, with `operators = [⊥,∧,∨]`, the grammar (in Backus-Naur form) is:
+For example, with `operators = [∧,∨]`, the grammar (in Backus-Naur form) is:
 
-    φ ::= p | ⊥ | φ ∧ φ | φ ∨ φ
+    φ ::= p | φ ∧ φ | φ ∨ φ
 
 with p ∈ alphabet. Note: it is *flat* in the sense that all rules substitute the same
 (unique and starting) non-terminal symbol φ.
@@ -1404,6 +1403,10 @@ iscrisp(a::AbstractAlgebra) = (length(domain(a)) == 2)
 
 joinformulas(c::Truth, ::Tuple{}) = SyntaxTree(c)
 (c::Truth)(::Tuple{}) = SyntaxTree(c)
+
+# TODO Move. Note @Mauro by Gio: clarify the role of joinformulas(...), (::Connective)(...) and (::Truth)(...): does joinformulas always return SyntaxTree's? And what about ∧(::Truth, ::Truth)? Does it return a Truth or a SyntaxTree?
+# I would suggest this instead:
+# (c::Truth)(::Tuple{}) = c
 
 ############################################################################################
 

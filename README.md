@@ -58,9 +58,7 @@ julia> alphabet = Atom.(["p", "q"])
 
 # Propositional case 
 julia> SoleLogics.BASE_PROPOSITIONAL_OPERATORS
-6-element Vector{SoleLogics.AbstractOperator}:
- ⊤
- ⊥
+6-element Vector{SoleLogics.Connective}:
  ¬
  ∧
  ∨
@@ -71,9 +69,7 @@ SyntaxTree: ¬(q → p)
 
 # Modal case
 julia> SoleLogics.BASE_MODAL_OPERATORS
-8-element Vector{SoleLogics.AbstractOperator}:
- ⊤
- ⊥
+8-element Vector{SoleLogics.Connective}:
  ¬
  ∧
  ∨
