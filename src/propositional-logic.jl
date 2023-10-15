@@ -122,7 +122,11 @@ function inlinedisplay(i::AbstractAssignment)
     return error("Please, provide method inlinedisplay(::$(typeof(i)))::String.")
 end
 
-# Implementation
+############################################################################################
+############################################################################################
+############################################################################################
+# TODO @Mauro move this block above, so that the AbstractAssignment's interface (above) is close to the
+#  implementations of TruthDict(s) (below).
 
 # TODO: get inspiration from PAndQ package and write interpret function.
 # TODO: change collatetruth name (concepts are "unite and simplify")
@@ -132,17 +136,18 @@ function interpret(
     args...;
     kwargs...
 ) where {AA}
-    # Keyword argument :children passed to handle interpret(c::Connective, ...) dispatch
-    return interpret(token(tree), i, args...; children=children(tree))
+    return collatetruth(token(tree), Tuple(
+        [interpret(ch, i, args...; kwargs...) for ch in children(tree)]
+    ))
 end
 
 # When interpreting a single atom, if the lookup fails then return the atom itself
 function interpret(
     p::Atom,
-    i::AbstractAssignment{AA},
+    i::AbstractAssignment,
     args...;
     kwargs...
-) where {AA}
+)
     try
         Base.getindex(i, p, args...)
     catch e
@@ -154,54 +159,34 @@ function interpret(
     end
 end
 
-# When interpreting a connective, children must be passed from caller as kwargs :tree
-function interpret(
-    c::Connective,
-    i::AbstractAssignment{AA},
-    args...;
-    kwargs...
-) where {AA}
-    kwargs = Dict(kwargs)
-
-    @assert haskey(kwargs, :children)
-        "interpret(c::Connective, i::AbstractAssignment{AA}, args...; kwargs...) where {AA} " *
-        "dispatch called without specifying kwargs :children."
-
-    childtree = kwargs[:children]
-
-    @assert length(childtree) == arity(c)
-        "Connective $(syntaxstring(c)) cannot be applied over $(childtree)."
-
-    return collatetruth(c, Tuple(
-        [interpret(singlechild, i, args...) for singlechild in childtree]
-    ))
-end
-
 interpret(t::Truth, args...; kwargs...) = t
 
-# Helper: an atom can be checked on an interpretation; a simple lookup is performed.
-check(p::Atom, i::AbstractAssignment{AA}, args...) where {AA} =
-    istop(Base.getindex(i, p, args...))
+# Gio @Mauro: Code repetion!! see core.jl:~1712, TODO REMOVE THIS
+# # Helper: an atom can be checked on an interpretation; a simple lookup is performed.
+# check(p::Atom, i::AbstractAssignment, args...) = istop(Base.getindex(i, p, args...))
 
-# check performs the same task as interpret, and returns whether the result is top or no
-check(tree::SyntaxTree, i::AbstractAssignment, args...) = istop(interpret(tree, i, args...))
+# Gio @Mauro: Code repetion!! see core.jl:~1712, TODO REMOVE THIS
+# # check performs the same task as interpret, and returns whether the result is top or no
+# check(tree::SyntaxTree, i::AbstractAssignment, args...) = istop(interpret(tree, i, args...))
 
 # Different ways to call interpret
 # i[p] -> (p itself, or a single Truth value!)
 # This has to be user-defined when creating a custom AbstractAssignment concrete type.
 # Otherwise, an error is thrown noticing the user (see our most general dispatch).
+# Note by Gio: these are written for AbstractAssignment, but
+#  isn't this true for any AbstractInterpretation? That is, also at the non-propositional level?
+#  Probably. Therefore, these should be moved to core and AbstractAssignment->AbstractInterpretation.
 
 # i[φ] -> φ
-Base.getindex(i::AbstractAssignment, tree::SyntaxTree, args...) =
-    interpret(tree, i, args...)
+Base.getindex(i::AbstractAssignment, φ::AbstractFormula, args...; kwargs...) =
+    interpret(φ, i, args...; kwargs...)
 
-# φ[i] -> φ
-Base.getindex(tree::SyntaxTree, i::AbstractAssignment, args...) =
-    interpret(tree, i, args...)
+# φ(i) -> φ
+(φ::AbstractFormula)(i::AbstractAssignment, args...; kwargs...) =
+    interpret(φ, i, args...; kwargs...)
 
-    # CONJUNCTION(p,q)(i) -> φ
-(tree::SyntaxTree)(i::AbstractAssignment, args...) = interpret(tree, i, args...)
-
+############################################################################################
+#################################### IMPLEMENTATIONS #######################################
 ############################################################################################
 
 """
@@ -327,8 +312,11 @@ struct TruthDict{
     end
 end
 
-Base.getindex(i::TruthDict{AA}, p::Atom) where {AA} = Base.getindex(i.truth, p)
-Base.haskey(i::TruthDict{AA}, p::Atom) where {AA} = Base.haskey(i.truth, p)
+function interpret(p::Atom, i::TruthDict, args...; kwargs...)
+    return Base.haskey(i, p) ? Base.getindex(i.truth, p) : p
+end
+
+Base.haskey(i::TruthDict, p::Atom) = Base.haskey(i.truth, p)
 
 function inlinedisplay(i::TruthDict)
     "TruthDict([$(join(["$(syntaxstring(p)) => $t" for (p,t) in i.truth], ", "))])"
@@ -480,10 +468,10 @@ struct DefaultedTruthDict{
     end
 end
 
-function Base.getindex(i::DefaultedTruthDict{AA}, p::Atom) where {AA}
+function interpret(p::Atom, i::DefaultedTruthDict, args...; kwargs...)
     return Base.haskey(i.truth, p) ? Base.getindex(i.truth, p) : i.default_truth
 end
-Base.haskey(i::DefaultedTruthDict{AA}, p::Atom) where {AA} = true
+Base.haskey(i::DefaultedTruthDict, p::Atom) = true
 
 function inlinedisplay(i::DefaultedTruthDict)
     "DefaultedTruthDict([$(join(["$(syntaxstring(p)) => $t" for (p,t) in i.truth], ", "))], $(i.default_truth))"

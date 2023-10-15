@@ -6,7 +6,7 @@ import StatsBase: sample
 
 #= ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Formulas ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ =#
 
-# TODO: add this new dispatch to rand formula generation
+# TODO: add these new methods for rand formula generation
 # rand(connectives, atom leafs array, algebra from which infer truth values)
 # rand(connectives, atom leafs array, truth values with common supertype)
 # rand(connectives, atom leafs array, true/false (use truth values as leaf or not. If true, default to boolean))
