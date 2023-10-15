@@ -1577,7 +1577,7 @@ TODO @typeHierarchyUpdate check docstring
         i::AbstractInterpretation,
         args...;
         kwargs...
-    )::Bool
+    )::Formula
 
 Return the truth value for a formula on a logical interpretation (or model).
 
@@ -1606,19 +1606,19 @@ See also [`check`](@ref), [`Formula`](@ref), [`AbstractInterpretation`](@ref),
 """
 function interpret(
     f::Formula,
-    i::AbstractInterpretation{A,T},
+    i::AbstractInterpretation,
     args...;
     kwargs...
-)::T where {A,T<:Truth}
+)::Formula
     interpret(tree(f), i, args...; kwargs...)
 end
 
 function interpret(
     f::SyntaxTree,
-    i::AbstractInterpretation{A,T},
+    i::AbstractInterpretation,
     args...;
     kwargs...
-)::T where {A,T<:Truth}
+)::Formula
     return error("Please, provide method " *
                  "interpret(f::SyntaxTree, i::$(typeof(i)), " *
                  "args...::$(typeof(args)); " *

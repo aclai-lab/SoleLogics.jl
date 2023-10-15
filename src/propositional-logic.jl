@@ -533,7 +533,7 @@ Base.haskey(p::Atom, i::AbstractDict) = (value(p) in keys(i))
 check(p::Atom, i::AbstractDict) = Base.getindex(i, p)
 
 # A vector is interpreted as the set of true atoms
-convert(::Type{AbstractInterpretation}, i::AbstractVector) = DefaultedTruthDict(i, false)
+convert(::Type{AbstractInterpretation}, i::AbstractVector) = DefaultedTruthDict(i, ⊥)
 # Base.getindex(i::AbstractVector, p::Atom) = (value(p) in i)
 # Base.in(p::Atom, i::AbstractVector) = true
 check(p::Atom, i::AbstractVector) = (p in i)

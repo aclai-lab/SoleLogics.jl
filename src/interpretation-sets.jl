@@ -19,6 +19,10 @@ See also [`valuetype`](@ref), [`truthtype`](@ref),
 abstract type AbstractInterpretationSet{M<:AbstractInterpretation} <: AbstractDataset end
 
 # TODO improve general doc.
+interpretationtype(::Type{AbstractInterpretationSet{M}}) where {M} = M
+interpretationtype(s::AbstractInterpretationSet) = interpretationtype(typeof(s))
+
+# TODO improve general doc.
 valuetype(::Type{AbstractInterpretationSet{M}}) where {M} = valuetype(M)
 valuetype(s::AbstractInterpretationSet) = valuetype(typeof(s))
 
@@ -26,38 +30,86 @@ valuetype(s::AbstractInterpretationSet) = valuetype(typeof(s))
 truthtype(::Type{AbstractInterpretationSet{M}}) where {M} = truthtype(M)
 truthtype(s::AbstractInterpretationSet) = truthtype(typeof(s))
 
+"""
+TODO explain. In general, one cannot extract a single logical instance from a set, thus we represent it as a tuple of dataset + instance id (i_instance)
+"""
+struct LogicalInstance{M<:AbstractInterpretation,S<:AbstractInterpretationSet{M}} <: AbstractInterpretation
+    s::S
+    i_instance::Int64
+
+    function LogicalInstance{M,S}(
+        s::S
+        i_instance::Integer
+    ) where {M<:AbstractInterpretation,S<:AbstractInterpretationSet{M}}
+        new{M,S}(s, i_instance)
+    end
+
+    function LogicalInstance(
+        s::AbstractInterpretationSet
+        i_instance::Integer
+    )
+        LogicalInstance{interpretationtype(s),typeof(s)}(s, i_instance)
+    end
+end
+
+splat(i::LogicalInstance) = (i.s, i.i_instance)
+
+function getinstance(s::AbstractInterpretationSet, i_instance::Integer)
+    return LogicalInstance(s, i_instance)
+end
+
+"""
+    function check(
+        f::Formula,
+        s::AbstractInterpretationSet,
+        i_instance::Integer,
+        args...;
+        kwargs...
+    )::Bool
+
+Check a formula on the \$i\$-th instance of an [`AbstractInterpretationSet`](@ref).
+
+See also [`AbstractInterpretationSet`](@ref),
+[`Formula`](@ref).
+"""
 function check(
-    φ::Formula,
-    d::AbstractInterpretationSet{M},
+    f::Formula,
+    s::AbstractInterpretationSet,
     i_instance::Integer,
     args...;
     kwargs...,
-)::truthtype(M) where {M<:AbstractInterpretation}
-    return error("Please, provide method check(::$(typeof(φ)), ::$(typeof(d)), ::Integer, ::$(typeof(args))...; kwargs...).")
+)
+    check(f, getinstance(s, i_instance), args...; kwargs...)
 end
 
-# Check on a dataset = map check on the instances
+"""
+    function check(
+        f::Formula,
+        s::AbstractInterpretationSet,
+        args...;
+        kwargs...
+    )::Vector{Bool}
+
+Check a formula on all instances of an [`AbstractInterpretationSet`](@ref).
+
+See also [`AbstractInterpretationSet`](@ref),
+[`Formula`](@ref).
+"""
 function check(
     φ::Formula,
-    d::AbstractInterpretationSet{M},
+    s::AbstractInterpretationSet,
     args...;
     # use_memo::Union{Nothing,AbstractVector} = nothing,
     kwargs...,
-)::Vector{truthtype(M)} where {M<:AbstractInterpretation}
-    # TODO normalize before checking, if it is faster!
-    # φ = SoleLogics.normalize()
+)
+    # TODO normalize before checking, if it is faster: φ = SoleLogics.normalize()
     map(i_instance->check(
         φ,
-        d,
-        i_instance,
+        getinstance(s, i_instance),
         args...;
         # use_memo = (isnothing(use_memo) ? nothing : use_memo[[i_instance]]),
         kwargs...
-    ), 1:ninstances(d))
-    # map(
-    #     i_instance->check(φ, slicedataset(d, [i_instance]; return_view = true), args...; kwargs...)[1],
-    #     1:ninstances(d)
-    # )
+    ), 1:ninstances(s))
 end
 
 ############################################################################################
@@ -75,30 +127,8 @@ struct InterpretationSet{M<:AbstractInterpretation} <: AbstractInterpretationSet
     instances::Vector{M}
 end
 
-Base.getindex(ms::InterpretationSet, i_instance::Integer) = Base.getindex(ms.instances, i_instance)
-
-"""
-    function check(
-        f::Formula,
-        is::InterpretationSet,
-        i_instance::Integer,
-        args...
-    )
-
-Dispatch to check a specific [`AbstractInterpretation`](@ref) in a
-[`InterpretationSet`](@ref) over a formula.
-
-See also [`AbstractInterpretation`](@ref), [`InterpretationSet`](@ref),
-[`Formula`](@ref).
-"""
-function check(
-    f::Formula,
-    is::InterpretationSet,
-    i_instance::Integer,
-    args...
-)
-    check(f, is[i_instance], args...)
-end
+Base.getindex(s::InterpretationSet, i_instance::Integer) = Base.getindex(s.instances, i_instance)
+getinstance(s::InterpretationSet, i_instance::Integer) = Base.getindex(s, i_instance)
 
 ############################################################################################
 
@@ -140,6 +170,10 @@ end
 # end
 
 
+function frame(X::AbstractInterpretationSet, i_instance::Integer)
+    return frame(getinstance(X, i_instance))
+end
+
 function frame(X::AbstractInterpretationSet{M}, i_instance::Integer) where {M<:AbstractKripkeStructure}
     return error("Please, provide method frame(::$(typeof(X)), ::$(typeof(i_instance))).")
 end
@@ -154,11 +188,10 @@ function check(
             BoxRelationalOperator{typeof(tocenterrel)},
         }
     },
-    X::AbstractInterpretationSet{<:AbstractKripkeStructure},
-    i_instance::Integer;
+    i::AbstractInterpretation;
     kwargs...
 )
-    check(first(children(φ)), X, i_instance, centralworld(frame(X, i_instance)); kwargs...)
+    check(first(children(φ)), i, centralworld(frame(i)); kwargs...)
 end
 
 function check(
@@ -168,14 +201,13 @@ function check(
             BoxRelationalOperator{typeof(globalrel)},
         }
     },
-    X::AbstractInterpretationSet{<:AbstractKripkeStructure},
-    i_instance::Integer;
+    i::AbstractInterpretation;
     kwargs...
 )
-    check(first(children(φ)), X, i_instance, nothing; kwargs...)
+    check(first(children(φ)), i, nothing; kwargs...)
 end
 
-# General grounding
+# # General grounding
 # function check(
 #     φ::SyntaxTree{
 #         Union{
@@ -183,10 +215,9 @@ end
 #             BoxRelationalOperator{R},
 #         }
 #     },
-#     X::AbstractInterpretationSet{<:AbstractKripkeStructure},
-#     i_instance::Integer;
+#     i::AbstractInterpretation;
 #     kwargs...
 # ) where {R<:AbstractRelation}
 #     rel = SoleLogics.relation(SoleLogics.token(φ))
-#     check(first(children(φ)), X, i_instance, accessibles(frame(X, i_instance), rel); kwargs...)
+#     check(first(children(φ)), i, accessibles(frame(i), rel); kwargs...)
 # end
