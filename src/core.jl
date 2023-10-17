@@ -534,6 +534,11 @@ thanks to the following two methods that were defined in SoleLogics:
         return ∨(c1, ∨(c2, c3, cs...))
     end
 
+!!! info
+    The idea behind `joinformulas` is to concatenate syntax tokens without applying
+    simplifications/minimizations of any kind. Because of that, ∧(⊤,⊤) returns a
+    `SyntaxTree` whose root value is ∧, instead of returning just a Truth value ⊤.
+
 See also [`Formula`](@ref), [`Connective`](@ref).
 """
 function joinformulas(c::Connective, ::NTuple{N,F})::F where {N,F<:Formula}
@@ -1402,11 +1407,13 @@ See also [`AbstractAlgebra`](@ref).
 iscrisp(a::AbstractAlgebra) = (length(domain(a)) == 2)
 
 joinformulas(c::Truth, ::Tuple{}) = SyntaxTree(c)
-(c::Truth)(::Tuple{}) = SyntaxTree(c)
+(c::Truth)(::Tuple{}) = c
 
-# TODO Move. Note @Mauro by Gio: clarify the role of joinformulas(...), (::Connective)(...) and (::Truth)(...): does joinformulas always return SyntaxTree's? And what about ∧(::Truth, ::Truth)? Does it return a Truth or a SyntaxTree?
+# TODO Move. Note @Mauro by Gio: clarify the role of joinformulas(...), (::Connective)(...) and (::Truth)(...):
+# does joinformulas always return SyntaxTree's? And what about ∧(::Truth, ::Truth)? Does it return a Truth or a SyntaxTree?
 # I would suggest this instead:
 # (c::Truth)(::Tuple{}) = c
+# By Mauro: Done, see "!!! info" section in joinformulas docstring section.
 
 ############################################################################################
 
@@ -1520,6 +1527,14 @@ abstract type AbstractInterpretation{A,T<:Truth} end
 
 valuetype(::AbstractInterpretation{A,T}) where {A,T} = A
 truthtype(::AbstractInterpretation{A,T}) where {A,T} = T
+
+# i[φ] -> φ
+Base.getindex(i::AbstractInterpretation, φ::Formula, args...; kwargs...) =
+    interpret(φ, i, args...; kwargs...)
+
+# φ(i) -> φ
+(φ::Formula)(i::AbstractInterpretation, args...; kwargs...) =
+    interpret(φ, i, args...; kwargs...)
 
 """
 TODO @typeHierarchyUpdate fix example

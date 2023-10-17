@@ -122,12 +122,6 @@ function inlinedisplay(i::AbstractAssignment)
     return error("Please, provide method inlinedisplay(::$(typeof(i)))::String.")
 end
 
-############################################################################################
-############################################################################################
-############################################################################################
-# TODO @Mauro move this block above, so that the AbstractAssignment's interface (above) is close to the
-#  implementations of TruthDict(s) (below).
-
 # TODO: get inspiration from PAndQ package and write interpret function.
 # TODO: change collatetruth name (concepts are "unite and simplify")
 function interpret(
@@ -161,13 +155,9 @@ end
 
 interpret(t::Truth, args...; kwargs...) = t
 
-# Gio @Mauro: Code repetion!! see core.jl:~1712, TODO REMOVE THIS
-# # Helper: an atom can be checked on an interpretation; a simple lookup is performed.
-# check(p::Atom, i::AbstractAssignment, args...) = istop(Base.getindex(i, p, args...))
-
-# Gio @Mauro: Code repetion!! see core.jl:~1712, TODO REMOVE THIS
-# # check performs the same task as interpret, and returns whether the result is top or no
-# check(tree::SyntaxTree, i::AbstractAssignment, args...) = istop(interpret(tree, i, args...))
+# TODO @Mauro move this block above, so that the AbstractAssignment's interface (above) is close to the
+#  implementations of TruthDict(s) (below).
+# By Mauro: Done, if I understood correctly
 
 # Different ways to call interpret
 # i[p] -> (p itself, or a single Truth value!)
@@ -176,14 +166,7 @@ interpret(t::Truth, args...; kwargs...) = t
 # Note by Gio: these are written for AbstractAssignment, but
 #  isn't this true for any AbstractInterpretation? That is, also at the non-propositional level?
 #  Probably. Therefore, these should be moved to core and AbstractAssignment->AbstractInterpretation.
-
-# i[φ] -> φ
-Base.getindex(i::AbstractAssignment, φ::Formula, args...; kwargs...) =
-    interpret(φ, i, args...; kwargs...)
-
-# φ(i) -> φ
-(φ::Formula)(i::AbstractAssignment, args...; kwargs...) =
-    interpret(φ, i, args...; kwargs...)
+# By Mauro: Done, see core.jl after AbstractInterpretation definition
 
 ############################################################################################
 #################################### IMPLEMENTATIONS #######################################

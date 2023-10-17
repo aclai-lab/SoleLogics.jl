@@ -75,28 +75,28 @@ export Interval, Interval2D, OneWorld
 
 export globaldiamond, globalbox
 
-include("modal-logic.jl")
-
-export LeftmostLinearForm, LeftmostConjunctiveForm, LeftmostDisjunctiveForm, Literal
-
-export subformulas, normalize
-
-include("syntax-utils.jl")
-
-include("interpretation-sets.jl")
-
-export parsebaseformula, parseformula, parsetree
-
-include("parse.jl")
-
-export randbaseformula, randformula
-
-include("random.jl")
-
-include("anchored-formula.jl")
-
-include("ui.jl")
-
-include("deprecate.jl")
+# include("modal-logic.jl")
+#
+# export LeftmostLinearForm, LeftmostConjunctiveForm, LeftmostDisjunctiveForm, Literal
+#
+# export subformulas, normalize
+#
+# include("syntax-utils.jl")
+#
+# include("interpretation-sets.jl")
+#
+# export parsebaseformula, parseformula, parsetree
+#
+# include("parse.jl")
+#
+# export randbaseformula, randformula
+#
+# include("random.jl")
+#
+# include("anchored-formula.jl")
+#
+# include("ui.jl")
+#
+# include("deprecate.jl")
 
 end
