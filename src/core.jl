@@ -223,7 +223,7 @@ The following `kwargs` are currently supported:
 - `remove_redundant_parentheses = true::Bool`: when set to `false`, it prints a syntaxstring
    where each syntactical element is wrapped in parentheses.
 - `parenthesize_atoms = !remove_redundant_parentheses::Bool`: when set to `true`,
-   it forces the atoms (which are the leafs of a formula's tree structure) to be
+   it forces the atoms (which are the leaves of a formula's tree structure) to be
    wrapped in parentheses.
 
 # Examples

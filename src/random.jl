@@ -6,10 +6,11 @@ import StatsBase: sample
 
 #= ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Formulas ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ =#
 
+# WIP by Mauro
 # TODO: add these new methods for rand formula generation
-# rand(connectives, atom leafs array, algebra from which infer truth values)
-# rand(connectives, atom leafs array, truth values with common supertype)
-# rand(connectives, atom leafs array, true/false (use truth values as leaf or not. If true, default to boolean))
+# rand(connectives, atom leaves array, algebra from which infer truth values)
+# rand(connectives, atom leaves array, truth values with common supertype)
+# rand(connectives, atom leaves array, true/false (use truth values as leaf or not. If true, default to boolean))
 # sample(..., probability distribution)
 
 """
@@ -66,7 +67,6 @@ function StatsBase.sample(
             "alphabet::$(typeof(alphabet)), args...; kwargs...).")
     end
 end
-
 
 function StatsBase.sample(l::AbstractLogic, args...; kwargs...)
     StatsBase.sample(Random.GLOBAL_RNG, l, args...; kwargs...)
@@ -195,9 +195,7 @@ function randformula(
     opweights::Union{AbstractWeights,AbstractVector{<:Real},Nothing} = nothing
 )::SyntaxTree
     alphabet = convert(AbstractAlphabet, alphabet)
-    # TODO this pattern is so common that we may want to move this code to a util function,
-    # and move this so that it is the first thing that a randomic function (e.g., randformula) does.
-    rng = (rng isa AbstractRNG) ? rng : Random.MersenneTwister(rng)
+    initrng(rng)
 
     @assert isnothing(opweights) ||
         length(opweights) == length(operators) "Mismatching numbers of operators " *
@@ -220,8 +218,7 @@ function randformula(
             # Sample atom from alphabet
             return SyntaxTree(picker(rng, atoms(alphabet)))
         else
-            # Sample operator and generate children
-            # (Note: only allow modal operators if modaldepth > 0)
+            # Sample operator and generate children (modal operators only if modaldepth > 0)
             ops, ops_w = begin
                 if modaldepth > 0
                     operators, opweights
@@ -248,12 +245,50 @@ function randformula(
     return _randformula(rng, height, modaldepth)
 end
 
-function randbaseformula(
-    rng::AbstractRNG,
+height::Integer,
+    alphabet,
+    operators::Vector{<:Operator};
+    modaldepth::Integer = height,
+    rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG,
+    picker::Function = rand,
+    opweights::Union{AbstractWeights,AbstractVector{<:Real},Nothing} = nothing
+
+function rand(
+    connectives::Vector{Connective},
+    leaves::Vector{AbstractLeaf},
+    algebra::AbstractAlgebra,
     args...;
+    rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG,
     kwargs...
 )
-    randbaseformula(args...; rng = rng, kwargs...)
+    error("TODO: implement this")
+end
+
+function rand(
+    connectives::Vector{Connective},
+    leaves::Vector{AbstractLeaf},
+    truthvals::Vector{Truth},
+    args...;
+    rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG,
+    kwargs...
+)
+    @assert supertype.(typeof.(truthvals)) |> unique |> length == 1
+        "truthvals $(truthvals) must have a common supertype."
+
+    error("TODO: implement this")
+end
+
+# Set truthatleaves flag to false to avoid placing truth values at leaves.
+function rand(
+    connectives::Vector{Connective},
+    leaves::Vector{AbstractLeaf};
+    truthatleaves::Boolean = true,
+    truthtype::Type,
+    args...;
+    rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG,
+    kwargs...
+)
+    error("TODO: implement this")
 end
 
 function randformula(
@@ -262,6 +297,22 @@ function randformula(
     kwargs...
 )
     randformula(args...; rng = rng, kwargs...)
+end
+
+function randbaseformula(
+    height::Integer,
+    g::AbstractGrammar;
+    rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG
+)::SyntaxTree
+
+end
+
+function randbaseformula(
+    rng::AbstractRNG,
+    args...;
+    kwargs...
+)
+    randbaseformula(args...; rng = rng, kwargs...)
 end
 
 #= ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Kripke Structures ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ =#

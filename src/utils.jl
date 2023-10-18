@@ -7,3 +7,6 @@ function intersects(u, v)
     end
     false
 end
+
+initrng(rng::Union{Integer,AbstractRNG}) =
+    (rng isa AbstractRNG) ? rng : Random.MersenneTwister(rng)
