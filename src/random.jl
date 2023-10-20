@@ -32,8 +32,17 @@ See also
 [`isfinite`](@ref),
 [`AbstractAlphabet'](@ref).
 """
-function Base.rand(alphabet, args...; kwargs...)
+function Base.rand(alphabet::AbstractAlphabet, args...; kwargs...)
     Base.rand(Random.GLOBAL_RNG, alphabet, args...; kwargs...)
+end
+
+function Base.rand(
+    rng::AbstractRNG,
+    atoms::AbstractVector{<:Atom},
+    args...;
+    kwargs...
+)
+    # EMPTY - This could be the fallback of the following dispatch
 end
 
 function Base.rand(
@@ -50,35 +59,108 @@ function Base.rand(
     end
 end
 
-function StatsBase.sample(alphabet::AbstractAlphabet, args...; kwargs...)
-    StatsBase.sample(Random.GLOBAL_RNG, alphabet, args...; kwargs...)
+
+# For the case of a CompleteFlatGrammar, the alphabet and the operators suffice.
+function Base.rand(
+    height::Integer,
+    g::CompleteFlatGrammar,
+    args...
+)
+    Base.rand(Random.GLOBAL_RNG, height, g, args...)
+end
+
+function Base.rand(
+    rng::AbstractRNG,
+    height::Integer,
+    g::CompleteFlatGrammar,
+    args...;
+    kwargs...
+)
+    randbaseformula(height, alphabet(g), operators(g), args...; rng=rng, kwargs...)
+end
+
+function rand(
+    height::Integer,    # By Mauro - to generate a random formula, height has to be known
+    connectives::Vector{Connective},
+    leaves::Vector{AbstractLeaf},
+    algebra::AbstractAlgebra,
+    args...;
+    rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG,
+    kwargs...
+)
+    [push!(leaves, t()) for t in algebra |> truthtype |> subtypes]
+    randformula(height, leaves, connectives, args...; rng=rng, kwargs...)
+end
+
+function rand(
+    height::Integer,    # By Mauro - to generate a random formula, height has to be known
+    connectives::Vector{Connective},
+    leaves::Vector{AbstractLeaf},
+    truthvals::Vector{Truth},
+    args...;
+    rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG,
+    kwargs...
+)
+    @assert supertype.(typeof.(truthvals)) |> unique |> length == 1
+        "truthvals $(truthvals) must have a common supertype."
+
+    randformula(height, vcat(leaves, truthvals), connectives, args...; rng=rng, kwargs...)
+end
+
+# Set truthatleaves flag to false to avoid placing truth values at leaves.
+function rand(
+    height::Integer,    # By Mauro - to generate a random formula, height has to be known
+    connectives::Vector{Connective},
+    leaves::Vector{AbstractLeaf};
+    truthatleaves::Boolean = true,
+    truthtype::Type,
+    args...;
+    rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG,
+    kwargs...
+)
+    if (truthatleaves)
+        [push!(leaves, t()) for t in truthtype |> subtypes]
+    end
+
+    randformula(height, leaves, connectives, args...; rng=rng, kwargs...)
+end
+
+function StatsBase.sample(
+    alphabet::AbstractAlphabet,
+    weights::AbstractWeights,
+    args...;
+    kwargs...
+)
+    StatsBase.sample(Random.GLOBAL_RNG, alphabet, weights, args...; kwargs...)
 end
 
 function StatsBase.sample(
     rng::AbstractRNG,
     alphabet::AbstractAlphabet,
+    weights::AbstractWeights,
     args...;
     kwargs...
 )
     if isfinite(alphabet)
-        StatsBase.sample(rng, atoms(alphabet), args...; kwargs...)
+        StatsBase.sample(rng, atoms(alphabet), weights, args...; kwargs...)
     else
         error("Please, provide method StatsBase.sample(rng::AbstractRNG, " *
             "alphabet::$(typeof(alphabet)), args...; kwargs...).")
     end
 end
 
-function StatsBase.sample(l::AbstractLogic, args...; kwargs...)
-    StatsBase.sample(Random.GLOBAL_RNG, l, args...; kwargs...)
+function StatsBase.sample(l::AbstractLogic, weights::AbstractWeights, args...; kwargs...)
+    StatsBase.sample(Random.GLOBAL_RNG, l, weights, args...; kwargs...)
 end
 
 function StatsBase.sample(
     rng::AbstractRNG,
     l::AbstractLogic,
+    weights::AbstractWeights,
     args...;
     kwargs...
 )
-    StatsBase.sample(rng, grammar(l), args...; kwargs...)
+    StatsBase.sample(rng, grammar(l), weights, args...; kwargs...)
 end
 
 """
@@ -99,47 +181,30 @@ in order to limit the (otherwise infinite) sampling domain.
 See also
 [`AbstractAlphabet'](@ref).
 """
-function StatsBase.sample(g::AbstractGrammar, args...; kwargs...)
-    StatsBase.sample(Random.GLOBAL_RNG, g, args...; kwargs...)
-end
-
-function StatsBase.sample(
-    height::Integer,
-    g::AbstractGrammar,
-    kwargs...
-)
-    StatsBase.sample(Random.GLOBAL_RNG, height, g, kwargs...)
-end
-
 function StatsBase.sample(
     rng::AbstractRNG,
     height::Integer,
     g::AbstractGrammar,
+    weights::AbstractWeights,
+    args...;
     kwargs...
 )
     randbaseformula(
-        height, alphabet(g), operators(g); rng=rng, picker=StatsBase.sample, kwargs...)
+        height, alphabet(g), operators(g);
+        rng=rng, picker=StatsBase.sample, weights=weights, args..., kwargs...)
+end
+
+function StatsBase.sample(
+    height::Integer,
+    g::AbstractGrammar,
+    weights::AbstractWeights,
+    args...;
+    kwargs...
+)
+    StatsBase.sample(Random.GLOBAL_RNG, height, g, weights, args...; kwargs...)
 end
 
 #= ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ CompleteFlatGrammar ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ =#
-
-# For the case of a CompleteFlatGrammar, the alphabet and the operators suffice.
-function Base.rand(
-    height::Integer,
-    g::CompleteFlatGrammar,
-    args...
-)
-    Base.rand(Random.GLOBAL_RNG, height, g, args...)
-end
-
-function Base.rand(
-    rng::AbstractRNG,
-    height::Integer,
-    g::CompleteFlatGrammar,
-    args...
-)
-    randbaseformula(height, alphabet(g), operators(g); rng=rng, args...)
-end
 
 # TODO
 # - make rng first (optional) argument of randformula (see above)
@@ -172,7 +237,9 @@ Return a pseudo-randomic `SyntaxTree`.
 # Keyword Arguments
 - `rng::Union{Intger,AbstractRNG} = Random.GLOBAL_RNG`: random number generator;
 - `picker::Function` = method used to pick a random element. For example, this could be
-    Base.rand or SimpleStats.sample.
+    Base.rand or StatsBase.sample.
+- `weights::AbstractWeights` = weights vector of StatsBase, needed if `picker` function is
+    StatsBase.sample.
 
 # Examples
 
@@ -245,74 +312,30 @@ function randformula(
     return _randformula(rng, height, modaldepth)
 end
 
-height::Integer,
-    alphabet,
-    operators::Vector{<:Operator};
-    modaldepth::Integer = height,
-    rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG,
-    picker::Function = rand,
-    opweights::Union{AbstractWeights,AbstractVector{<:Real},Nothing} = nothing
+height, alphabet(g), operators(g);
+rng=rng, picker=StatsBase.sample, weights=weights, args..., kwargs...)
 
-function rand(
-    connectives::Vector{Connective},
-    leaves::Vector{AbstractLeaf},
-    algebra::AbstractAlgebra,
+function randbaseformula(
+    height::Integer,
+    alphabet::AbstractAlphabet,
+    operators::Vector{<:Operator},
     args...;
-    rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG,
+    rng::AbstractRNG = Random.GLOBAL_RNG,
+    picker = rand,
+    weights = Union{AbstractWeights, Nothing}
     kwargs...
-)
+)::SyntaxTree
     error("TODO: implement this")
-end
-
-function rand(
-    connectives::Vector{Connective},
-    leaves::Vector{AbstractLeaf},
-    truthvals::Vector{Truth},
-    args...;
-    rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG,
-    kwargs...
-)
-    @assert supertype.(typeof.(truthvals)) |> unique |> length == 1
-        "truthvals $(truthvals) must have a common supertype."
-
-    error("TODO: implement this")
-end
-
-# Set truthatleaves flag to false to avoid placing truth values at leaves.
-function rand(
-    connectives::Vector{Connective},
-    leaves::Vector{AbstractLeaf};
-    truthatleaves::Boolean = true,
-    truthtype::Type,
-    args...;
-    rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG,
-    kwargs...
-)
-    error("TODO: implement this")
-end
-
-function randformula(
-    rng::AbstractRNG,
-    args...;
-    kwargs...
-)
-    randformula(args...; rng = rng, kwargs...)
 end
 
 function randbaseformula(
     height::Integer,
-    g::AbstractGrammar;
-    rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG
-)::SyntaxTree
-
-end
-
-function randbaseformula(
-    rng::AbstractRNG,
+    g::AbstractGrammar,
     args...;
+    rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG,
     kwargs...
-)
-    randbaseformula(args...; rng = rng, kwargs...)
+)::SyntaxTree
+    randbaseformula(height, alphabet(g), operator(g), args...; rng=rng, kwargs...)
 end
 
 #= ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Kripke Structures ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ =#
