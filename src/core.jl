@@ -1409,12 +1409,6 @@ iscrisp(a::AbstractAlgebra) = (length(domain(a)) == 2)
 joinformulas(c::Truth, ::Tuple{}) = SyntaxTree(c)
 (c::Truth)(::Tuple{}) = c
 
-# TODO Move. Note @Mauro by Gio: clarify the role of joinformulas(...), (::Connective)(...) and (::Truth)(...):
-# does joinformulas always return SyntaxTree's? And what about ∧(::Truth, ::Truth)? Does it return a Truth or a SyntaxTree?
-# I would suggest this instead:
-# (c::Truth)(::Tuple{}) = c
-# By Mauro: Done, see "!!! info" section in joinformulas docstring section.
-
 ############################################################################################
 
 """
@@ -1537,8 +1531,6 @@ Base.getindex(i::AbstractInterpretation, φ::Formula, args...; kwargs...) =
     interpret(φ, i, args...; kwargs...)
 
 """
-TODO @typeHierarchyUpdate fix example
-
     check(
         f::Formula,
         i::AbstractInterpretation,
@@ -1569,7 +1561,7 @@ TruthDict with values:
 └────────┴────────┘
 
 julia> check(CONJUNCTION(p,q), td)
-false
+⊥
 ```
 
 See also [`interpret`](@ref), [`Formula`](@ref), [`AbstractInterpretation`](@ref),
@@ -1585,8 +1577,6 @@ function check(
 end
 
 """
-TODO @typeHierarchyUpdate check docstring
-
     interpret(
         f::Formula,
         i::AbstractInterpretation,

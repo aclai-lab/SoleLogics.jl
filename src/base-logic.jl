@@ -221,7 +221,7 @@ syntaxstring(o::Bot; kwargs...) = "⊥"
 
 isbot(t::Bot) = true
 
-# NOTE: @typeHierarchyUpdate it could be useful to provide a macro to easily create
+# NOTE: it could be useful to provide a macro to easily create
 # a new set of Truth types. In particular, a new subtree of types must be planted
 # as children of Truth, and new promotion rules are to be defined like below.
 Base.promote_rule(::Type{<:BooleanTruth}, ::Type{<:BooleanTruth}) = BooleanTruth
@@ -229,7 +229,7 @@ Base.promote_rule(::Type{<:BooleanTruth}, ::Type{<:BooleanTruth}) = BooleanTruth
 Base.convert(::Type{Bool}, ::Top) = true
 Base.convert(::Type{Bool}, ::Bot) = false
 
-# TODO are these useful?
+# NOTE: are these useful?
 hasdual(::typeof(⊤)) = true
 dual(c::typeof(⊤))   = typeof(⊥)
 hasdual(::typeof(⊥)) = true
@@ -251,7 +251,6 @@ struct BooleanAlgebra <: AbstractAlgebra{BooleanTruth} end
 
 domain(::BooleanAlgebra) = [TOP, BOT]
 
-# TODO: @typeHierarchyUpdate
 top(::BooleanAlgebra) = TOP
 bot(::BooleanAlgebra) = BOT
 

@@ -156,10 +156,6 @@ end
 
 interpret(t::Truth, args...; kwargs...) = t
 
-# TODO @Mauro move this block above, so that the AbstractAssignment's interface (above) is close to the
-#  implementations of TruthDict(s) (below).
-# By Mauro: Done, if I understood correctly
-
 # Different ways to call interpret
 # i[p] -> (p itself, or a single Truth value!)
 # This has to be user-defined when creating a custom AbstractAssignment concrete type.

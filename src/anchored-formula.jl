@@ -152,7 +152,6 @@ subformulas(f::AnchoredFormula; kwargs...) = f.(subformulas(tree(f); kwargs...))
 normalize(f::AnchoredFormula; kwargs...) = f(normalize(tree(f); kwargs...))
 
 """
-TODO: @typeHierarchyUpdate
     function baseformula(
         tokf::Union{AbstractSyntaxToken,Formula};
         infer_logic = true,
