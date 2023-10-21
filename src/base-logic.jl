@@ -29,7 +29,7 @@ end
 # collatetruth is defined for every operator, both Connectives and Truth values.
 
 # `collatetruth` for any truth value returns itself.
-collatetruth(t::Truth, ts::NTuple{0,<:Truth}) = t
+collatetruth(t::Truth, ::Tuple{}) = t
 
 function collatetruth(c::Connective, ts::NTuple{N,T}) where {N,T<:Formula}
     @assert arity(c) == N

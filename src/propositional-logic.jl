@@ -131,17 +131,18 @@ function interpret(
     kwargs...
 ) where {AA}
     return collatetruth(token(tree), Tuple(
-        [interpret(ch, i, args...; kwargs...) for ch in children(tree)]
+        [interpret(token(ch) isa Connective ? ch : token(ch), i, args...;
+            kwargs...) for ch in children(tree)]
     ))
 end
 
 # When interpreting a single atom, if the lookup fails then return the atom itself
 function interpret(
     p::Atom,
-    i::AbstractAssignment,
+    i::AbstractAssignment{AA},
     args...;
     kwargs...
-)
+) where {AA}
     try
         Base.getindex(i, p, args...)
     catch e

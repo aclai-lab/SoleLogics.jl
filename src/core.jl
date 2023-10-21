@@ -1559,13 +1559,13 @@ julia> @atoms String p q
  Atom{String}("p")
  Atom{String}("q")
 
-julia> td = TruthDict([p => true, q => false])
+julia> td = TruthDict([p => TOP, q => BOT])
 TruthDict with values:
 ┌────────┬────────┐
 │      q │      p │
 │ String │ String │
 ├────────┼────────┤
-│  false │   true │
+│      ⊥ │      ⊤ │
 └────────┴────────┘
 
 julia> check(CONJUNCTION(p,q), td)
