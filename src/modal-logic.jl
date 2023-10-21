@@ -718,115 +718,6 @@ function check(
     return ret
 end
 
-
-"""
-    collateworlds(
-        fr::AbstractFrame{W},
-        op::Operator,
-        t::NTuple{N,WorldSetType},
-    )::AbstractWorldSet{<:W} where {N,W<:AbstractWorld,WorldSetType<:AbstractWorldSet}
-
-For a given crisp frame (`truthtype == Bool`),
-return the set of worlds where a composed formula op(φ1, ..., φN) is true, given the `N`
-sets of worlds where the each immediate sub-formula is true.
-
-See also [`check`](@ref), [`iscrisp`](@ref),
-[`Operator`](@ref), [`AbstractFrame`](@ref).
-"""
-function collateworlds(
-    fr::AbstractFrame{W},
-    op::Operator,
-    t::NTuple{N,<:AbstractWorldSet},
-)::AbstractWorldSet{<:W} where {N,W<:AbstractWorld}
-    if arity(op) != length(t)
-        return error("Cannot collate $(length(t)) truth values for " *
-                     "operator $(typeof(op)) with arity $(arity(op))).")
-    else
-        return error("Please, provide method collateworlds(::$(typeof(fr)), " *
-                     "::$(typeof(op)), ::NTuple{$(arity(op)), $(AbstractWorldSet{W})}).")
-    end
-end
-
-# I know, these exceed 92 characters. But they look nicer like this!! :D
-collateworlds(fr::AbstractFrame{W}, ::typeof(⊤), ::NTuple{0,<:AbstractWorldSet}) where {W<:AbstractWorld} = allworlds(fr)
-collateworlds(::AbstractFrame{W}, ::typeof(⊥), ::NTuple{0,<:AbstractWorldSet}) where {W<:AbstractWorld} = W[]
-
-collateworlds(fr::AbstractFrame{W}, ::typeof(¬), (ws,)::NTuple{1,<:AbstractWorldSet}) where {W<:AbstractWorld} = setdiff(allworlds(fr), ws)
-collateworlds(::AbstractFrame{W}, ::typeof(∧), (ws1, ws2)::NTuple{2,<:AbstractWorldSet}) where {W<:AbstractWorld} = intersect(ws1, ws2)
-collateworlds(::AbstractFrame{W}, ::typeof(∨), (ws1, ws2)::NTuple{2,<:AbstractWorldSet}) where {W<:AbstractWorld} = union(ws1, ws2)
-collateworlds(fr::AbstractFrame{W}, ::typeof(→), (ws1, ws2)::NTuple{2,<:AbstractWorldSet}) where {W<:AbstractWorld} = union(setdiff(allworlds(fr), ws1), ws2)
-
-function collateworlds(
-    fr::AbstractFrame{W},
-    op::typeof(◊),
-    (ws,)::NTuple{1,<:AbstractWorldSet},
-) where {W<:AbstractWorld}
-    filter(w1->intersects(ws, accessibles(fr, w1)), collect(allworlds(fr)))
-end
-
-function collateworlds(
-    fr::AbstractFrame{W},
-    op::typeof(□),
-    (ws,)::NTuple{1,<:AbstractWorldSet},
-) where {W<:AbstractWorld}
-    filter(w1->issubset(accessibles(fr, w1), ws), collect(allworlds(fr)))
-end
-
-# TODO: use AbstractMultiModalFrame
-function collateworlds(
-    fr::AbstractFrame{W},
-    op::DiamondRelationalOperator,
-    (ws,)::NTuple{1,<:AbstractWorldSet},
-) where {W<:AbstractWorld}
-    r = relation(op)
-    if r == globalrel
-        if length(ws) > 0
-            collect(allworlds(fr))
-        else
-            W[]
-        end
-    else
-        if hasconverse(r)
-            # DIAMOND STRATEGY 1
-            union(W[], [accessibles(fr, w, converse(r)) for w in ws]...)
-        else
-            # DIAMOND STRATEGY 2
-            filter(w1->intersects(ws, accessibles(fr, w1, r)), collect(allworlds(fr)))
-        end
-    end
-end
-
-# TODO: use AbstractMultiModalFrame
-function collateworlds(
-    fr::AbstractFrame{W},
-    op::BoxRelationalOperator,
-    (ws,)::NTuple{1,<:AbstractWorldSet},
-) where {W<:AbstractWorld}
-    r = relation(op)
-    if r == globalrel
-        if length(ws) == nworlds(fr) # Assuming no duplicates
-            collect(allworlds(fr))
-        else
-            W[]
-        end
-    else
-        if hasconverse(r)
-            # BOX STRATEGY 1
-            negws = setdiff(collect(allworlds(fr)), ws)
-            negboxws = union(W[], [accessibles(fr, w, converse(r)) for w in negws]...)
-            setdiff(collect(allworlds(fr)), negboxws)
-            # BOX STRATEGY 3
-            # filter(w1->all((w2)->w1 in accessibles(fr, w2, converse(r)), ws), collect(allworlds(fr)))
-        else
-            # BOX STRATEGY 2
-            filter(w1->issubset(accessibles(fr, w1, r), ws), collect(allworlds(fr)))
-        end
-        # Note: this is wrong, as it does not include worlds for which φ is trivially true.
-        # union(intersect(W[], [accessibles(fr, w, converse(r)) for w in ws]...))
-    end
-end
-
-
 ############################################################################################
 
 """
@@ -1127,3 +1018,113 @@ const BASE_MULTIMODAL_OPERATORS = [BASE_PROPOSITIONAL_OPERATORS...,
     box(identityrel),
 ]
 const BaseMultiModalOperators = Union{typeof.(BASE_MULTIMODAL_OPERATORS)...}
+
+############################################################################################
+
+
+"""
+    collateworlds(
+        fr::AbstractFrame{W},
+        op::Operator,
+        t::NTuple{N,WorldSetType},
+    )::AbstractWorldSet{<:W} where {N,W<:AbstractWorld,WorldSetType<:AbstractWorldSet}
+
+For a given crisp frame (`truthtype == Bool`),
+return the set of worlds where a composed formula op(φ1, ..., φN) is true, given the `N`
+sets of worlds where the each immediate sub-formula is true.
+
+See also [`check`](@ref), [`iscrisp`](@ref),
+[`Operator`](@ref), [`AbstractFrame`](@ref).
+"""
+function collateworlds(
+    fr::AbstractFrame{W},
+    op::Operator,
+    t::NTuple{N,<:AbstractWorldSet},
+)::AbstractWorldSet{<:W} where {N,W<:AbstractWorld}
+    if arity(op) != length(t)
+        return error("Cannot collate $(length(t)) truth values for " *
+                     "operator $(typeof(op)) with arity $(arity(op))).")
+    else
+        return error("Please, provide method collateworlds(::$(typeof(fr)), " *
+                     "::$(typeof(op)), ::NTuple{$(arity(op)), $(AbstractWorldSet{W})}).")
+    end
+end
+
+# I know, these exceed 92 characters. But they look nicer like this!! :D
+collateworlds(fr::AbstractFrame{W}, ::typeof(⊤), ::NTuple{0,<:AbstractWorldSet}) where {W<:AbstractWorld} = allworlds(fr)
+collateworlds(::AbstractFrame{W}, ::typeof(⊥), ::NTuple{0,<:AbstractWorldSet}) where {W<:AbstractWorld} = W[]
+
+collateworlds(fr::AbstractFrame{W}, ::typeof(¬), (ws,)::NTuple{1,<:AbstractWorldSet}) where {W<:AbstractWorld} = setdiff(allworlds(fr), ws)
+collateworlds(::AbstractFrame{W}, ::typeof(∧), (ws1, ws2)::NTuple{2,<:AbstractWorldSet}) where {W<:AbstractWorld} = intersect(ws1, ws2)
+collateworlds(::AbstractFrame{W}, ::typeof(∨), (ws1, ws2)::NTuple{2,<:AbstractWorldSet}) where {W<:AbstractWorld} = union(ws1, ws2)
+collateworlds(fr::AbstractFrame{W}, ::typeof(→), (ws1, ws2)::NTuple{2,<:AbstractWorldSet}) where {W<:AbstractWorld} = union(setdiff(allworlds(fr), ws1), ws2)
+
+function collateworlds(
+    fr::AbstractFrame{W},
+    op::typeof(◊),
+    (ws,)::NTuple{1,<:AbstractWorldSet},
+) where {W<:AbstractWorld}
+    filter(w1->intersects(ws, accessibles(fr, w1)), collect(allworlds(fr)))
+end
+
+function collateworlds(
+    fr::AbstractFrame{W},
+    op::typeof(□),
+    (ws,)::NTuple{1,<:AbstractWorldSet},
+) where {W<:AbstractWorld}
+    filter(w1->issubset(accessibles(fr, w1), ws), collect(allworlds(fr)))
+end
+
+# TODO: use AbstractMultiModalFrame
+function collateworlds(
+    fr::AbstractFrame{W},
+    op::DiamondRelationalOperator,
+    (ws,)::NTuple{1,<:AbstractWorldSet},
+) where {W<:AbstractWorld}
+    r = relation(op)
+    if r == globalrel
+        if length(ws) > 0
+            collect(allworlds(fr))
+        else
+            W[]
+        end
+    else
+        if hasconverse(r)
+            # DIAMOND STRATEGY 1
+            union(W[], [accessibles(fr, w, converse(r)) for w in ws]...)
+        else
+            # DIAMOND STRATEGY 2
+            filter(w1->intersects(ws, accessibles(fr, w1, r)), collect(allworlds(fr)))
+        end
+    end
+end
+
+# TODO: use AbstractMultiModalFrame
+function collateworlds(
+    fr::AbstractFrame{W},
+    op::BoxRelationalOperator,
+    (ws,)::NTuple{1,<:AbstractWorldSet},
+) where {W<:AbstractWorld}
+    r = relation(op)
+    if r == globalrel
+        if length(ws) == nworlds(fr) # Assuming no duplicates
+            collect(allworlds(fr))
+        else
+            W[]
+        end
+    else
+        if hasconverse(r)
+            # BOX STRATEGY 1
+            negws = setdiff(collect(allworlds(fr)), ws)
+            negboxws = union(W[], [accessibles(fr, w, converse(r)) for w in negws]...)
+            setdiff(collect(allworlds(fr)), negboxws)
+            # BOX STRATEGY 3
+            # filter(w1->all((w2)->w1 in accessibles(fr, w2, converse(r)), ws), collect(allworlds(fr)))
+        else
+            # BOX STRATEGY 2
+            filter(w1->issubset(accessibles(fr, w1, r), ws), collect(allworlds(fr)))
+        end
+        # Note: this is wrong, as it does not include worlds for which φ is trivially true.
+        # union(intersect(W[], [accessibles(fr, w, converse(r)) for w in ws]...))
+    end
+end

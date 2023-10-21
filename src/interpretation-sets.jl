@@ -38,14 +38,14 @@ struct LogicalInstance{M<:AbstractInterpretation,S<:AbstractInterpretationSet{M}
     i_instance::Int64
 
     function LogicalInstance{M,S}(
-        s::S
+        s::S,
         i_instance::Integer
     ) where {M<:AbstractInterpretation,S<:AbstractInterpretationSet{M}}
         new{M,S}(s, i_instance)
     end
 
     function LogicalInstance(
-        s::AbstractInterpretationSet
+        s::AbstractInterpretationSet,
         i_instance::Integer
     )
         LogicalInstance{interpretationtype(s),typeof(s)}(s, i_instance)

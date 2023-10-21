@@ -111,10 +111,10 @@ end
 function rand(
     height::Integer,    # By Mauro - to generate a random formula, height has to be known
     connectives::Vector{Connective},
-    leaves::Vector{AbstractLeaf};
-    truthatleaves::Boolean = true,
-    truthtype::Type,
+    leaves::Vector{AbstractLeaf},
     args...;
+    truthatleaves::Bool = true,
+    truthtype::Type,
     rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG,
     kwargs...
 )
@@ -312,9 +312,6 @@ function randformula(
     return _randformula(rng, height, modaldepth)
 end
 
-height, alphabet(g), operators(g);
-rng=rng, picker=StatsBase.sample, weights=weights, args..., kwargs...)
-
 function randbaseformula(
     height::Integer,
     alphabet::AbstractAlphabet,
@@ -322,7 +319,7 @@ function randbaseformula(
     args...;
     rng::AbstractRNG = Random.GLOBAL_RNG,
     picker = rand,
-    weights = Union{AbstractWeights, Nothing}
+    weights = Union{AbstractWeights, Nothing},
     kwargs...
 )::SyntaxTree
     error("TODO: implement this")
