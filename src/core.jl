@@ -550,10 +550,6 @@ function joinformulas(c::Connective, children::Vararg{F,N})::F where {N,F<:Formu
     joinformulas(c, children)
 end
 
-function joinformulas(c::Connective, children::NTuple{N,SyntaxToken}) where {N}
-    return SyntaxTree(c, children)
-end
-
 """
     Base.in(tok::SyntaxToken, f::Formula)::Bool
 
@@ -639,33 +635,36 @@ Base.promote_rule(
 
 """
     struct SyntaxTree{
-        T<:SyntaxToken,
+        T<:Connective,
     } <: AbstractComposite
         token::T
         children::NTuple{N,SyntaxTree} where {N}
     end
 
 A syntax tree encoding a logical formula.
-Each node of the syntax tree holds a `token`, and
-has as many children as the `arity` of the token.
+Each internal node of the syntax tree holds a `token`, which is of type `Connective`,
+and has as many children as the `arity` of the token.
 
 This implementation is *arity-compliant*, in that, upon construction,
 the arity is checked against the number of children provided.
 
+If a node `arity` is 0, then it would hold a special token of type `AbstractLeaf`: in our
+implementation, leafs are `AbstractLeaf` itself and NOT `SyntaxTree`s wrapping them.
+
 See also [`arity`](@ref), [`Atom`](@ref), [`atoms`](@ref), [`atomstype`](@ref),
-[`children`](@ref), [`height`](@ref),[`natoms`](@ref), [`ntokens`](@ref),
-[`Operator`](@ref),[`operators`](@ref), [`operatorstype`](@ref), [`SyntaxToken`](@ref),
+[`Connective`](@ref), [`children`](@ref), [`height`](@ref),[`natoms`](@ref),
+[`ntokens`](@ref), [`Operator`](@ref),[`operators`](@ref), [`operatorstype`](@ref),
 [`token`](@ref), [`tokens`](@ref), [`tokenstype`](@ref), [`tokentype`](@ref).
 """
 struct SyntaxTree{
-    T<:SyntaxToken,
+    T<:Connective,
 } <: AbstractComposite
 
     # The syntax token at the current node
     token::T
 
     # The child nodes of the current node
-    children::NTuple{N,SyntaxTree} where {N}
+    children::NTuple{N,Union{AbstractLeaf,SyntaxTree}} where {N}
 
     function _aritycheck(N, T, token, children)
         @assert arity(token) == N "Cannot instantiate SyntaxTree{$(T)} with token " *
@@ -676,46 +675,60 @@ struct SyntaxTree{
     function SyntaxTree{T}(
         token::T,
         children::NTuple{N,Union{SyntaxToken,AbstractComposite}} = (),
-    ) where {T<:SyntaxToken,N}
+    ) where {T<:Connective,N}
         children = convert.(SyntaxTree, children)
+
         _aritycheck(N, T, token, children)
         return new{T}(token, children)
     end
 
     function SyntaxTree{T}(
         t::SyntaxTree{T},
-    ) where {T<:SyntaxToken}
+    ) where {T<:Connective}
         return SyntaxTree{T}(token(t), children(t))
     end
 
     function SyntaxTree(
         token::T,
         children::NTuple{N,Union{SyntaxToken,AbstractComposite}} = (),
-    ) where {T<:SyntaxToken,N}
+    ) where {T<:Connective,N}
         children = convert.(SyntaxTree, children)
+
         _aritycheck(N, T, token, children)
         return new{T}(token, children)
+    end
+
+    function SyntaxTree(t::AbstractLeaf)
+        return t
     end
 end
 
 # Helpers
-function SyntaxTree{T}(token::T, children...) where {T<:SyntaxToken}
+function SyntaxTree{T}(token::T, children...) where {T<:Connective}
     return SyntaxTree{T}(token, children)
 end
-function SyntaxTree(token::T, children...) where {T<:SyntaxToken}
+function SyntaxTree(token::T, children...) where {T<:Connective}
     return SyntaxTree(token, children)
 end
 
 # Getters
 token(t::SyntaxTree) = t.token
+token(t::AbstractLeaf) = t
+
 children(t::SyntaxTree) = t.children
+children(::AbstractLeaf) = Tuple{} # Equivalent to the empty tuple "()"
 
 tokentype(::SyntaxTree{T}) where {T} = T
+tokentype(::T) where {T <: AbstractLeaf} = T
+
 tokenstype(t::SyntaxTree) = Union{tokentype(t),tokenstype.(children(t))...}
 operatorstype(t::SyntaxTree) = typeintersect(Operator, tokenstype(t))
 atomstype(t::SyntaxTree) = typeintersect(Atom, tokenstype(t))
 
-function joinformulas(op::Connective, children::NTuple{N,SyntaxTree}) where {N}
+function joinformulas(
+    op::Connective,
+    children::NTuple{N,Union{SyntaxToken,SyntaxTree}}
+) where {N}
     return SyntaxTree(op, children)
 end
 
@@ -740,6 +753,7 @@ end
 
 """
     tokens(t::SyntaxTree)::AbstractVector{SyntaxToken}
+    tokens(t::AbstractLeaf)::AbstractLeaf
 
 List all tokens appearing in a syntax tree.
 
@@ -749,8 +763,11 @@ function tokens(t::SyntaxTree)::AbstractVector{SyntaxToken}
     return SyntaxToken[vcat(tokens.(children(t))...)..., token(t)]
 end
 
+tokens(t::AbstractLeaf)::AbstractLeaf = t
+
 """
     operators(t::SyntaxTree)::AbstractVector{Operator}
+    operators(::AbstractLeaf)
 
 List all operators appearing in a syntax tree.
 
@@ -761,8 +778,11 @@ function operators(t::SyntaxTree)::AbstractVector{Operator}
     return Operator[vcat(operators.(children(t))...)..., ops...]
 end
 
+operators(::AbstractLeaf) = []
+
 """
     atoms(t::SyntaxTree)::AbstractVector{Atom}
+    atoms(t::AbstractLeaf)
 
 List all `Atom`s appearing in a syntax tree.
 
@@ -773,8 +793,11 @@ function atoms(t::SyntaxTree)::AbstractVector{Atom}
     return Atom[vcat(atoms.(children(t))...)..., ps...] |> unique
 end
 
+atoms(t::AbstractLeaf) = t isa Atom ? t : Atom[]
+
 """
     ntokens(t::SyntaxTree)::Integer
+    ntokens(::AbstractLeaf)::Integer
 
 Return the count of all tokens appearing in a syntax tree.
 
@@ -784,8 +807,11 @@ function ntokens(t::SyntaxTree)::Integer
     length(children(t)) == 0 ? 1 : 1 + sum(ntokens(c) for c in children(t))
 end
 
+ntokens(::AbstractLeaf)::Integer = 1
+
 """
     noperators(t::SyntaxTree)::Integer
+    noperators(t::AbstractLeaf)::Integer
 
 Return the count of all `Operator`s appearing in a syntax tree.
 
@@ -796,8 +822,11 @@ function noperators(t::SyntaxTree)::Integer
     return length(children(t)) == 0 ? op : op + sum(noperators(c) for c in children(t))
 end
 
+noperators(::AbstractLeaf)::Integer = 0
+
 """
     natoms(t::SyntaxTree)::Integer
+    natoms(t::AbstractLeaf)::Integer
 
 Return the count of all `Atom`s appearing in a syntax tree.
 
@@ -808,8 +837,11 @@ function natoms(t::SyntaxTree)::Integer
     return length(children(t)) == 0 ? pr : pr + sum(natoms(c) for c in children(t))
 end
 
+natoms(t::AbstractLeaf) = t isa Atom ? 1 : 0
+
 """
     height(t::SyntaxTree)::Integer
+    height(t::AbstractLeaf)::Integer
 
 Return the height of a syntax tree.
 
@@ -818,6 +850,8 @@ See also [`SyntaxToken`](@ref), [`tokens`](@ref).
 function height(t::SyntaxTree)::Integer
     length(children(t)) == 0 ? 0 : 1 + maximum(height(c) for c in children(t))
 end
+
+height(t::AbstractLeaf)::Integer = 0
 
 # Helpers that make SyntaxTree's map to the same dictionary key.
 # Useful for checking formulas on interpretations.
@@ -842,7 +876,10 @@ function syntaxstring(
     ))
 
     # Parenthesization rules for binary operators in infix notation
-    function _binary_infix_syntaxstring(tok::SyntaxToken, ch::SyntaxTree)
+    function _binary_infix_syntaxstring(
+        tok::SyntaxToken,
+        ch::Union{AbstractLeaf,SyntaxTree}
+    )
         chtok = token(ch)
         chtokstring = syntaxstring(ch; ch_kwargs...)
 
@@ -920,9 +957,8 @@ function tree(f::AbstractComposite)::SyntaxTree
 end
 Base.convert(::Type{SyntaxTree}, f::AbstractComposite) = tree(f)
 
-tree(t::SyntaxTree) = t
-
-tree(t::SyntaxToken) = SyntaxTree(t)
+tree(t::Union{AbstractLeaf,SyntaxTree}) = t
+tree(t::Connective) = SyntaxTree(t)
 
 ############################################################################################
 
