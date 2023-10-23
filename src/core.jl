@@ -1597,7 +1597,7 @@ TruthDict with values:
 └────────┴────────┘
 
 julia> check(CONJUNCTION(p,q), td)
-⊥
+false
 ```
 
 See also [`interpret`](@ref), [`Formula`](@ref), [`AbstractInterpretation`](@ref),

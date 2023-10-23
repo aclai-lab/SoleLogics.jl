@@ -131,8 +131,7 @@ function interpret(
     kwargs...
 ) where {AA}
     return collatetruth(token(tree), Tuple(
-        [interpret(token(ch) isa Connective ? ch : token(ch), i, args...;
-            kwargs...) for ch in children(tree)]
+        [interpret(ch, i, args...; kwargs...) for ch in children(tree)]
     ))
 end
 
