@@ -93,6 +93,8 @@ export randbaseformula, randformula
 
 include("random.jl")
 
+export AnchoredFormula
+
 include("anchored-formula.jl")
 
 include("ui.jl")

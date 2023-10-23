@@ -561,6 +561,10 @@ function Base.in(tok::SyntaxToken, f::AbstractSyntaxStructure)::Bool
     return Base.in(tok, tree(f))
 end
 
+function Base.in(tok::AbstractLeaf, f::AbstractLeaf)::Bool
+    return tok == f
+end
+
 function Base.show(io::IO, f::Formula)
     print(io, "$(typeof(f))\nsyntaxstring: $(syntaxstring(f))")
 end
@@ -698,7 +702,9 @@ struct SyntaxTree{
         return new{T}(token, children)
     end
 
-    function SyntaxTree(t::AbstractLeaf)
+    function SyntaxTree(t::AbstractLeaf, args...)
+        @assert length(args) == 0 "Syntactical entity $(t) of type $(typeof(t)) must have" *
+            " arity 0, but $(length(args)) arguments are given."
         return t
     end
 end
@@ -1342,15 +1348,16 @@ function formulas(
     g::CompleteFlatGrammar{A,O} where {A,O};
     maxdepth::Integer,
     nformulas::Union{Nothing,Integer} = nothing,
-)::Vector{SyntaxTree}
+)::Vector{Union{AbstractLeaf,SyntaxTree}}
     @assert maxdepth >= 0
     @assert isnothing(nformulas) || nformulas > 0
     # With increasing `depth`, accumulate all formulas of length `depth` by combining all
     # formulas of `depth-1` using all non-terminal symbols.
     # Stop as soon as `maxdepth` is reached or `nformulas` have been generated.
     depth = 0
-    cur_formulas = convert.(SyntaxTree, terminals(g))
-    all_formulas = SyntaxTree[cur_formulas...]
+    cur_formulas = Vector{Union{AbstractLeaf,SyntaxTree}}(
+        convert.(SyntaxTree, terminals(g)))
+    all_formulas = Union{AbstractLeaf,SyntaxTree}[cur_formulas...]
     while depth < maxdepth && (isnothing(nformulas) || length(all_formulas) < nformulas)
         _nformulas = length(all_formulas)
         cur_formulas = []

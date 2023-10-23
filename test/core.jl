@@ -60,10 +60,12 @@ alphabet_mixed = AlphabetOfAny{Union{String,Number}}()
 
 @test_nowarn convert(SyntaxTree, p1)
 @test_nowarn SyntaxTree(p1)
-@test_nowarn SyntaxTree{typeof(p1)}(p1)
+@test_broken SyntaxTree{typeof(p1)}(p1) # @Gio maybe this inappropriate call could throw a warning? Or maybe is just legal such as SyntaxTree(p1::Atom) dispatch (wtihtout the {typeof(p1)})
 @test_nowarn SyntaxTree(p1)
-t1_int = @test_nowarn SyntaxTree(p1, ())
-t100_int = @test_nowarn SyntaxTree(p100, ())
+@test_throws AssertionError SyntaxTree(p1, ())
+@test_throws AssertionError SyntaxTree(p100, ())
+t1_int = p1
+t100_int = p100
 @test tokenstype(t1_int) == tokentype(t1_int)
 @test_throws MethodError SyntaxTree(3, ())
 
