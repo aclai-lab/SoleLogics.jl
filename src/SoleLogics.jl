@@ -58,45 +58,45 @@ export truth_table
 
 include("propositional-logic.jl")
 
-# export accessibles
-# export ismodal, modallogic
-# export DiamondRelationalOperator, BoxRelationalOperator
-# export DIAMOND, BOX, ◊, □
-#
-# export KripkeStructure
-# export AbstractRelationalOperator, DiamondRelationalOperator, BoxRelationalOperator
-# export relationtype, truthtype, worldtype
-#
-# export AbstractWorld
-#
-# export AbstractWorldSet, WorldSet
-#
-# export Interval, Interval2D, OneWorld
-#
-# export globaldiamond, globalbox
-#
-# include("modal-logic.jl")
-#
-# export LeftmostLinearForm, LeftmostConjunctiveForm, LeftmostDisjunctiveForm, Literal
-#
-# export subformulas, normalize
-#
-# include("syntax-utils.jl")
-#
-# include("interpretation-sets.jl")
-#
-# export parsebaseformula, parseformula, parsetree
-#
-# include("parse.jl")
-#
-# export randbaseformula, randformula
-#
-# include("random.jl")
-#
-# include("anchored-formula.jl")
-#
-# include("ui.jl")
-#
-# include("deprecate.jl")
+export accessibles
+export ismodal, modallogic
+export DiamondRelationalOperator, BoxRelationalOperator
+export DIAMOND, BOX, ◊, □
+
+export KripkeStructure
+export AbstractRelationalOperator, DiamondRelationalOperator, BoxRelationalOperator
+export relationtype, truthtype, worldtype
+
+export AbstractWorld
+
+export AbstractWorldSet, WorldSet
+
+export Interval, Interval2D, OneWorld
+
+export globaldiamond, globalbox
+
+include("modal-logic.jl")
+
+export LeftmostLinearForm, LeftmostConjunctiveForm, LeftmostDisjunctiveForm, Literal
+
+export subformulas, normalize
+
+include("syntax-utils.jl")
+
+include("interpretation-sets.jl")
+
+export parsebaseformula, parseformula, parsetree
+
+include("parse.jl")
+
+export randbaseformula, randformula
+
+include("random.jl")
+
+include("anchored-formula.jl")
+
+include("ui.jl")
+
+include("deprecate.jl")
 
 end

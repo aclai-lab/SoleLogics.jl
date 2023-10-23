@@ -32,23 +32,29 @@ truthtype(s::AbstractInterpretationSet) = truthtype(typeof(s))
 
 """
 TODO explain. In general, one cannot extract a single logical instance from a set, thus we represent it as a tuple of dataset + instance id (i_instance)
+TODO this struct firm could be better, but unfortunately the following doesn't work:
+    LogicalInstance{M<:AbstractInterpretation{A,T<:Truth}, S<:AbstractInterpretationSet{M}} <: AbstractInterpretation{A,T}
 """
-struct LogicalInstance{M<:AbstractInterpretation,S<:AbstractInterpretationSet{M}} <: AbstractInterpretation
+struct LogicalInstance{
+        A,
+        T<:Truth,
+        S<:AbstractInterpretationSet{AbstractInterpretation{A,T}}
+    } <: AbstractInterpretation{A,T}
     s::S
     i_instance::Int64
 
-    function LogicalInstance{M,S}(
+    function LogicalInstance{A,T,S}(
         s::S,
         i_instance::Integer
-    ) where {M<:AbstractInterpretation,S<:AbstractInterpretationSet{M}}
-        new{M,S}(s, i_instance)
+    ) where {A,T<:Truth,S<:AbstractInterpretationSet{AbstractInterpretation{A,T}}}
+        new{A,T,S}(s, i_instance)
     end
 
     function LogicalInstance(
         s::AbstractInterpretationSet,
         i_instance::Integer
     )
-        LogicalInstance{interpretationtype(s),typeof(s)}(s, i_instance)
+    LogicalInstance{interpretationtype(s) |> valeutype, interpretationtype(s) |> truthtype, typeof(s)}(s, i_instance)
     end
 end
 

@@ -716,7 +716,7 @@ token(t::SyntaxTree) = t.token
 token(t::AbstractLeaf) = t
 
 children(t::SyntaxTree) = t.children
-children(::AbstractLeaf) = Tuple{}() # @Mauro by Gio: Tuple{} is the type. Should be Tuple{}(), but let's just simply "()"
+children(::AbstractLeaf) = Tuple{}()
 
 tokentype(::SyntaxTree{T}) where {T} = T
 tokentype(::T) where {T <: AbstractLeaf} = T
@@ -970,7 +970,6 @@ end
 Base.convert(::Type{SyntaxTree}, f::AbstractComposite) = tree(f)
 
 tree(t::Union{AbstractLeaf,SyntaxTree}) = t
-tree(t::Connective) = SyntaxTree(t) # @Mauro TODO this won't work. Remove or change.
 
 ############################################################################################
 
