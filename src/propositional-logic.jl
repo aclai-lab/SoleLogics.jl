@@ -86,7 +86,7 @@ Return whether an assigment has a truth value for a given atom.
 
 See also [`AbstractInterpretation`](@ref).
 """
-function Base.haskey(i::AbstractAssignment{AA}, ::Atom)::Bool where {AA}
+function Base.haskey(i::AbstractAssignment, ::Atom)::Bool
     return error("Please, provide method " *
                  "Base.haskey(::$(typeof(i)), " *
                  "::Atom)::Bool.")
@@ -126,10 +126,10 @@ end
 # TODO: change collatetruth name (concepts are "unite and simplify")
 function interpret(
     tree::SyntaxTree,
-    i::AbstractAssignment{AA},
+    i::AbstractAssignment,
     args...;
     kwargs...
-) where {AA}
+)
     return collatetruth(token(tree), Tuple(
         [interpret(token(ch) isa Connective ? ch : token(ch), i, args...;
             kwargs...) for ch in children(tree)]
@@ -139,10 +139,10 @@ end
 # When interpreting a single atom, if the lookup fails then return the atom itself
 function interpret(
     p::Atom,
-    i::AbstractAssignment{AA},
+    i::AbstractAssignment,
     args...;
     kwargs...
-) where {AA}
+)
     try
         Base.getindex(i, p, args...)
     catch e

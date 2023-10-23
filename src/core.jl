@@ -716,7 +716,7 @@ token(t::SyntaxTree) = t.token
 token(t::AbstractLeaf) = t
 
 children(t::SyntaxTree) = t.children
-children(::AbstractLeaf) = Tuple{} # Equivalent to the empty tuple "()"
+children(::AbstractLeaf) = Tuple{}() # @Mauro by Gio: Tuple{} is the type. Should be Tuple{}(), but let's just simply "()"
 
 tokentype(::SyntaxTree{T}) where {T} = T
 tokentype(::T) where {T <: AbstractLeaf} = T
@@ -753,7 +753,6 @@ end
 
 """
     tokens(t::SyntaxTree)::AbstractVector{SyntaxToken}
-    tokens(t::AbstractLeaf)::AbstractLeaf
 
 List all tokens appearing in a syntax tree.
 
@@ -763,7 +762,8 @@ function tokens(t::SyntaxTree)::AbstractVector{SyntaxToken}
     return SyntaxToken[vcat(tokens.(children(t))...)..., token(t)]
 end
 
-tokens(t::AbstractLeaf)::AbstractLeaf = t
+# Helpers. TODO Remove?
+tokens(t::AbstractLeaf) = [t]
 
 """
     operators(t::SyntaxTree)::AbstractVector{Operator}
@@ -778,11 +778,13 @@ function operators(t::SyntaxTree)::AbstractVector{Operator}
     return Operator[vcat(operators.(children(t))...)..., ops...]
 end
 
-operators(::AbstractLeaf) = []
+# Helpers. TODO Remove?
+operators(t::AbstractLeaf) = error("Unexpected leaf token (type = $(typeof(t)))")
+operators(t::Truth) = Operator[t]
+operators(::Atom) = []
 
 """
     atoms(t::SyntaxTree)::AbstractVector{Atom}
-    atoms(t::AbstractLeaf)
 
 List all `Atom`s appearing in a syntax tree.
 
@@ -793,11 +795,13 @@ function atoms(t::SyntaxTree)::AbstractVector{Atom}
     return Atom[vcat(atoms.(children(t))...)..., ps...] |> unique
 end
 
-atoms(t::AbstractLeaf) = t isa Atom ? t : Atom[]
+# Helpers. TODO Remove?
+atoms(t::AbstractLeaf) = error("Unexpected leaf token (type = $(typeof(t)))")
+atoms(t::Truth) = Atom[]
+atoms(t::Atom) = [t]
 
 """
     ntokens(t::SyntaxTree)::Integer
-    ntokens(::AbstractLeaf)::Integer
 
 Return the count of all tokens appearing in a syntax tree.
 
@@ -807,7 +811,8 @@ function ntokens(t::SyntaxTree)::Integer
     length(children(t)) == 0 ? 1 : 1 + sum(ntokens(c) for c in children(t))
 end
 
-ntokens(::AbstractLeaf)::Integer = 1
+# Helpers. TODO Remove?
+ntokens(::AbstractLeaf) = 1
 
 """
     noperators(t::SyntaxTree)::Integer
@@ -822,7 +827,10 @@ function noperators(t::SyntaxTree)::Integer
     return length(children(t)) == 0 ? op : op + sum(noperators(c) for c in children(t))
 end
 
-noperators(::AbstractLeaf)::Integer = 0
+# Helpers. TODO Remove?
+noperators(t::AbstractLeaf) = error("Unexpected leaf token (type = $(typeof(t)))")
+noperators(t::Truth) = 1
+noperators(::Atom) = 0
 
 """
     natoms(t::SyntaxTree)::Integer
@@ -837,7 +845,10 @@ function natoms(t::SyntaxTree)::Integer
     return length(children(t)) == 0 ? pr : pr + sum(natoms(c) for c in children(t))
 end
 
-natoms(t::AbstractLeaf) = t isa Atom ? 1 : 0
+# Helpers. TODO Remove?
+natoms(t::AbstractLeaf) = error("Unexpected leaf token (type = $(typeof(t)))")
+natoms(t::Truth) = 0
+natoms(::Atom) = 1
 
 """
     height(t::SyntaxTree)::Integer
@@ -851,7 +862,8 @@ function height(t::SyntaxTree)::Integer
     length(children(t)) == 0 ? 0 : 1 + maximum(height(c) for c in children(t))
 end
 
-height(t::AbstractLeaf)::Integer = 0
+# Helpers. TODO Remove?
+height(t::AbstractLeaf) = 0
 
 # Helpers that make SyntaxTree's map to the same dictionary key.
 # Useful for checking formulas on interpretations.
@@ -958,7 +970,7 @@ end
 Base.convert(::Type{SyntaxTree}, f::AbstractComposite) = tree(f)
 
 tree(t::Union{AbstractLeaf,SyntaxTree}) = t
-tree(t::Connective) = SyntaxTree(t)
+tree(t::Connective) = SyntaxTree(t) # @Mauro TODO this won't work. Remove or change.
 
 ############################################################################################
 
@@ -1399,7 +1411,7 @@ truthtype(a::AbstractAlgebra) = truthtype(typeof(a))
 """
     domain(a::AbstractAlgebra)
 
-Return the `domain` of a given algebra.
+Return an iterator to the values in the `domain` of a given algebra.
 
 See also [`AbstractAlgebra`](@ref).
 """
@@ -1597,7 +1609,7 @@ TruthDict with values:
 └────────┴────────┘
 
 julia> check(CONJUNCTION(p,q), td)
-⊥
+false
 ```
 
 See also [`interpret`](@ref), [`Formula`](@ref), [`AbstractInterpretation`](@ref),

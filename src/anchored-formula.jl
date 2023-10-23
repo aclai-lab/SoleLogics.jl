@@ -319,3 +319,26 @@ function randbaseformula(
         additional_operators = operators,
     )
 end
+
+function randbaseformula(
+    height::Integer,
+    alphabet::AbstractAlphabet,
+    operators::AbstractVector{<:Operator},
+    args...;
+    rng::AbstractRNG = Random.GLOBAL_RNG,
+    picker = rand,
+    weights = Union{AbstractWeights, Nothing},
+    kwargs...
+)::SyntaxTree
+    error("TODO: implement this")
+end
+
+function randbaseformula(
+    height::Integer,
+    g::AbstractGrammar,
+    args...;
+    rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG,
+    kwargs...
+)::SyntaxTree
+    randbaseformula(height, alphabet(g), operator(g), args...; rng=rng, kwargs...)
+end
