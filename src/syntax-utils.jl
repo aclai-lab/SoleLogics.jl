@@ -405,7 +405,7 @@ BEWARE: it currently assumes the underlying algebra is Boolean!
 # Arguments
 - `f::Formula`: when set to `true`,
     the formula;
-- `remove_boxes::Bool`: converts all uni-modal and multi-modal box operators by using the
+- `remove_boxes::Bool`: remove all (non-relational and relational) box operators by using the
     equivalence ◊φ ≡ ¬□¬φ. Note: this assumes an underlying Boolean algebra.
 - `reduce_negations::Bool`: when set to `true`,
     attempts at reducing the number of negations by appling

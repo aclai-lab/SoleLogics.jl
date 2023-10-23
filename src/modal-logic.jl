@@ -555,25 +555,25 @@ end
 
 """
     truthtype(::Type{<:AbstractKripkeStructure{W,A,T}}) where {W<:AbstractWorld,A,T<:Truth} = T
-    truthtype(a::AbstractKripkeStructure) = truthtype(typeof(a))
+    truthtype(i::AbstractKripkeStructure) = truthtype(typeof(i))
 
 The truth type of the model.
 
 See also [`AbstractKripkeStructure`](@ref).
 """
 truthtype(::Type{<:AbstractKripkeStructure{W,A,T}}) where {W<:AbstractWorld,A,T<:Truth} = T
-truthtype(a::AbstractKripkeStructure) = truthtype(typeof(a))
+truthtype(i::AbstractKripkeStructure) = truthtype(typeof(i))
 
 """
     worldtype(::Type{<:AbstractKripkeStructure{W,A,T}}) where {W<:AbstractWorld,A,T<:Truth} = W
-    worldtype(a::AbstractKripkeStructure) = worldtype(typeof(a))
+    worldtype(i::AbstractKripkeStructure) = worldtype(typeof(i))
 
 The world type of the model.
 
 See also [`AbstractKripkeStructure`](@ref).
 """
 worldtype(::Type{<:AbstractKripkeStructure{W,A,T}}) where {W<:AbstractWorld,A,T<:Truth} = W
-worldtype(a::AbstractKripkeStructure) = worldtype(typeof(a))
+worldtype(i::AbstractKripkeStructure) = worldtype(typeof(i))
 
 accessibles(i::AbstractKripkeStructure, args...) = accessibles(frame(i), args...)
 allworlds(i::AbstractKripkeStructure, args...) = allworlds(frame(i), args...)

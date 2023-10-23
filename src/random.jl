@@ -36,14 +36,15 @@ function Base.rand(alphabet::AbstractAlphabet, args...; kwargs...)
     Base.rand(Random.GLOBAL_RNG, alphabet, args...; kwargs...)
 end
 
-function Base.rand(
-    rng::AbstractRNG,
-    atoms::AbstractVector{<:Atom},
-    args...;
-    kwargs...
-)
-    # EMPTY - This could be the fallback of the following dispatch
-end
+# TODO maybe remove this because Base.rand(rng, [p,q,r,s]) should already work.
+# function Base.rand(
+#     rng::AbstractRNG,
+#     atoms::AbstractVector{<:Atom},
+#     args...;
+#     kwargs...
+# )
+#     # EMPTY - This could be the fallback of the following dispatch
+# end
 
 function Base.rand(
     rng::AbstractRNG,
@@ -76,53 +77,35 @@ function Base.rand(
     args...;
     kwargs...
 )
-    randbaseformula(height, alphabet(g), operators(g), args...; rng=rng, kwargs...)
+    randformula(height, alphabet(g), operators(g), args...; rng=rng, kwargs...)
 end
 
-function rand(
+function Base.rand(
     height::Integer,    # By Mauro - to generate a random formula, height has to be known
-    connectives::Vector{Connective},
-    leaves::Vector{AbstractLeaf},
-    algebra::AbstractAlgebra,
+    connectives::Union{AbstractVector{<:Operator},AbstractVector{<:Connective}},
+    atoms::Union{AbstractVector{<:Atom},AbstractAlphabet},
+    truthvalues::Union{Nothing,AbstractVector{<:Truth},AbstractAlgebra} = nothing,
     args...;
     rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG,
     kwargs...
 )
-    [push!(leaves, t()) for t in algebra |> truthtype |> subtypes]
-    randformula(height, leaves, connectives, args...; rng=rng, kwargs...)
-end
+    # If Truth's are specified as `operators`, then they cannot be simultaneously
+    #  provided as `truthvalues`
+    @assert (connectives isa AbstractVector{<:Connective} ||
+            !(truthvalues isa AbstractVector{<:Truth})
+        ) "Unexpected connectives and truth values: $(connectives) and $(truthvalues)."
 
-function rand(
-    height::Integer,    # By Mauro - to generate a random formula, height has to be known
-    connectives::Vector{Connective},
-    leaves::Vector{AbstractLeaf},
-    truthvals::Vector{Truth},
-    args...;
-    rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG,
-    kwargs...
-)
-    @assert supertype.(typeof.(truthvals)) |> unique |> length == 1
-        "truthvals $(truthvals) must have a common supertype."
-
-    randformula(height, vcat(leaves, truthvals), connectives, args...; rng=rng, kwargs...)
-end
-
-# Set truthatleaves flag to false to avoid placing truth values at leaves.
-function rand(
-    height::Integer,    # By Mauro - to generate a random formula, height has to be known
-    connectives::Vector{Connective},
-    leaves::Vector{AbstractLeaf},
-    args...;
-    truthatleaves::Bool = true,
-    truthtype::Type,
-    rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG,
-    kwargs...
-)
-    if (truthatleaves)
-        [push!(leaves, t()) for t in truthtype |> subtypes]
+    atoms = atoms isa AbstractAlphabet ? SoleLogics.atoms(atoms) : atoms
+    ops = connectives
+    if !isnothing(truthvalues)
+        truthvalues = truthvalues isa AbstractAlgebra ? domain(truthvalues) : truthvalues
+        @assert typejoin(typeof.(truthvalues)...) != Truth "Truth values " *
+            "$(truthvalues) must belong to the same algebra " *
+            "(and have a common supertype that is not Truth)."
+        ops = vcat(ops, truthvalues)
     end
 
-    randformula(height, leaves, connectives, args...; rng=rng, kwargs...)
+    randformula(height, ops, atoms, args...; rng=rng, kwargs...)
 end
 
 function StatsBase.sample(
@@ -189,7 +172,7 @@ function StatsBase.sample(
     args...;
     kwargs...
 )
-    randbaseformula(
+    randformula(
         height, alphabet(g), operators(g);
         rng=rng, picker=StatsBase.sample, weights=weights, args..., kwargs...)
 end
@@ -209,18 +192,17 @@ end
 # TODO
 # - make rng first (optional) argument of randformula (see above)
 # - in randformula, keyword argument alphabet_sample_kwargs that are unpacked upon sampling atoms, as in: Base.rand(rng, a; alphabet_sample_kwargs...). This would allow to sample from infinite alphabets, so when this parameter, !isfinite(alphabet) is allowed!
-# - Decide whether to keep randformula or randbaseformula
 
 doc_randformula = """
     randformula(
         height::Integer,
         alphabet,
-        operators::Vector{<:Operator};
+        operators::AbstractVector{<:Operator};
         rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG
     )::SyntaxTree
 
     # TODO @Mauro implement this method.
-    function randbaseformula(
+    function randformula(
         height::Integer,
         g::AbstractGrammar;
         rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG
@@ -231,7 +213,7 @@ Return a pseudo-randomic `SyntaxTree`.
 # Arguments
 - `height::Integer`: height of the generated structure;
 - `alphabet::AbstractAlphabet`: collection from which atoms are chosen randomly;
-- `operators::Vector{<:Operator}`: vector from which legal operators are chosen;
+- `operators::AbstractVector{<:Operator}`: vector from which legal operators are chosen;
 - `g::AbstractGrammar`: alternative to passing alphabet and operators separately. (TODO explain?)
 
 # Keyword Arguments
@@ -255,7 +237,7 @@ See also [`AbstractAlphabet`](@ref), [`SyntaxTree`](@ref).
 function randformula(
     height::Integer,
     alphabet,
-    operators::Vector{<:Operator};
+    operators::AbstractVector{<:Operator};
     modaldepth::Integer = height,
     rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG,
     picker::Function = rand,
@@ -312,20 +294,7 @@ function randformula(
     return _randformula(rng, height, modaldepth)
 end
 
-function randbaseformula(
-    height::Integer,
-    alphabet::AbstractAlphabet,
-    operators::Vector{<:Operator},
-    args...;
-    rng::AbstractRNG = Random.GLOBAL_RNG,
-    picker = rand,
-    weights = Union{AbstractWeights, Nothing},
-    kwargs...
-)::SyntaxTree
-    error("TODO: implement this")
-end
-
-function randbaseformula(
+function randformula(
     height::Integer,
     g::AbstractGrammar,
     args...;
