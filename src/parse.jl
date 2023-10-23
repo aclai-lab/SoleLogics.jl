@@ -374,8 +374,8 @@ function parseformula(
 )
     additional_operators = (
         isnothing(additional_operators) ? Operator[] : additional_operators)
-    operators = unique(
-        [BASE_PARSABLE_OPERATORS..., additional_operators...])
+    operators = Vector{Operator}(
+        unique([BASE_PARSABLE_OPERATORS..., additional_operators...]))
 
     # TODO: expand special sequences to special *sequences* (strings of characters)
     # TODO: check that no special sequence is a substring of another one.
@@ -397,7 +397,7 @@ function parseformula(
     #  In other words, all special symbols (e.g. opening_parenthesis) are already filtered
     #  out and only SyntaxToken are considered.
     function _postfixbuild(postfix::Vector{<:SyntaxToken})
-        stack = SyntaxTree[]
+        stack = Union{AbstractLeaf,SyntaxTree}[]
 
         for tok in postfix
             # Stack collapses, composing a new part of the syntax tree
@@ -405,7 +405,7 @@ function parseformula(
                 children = [pop!(stack) for _ in 1:arity(tok)]
                 push!(stack, SyntaxTree(tok, Tuple(reverse(children))))
             elseif tok isa Atom
-                push!(stack, SyntaxTree(tok))
+                push!(stack, tok)
             else
                 error("Parsing error! Unexpected token type encountered: `$(typeof(tok))`.")
             end
