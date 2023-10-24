@@ -230,14 +230,14 @@ Base.promote_rule(::Type{<:BooleanTruth}, ::Type{<:BooleanTruth}) = BooleanTruth
 Base.convert(::Type{Bool}, ::Top) = true
 Base.convert(::Type{Bool}, ::Bot) = false
 
-function Base.convert(::{Type{Truth},Type{BooleanTruth}}, t::Bool)
+function Base.convert(::Union{Type{Truth},Type{BooleanTruth}}, t::Bool)
     if t == true
         return Top
     else
         return Bot
     end
 end
-function Base.convert(::{Type{Truth},Type{BooleanTruth}}, t::Integer)
+function Base.convert(::Union{Type{Truth},Type{BooleanTruth}}, t::Integer)
     if isone(t)
         return Top
     elseif iszero(t)
