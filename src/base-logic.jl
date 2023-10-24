@@ -231,11 +231,7 @@ Base.convert(::Type{Bool}, ::Top) = true
 Base.convert(::Type{Bool}, ::Bot) = false
 
 function Base.convert(::Union{Type{Truth},Type{BooleanTruth}}, t::Bool)
-    if t == true
-        return Top
-    else
-        return Bot
-    end
+    return (t ? Top : Bot)
 end
 function Base.convert(::Union{Type{Truth},Type{BooleanTruth}}, t::Integer)
     if isone(t)
