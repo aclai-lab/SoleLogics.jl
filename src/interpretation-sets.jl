@@ -36,10 +36,11 @@ TODO this struct firm could be better, but unfortunately the following doesn't w
     LogicalInstance{M<:AbstractInterpretation{A,T<:Truth}, S<:AbstractInterpretationSet{M}} <: AbstractInterpretation{A,T}
 """
 struct LogicalInstance{
-        A,
-        T<:Truth,
-        S<:AbstractInterpretationSet{AbstractInterpretation{A,T}}
-    } <: AbstractInterpretation{A,T}
+    A,
+    T<:Truth,
+    S<:AbstractInterpretationSet{AbstractInterpretation{A,T}} # TODO looks good; let's see if it works! Cuz, I'm not sure, maybe Julia requires you to replace this with {...,M<:AbstractInterpretation{A,T},AbstractInterpretationSet{M}}.
+} <: AbstractInterpretation{A,T}
+
     s::S
     i_instance::Int64
 
@@ -54,7 +55,7 @@ struct LogicalInstance{
         s::AbstractInterpretationSet,
         i_instance::Integer
     )
-    LogicalInstance{interpretationtype(s) |> valeutype, interpretationtype(s) |> truthtype, typeof(s)}(s, i_instance)
+        LogicalInstance{valuetype(s),truthtype(s),typeof(s)}(s, i_instance)
     end
 end
 

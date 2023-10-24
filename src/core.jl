@@ -557,11 +557,11 @@ Return whether a syntax token appears in a formula.
 
 See also [`Formula`](@ref), [`SyntaxToken`](@ref).
 """
-function Base.in(tok::SyntaxToken, f::AbstractSyntaxStructure)::Bool
+function Base.in(tok::SyntaxToken, f::Formula)::Bool
     return Base.in(tok, tree(f))
 end
 
-function Base.in(tok::AbstractLeaf, f::AbstractLeaf)::Bool
+function Base.in(tok::SyntaxToken, f::AbstractLeaf)::Bool
     return tok == f
 end
 
@@ -573,7 +573,7 @@ function Base.show(io::IO, t::SyntaxToken)
     print(io, syntaxstring(t))
 end
 
-function syntaxstring(f::AbstractSyntaxStructure; kwargs...)
+function syntaxstring(f::Formula; kwargs...)
     syntaxstring(tree(f); kwargs...)
 end
 
@@ -642,7 +642,7 @@ Base.promote_rule(
         T<:Connective,
     } <: AbstractComposite
         token::T
-        children::NTuple{N,SyntaxTree} where {N}
+        children::NTuple{N,Union{AbstractLeaf,SyntaxTree}} where {N}
     end
 
 A syntax tree encoding a logical formula.
@@ -703,8 +703,8 @@ struct SyntaxTree{
     end
 
     function SyntaxTree(t::AbstractLeaf, args...)
-        @assert length(args) == 0 "Syntactical entity $(t) of type $(typeof(t)) must have" *
-            " arity 0, but $(length(args)) arguments are given."
+        @assert length(args) == 0 "Leaf $(t) (type $(typeof(t))) is nullary, " *
+            " and cannot take syntax children ($(length(args)) were given)."
         return t
     end
 end
@@ -722,7 +722,7 @@ token(t::SyntaxTree) = t.token
 token(t::AbstractLeaf) = t
 
 children(t::SyntaxTree) = t.children
-children(::AbstractLeaf) = Tuple{}()
+children(::AbstractLeaf) = ()
 
 tokentype(::SyntaxTree{T}) where {T} = T
 tokentype(::T) where {T <: AbstractLeaf} = T
@@ -1356,7 +1356,8 @@ function formulas(
     # Stop as soon as `maxdepth` is reached or `nformulas` have been generated.
     depth = 0
     cur_formulas = Vector{Union{AbstractLeaf,SyntaxTree}}(
-        convert.(SyntaxTree, terminals(g)))
+        convert.(SyntaxTree, terminals(g)) # @Mauro by Gio: probably `terminals(g)` is fine, without conversion..? (also: now terminals = leaves, and nonterminals = connectives? Maybe we should unify, by replacing the terms `terminals` and `nonterminals`.)
+    )
     all_formulas = Union{AbstractLeaf,SyntaxTree}[cur_formulas...]
     while depth < maxdepth && (isnothing(nformulas) || length(all_formulas) < nformulas)
         _nformulas = length(all_formulas)
