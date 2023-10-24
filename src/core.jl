@@ -551,30 +551,26 @@ function joinformulas(c::Connective, children::Vararg{F,N})::F where {N,F<:Formu
 end
 
 """
-    Base.in(tok::SyntaxToken, f::Formula)::Bool
+    Base.in(tok::SyntaxToken, φ::Formula)::Bool
 
 Return whether a syntax token appears in a formula.
 
 See also [`Formula`](@ref), [`SyntaxToken`](@ref).
 """
-function Base.in(tok::SyntaxToken, f::Formula)::Bool
-    return Base.in(tok, tree(f))
+function Base.in(tok::SyntaxToken, φ::Formula)::Bool
+    return (φ isa AbstractLeaf ? tok == φ : Base.in(tok, tree(φ)))
 end
 
-function Base.in(tok::SyntaxToken, f::AbstractLeaf)::Bool
-    return tok == f
-end
-
-function Base.show(io::IO, f::Formula)
-    print(io, "$(typeof(f))\nsyntaxstring: $(syntaxstring(f))")
+function Base.show(io::IO, φ::Formula)
+    print(io, "$(typeof(φ))\nsyntaxstring: $(syntaxstring(φ))")
 end
 
 function Base.show(io::IO, t::SyntaxToken)
     print(io, syntaxstring(t))
 end
 
-function syntaxstring(f::Formula; kwargs...)
-    syntaxstring(tree(f); kwargs...)
+function syntaxstring(φ::Formula; kwargs...)
+    syntaxstring(tree(φ); kwargs...)
 end
 
 
@@ -627,20 +623,18 @@ Base.hash(a::AbstractComposite) = Base.hash(tree(a))
 Base.promote_rule(
     ::Type{SS},
     ::Type{<:AbstractLeaf}
-) where {SS<:AbstractSyntaxStructure} = Formula
+) where {SS<:AbstractSyntaxStructure} = SS
 
 Base.promote_rule(
     ::Type{<:AbstractLeaf},
     ::Type{SS}
-) where {SS<:AbstractSyntaxStructure} = Formula
+) where {SS<:AbstractSyntaxStructure} = SS
 =#
 
 ############################################################################################
 
 """
-    struct SyntaxTree{
-        T<:Connective,
-    } <: AbstractComposite
+struct SyntaxTree{T<:Connective} <: AbstractComposite
         token::T
         children::NTuple{N,Union{AbstractLeaf,SyntaxTree}} where {N}
     end
@@ -660,9 +654,7 @@ See also [`arity`](@ref), [`Atom`](@ref), [`atoms`](@ref), [`atomstype`](@ref),
 [`ntokens`](@ref), [`Operator`](@ref),[`operators`](@ref), [`operatorstype`](@ref),
 [`token`](@ref), [`tokens`](@ref), [`tokenstype`](@ref), [`tokentype`](@ref).
 """
-struct SyntaxTree{
-    T<:Connective,
-} <: AbstractComposite
+struct SyntaxTree{T<:Connective} <: AbstractComposite
 
     # The syntax token at the current node
     token::T
@@ -963,15 +955,15 @@ Base.convert(::Type{S}, tok::AbstractLeaf) where {S<:SyntaxTree} = S(tok)
 Base.convert(::Type{AbstractSyntaxStructure}, tok::AbstractLeaf) = SyntaxTree(tok)
 
 """
-    tree(f::AbstractComposite)::SyntaxTree
+    tree(f::AbstractComposite)::Union{AbstractLeaf,SyntaxTree}
 
 Extract the `SyntaxTree` representation of a formula
 (equivalent to `Base.convert(SyntaxTree, f)`).
 
 See also [`AbstractComposite`](@ref), [`SyntaxTree`](@ref).
 """
-function tree(f::AbstractComposite)::SyntaxTree
-    return error("Please, provide method tree(::$(typeof(f)))::SyntaxTree.")
+function tree(f::AbstractComposite)::Union{AbstractLeaf,SyntaxTree}
+    return error("Please, provide method tree(::$(typeof(f)))::Union{AbstractLeaf,SyntaxTree}.")
 end
 Base.convert(::Type{SyntaxTree}, f::AbstractComposite) = tree(f)
 
@@ -1462,7 +1454,6 @@ See also [`AbstractAlgebra`](@ref).
 iscrisp(a::AbstractAlgebra) = (length(domain(a)) == 2)
 
 joinformulas(c::Truth, ::Tuple{}) = SyntaxTree(c)
-(c::Truth)(::Tuple{}) = c
 
 ############################################################################################
 
@@ -1489,6 +1480,12 @@ For example, in the crisp case, with `Bool` truth values, it is:
 See also [`istop`](@ref), [`Truth`](@ref).
 """
 isbot(t::Truth)::Bool = false
+
+# Helpers
+(c::Truth)(::Tuple{}) = c # TODO is this the correct place? What's the role for this? docstring?
+function Base.convert(::Type{Truth}, t)::Truth
+    return error("Cannot interpret value $t of type ($(typeof(t))) as Truth.")
+end
 
 ############################################################################################
 
@@ -1577,17 +1574,9 @@ abstract type AbstractInterpretation{A,T<:Truth} end
 valuetype(::AbstractInterpretation{A,T}) where {A,T} = A
 truthtype(::AbstractInterpretation{A,T}) where {A,T} = T
 
-# i[φ] -> φ
-Base.getindex(i::AbstractInterpretation, φ::Formula, args...; kwargs...) =
-    interpret(φ, i, args...; kwargs...)
-
-# φ(i) -> φ
-(φ::Formula)(i::AbstractInterpretation, args...; kwargs...) =
-    interpret(φ, i, args...; kwargs...)
-
 """
     check(
-        f::Formula,
+        φ::Formula,
         i::AbstractInterpretation,
         args...;
         kwargs...
@@ -1623,17 +1612,17 @@ See also [`interpret`](@ref), [`Formula`](@ref), [`AbstractInterpretation`](@ref
 [`TruthDict`](@ref).
 """
 function check(
-    f::Formula,
+    φ::Formula,
     i::AbstractInterpretation,
     args...;
     kwargs...
 )::Bool
-    istop(interpret(f, i, args...; kwargs...))
+    istop(interpret(φ, i, args...; kwargs...))
 end
 
 """
     interpret(
-        f::Formula,
+        φ::Formula,
         i::AbstractInterpretation,
         args...;
         kwargs...
@@ -1665,22 +1654,22 @@ See also [`check`](@ref), [`Formula`](@ref), [`AbstractInterpretation`](@ref),
 [`AbstractAlgebra`](@ref).
 """
 function interpret(
-    f::Formula,
+    φ::Formula,
     i::AbstractInterpretation,
     args...;
     kwargs...
 )::Formula
-    interpret(tree(f), i, args...; kwargs...)
+    interpret(tree(φ), i, args...; kwargs...)
 end
 
 function interpret(
-    f::SyntaxTree,
+    φ::SyntaxTree,
     i::AbstractInterpretation,
     args...;
     kwargs...
 )::Formula
     return error("Please, provide method " *
-                 "interpret(f::SyntaxTree, i::$(typeof(i)), " *
+                 "interpret(φ::SyntaxTree, i::$(typeof(i)), " *
                  "args...::$(typeof(args)); " *
                  "kwargs...::$(typeof(kwargs))::$(truthtype(i)).")
 end
@@ -1688,6 +1677,15 @@ end
 ############################################################################################
 ######################################### UTILS ############################################
 ############################################################################################
+
+# Formula interpretation via i[φ] -> φ
+Base.getindex(i::AbstractInterpretation, φ::Formula, args...; kwargs...) =
+    interpret(φ, i, args...; kwargs...)
+
+# Formula interpretation via φ(i) -> φ
+(φ::Formula)(i::AbstractInterpretation, args...; kwargs...) =
+    interpret(φ, i, args...; kwargs...)
+
 
 # We provide an extra safety layer by complementing
 # Base.in with syntax tokens/trees and alphabets.

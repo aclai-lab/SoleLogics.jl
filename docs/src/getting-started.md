@@ -105,9 +105,9 @@ Formula
 
 ```@docs
 joinformulas
-tokens(f::Formula)
-SoleLogics.height(t::SyntaxTree)
-SoleLogics.tree(f::Formula)
+tokens(::Formula)
+SoleLogics.height(::SyntaxTree)
+SoleLogics.tree(::Formula)
 ```
 
 ### Parsing & Printing

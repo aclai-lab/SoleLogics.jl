@@ -247,18 +247,22 @@ struct TruthDict{
         return TruthDict{A,T,typeof(d)}(d)
     end
     function TruthDict(d::AbstractDict{<:Atom,T}) where {T<:Truth}
+        # DEBUG:
         # A = Union{valuetype.(keys(d))...}
         # P = Union{[Atom{_A} for _A in valuetype.(keys(d))]...}
         # println(A)
         # println(d)
         A = typejoin(valuetype.(keys(d))...)
-
         return TruthDict{A,T,typeof(d)}(d)
     end
     function TruthDict(d::AbstractDict{A,T}) where {A,T<:Truth}
-        return TruthDict(Dict{Atom{A},supertype(T)}([(Atom{A}(a),v) for (a,v) in d]))
+        return TruthDict(Dict([(Atom{A}(a),v) for (a,v) in d]))
     end
-    function TruthDict(v::AbstractVector, truth_value = true)
+    function TruthDict(d::AbstractDict)
+        d = Dict([(a, convert(Truth, v)) for (a,v) in d])
+        return TruthDict(d)
+    end
+    function TruthDict(v::AbstractVector, truth_value = ⊤)
         if length(v) == 0
             return TruthDict()
         else
@@ -278,16 +282,33 @@ struct TruthDict{
     function TruthDict(t::Tuple)
         return TruthDict(Pair(t...))
     end
+
+    # Empty dict
+
     function TruthDict{A,T,D}() where {
         A,
         T<:Truth,
         D<:AbstractDict{<:Atom{<:A},T},
     }
-        return TruthDict{A,T,D}(Dict{Atom{A},T}())
+        return TruthDict{A,T,D}(D())
+    end
+    function TruthDict{A,T}() where {
+        A,
+        T<:Truth,
+    }
+        d = Dict{Atom{A},T}()
+        return TruthDict{A,T,typeof(d)}(d)
+    end
+    function TruthDict{A}() where {
+        A,
+    }
+        return TruthDict{A,BooleanTruth}()
     end
     function TruthDict()
-        d = Dict{Atom{Any},Truth}([])
-        return TruthDict{Any,Truth,typeof(d)}(d)
+        A = Any
+        T = Truth
+        d = Dict{Atom{A},T}([])
+        return TruthDict{A,T,typeof(d)}(d)
     end
 end
 

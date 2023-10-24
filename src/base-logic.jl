@@ -226,8 +226,26 @@ isbot(t::Bot) = true
 # as children of Truth, and new promotion rules are to be defined like below.
 Base.promote_rule(::Type{<:BooleanTruth}, ::Type{<:BooleanTruth}) = BooleanTruth
 
+# Helpers
 Base.convert(::Type{Bool}, ::Top) = true
 Base.convert(::Type{Bool}, ::Bot) = false
+
+function Base.convert(::{Type{Truth},Type{BooleanTruth}}, t::Bool)
+    if t == true
+        return Top
+    else
+        return Bot
+    end
+end
+function Base.convert(::{Type{Truth},Type{BooleanTruth}}, t::Integer)
+    if isone(t)
+        return Top
+    elseif iszero(t)
+        return Bot
+    else
+        return error("Cannot interpret Integer value $t as Truth.")
+    end
+end
 
 # NOTE: are these useful?
 hasdual(::typeof(⊤)) = true

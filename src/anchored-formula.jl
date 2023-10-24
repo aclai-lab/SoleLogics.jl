@@ -330,7 +330,7 @@ function randbaseformula(
     weights = Union{AbstractWeights, Nothing},
     kwargs...
 )::SyntaxTree
-    error("TODO: implement this")
+    return error("TODO: implement this")
 end
 
 function randbaseformula(
