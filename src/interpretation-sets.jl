@@ -67,7 +67,7 @@ end
 
 """
     check(
-        f::Formula,
+        φ::Formula,
         s::AbstractInterpretationSet,
         i_instance::Integer,
         args...;
@@ -80,18 +80,18 @@ See also [`AbstractInterpretationSet`](@ref),
 [`Formula`](@ref).
 """
 function check(
-    f::Formula,
+    φ::Formula,
     s::AbstractInterpretationSet,
     i_instance::Integer,
     args...;
     kwargs...,
 )
-    check(f, getinstance(s, i_instance), args...; kwargs...)
+    check(φ, getinstance(s, i_instance), args...; kwargs...)
 end
 
 """
     check(
-        f::Formula,
+        φ::Formula,
         s::AbstractInterpretationSet,
         args...;
         kwargs...
