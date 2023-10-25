@@ -129,7 +129,7 @@ end
 
 #     check(
 #         a::AbstractAlgebra,
-#         tree::SyntaxTree,
+#         tree::SyntaxBranch,
 #         i::AbstractAssignment{A,T},
 #         args...
 #     )::T where {A,T<:Truth}
@@ -146,14 +146,14 @@ on the given logic.
 
 See also
 [`TruthDict`](@ref),
-[`SyntaxTree`](@ref), [`Formula`](@ref),
+[`SyntaxBranch`](@ref), [`Formula`](@ref),
 [`AbstractAlgebra`](@ref), [`AbstractInterpretation`](@ref).
 """
 check(f::Formula, i::AbstractAssignment, args...) = check(algebra(f), tree(f), i, args...)
 
 function check(
     a::AbstractAlgebra,
-    tree::SyntaxTree,
+    tree::SyntaxBranch,
     i::AbstractAssignment{A,T},
     args...
 )::T where {A,T<:Truth}
@@ -497,7 +497,7 @@ end
 check(f::Formula, i::Union{AbstractDict,AbstractVector}, args...) = check(algebra(f), tree(f), i, args...)
 function check(
     a::AbstractAlgebra,
-    tree::SyntaxTree,
+    tree::SyntaxBranch,
     i::Union{AbstractDict,AbstractVector},
     args...
 )
@@ -584,7 +584,7 @@ julia> truth_table(st, truthvals=[true, false])
 TruthDict with values:
 ┌────────┬────────┬────────────┐
 │      q │      p │      p ∧ q │
-│ String │ String │ SyntaxTree │
+│ String │ String │ SyntaxBranch │
 ├────────┼────────┼────────────┤
 │   true │   true │       true │
 │   true │  false │      false │

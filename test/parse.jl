@@ -4,7 +4,7 @@ import SoleLogics: arity
 
 # testing utilities ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-function test_parsing_equivalence(f::SyntaxTree)
+function test_parsing_equivalence(f::SyntaxBranch)
     @test syntaxstring(f) == syntaxstring(parsetree(syntaxstring(f)))
     @test syntaxstring(f; function_notation = true) ==
         syntaxstring(

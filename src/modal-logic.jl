@@ -581,7 +581,7 @@ nworlds(i::AbstractKripkeStructure) = nworlds(frame(i))
 
 """
 function check(
-    φ::SyntaxTree,
+    φ::SyntaxBranch,
     i::AbstractKripkeStructure{W,A,T},
     w::Union{Nothing,<:AbstractWorld} = nothing;
     use_memo::Union{Nothing,AbstractDict{<:Formula,<:WorldSet}} = nothing,
@@ -632,10 +632,10 @@ julia> [w => check(fmodal, kstruct, w) for w in worlds]
  SoleLogics.World{Int64}(5) => 0
 ```
 
-See also [`SyntaxTree`](@ref), [`AbstractWorld`](@ref), [`KripkeStructure`](@ref).
+See also [`SyntaxBranch`](@ref), [`AbstractWorld`](@ref), [`KripkeStructure`](@ref).
 """
 function check(
-    φ::SyntaxTree,
+    φ::SyntaxBranch,
     i::AbstractKripkeStructure{W,A,T},
     w::Union{Nothing,<:AbstractWorld} = nothing; # TODO remove defaulting
     use_memo::Union{Nothing,AbstractDict{<:Formula,<:WorldSet}} = nothing,
@@ -661,14 +661,14 @@ function check(
 
     memo_structure = begin
         if isnothing(use_memo)
-            ThreadSafeDict{SyntaxTree,WorldSet{W}}()
+            ThreadSafeDict{SyntaxBranch,WorldSet{W}}()
         else
             use_memo
         end
     end
 
     if !isnothing(memo_max_height)
-        forget_list = Vector{SyntaxTree}()
+        forget_list = Vector{SyntaxBranch}()
     end
 
     fr = frame(i)

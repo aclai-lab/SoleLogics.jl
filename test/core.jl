@@ -58,30 +58,30 @@ alphabet_mixed = AlphabetOfAny{Union{String,Number}}()
 @test Atom(1.0) in AlphabetOfAny{Number}()
 @test !(Atom(1) in AlphabetOfAny{String}())
 
-@test_nowarn convert(SyntaxTree, p1)
-@test_nowarn SyntaxTree(p1)
-@test_broken SyntaxTree{typeof(p1)}(p1) # @Gio maybe this inappropriate call could throw a warning? Or maybe is just legal such as SyntaxTree(p1::Atom) dispatch (wtihtout the {typeof(p1)})
-# @Mauro You are right, I think it should error... Doesn't it? I see no constructor for SyntaxTree{T}(::AbstractLeaf). Maybe its the `Base.convert(::Type{S}, tok::AbstractLeaf) where {S<:SyntaxTree}`... Let's remove it? (cause note it does not comply with the semantics of Base.convert, cause it does not return a `SyntaxTree`)
-@test_nowarn SyntaxTree(p1)
-@test_throws AssertionError SyntaxTree(p1, ())
-@test_throws AssertionError SyntaxTree(p100, ())
+@test_nowarn convert(SyntaxBranch, p1)
+@test_nowarn SyntaxBranch(p1)
+@test_broken SyntaxBranch{typeof(p1)}(p1) # @Gio maybe this inappropriate call could throw a warning? Or maybe is just legal such as SyntaxBranch(p1::Atom) dispatch (wtihtout the {typeof(p1)})
+# @Mauro You are right, I think it should error... Doesn't it? I see no constructor for SyntaxBranch{T}(::SyntaxLeaf). Maybe its the `Base.convert(::Type{S}, tok::SyntaxLeaf) where {S<:SyntaxBranch}`... Let's remove it? (cause note it does not comply with the semantics of Base.convert, cause it does not return a `SyntaxBranch`)
+@test_nowarn SyntaxBranch(p1)
+@test_throws AssertionError SyntaxBranch(p1, ())
+@test_throws AssertionError SyntaxBranch(p100, ())
 t1_int = p1
 t100_int = p100
 @test tokenstype(t1_int) == tokentype(t1_int)
-@test_throws MethodError SyntaxTree(3, ())
+@test_throws MethodError SyntaxBranch(3, ())
 
 @test p1 in t1_int
 
-@test_nowarn SyntaxTree(¬, (p1,))
-@test_nowarn SyntaxTree(¬, p1)
-@test_nowarn SyntaxTree(¬, t1_int)
-t1n_int = @test_nowarn SyntaxTree(¬, (t1_int,))
+@test_nowarn SyntaxBranch(¬, (p1,))
+@test_nowarn SyntaxBranch(¬, p1)
+@test_nowarn SyntaxBranch(¬, t1_int)
+t1n_int = @test_nowarn SyntaxBranch(¬, (t1_int,))
 @test p1 in t1n_int
 @test (¬) in t1n_int
 @test tokenstype(t1n_int) == Union{typeof(¬),tokentype(t1_int)}
-@test_nowarn SyntaxTree(∧, (t1_int, t1n_int))
-t2_int = @test_nowarn SyntaxTree(∧, (t1_int, t1_int))
-@test tokenstype(SyntaxTree(∧, (t2_int, t1n_int))) == Union{typeof(∧),tokenstype(t1n_int)}
+@test_nowarn SyntaxBranch(∧, (t1_int, t1n_int))
+t2_int = @test_nowarn SyntaxBranch(∧, (t1_int, t1_int))
+@test tokenstype(SyntaxBranch(∧, (t2_int, t1n_int))) == Union{typeof(∧),tokenstype(t1n_int)}
 
 grammar_int = SoleLogics.CompleteFlatGrammar(alphabet_int, SoleLogics.BASE_OPERATORS)
 
@@ -127,7 +127,7 @@ t2_int = @test_nowarn ¬(t1_int)
 @test_nowarn p1 ∨ p100
 @test_nowarn ¬(p1) ∨ p1
 @test_nowarn ¬(p1) ∨ ¬(p1)
-@test_nowarn SyntaxTree(⊤)
+@test_nowarn SyntaxBranch(⊤)
 @test_nowarn ⊤ ∨ ⊤
 @test_nowarn p1 ∨ ⊤
 @test_nowarn ⊥ ∨ p1 ∨ ⊤
@@ -178,8 +178,8 @@ f_conj_int = @test_nowarn CONJUNCTION(f_int, f_int, f_int)
 @test_nowarn ∧((¬(f_int), f_int),)
 
 # @test promote_type(typeof(f_int), typeof(t2_int)) == typeof(f_int)
-# @test promote_type(AnchoredFormula, SyntaxTree) == AnchoredFormula
-# @test promote_type(SyntaxTree, AnchoredFormula) == AnchoredFormula
+# @test promote_type(AnchoredFormula, SyntaxBranch) == AnchoredFormula
+# @test promote_type(SyntaxBranch, AnchoredFormula) == AnchoredFormula
 
 @test_nowarn ∧((¬(f_int), f_int),)
 @test_nowarn ∧((¬(f_int), t2_int),)

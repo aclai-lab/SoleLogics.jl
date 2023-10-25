@@ -189,7 +189,7 @@ allworlds(X::AbstractInterpretationSet, i_instance::Integer, args...) = allworld
 nworlds(X::AbstractInterpretationSet, i_instance::Integer) = nworlds(frame(X, i_instance))
 
 function check(
-    φ::SyntaxTree{
+    φ::SyntaxBranch{
         Union{
             DiamondRelationalOperator{typeof(tocenterrel)},
             BoxRelationalOperator{typeof(tocenterrel)},
@@ -202,7 +202,7 @@ function check(
 end
 
 function check(
-    φ::SyntaxTree{
+    φ::SyntaxBranch{
         Union{
             DiamondRelationalOperator{typeof(globalrel)},
             BoxRelationalOperator{typeof(globalrel)},
@@ -216,7 +216,7 @@ end
 
 # # General grounding
 # function check(
-#     φ::SyntaxTree{
+#     φ::SyntaxBranch{
 #         Union{
 #             DiamondRelationalOperator{R},
 #             BoxRelationalOperator{R},

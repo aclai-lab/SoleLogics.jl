@@ -20,11 +20,11 @@ conjuctive normal form (CNF) or disjunctive normal form (DNF), defined as:
 # Examples
 ```julia-repl
 julia> LeftmostLinearForm(→, parseformula.(["p", "q", "r"]))
-LeftmostLinearForm{SoleLogics.NamedOperator{:→},SyntaxTree{Atom{String}}}
+LeftmostLinearForm{SoleLogics.NamedOperator{:→},SyntaxBranch{Atom{String}}}
     (p) → (q) → (r)
 
 julia> LeftmostConjunctiveForm(parseformula.(["¬p", "q", "¬r"]))
-LeftmostLinearForm{SoleLogics.NamedOperator{:∧},SyntaxTree}
+LeftmostLinearForm{SoleLogics.NamedOperator{:∧},SyntaxBranch}
     (¬(p)) ∧ (q) ∧ (¬(r))
 
 julia> LeftmostDisjunctiveForm{Literal}([Literal(false, Atom("p")), Literal(true, Atom("q")), Literal(false, Atom("r"))])
@@ -39,7 +39,7 @@ true
 
 """$(doc_lmlf)
 
-See also [`AbstractSyntaxStructure`](@ref), [`SyntaxTree`](@ref),
+See also [`AbstractSyntaxStructure`](@ref), [`SyntaxBranch`](@ref),
 [`LeftmostConjunctiveForm`](@ref), [`LeftmostDisjunctiveForm`](@ref),
 [`Literal`](@ref).
 """
@@ -91,7 +91,7 @@ struct LeftmostLinearForm{C<:Connective,SS<:AbstractSyntaxStructure} <: Abstract
     end
 
     function LeftmostLinearForm(
-        tree::SyntaxTree,
+        tree::SyntaxBranch,
         conn::Union{<:SoleLogics.Connective,Nothing} = nothing
     )
         # Check conn correctness; it should not be nothing (thus, auto inferred) if
@@ -105,11 +105,11 @@ struct LeftmostLinearForm{C<:Connective,SS<:AbstractSyntaxStructure} <: Abstract
             conn = token(tree)
         end
 
-        # Get a vector of `SyntaxTree`s, having `conn` as common ancestor, then,
+        # Get a vector of `SyntaxBranch`s, having `conn` as common ancestor, then,
         # call LeftmostLinearForm constructor.
         _children = AbstractSyntaxStructure[]
 
-        function _dig_and_retrieve(tree::SyntaxTree, conn::SoleLogics.Connective)
+        function _dig_and_retrieve(tree::SyntaxBranch, conn::SoleLogics.Connective)
             token(tree) != conn ?
             push!(_children, tree) :    # Lexical scope
             for c in children(tree)
@@ -170,16 +170,16 @@ function tree(lf::LeftmostLinearForm)
     st = begin
         if length(cs) == 0
             # No children
-            SyntaxTree(conn)
+            SyntaxBranch(conn)
         elseif length(cs) == 1
             # Only child
             tree(cs[1])
         else
-            function _tree(childs::Vector{<:SyntaxTree})
+            function _tree(childs::Vector{<:SyntaxBranch})
                 @assert (length(childs) != 0) "$(childs); $(lf); $(conn); $(a); $(cs)"
                 return length(childs) == a ?
-                    SyntaxTree(conn, childs...) :
-                    SyntaxTree(conn, childs[1:(a-1)]..., _tree(childs[a:end]))
+                    SyntaxBranch(conn, childs...) :
+                    SyntaxBranch(conn, childs[1:(a-1)]..., _tree(childs[a:end]))
             end
             _tree(tree.(children(lf)))
         end
@@ -193,9 +193,9 @@ function Base.show(io::IO, lf::LeftmostLinearForm{C,SS}) where {C,SS}
     println(io, "\t$(syntaxstring(lf))")
 end
 
-Base.promote_rule(::Type{<:LeftmostLinearForm}, ::Type{<:LeftmostLinearForm}) = SyntaxTree
-Base.promote_rule(::Type{SS}, ::Type{LF}) where {SS<:AbstractSyntaxStructure,LF<:LeftmostLinearForm} = SyntaxTree
-Base.promote_rule(::Type{LF}, ::Type{SS}) where {LF<:LeftmostLinearForm,SS<:AbstractSyntaxStructure} = SyntaxTree
+Base.promote_rule(::Type{<:LeftmostLinearForm}, ::Type{<:LeftmostLinearForm}) = SyntaxBranch
+Base.promote_rule(::Type{SS}, ::Type{LF}) where {SS<:AbstractSyntaxStructure,LF<:LeftmostLinearForm} = SyntaxBranch
+Base.promote_rule(::Type{LF}, ::Type{SS}) where {LF<:LeftmostLinearForm,SS<:AbstractSyntaxStructure} = SyntaxBranch
 
 ############################################################################################
 
@@ -233,7 +233,7 @@ prop(l::Literal) = l.prop
 
 atomstype(::Literal{T}) where {T} = T
 
-tree(l::Literal) = ispos(l) ? SyntaxTree(l.prop) : ¬(SyntaxTree(l.prop))
+tree(l::Literal) = ispos(l) ? SyntaxBranch(l.prop) : ¬(SyntaxBranch(l.prop))
 
 hasdual(l::Literal) = true
 dual(l::Literal) = Literal(!ispos(l), prop(l))
@@ -268,27 +268,27 @@ ndisjuncts(m::Union{LeftmostDisjunctiveForm,DNF}) = nchildren(m)
 
 ############################################################################################
 
-subtrees(tree::SyntaxTree) = [Iterators.flatten(_subtrees.(children(tree)))...]
-_subtrees(tree::SyntaxTree) = [tree, Iterators.flatten(_subtrees.(children(tree)))...]
+subtrees(tree::SyntaxBranch) = [Iterators.flatten(_subtrees.(children(tree)))...]
+_subtrees(tree::SyntaxBranch) = [tree, Iterators.flatten(_subtrees.(children(tree)))...]
 
 """
     treewalk(
-        st::SyntaxTree,
+        st::SyntaxBranch,
         args...;
         rng::AbstractRNG = Random.GLOBAL_RNG,
         criterion::Function = ntokens,
         toleaf::Bool = true,
         returnnode::Bool = false,
         transformnode::Function = nothing,
-    )::SyntaxTree
+    )::SyntaxBranch
 
-Return a subtree from passed SyntaxTree by following options:
+Return a subtree from passed SyntaxBranch by following options:
  - `criterion`: function used to calculate the probability of stopping at a random node;
  - `returnnode`: true if only the subtree is to be returned;
  - `transformnode`: function that will be applied to the chosen subtree.
 """
 function treewalk(
-    st::SyntaxTree,
+    st::SyntaxBranch,
     args...;
     rng::AbstractRNG = Random.GLOBAL_RNG,
     criterion::Function = c->true,
@@ -322,7 +322,7 @@ function treewalk(
                     returnnode=returnnode,
                     transformnode=transformnode,
                 ) :
-                SyntaxTree(
+                SyntaxBranch(
                     token(st),
                     (
                         chs[1:(idx_randnode-1)]...,
@@ -362,18 +362,18 @@ julia> syntaxstring.(SoleLogics.subformulas(parsebaseformula("◊((p∧q)→r)")
 ```
 
 See also
-[`SyntaxTree`](@ref)), [`Formula`](@ref).
+[`SyntaxBranch`](@ref)), [`Formula`](@ref).
 """
 subformulas(f::Formula, args...; kwargs...) = subformulas(tree(f), args...; kwargs...)
-function subformulas(t::SyntaxTree; sorted=true)
-    # function _subformulas(_t::SyntaxTree)
-    #     SyntaxTree[
-    #         (map(SyntaxTree, Iterators.flatten(subformulas.(children(_t)))))...,
-    #         SyntaxTree(_t)
+function subformulas(t::SyntaxBranch; sorted=true)
+    # function _subformulas(_t::SyntaxBranch)
+    #     SyntaxBranch[
+    #         (map(SyntaxBranch, Iterators.flatten(subformulas.(children(_t)))))...,
+    #         SyntaxBranch(_t)
     #     ]
     # end
-    function _subformulas(_t::SyntaxTree)
-        SyntaxTree[
+    function _subformulas(_t::SyntaxBranch)
+        SyntaxBranch[
             (Iterators.flatten(subformulas.(children(_t))))...,
             _t
         ]
@@ -431,11 +431,11 @@ julia> syntaxstring(SoleLogics.normalize(f; profile = :readability, allow_atom_f
 ```
 
 See also
-[`SyntaxTree`](@ref)), [`Formula`](@ref).
+[`SyntaxBranch`](@ref)), [`Formula`](@ref).
 """
 normalize(f::Formula, args...; kwargs...) = normalize(tree(f), args...; kwargs...)
 function normalize(
-    t::SyntaxTree;
+    t::SyntaxBranch;
     profile = :readability,
     remove_boxes = nothing,
     reduce_negations = nothing,
@@ -515,7 +515,7 @@ function normalize(
                 ∧(_normalize(grandchildren[1]), _normalize(¬(grandchildren[2])))
             elseif reduce_negations && chtok isa Atom
                 if allow_atom_flipping && hasdual(chtok)
-                    SyntaxTree(dual(chtok))
+                    SyntaxBranch(dual(chtok))
                 else
                     ¬(_normalize(child))
                 end
@@ -534,16 +534,16 @@ function normalize(
                 dual_op(_normalize(¬(grandchildren[1])))
                 # end
             elseif (reduce_negations || simplify_constants) && chtok == ⊤ && arity(chtok) == 1
-                SyntaxTree(⊥)
+                SyntaxBranch(⊥)
             elseif (reduce_negations || simplify_constants) && chtok == ⊥ && arity(chtok) == 1
-                SyntaxTree(⊤)
+                SyntaxBranch(⊤)
             elseif !forced_negation_removal
-                SyntaxTree(tok, _normalize.(ch))
+                SyntaxBranch(tok, _normalize.(ch))
             else
                 error("Unknown chtok when removing negations: $(chtok) (type = $(typeof(chtok)))")
             end
         else
-            SyntaxTree(tok, _normalize.(ch))
+            SyntaxBranch(tok, _normalize.(ch))
         end
     end
 
@@ -554,35 +554,35 @@ function normalize(
             if (tok == ∨) && arity(tok) == 2
                 if     token(ch[1]) == ⊥  ch[2]          # ⊥ ∨ φ ≡ φ
                 elseif token(ch[2]) == ⊥  ch[1]          # φ ∨ ⊥ ≡ φ
-                elseif token(ch[1]) == ⊤  SyntaxTree(⊤)  # ⊤ ∨ φ ≡ ⊤
-                elseif token(ch[2]) == ⊤  SyntaxTree(⊤)  # φ ∨ ⊤ ≡ ⊤
+                elseif token(ch[1]) == ⊤  SyntaxBranch(⊤)  # ⊤ ∨ φ ≡ ⊤
+                elseif token(ch[2]) == ⊤  SyntaxBranch(⊤)  # φ ∨ ⊤ ≡ ⊤
                 else                      newt
                 end
             elseif (tok == ∧) && arity(tok) == 2
-                if     token(ch[1]) == ⊥  SyntaxTree(⊥)  # ⊥ ∧ φ ≡ ⊥
-                elseif token(ch[2]) == ⊥  SyntaxTree(⊥)  # φ ∧ ⊥ ≡ ⊥
+                if     token(ch[1]) == ⊥  SyntaxBranch(⊥)  # ⊥ ∧ φ ≡ ⊥
+                elseif token(ch[2]) == ⊥  SyntaxBranch(⊥)  # φ ∧ ⊥ ≡ ⊥
                 elseif token(ch[1]) == ⊤  ch[2]          # ⊤ ∧ φ ≡ φ
                 elseif token(ch[2]) == ⊤  ch[1]          # φ ∧ ⊤ ≡ φ
                 else                      newt
                 end
             elseif (tok == →) && arity(tok) == 2
-                if     token(ch[1]) == ⊥  SyntaxTree(⊤)       # ⊥ → φ ≡ ⊤
+                if     token(ch[1]) == ⊥  SyntaxBranch(⊤)       # ⊥ → φ ≡ ⊤
                 elseif token(ch[2]) == ⊥  _normalize(¬ch[1])  # φ → ⊥ ≡ ¬φ
                 elseif token(ch[1]) == ⊤  ch[2]               # ⊤ → φ ≡ φ
-                elseif token(ch[2]) == ⊤  SyntaxTree(⊤)       # φ → ⊤ ≡ ⊤
-                else                      SyntaxTree(∨, _normalize(¬ch[1]), ch[2])
+                elseif token(ch[2]) == ⊤  SyntaxBranch(⊤)       # φ → ⊤ ≡ ⊤
+                else                      SyntaxBranch(∨, _normalize(¬ch[1]), ch[2])
                 end
             elseif (tok == ¬) && arity(tok) == 1
-                if     token(ch[1]) == ⊤  SyntaxTree(⊥)
-                elseif token(ch[1]) == ⊥  SyntaxTree(⊤)
+                if     token(ch[1]) == ⊤  SyntaxBranch(⊥)
+                elseif token(ch[1]) == ⊥  SyntaxBranch(⊤)
                 else                      newt
                 end
             elseif SoleLogics.isbox(tok) && arity(tok) == 1
-                if     token(ch[1]) == ⊤  SyntaxTree(⊤)
+                if     token(ch[1]) == ⊤  SyntaxBranch(⊤)
                 else                      newt
                 end
             elseif SoleLogics.isdiamond(tok) && arity(tok) == 1
-                if     token(ch[1]) == ⊥  SyntaxTree(⊥)
+                if     token(ch[1]) == ⊥  SyntaxBranch(⊥)
                 else                      newt
                 end
             else
@@ -612,7 +612,7 @@ function normalize(
         end
     end
 
-    function _isless(st1::SyntaxTree, st2::SyntaxTree)
+    function _isless(st1::SyntaxBranch, st2::SyntaxBranch)
         isless(Base.hash(st1), Base.hash(st2))
     end
 
@@ -628,7 +628,7 @@ function normalize(
                 end
                 tree(LeftmostLinearForm(tok, ch))
             else
-                SyntaxTree(tok, ch)
+                SyntaxBranch(tok, ch)
             end
         end
     end
@@ -655,10 +655,10 @@ true
 ```
 
 See also
-[`isgrounding`](@ref)), [`SyntaxTree`](@ref)), [`Formula`](@ref).
+[`isgrounding`](@ref)), [`SyntaxBranch`](@ref)), [`Formula`](@ref).
 """
 isgrounded(f::Formula) = isgrounded(tree(f))
-function isgrounded(t::SyntaxTree)::Bool
+function isgrounded(t::SyntaxBranch)::Bool
     # (println(token(t)); println(children(t)); true) &&
     return (token(t) isa SoleLogics.AbstractRelationalOperator && isgrounding(relation(token(t)))) ||
     # (token(t) in [◊,□]) ||

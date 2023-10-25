@@ -15,13 +15,13 @@ include("utils.jl")
 export iscrisp, isfinite, isnullary, isunary, isbinary
 
 export Syntactical,
-    Formula, AbstractSyntaxStructure, AbstractLeaf, AbstractComposite
+    Formula, AbstractSyntaxStructure, SyntaxLeaf, AbstractComposite
 
 export AlphabetOfAny, ExplicitAlphabet
 
 export Operator, SyntaxToken
 
-export Atom, SyntaxTree, Truth
+export Atom, SyntaxBranch, Truth
 export Top, TOP, ⊤
 export Bot, BOT, ⊥
 export BooleanTruth

@@ -14,7 +14,7 @@ const SL = SoleLogics # SL.name to reference unexported names
     Syntactical
     ├── Formula
     │   ├── AbstractSyntaxStructure
-    │   │   ├── AbstractLeaf
+    │   │   ├── SyntaxLeaf
     │   │   │   ├── Atom
     │   │   │   └── Truth
     │   │   │       ├── BooleanTruth
@@ -22,7 +22,7 @@ const SL = SoleLogics # SL.name to reference unexported names
     │   │   │       │   └── Bot
     │   │   │       └── ...
     │   │   └── AbstractComposite
-    │   │       ├── SyntaxTree
+    │   │       ├── SyntaxBranch
     │   │       ├── LeftmostLinearForm
     │   │       └── ...
     │   └── AbstractMemoFormula
@@ -36,7 +36,7 @@ const SL = SoleLogics # SL.name to reference unexported names
 
     Also:
     const Operator = Union{Connective,Truth}
-    const SyntaxToken = Union{Connective,AbstractLeaf}
+    const SyntaxToken = Union{Connective,SyntaxLeaf}
 =#
 
 # Declaration section
@@ -47,13 +47,13 @@ r = Atom("r")
 m = Atom(1)
 n = Atom(2)
 
-pandq               = SyntaxTree(CONJUNCTION, (p,q))
+pandq               = SyntaxBranch(CONJUNCTION, (p,q))
 pandq_demorgan      = DISJUNCTION(p |> NEGATION, q |> NEGATION) |> NEGATION
-qandp               = SyntaxTree(CONJUNCTION, (q,p))
-pandr               = SyntaxTree(CONJUNCTION, (p,r))
-porq                = SyntaxTree(DISJUNCTION, (p,q))
-norm                = SyntaxTree(DISJUNCTION, (m,n))
-trees_implication   = SyntaxTree(IMPLICATION, (pandq, porq))
+qandp               = SyntaxBranch(CONJUNCTION, (q,p))
+pandr               = SyntaxBranch(CONJUNCTION, (p,r))
+porq                = SyntaxBranch(DISJUNCTION, (p,q))
+norm                = SyntaxBranch(DISJUNCTION, (m,n))
+trees_implication   = SyntaxBranch(IMPLICATION, (pandq, porq))
 
 interp1             = TruthDict([p => TOP, q => TOP])
 interp2             = TruthDict(1:4, BOT)
@@ -62,8 +62,8 @@ interp2             = TruthDict(1:4, BOT)
 
 @test Formula           <: Syntactical
 @test AbstractSyntaxStructure   <: Formula
-@test AbstractLeaf              <: AbstractSyntaxStructure
-@test Truth                     <: AbstractLeaf
+@test SyntaxLeaf              <: AbstractSyntaxStructure
+@test Truth                     <: SyntaxLeaf
 
 @test TOP               isa Truth
 @test TOP               isa BooleanTruth
@@ -76,10 +76,10 @@ interp2             = TruthDict(1:4, BOT)
 @test Connective        <: Operator
 @test Truth             <: Operator
 @test Connective        <: SyntaxToken
-@test AbstractLeaf      <: SyntaxToken
+@test SyntaxLeaf      <: SyntaxToken
 
 @test AbstractComposite <: AbstractSyntaxStructure
-@test SyntaxTree        <: AbstractComposite
+@test SyntaxBranch        <: AbstractComposite
 
 @test NEGATION          isa NamedConnective
 @test CONJUNCTION       isa NamedConnective
@@ -139,7 +139,7 @@ interp2             = TruthDict(1:4, BOT)
 @test trees_implication |> children |> first == pandq
 @test trees_implication |> children |> last  == porq
 
-@test norm |> children |> first                     == SyntaxTree(m)
+@test norm |> children |> first                     == SyntaxBranch(m)
 @test norm |> children |> first |> token            == m
 @test norm |> children |> first |> token |> value   == value(m)
 

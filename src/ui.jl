@@ -53,7 +53,7 @@ julia> @synexpr st = p ∧ q → r
 (p ∧ q) → r
 
 julia> typeof(st)
-SyntaxTree{SoleLogics.NamedConnective{:→}}
+SyntaxBranch{SoleLogics.NamedConnective{:→}}
 ```
 """
 macro synexpr(expression)

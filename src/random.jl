@@ -199,16 +199,16 @@ doc_randformula = """
         alphabet,
         operators::AbstractVector{<:Operator};
         rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG
-    )::SyntaxTree
+    )::SyntaxBranch
 
     # TODO @Mauro implement this method.
     function randformula(
         height::Integer,
         g::AbstractGrammar;
         rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG
-    )::SyntaxTree
+    )::SyntaxBranch
 
-Return a pseudo-randomic `SyntaxTree`.
+Return a pseudo-randomic `SyntaxBranch`.
 
 # Arguments
 - `height::Integer`: height of the generated structure;
@@ -230,7 +230,7 @@ julia> syntaxstring(randformula(4, ExplicitAlphabet([1,2]), [NEGATION, CONJUNCTI
 "¬((¬(¬(2))) → ((1 → 2) → (1 → 2)))"
 ```
 
-See also [`AbstractAlphabet`](@ref), [`SyntaxTree`](@ref).
+See also [`AbstractAlphabet`](@ref), [`SyntaxBranch`](@ref).
 """
 
 """$(doc_randformula)"""
@@ -242,7 +242,7 @@ function randformula(
     rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG,
     picker::Function = rand,
     opweights::Union{AbstractWeights,AbstractVector{<:Real},Nothing} = nothing
-)::SyntaxTree
+)::SyntaxBranch
     alphabet = convert(AbstractAlphabet, alphabet)
     initrng(rng)
 
@@ -262,10 +262,10 @@ function randformula(
         rng::AbstractRNG,
         height::Integer,
         modaldepth::Integer
-    )::SyntaxTree
+    )::SyntaxBranch
         if height == 0
             # Sample atom from alphabet
-            return SyntaxTree(picker(rng, atoms(alphabet)))
+            return SyntaxBranch(picker(rng, atoms(alphabet)))
         else
             # Sample operator and generate children (modal operators only if modaldepth > 0)
             ops, ops_w = begin
@@ -281,7 +281,7 @@ function randformula(
             ch = Tuple([
                     _randformula(rng, height-1, modaldepth-(ismodal(op) ? 1 : 0))
                     for _ in 1:arity(op)])
-            return SyntaxTree(op, ch)
+            return SyntaxBranch(op, ch)
         end
     end
 
@@ -300,7 +300,7 @@ function randformula(
     args...;
     rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG,
     kwargs...
-)::SyntaxTree
+)::SyntaxBranch
     randbaseformula(height, alphabet(g), operator(g), args...; rng=rng, kwargs...)
 end
 

@@ -32,7 +32,7 @@ using SoleLogics
 ```julia
 julia> φ1 = parseformula("¬p∧q∧(¬s∧¬z)");
 
-julia> φ1 isa SyntaxTree
+julia> φ1 isa SyntaxBranch
 true
 
 julia> syntaxstring(φ1)
@@ -40,7 +40,7 @@ julia> syntaxstring(φ1)
 
 julia> φ2 = ⊥ ∨ Atom("t") → φ1;
 
-julia> φ2 isa SyntaxTree
+julia> φ2 isa SyntaxBranch
 true
 
 julia> syntaxstring(φ2)
@@ -65,7 +65,7 @@ julia> SoleLogics.BASE_PROPOSITIONAL_OPERATORS
  →
 
 julia> randformula(Random.MersenneTwister(507), height, alphabet, SoleLogics.BASE_PROPOSITIONAL_OPERATORS)
-SyntaxTree: ¬(q → p)
+SyntaxBranch: ¬(q → p)
 
 # Modal case
 julia> SoleLogics.BASE_MODAL_OPERATORS
@@ -78,7 +78,7 @@ julia> SoleLogics.BASE_MODAL_OPERATORS
  □
 
 julia> randformula(Random.MersenneTwister(14), height, alphabet, SoleLogics.BASE_MODAL_OPERATORS)
-SyntaxTree: ¬□p
+SyntaxBranch: ¬□p
 ```
 
 ### Model checking
@@ -86,7 +86,7 @@ SyntaxTree: ¬□p
 ```julia
 # Propositional case
 julia> phi = parseformula("¬(p ∧ q)")
-SyntaxTree: ¬(p ∧ q)
+SyntaxBranch: ¬(p ∧ q)
 
 julia> I = TruthDict(["p" => true, "q" => false])
 ┌────────┬────────┐

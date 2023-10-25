@@ -19,7 +19,7 @@ arity
 Atom
 Truth
 Connective
-SyntaxTree
+SyntaxBranch
 ```
 
 Let's review these concepts with a simple example.
@@ -38,17 +38,17 @@ julia> value(p)
 julia> CONJUNCTION
 ∧
 
-# SyntaxTree's are arity-compliant
-julia> st = SyntaxTree(CONJUNCTION, p)
-ERROR: AssertionError: Cannot instantiate SyntaxTree{SoleLogics.NamedOperator{:∧}} 
+# SyntaxBranch's are arity-compliant
+julia> st = SyntaxBranch(CONJUNCTION, p)
+ERROR: AssertionError: Cannot instantiate SyntaxBranch{SoleLogics.NamedOperator{:∧}} 
 with token ∧ of arity 2 and 1 children.
 
 # In fact, the conjunction operator in a syntax tree must have exactly 2 children 
 julia> arity(CONJUNCTION)
 2
 
-julia> stree = SyntaxTree(CONJUNCTION, (p,q))
-SyntaxTree: p ∧ q
+julia> stree = SyntaxBranch(CONJUNCTION, (p,q))
+SyntaxBranch: p ∧ q
 
 # Get the token of the root node
 julia> token(st)
@@ -56,10 +56,10 @@ julia> token(st)
 
 # Get the first subtree, containing only an atom
 julia> leftree = children(st)[1]; 
-SyntaxTree: p
+SyntaxBranch: p
 
 julia> typeof(leftree)
-SyntaxTree{Atom{String}}
+SyntaxBranch{Atom{String}}
 
 # Atoms are necessarily at the leaves; in fact their arity is 0
 julia> leftree |> token |> arity
@@ -106,7 +106,7 @@ Formula
 ```@docs
 joinformulas
 tokens(::Formula)
-SoleLogics.height(::SyntaxTree)
+SoleLogics.height(::SyntaxBranch)
 SoleLogics.tree(::Formula)
 ```
 
@@ -143,7 +143,7 @@ AlphabetOfAny
 
 AbstractGrammar
 alphabet(g::AbstractGrammar{A} where {A})
-Base.in(t::SyntaxTree, g::AbstractGrammar)
+Base.in(t::SyntaxBranch, g::AbstractGrammar)
 formulas(g::AbstractGrammar; maxdepth::Integer, nformulas::Union{Nothing,Integer} = nothing, args...)
 
 CompleteFlatGrammar{A<:AbstractAlphabet,O<:Operator}

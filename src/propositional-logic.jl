@@ -125,7 +125,7 @@ end
 # TODO: get inspiration from PAndQ package and write interpret function.
 # TODO: change collatetruth name (concepts are "unite and simplify")
 function interpret(
-    tree::SyntaxTree,
+    tree::SyntaxBranch,
     i::AbstractAssignment,
     args...;
     kwargs...

@@ -42,7 +42,7 @@ julia> @assert ◊ isa operatorstype(logic(f2))
 ```
 
 See also [`AbstractLogic`](@ref), [`logic`](@ref), [`SyntaxToken`](@ref),
-[`SyntaxTree`](@ref), [`tree`](@ref).
+[`SyntaxBranch`](@ref), [`tree`](@ref).
 """
 struct AnchoredFormula{L<:AbstractLogic} <: Formula
     _logic::Base.RefValue{L}
@@ -85,7 +85,7 @@ struct AnchoredFormula{L<:AbstractLogic} <: Formula
     #     tokt::Union{SyntaxToken,AbstractSyntaxStructure};
     #     kwargs...
     # ) where {L<:AbstractLogic}
-    #     t = convert(SyntaxTree, tokt)
+    #     t = convert(SyntaxBranch, tokt)
     #     return AnchoredFormula{L,typeof(t)}(l, t; kwargs...)
     # end
 
@@ -135,7 +135,7 @@ function Base._promote(x::AnchoredFormula, y::AbstractSyntaxStructure)
 end
 
 function Base._promote(x::AnchoredFormula, y::SyntaxToken)
-    Base._promote(x, Base.convert(SyntaxTree, y))
+    Base._promote(x, Base.convert(SyntaxBranch, y))
 end
 Base._promote(x::Union{SyntaxToken,AbstractSyntaxStructure}, y::AnchoredFormula) = reverse(Base._promote(y, x))
 
@@ -191,7 +191,7 @@ function baseformula(
     additional_operators::Union{Nothing,Vector{<:Operator}} = nothing,
     kwargs...,
 )
-    t = convert(SyntaxTree, tokf)
+    t = convert(SyntaxBranch, tokf)
 
     ops = isnothing(additional_operators) ? SoleLogics.operators(t) : additional_operators
     # operators = unique([additional_operators..., ops...])
@@ -329,7 +329,7 @@ function randbaseformula(
     picker = rand,
     weights = Union{AbstractWeights, Nothing},
     kwargs...
-)::SyntaxTree
+)::SyntaxBranch
     return error("TODO: implement this")
 end
 
@@ -339,6 +339,6 @@ function randbaseformula(
     args...;
     rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG,
     kwargs...
-)::SyntaxTree
+)::SyntaxBranch
     randbaseformula(height, alphabet(g), operator(g), args...; rng=rng, kwargs...)
 end

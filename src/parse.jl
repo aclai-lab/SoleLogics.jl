@@ -18,7 +18,7 @@ end
     )
 
 Parses a formula of type `F` from a string. When `F` is not specified, it defaults to
-    `SyntaxTree` and [`parsetree`](@ref) is called.
+    `SyntaxBranch` and [`parsetree`](@ref) is called.
 
 See also [`parsetree`](@ref), [`parsebaseformula`](@ref).
 """
@@ -31,7 +31,7 @@ function parseformula(
     return error("Please, provide method parseformula(::Type{$(F)}, str, ::$(typeof(args))...; ::$(typeof(kwargs))...).")
 end
 
-parseformula(str, args...; kwargs...) = parseformula(SyntaxTree, str, args...; kwargs...)
+parseformula(str, args...; kwargs...) = parseformula(SyntaxBranch, str, args...; kwargs...)
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Utils ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -301,7 +301,7 @@ end
         arg_delim::String = $(repr(DEFAULT_ARG_DELIM))
     )
 
-Return a `SyntaxTree` which is the result of parsing `expression`
+Return a `SyntaxBranch` which is the result of parsing `expression`
  via the [Shunting yard](https://en.wikipedia.org/wiki/Shunting_yard_algorithm)
  algorithm.
 By default, this function is only able to parse operators in
@@ -357,12 +357,12 @@ julia> syntaxstring(parsetree("¬1→0"; atom_parser = (x -> Atom{Float64}(parse
 "(¬1.0) → 0.0"
 ```
 
-See also [`SyntaxTree`](@ref), [`syntaxstring`](@ref), [].
+See also [`SyntaxBranch`](@ref), [`syntaxstring`](@ref), [].
 """
-parsetree(str, args...; kwargs...) = parseformula(SyntaxTree, str, args...; kwargs...)
+parsetree(str, args...; kwargs...) = parseformula(SyntaxBranch, str, args...; kwargs...)
 
 function parseformula(
-    ::Type{SyntaxTree},
+    ::Type{SyntaxBranch},
     expression::String,
     additional_operators::Union{Nothing,Vector{<:Operator}} = nothing;
     function_notation::Bool = false,
@@ -397,13 +397,13 @@ function parseformula(
     #  In other words, all special symbols (e.g. opening_parenthesis) are already filtered
     #  out and only SyntaxToken are considered.
     function _postfixbuild(postfix::Vector{<:SyntaxToken})
-        stack = Union{AbstractLeaf,SyntaxTree}[]
+        stack = SyntaxTree[]
 
         for tok in postfix
             # Stack collapses, composing a new part of the syntax tree
             if tok isa Operator
                 children = [pop!(stack) for _ in 1:arity(tok)]
-                push!(stack, SyntaxTree(tok, Tuple(reverse(children))))
+                push!(stack, SyntaxBranch(tok, Tuple(reverse(children))))
             elseif tok isa Atom
                 push!(stack, tok)
             else
@@ -433,7 +433,7 @@ function parseformula(
     # note that here, differently from the _postfixbuild case, operators associativity is
     # already covered by the function notation parenthesization.
     function _prefixbuild(prefix::Vector{STACK_TOKEN_TYPE})
-        stack = Vector{Union{SyntaxTree, STACK_TOKEN_TYPE}}()
+        stack = Vector{Union{SyntaxBranch, STACK_TOKEN_TYPE}}()
 
         for tok in reverse(prefix)
             if tok isa Symbol || tok isa Atom
@@ -442,7 +442,7 @@ function parseformula(
                 if (arity(tok) == 1 && stack[end] isa
                     Union{SyntaxToken, AbstractSyntaxStructure})
                     # If operator arity is 1, then what follows could be a single AST
-                    newtok = SyntaxTree(tok, stack[end])
+                    newtok = SyntaxBranch(tok, stack[end])
                     pop!(stack)
                     push!(stack, newtok)
                 elseif (length(stack) >= (1 + 2*arity(tok)))
@@ -476,7 +476,7 @@ function parseformula(
                         popped[end] == closing_parenthesis &&
                         length(children) == arity(tok) &&
                         length(delims) == arity(tok) - 1)
-                        push!(stack, SyntaxTree(tok, Tuple(children)))
+                        push!(stack, SyntaxBranch(tok, Tuple(children)))
                     else
                         error("Malformed expression `$(syntaxstring(tok))` followed by `" *
                         "$(popped)`.")
@@ -512,7 +512,7 @@ function parseformula(
 end
 
 function parseformula(
-    F::Type{SyntaxTree},
+    F::Type{SyntaxBranch},
     expression::String,
     logic::AbstractLogic;
     kwargs...
