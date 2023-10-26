@@ -32,6 +32,10 @@ import Base: eltype, in, getindex, isiterable, iterate, IteratorSize, length, is
     const SyntaxToken = Union{Connective,SyntaxLeaf}
 =#
 
+############################################################################################
+############################## Fundamental types section ###################################
+############################################################################################
+
 """
     abstract type Syntactical end;
 
@@ -156,7 +160,25 @@ See also [`SyntaxTree`](@ref), [`SyntaxLeaf`](@ref), [`Connective`](@ref).
 """
 const SyntaxToken = Union{Connective,SyntaxLeaf}
 
-#########################
+############################################################################################
+################################### Base methods ###########################################
+############################################################################################
+
+"""
+    tree(f::AbstractSyntaxStructure)::SyntaxTree
+
+Extract the `SyntaxBranch` representation of a formula
+(equivalent to `Base.convert(SyntaxBranch, f)`).
+
+See also [`AbstractSyntaxStructure`](@ref), [`SyntaxBranch`](@ref).
+"""
+function tree(f::AbstractSyntaxStructure)::SyntaxTree
+    return error("Please, provide method tree(::$(typeof(f)))::SyntaxTree.")
+end
+
+Base.convert(::Type{SyntaxTree}, f::AbstractSyntaxStructure) = tree(f)
+
+tree(t::SyntaxTree) = t
 
 """
     arity(tok::Connective)::Integer
@@ -187,9 +209,6 @@ Duality can be used to perform synctactic simplifications on formulas.
 For example, since `∧` and `∨` are `dual`s, `¬(¬p ∧ ¬q)` can be simplified to `(p ∧ q)`.
 Duality also applies to `Truth` values (`⊤`/`⊥`), with existential/universal
 semantics (`◊`/`□`), and `Atom`s.
-
-NOTE: @typeHierarchyUpdate SyntaxToken type:
-    keep it or substitute it by writing explicitly Union{Connective,Truth}?
 
 # Implementation
 
@@ -286,7 +305,7 @@ syntaxstring(value; kwargs...) = string(value)
 # syntaxstring(value::Union{AbstractString,Number,AbstractChar}; kwargs...) = string(value)
 
 ############################################################################################
-############################################################################################
+################################### Atom section ###########################################
 ############################################################################################
 
 """
@@ -350,6 +369,8 @@ function dual(value)
         "SoleLogics.dual(::$(typeof(value))).")
 end
 
+############################################################################################
+################################ Connective section ########################################
 ############################################################################################
 
 doc_iscommutative = """
@@ -576,6 +597,9 @@ function syntaxstring(φ::Formula; kwargs...)
     syntaxstring(tree(φ); kwargs...)
 end
 
+############################################################################################
+######################### AbstractSyntaxStructure interfaces ###############################
+############################################################################################
 
 doc_tokopprop = """
     tokens(f::AbstractSyntaxStructure)::AbstractVector{<:SyntaxToken}
@@ -656,6 +680,8 @@ Base.promote_rule(
 ) where {SS<:AbstractSyntaxStructure} = SS
 =#
 
+############################################################################################
+############################### SyntaxBranch section #######################################
 ############################################################################################
 
 """
@@ -1013,6 +1039,10 @@ function Base.isequal(a::SyntaxBranch, b::SyntaxBranch)
 end
 Base.hash(a::SyntaxBranch) = Base.hash(syntaxstring(a))
 
+############################################################################################
+########################### More on SyntaxBranch interfaces ################################
+############################################################################################
+
 # Refer to syntaxstring(tok::SyntaxToken; kwargs...) for documentation
 function syntaxstring(
     t::SyntaxBranch;
@@ -1096,22 +1126,8 @@ Base.promote_rule(::Type{S}, ::Type{<:AbstractSyntaxStructure}) where {S<:Syntax
 Base.convert(::Type{S}, tok::SyntaxLeaf) where {S<:SyntaxBranch} = S(tok)
 Base.convert(::Type{AbstractSyntaxStructure}, tok::SyntaxLeaf) = SyntaxBranch(tok)
 
-"""
-    tree(f::AbstractSyntaxStructure)::SyntaxTree
-
-Extract the `SyntaxBranch` representation of a formula
-(equivalent to `Base.convert(SyntaxBranch, f)`).
-
-See also [`AbstractSyntaxStructure`](@ref), [`SyntaxBranch`](@ref).
-"""
-function tree(f::AbstractSyntaxStructure)::SyntaxTree
-    return error("Please, provide method tree(::$(typeof(f)))::SyntaxTree.")
-end
-
-Base.convert(::Type{SyntaxTree}, f::AbstractSyntaxStructure) = tree(f)
-
-tree(t::SyntaxTree) = t
-
+############################################################################################
+############################# AbstractAlphabet section #####################################
 ############################################################################################
 
 """
@@ -1296,6 +1312,8 @@ Base.isfinite(::Type{<:AlphabetOfAny}) = false
 Base.in(::Atom{PA}, ::AlphabetOfAny{AA}) where {PA,AA} = (PA <: AA)
 
 ############################################################################################
+############################### AbstractGrammar section ####################################
+############################################################################################
 
 """
     abstract type AbstractGrammar{A<:AbstractAlphabet,O<:Operator} end
@@ -1348,7 +1366,6 @@ Base.in(op::Truth, g::AbstractGrammar) = (op <: operatorstype(g))
 function Base.in(tok::Connective, g::AbstractGrammar)
     return error("Please, provide method Base.in(::$(typeof(tok)), ::$(typeof(g))).")
 end
-
 
 """
     formulas(
@@ -1509,7 +1526,7 @@ function formulas(
     # Stop as soon as `maxdepth` is reached or `nformulas` have been generated.
     depth = 0
     cur_formulas = Vector{SyntaxTree}(
-        convert.(SyntaxBranch, leaves(g)) # @Mauro by Gio: probably `leaves(g)` is fine, without conversion..? (also: now leaves = leaves, and connectives = connectives? Maybe we should unify, by replacing the terms `leaves` and `connectives`.)
+        convert.(SyntaxBranch, leaves(g)) # @Mauro by Gio: probably `leaves(g)` is fine, without conversion..?
     )
     all_formulas = SyntaxTree[cur_formulas...]
     while depth < maxdepth && (isnothing(nformulas) || length(all_formulas) < nformulas)
@@ -1533,7 +1550,7 @@ function formulas(
 end
 
 ############################################################################################
-######################################## SEMANTICS #########################################
+########################## AbstractAlgebra - Semantics section #############################
 ############################################################################################
 
 """
@@ -1649,6 +1666,8 @@ function Base.convert(::Type{Truth}, t)::Truth
 end
 
 ############################################################################################
+############################### AbstractLogic section ######################################
+############################################################################################
 
 """
     abstract type AbstractLogic{G<:AbstractGrammar,A<:AbstractAlgebra} end
@@ -1734,6 +1753,10 @@ abstract type AbstractInterpretation{A,T<:Truth} end
 
 valuetype(::AbstractInterpretation{A,T}) where {A,T} = A
 truthtype(::AbstractInterpretation{A,T}) where {A,T} = T
+
+############################################################################################
+############################### Check & Interpret section ##################################
+############################################################################################
 
 """
     check(
@@ -1836,7 +1859,7 @@ function interpret(
 end
 
 ############################################################################################
-######################################### UTILS ############################################
+################################# Utilities section ########################################
 ############################################################################################
 
 # Formula interpretation via i[φ] -> φ
