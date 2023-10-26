@@ -44,10 +44,11 @@ abstract type Syntactical end
 
 A generic construct devoted to represent and organize a syntactical structure with specific
 properties. Examples of `Formula`s are `SyntaxLeaf`s (for example, `Atom`s and
-`Truth` values), `AbstractComposite`s (for example, `SyntaxBranch`s and `LeftmostLinearForm`s)
-and `AbstractMemoFormula`s (for example, `TruthTable`s).
+`Truth` values), `AbstractSyntaxStructure`s (for example, `SyntaxTree`s and
+`LeftmostLinearForm`s) and `AbstractMemoFormula`s (for example, `TruthTable`s).
 
-See also [`AbstractComposite`](@ref), [`SyntaxLeaf`](@ref), [`AbstractMemoFormula`](@ref).
+See also [`AbstractSyntaxStructure`](@ref), [`SyntaxLeaf`](@ref),
+[`AbstractMemoFormula`](@ref).
 """
 abstract type Formula <: Syntactical end
 
@@ -84,15 +85,6 @@ allowed to have children in tree-like syntactical structures.
 See also [`AbstractSyntaxStructure`](@ref),  [`arity`](@ref), [`SyntaxBranch`](@ref).
 """
 abstract type SyntaxLeaf <: SyntaxTree end
-
-"""
-    abstract type AbstractComposite <: AbstractSyntaxStructure end
-
-Organized composition of syntactical elements.
-
-See also [`LeftmostLinearForm`](@ref), [`SyntaxBranch`](@ref).
-"""
-abstract type AbstractComposite <: AbstractSyntaxStructure end
 
 """
     abstract type AbstractMemoFormula <: Formula end
@@ -155,12 +147,12 @@ const Operator = Union{Connective,Truth}
 """
     const SyntaxToken = Union{Connective,SyntaxLeaf}
 
-Every type from which an `AbstractComposite` can be composed.
+Every type from which an `SyntaxTree` can be composed.
 
 !!! Warning
     NOTE: @typeHierarchyUpdate SyntaxToken type might disappear soon (this is a wip).
 
-See also [`AbstractComposite`](@ref), [`SyntaxLeaf`](@ref), [`Connective`](@ref).
+See also [`SyntaxTree`](@ref), [`SyntaxLeaf`](@ref), [`Connective`](@ref).
 """
 const SyntaxToken = Union{Connective,SyntaxLeaf}
 
@@ -586,49 +578,50 @@ end
 
 
 doc_tokopprop = """
-    tokens(f::AbstractComposite)::AbstractVector{<:SyntaxToken}
-    operators(f::AbstractComposite)::AbstractVector{<:Operator}
-    atoms(f::AbstractComposite)::AbstractVector{<:Atom}
-    ntokens(f::AbstractComposite)::Integer
-    noperators(f::AbstractComposite)::Integer
-    natoms(f::AbstractComposite)::Integer
+    tokens(f::AbstractSyntaxStructure)::AbstractVector{<:SyntaxToken}
+    operators(f::AbstractSyntaxStructure)::AbstractVector{<:Operator}
+    atoms(f::AbstractSyntaxStructure)::AbstractVector{<:Atom}
+    ntokens(f::AbstractSyntaxStructure)::Integer
+    noperators(f::AbstractSyntaxStructure)::Integer
+    natoms(f::AbstractSyntaxStructure)::Integer
 
 Return the list or the number of (unique) `SyntaxToken`s appearing in a formula.
 
-See also [`AbstractComposite`](@ref), [`SyntaxToken`](@ref).
+See also [`AbstractSyntaxStructure`](@ref), [`SyntaxToken`](@ref).
 """
 
 """$(doc_tokopprop)"""
-function tokens(f::AbstractComposite)::AbstractVector{<:SyntaxToken}
+function tokens(f::AbstractSyntaxStructure)::AbstractVector{<:SyntaxToken}
     return tokens(tree(f))
 end
 """$(doc_tokopprop)"""
-function operators(f::AbstractComposite)::AbstractVector{<:Operator}
+function operators(f::AbstractSyntaxStructure)::AbstractVector{<:Operator}
     return operators(tree(f))
 end
 """$(doc_tokopprop)"""
-function atoms(f::AbstractComposite)::AbstractVector{<:Atom}
+function atoms(f::AbstractSyntaxStructure)::AbstractVector{<:Atom}
     return atoms(tree(f))
 end
 """$(doc_tokopprop)"""
-function ntokens(f::AbstractComposite)::Integer
+function ntokens(f::AbstractSyntaxStructure)::Integer
     return ntokens(tree(f))
 end
 """$(doc_tokopprop)"""
-function natoms(f::AbstractComposite)::Integer
+function natoms(f::AbstractSyntaxStructure)::Integer
     return natoms(tree(f))
 end
 """$(doc_tokopprop)"""
-function height(f::AbstractComposite)::Integer
+function height(f::AbstractSyntaxStructure)::Integer
     return height(tree(f))
 end
 
 # Helpers that make all Formula's map to the same dictionary key.
 # Useful when checking formulas on interpretations.
-function Base.isequal(a::AbstractComposite, b::AbstractComposite)
+function Base.isequal(a::AbstractSyntaxStructure, b::AbstractSyntaxStructure)
     Base.isequal(tree(a), tree(b))
 end
-Base.hash(a::AbstractComposite) = Base.hash(tree(a))
+
+# Base.hash(a::AbstractSyntaxStructure) = Base.hash(tree(a)) # TODO: fix this, since this definition now gives a StackOverflow
 
 #= NOTE: this could be useful
 Base.promote_rule(
@@ -770,11 +763,40 @@ See also [`atoms`](@ref), [`ntokens`](@ref), [`operators`](@ref), [`SyntaxToken`
 function tokens(t::SyntaxBranch)::AbstractVector{SyntaxToken}
     return SyntaxToken[vcat(tokens.(children(t))...)..., token(t)]
 end
+tokens(t::SyntaxLeaf) = t
 
-# Helpers. TODO Remove?
-tokens(t::SyntaxLeaf) = [t]
+"""
+    connectives(t::SyntaxTree)::AbstractVector{Connective}
 
-# TODO also `connectives` and `leaves`
+List all connectives appearing in a syntax tree.
+
+See also [`atoms`](@ref), [`Connective`](@ref), [`nconnectives`](@ref).
+"""
+function connectives(t::SyntaxTree)::AbstractVector{Connective}
+    error("Unexpected syntax tree (type = $(typeof(t)))")
+end
+
+function connectives(t::SyntaxBranch)::AbstractVector{Connective}
+    c = token(t) isa Connective ? [token(t)] : []
+    return Connective[vcat(connectives.(children(t))...)..., c...]
+end
+connectives(t::SyntaxLeaf) = []
+
+"""
+    leaves(t::SyntaxTree)::AbstractVector{Operator}
+
+List all leaves appearing in a syntax tree.
+
+See also  [`atoms`](@ref), [`nleaves`](@ref), [`SyntaxLeaf`](@ref),.
+"""
+function leaves(t::SyntaxTree)::AbstractVector{SyntaxLeaf}
+    error("Unexpected syntax tree (type = $(typeof(t)))")
+end
+
+function leaves(t::SyntaxBranch)::AbstractVector{SyntaxLeaf}
+    return SyntaxLeaf[vcat(leaves.(children(t))...)...]
+end
+leaves(l::SyntaxLeaf) = l
 
 """
     operators(t::SyntaxTree)::AbstractVector{Operator}
@@ -806,8 +828,7 @@ function atoms(t::SyntaxTree)::AbstractVector{Atom}
 end
 
 function atoms(t::SyntaxBranch)
-    ps = token(t) isa Atom ? Atom[token(t)] : Atom[]
-    return Atom[vcat(atoms.(children(t))...)..., ps...] |> unique
+    return Atom[vcat(atoms.(children(t))...)...] |> unique
 end
 atoms(t::Truth) = Atom[]
 atoms(t::Atom) = [t]
