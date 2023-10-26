@@ -902,7 +902,7 @@ function syntaxstring(
     # Parenthesization rules for binary operators in infix notation
     function _binary_infix_syntaxstring(
         tok::SyntaxToken,
-        ch::SyntaxTree
+        ch::Union{SyntaxBranch,SyntaxLeaf}
     )
         chtok = token(ch)
         chtokstring = syntaxstring(ch; ch_kwargs...)
