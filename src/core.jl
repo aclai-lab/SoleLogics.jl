@@ -580,10 +580,16 @@ end
 doc_tokopprop = """
     tokens(f::AbstractSyntaxStructure)::AbstractVector{<:SyntaxToken}
     operators(f::AbstractSyntaxStructure)::AbstractVector{<:Operator}
+    connectives(f::AbstractSyntaxStructure)::AbstractVector{<:Connective}
+    leaves(f::AbstractSyntaxStructure)::AbstractVector{<:AbstractLeaf}
     atoms(f::AbstractSyntaxStructure)::AbstractVector{<:Atom}
+    truths(f::AbstractSyntaxStructure)::AbstractVector{<:Truth}
     ntokens(f::AbstractSyntaxStructure)::Integer
     noperators(f::AbstractSyntaxStructure)::Integer
+    nconnectives(f::AbstractSyntaxStructure)::Integer
+    nleaves(f::AbstractSyntaxStructure)::Integer
     natoms(f::AbstractSyntaxStructure)::Integer
+    ntruths(f::AbstractSyntaxStructure)::Integer
 
 Return the list or the number of (unique) `SyntaxToken`s appearing in a formula.
 
@@ -599,8 +605,20 @@ function operators(f::AbstractSyntaxStructure)::AbstractVector{<:Operator}
     return operators(tree(f))
 end
 """$(doc_tokopprop)"""
+function connectives(f::AbstractSyntaxStructure)::AbstractVector{<:Connective}
+    return connectives(tree(f))
+end
+"""$(doc_tokopprop)"""
+function leaves(f::AbstractSyntaxStructure)::AbstractVector{<:AbstractLeaf}
+    return leaves(tree(f))
+end
+"""$(doc_tokopprop)"""
 function atoms(f::AbstractSyntaxStructure)::AbstractVector{<:Atom}
     return atoms(tree(f))
+end
+"""$(doc_tokopprop)"""
+function truths(f::AbstractSyntaxStructure)::AbstractVector{<:Truth}
+    return truths(tree(f))
 end
 """$(doc_tokopprop)"""
 function ntokens(f::AbstractSyntaxStructure)::Integer
@@ -609,6 +627,9 @@ end
 """$(doc_tokopprop)"""
 function natoms(f::AbstractSyntaxStructure)::Integer
     return natoms(tree(f))
+end
+function nleaves(f::AbstractSyntaxStructure)::Integer
+    return nleaves(tree(f));
 end
 """$(doc_tokopprop)"""
 function height(f::AbstractSyntaxStructure)::Integer
@@ -713,19 +734,8 @@ function SyntaxBranch(token::T, children...) where {T<:Connective}
     return SyntaxBranch(token, children)
 end
 
-# Getters
-token(t::SyntaxBranch) = t.token
-token(t::SyntaxLeaf) = t
-
 children(t::SyntaxBranch) = t.children
 children(::SyntaxLeaf) = ()
-
-tokentype(::SyntaxBranch{T}) where {T} = T
-tokentype(::T) where {T <: SyntaxLeaf} = T
-
-tokenstype(t::SyntaxBranch) = Union{tokentype(t),tokenstype.(children(t))...}
-operatorstype(t::SyntaxBranch) = typeintersect(Operator, tokenstype(t))
-atomstype(t::SyntaxBranch) = typeintersect(Atom, tokenstype(t))
 
 function joinformulas(
     op::Connective,
@@ -754,6 +764,21 @@ function Base.in(tok::SyntaxToken, tree::SyntaxBranch)
 end
 
 """
+    token(t::SyntaxBranch)::SyntaxToken
+
+Getter for the token wrapped in a `SyntaxBranch`.
+
+See also [`SyntaxBranch`](@ref).
+"""
+token(t::SyntaxBranch) = t.token
+token(t::SyntaxLeaf) = t
+
+tokentype(::SyntaxBranch{T}) where {T} = T
+tokentype(::T) where {T <: SyntaxLeaf} = T
+
+tokenstype(t::SyntaxBranch) = Union{tokentype(t),tokenstype.(children(t))...}
+
+"""
     tokens(t::SyntaxBranch)::AbstractVector{SyntaxToken}
 
 List all tokens appearing in a syntax tree.
@@ -764,6 +789,33 @@ function tokens(t::SyntaxBranch)::AbstractVector{SyntaxToken}
     return SyntaxToken[vcat(tokens.(children(t))...)..., token(t)]
 end
 tokens(t::SyntaxLeaf) = t
+
+"""
+    operators(t::SyntaxTree)::AbstractVector{Operator}
+
+List all operators appearing in a syntax tree.
+
+See also [`atoms`](@ref), [`noperators`](@ref), [`Operator`](@ref), [`tokens`](@ref).
+"""
+function operators(t::SyntaxTree)::AbstractVector{Operator}
+    error("Unexpected syntax tree (type = $(typeof(t)))")
+end
+
+function operators(t::SyntaxBranch)::AbstractVector{Operator}
+    c = token(t) isa Operator ? [token(t)] : []
+    return Operator[vcat(operators.(children(t))...)..., c...]
+end
+operators(t::Truth) = Operator[t]
+operators(::Atom) = []
+
+"""
+    operatorstype(t::SyntaxBranch)
+
+Return all the different `Operator` types contained in the `SyntaxTree` rooted at `t`.
+
+See also [`Operator`](@ref), [`SyntaxBranch`](@ref), [`SyntaxTree`](@ref).
+"""
+operatorstype(t::SyntaxBranch) = typeintersect(Operator, tokenstype(t))
 
 """
     connectives(t::SyntaxTree)::AbstractVector{Connective}
@@ -799,29 +851,11 @@ end
 leaves(l::SyntaxLeaf) = l
 
 """
-    operators(t::SyntaxTree)::AbstractVector{Operator}
-
-List all operators appearing in a syntax tree.
-
-See also [`atoms`](@ref), [`noperators`](@ref), [`Operator`](@ref), [`tokens`](@ref).
-"""
-function operators(t::SyntaxTree)::AbstractVector{Operator}
-    error("Unexpected syntax tree (type = $(typeof(t)))")
-end
-
-function operators(t::SyntaxBranch)::AbstractVector{Operator}
-    c = token(t) isa Operator ? [token(t)] : []
-    return Operator[vcat(operators.(children(t))...)..., c...]
-end
-operators(t::Truth) = Operator[t]
-operators(::Atom) = []
-
-"""
     atoms(t::SyntaxTree)::AbstractVector{Atom}
 
 List all `Atom`s appearing in a syntax tree.
 
-See also [`Atom`](@ref), [`natoms`](@ref), [`operators`](@ref), [`tokens`](@ref).
+See also [`Atom`](@ref), [`natoms`](@ref).
 """
 function atoms(t::SyntaxTree)::AbstractVector{Atom}
     error("Unexpected syntax tree (type = $(typeof(t)))")
@@ -832,6 +866,32 @@ function atoms(t::SyntaxBranch)
 end
 atoms(t::Truth) = Atom[]
 atoms(t::Atom) = [t]
+
+"""
+    atomstype(t::SyntaxBranch)
+
+Return all the different `Atom` types contained in the `SyntaxTree` rooted at `t`.
+
+See also [`Atom`](@ref), [`SyntaxBranch`](@ref), [`SyntaxTree`](@ref).
+"""
+atomstype(t::SyntaxBranch) = typeintersect(Atom, tokenstype(t))
+
+"""
+    truths(t::SyntaxTree)::AbstractVector{Truth}
+
+List all `Truth`s appearing in a syntax tree.
+
+See also [`Truth`](@ref), [`ntruths`](@ref).
+"""
+function truths(t::SyntaxTree)::AbstractVector{Truth}
+    error("Unexpected syntax tree (type = $(typeof(t)))")
+end
+
+function truths(t::SyntaxBranch)
+    return Atom[vcat(truths.(children(t))...)...] |> unique
+end
+truths(t::Truth) = [t]
+truths(t::Atom) = []
 
 """
     ntokens(t::SyntaxBranch)::Integer
@@ -849,7 +909,6 @@ ntokens(::SyntaxLeaf) = 1
 
 """
     noperators(t::SyntaxBranch)::Integer
-    noperators(t::SyntaxLeaf)::Integer
 
 Return the count of all `Operator`s appearing in a syntax tree.
 
@@ -866,16 +925,47 @@ noperators(t::Truth) = 1
 noperators(::Atom) = 0
 
 """
+    nconnectives(t::SyntaxBranch)::Integer
+
+Return the count of all `Connective`s appearing in a syntax tree.
+
+See also [`connectives`](@ref), [`SyntaxToken`](@ref).
+"""
+function nconnectives(t::SyntaxBranch)::Integer
+    c = token(t) isa Connective ? 1 : 0
+    return length(children(t)) == 0 ? c : c + sum(nconnectives(c) for c in children(t))
+end
+
+# Helpers. TODO Remove?
+nconnectives(t::SyntaxLeaf) = error("Unexpected leaf token (type = $(typeof(t)))")
+nconnectives(t::Truth) = 1
+nconnectives(::Atom) = 0
+
+"""
+    nleaves(t::SyntaxBranch)::Integer
+
+Return the count of all `SyntaxLeaf`s appearing in a syntax tree.
+
+See also [`SyntaxLeafs`](@ref), [`SyntaxToken`](@ref).
+"""
+function nleaves(t::SyntaxBranch)::Integer
+    op = token(t) isa SyntaxLeaf ? 1 : 0
+    return length(children(t)) == 0 ? op : op + sum(nleaves(c) for c in children(t))
+end
+
+# Helpers. TODO Remove?
+nleaves(t::SyntaxLeaf) = 1
+
+"""
     natoms(t::SyntaxBranch)::Integer
-    natoms(t::SyntaxLeaf)::Integer
 
 Return the count of all `Atom`s appearing in a syntax tree.
 
 See also [`atoms`](@ref), [`SyntaxToken`](@ref).
 """
 function natoms(t::SyntaxBranch)::Integer
-    pr = token(t) isa Atom ? 1 : 0
-    return length(children(t)) == 0 ? pr : pr + sum(natoms(c) for c in children(t))
+    a = token(t) isa Atom ? 1 : 0
+    return length(children(t)) == 0 ? a : a + sum(natoms(c) for c in children(t))
 end
 
 # Helpers. TODO Remove?
@@ -884,8 +974,25 @@ natoms(t::Truth) = 0
 natoms(::Atom) = 1
 
 """
+    ntruths(t::SyntaxBranch)::Integer
+
+Return the count of all `Truth`s appearing in a syntax tree.
+
+See also [`truths`](@ref), [`SyntaxToken`](@ref).
+"""
+function ntruths(t::SyntaxBranch)::Integer
+    t = token(t) isa Truth ? 1 : 0
+    return length(children(t)) == 0 ? t : t + sum(ntruths(c) for c in children(t))
+end
+
+# Helpers. TODO Remove?
+ntruths(t::SyntaxLeaf) = error("Unexpected leaf token (type = $(typeof(t)))")
+ntruths(t::Truth) = 1
+ntruths(::Atom) = 0
+
+
+"""
     height(t::SyntaxBranch)::Integer
-    height(t::SyntaxLeaf)::Integer
 
 Return the height of a syntax tree.
 
@@ -1304,7 +1411,7 @@ with p ∈ alphabet. Note: it is *flat* in the sense that all rules substitute t
 (unique and starting) non-terminal symbol φ.
 
 See also [`AbstractGrammar`](@ref),[`Operator`](@ref), [`alphabet`](@ref),
-[`formulas`](@ref),[`nonterminals`](@ref), [`operators`](@ref), [`terminals`](@ref).
+[`formulas`](@ref),[`connectives`](@ref), [`operators`](@ref), [`leaves`](@ref).
 """
 struct CompleteFlatGrammar{A<:AbstractAlphabet,O<:Operator} <: AbstractGrammar{A,O}
     alphabet::A
@@ -1341,8 +1448,25 @@ end
 alphabet(g::CompleteFlatGrammar) = g.alphabet
 operators(g::CompleteFlatGrammar) = g.operators
 
-nonterminals(g::AbstractGrammar) = filter(!isnullary, operators(g))
-function terminals(g::AbstractGrammar)
+"""
+    connectives(g::AbstractGrammar)
+
+List all connectives appearing in a grammar.
+
+See also [`Connective`](@ref), [`nconnectives`](@ref).
+"""
+function connectives(g::AbstractGrammar)::AbstractVector{Connective}
+    return filter(!isnullary, operators(g))
+end
+
+"""
+    leaves(g::AbstractGrammar)
+
+List all leaves appearing in a grammar.
+
+See also [`SyntaxLeaf`](@ref), [`nleaves`](@ref).
+"""
+function leaves(g::AbstractGrammar)
     return [atoms(alphabet(g))..., filter(isnullary, operators(g))...]
 end
 
@@ -1385,13 +1509,13 @@ function formulas(
     # Stop as soon as `maxdepth` is reached or `nformulas` have been generated.
     depth = 0
     cur_formulas = Vector{SyntaxTree}(
-        convert.(SyntaxBranch, terminals(g)) # @Mauro by Gio: probably `terminals(g)` is fine, without conversion..? (also: now terminals = leaves, and nonterminals = connectives? Maybe we should unify, by replacing the terms `terminals` and `nonterminals`.)
+        convert.(SyntaxBranch, leaves(g)) # @Mauro by Gio: probably `leaves(g)` is fine, without conversion..? (also: now leaves = leaves, and connectives = connectives? Maybe we should unify, by replacing the terms `leaves` and `connectives`.)
     )
     all_formulas = SyntaxTree[cur_formulas...]
     while depth < maxdepth && (isnothing(nformulas) || length(all_formulas) < nformulas)
         _nformulas = length(all_formulas)
         cur_formulas = []
-        for op in nonterminals(g)
+        for op in connectives(g)
             for children in Iterators.product(fill(all_formulas, arity(op))...)
                 if !isnothing(nformulas) && nformulas == _nformulas + length(cur_formulas)
                     break
