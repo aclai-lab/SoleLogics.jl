@@ -33,7 +33,7 @@ import Base: eltype, in, getindex, isiterable, iterate, IteratorSize, length, is
 =#
 
 ############################################################################################
-############################## Fundamental types section ###################################
+################################## Fundamental types #######################################
 ############################################################################################
 
 """
@@ -72,7 +72,7 @@ abstract type AbstractSyntaxStructure <: Formula end
 """
     abstract type SyntaxTree <: AbstractSyntaxStructure end
 
-Generic syntax tree, which essentially consist in a composition of two syntactical elements:
+Generic syntax tree, which essentially consists of compositions of syntactical elements:
 branches (wrapping `Connective`s) and leafs (`Truth` values and `Atom`s).
 
 See also [`SyntaxBranch`](@ref), [`SyntaxLeaf`](@ref).
@@ -163,22 +163,6 @@ const SyntaxToken = Union{Connective,SyntaxLeaf}
 ############################################################################################
 ################################### Base methods ###########################################
 ############################################################################################
-
-"""
-    tree(f::AbstractSyntaxStructure)::SyntaxTree
-
-Extract the `SyntaxBranch` representation of a formula
-(equivalent to `Base.convert(SyntaxBranch, f)`).
-
-See also [`AbstractSyntaxStructure`](@ref), [`SyntaxBranch`](@ref).
-"""
-function tree(f::AbstractSyntaxStructure)::SyntaxTree
-    return error("Please, provide method tree(::$(typeof(f)))::SyntaxTree.")
-end
-
-Base.convert(::Type{SyntaxTree}, f::AbstractSyntaxStructure) = tree(f)
-
-tree(t::SyntaxTree) = t
 
 """
     arity(tok::Connective)::Integer
@@ -305,7 +289,7 @@ syntaxstring(value; kwargs...) = string(value)
 # syntaxstring(value::Union{AbstractString,Number,AbstractChar}; kwargs...) = string(value)
 
 ############################################################################################
-################################### Atom section ###########################################
+####################################### Atom ###############################################
 ############################################################################################
 
 """
@@ -370,7 +354,7 @@ function dual(value)
 end
 
 ############################################################################################
-################################ Connective section ########################################
+#################################### Connective ############################################
 ############################################################################################
 
 doc_iscommutative = """
@@ -598,8 +582,24 @@ function syntaxstring(φ::Formula; kwargs...)
 end
 
 ############################################################################################
-######################### AbstractSyntaxStructure interfaces ###############################
+############################## AbstractSyntaxStructure #####################################
 ############################################################################################
+
+"""
+    tree(f::AbstractSyntaxStructure)::SyntaxTree
+
+Extract the `SyntaxTree` representation of a formula
+(equivalent to `Base.convert(SyntaxTree, f)`).
+
+See also [`AbstractSyntaxStructure`](@ref), [`SyntaxTree`](@ref).
+"""
+function tree(f::AbstractSyntaxStructure)::SyntaxTree
+    return error("Please, provide method tree(::$(typeof(f)))::SyntaxTree.")
+end
+
+Base.convert(::Type{SyntaxTree}, f::AbstractSyntaxStructure) = tree(f)
+
+tree(t::SyntaxTree) = t
 
 doc_tokopprop = """
     tokens(f::AbstractSyntaxStructure)::AbstractVector{<:SyntaxToken}
@@ -665,8 +665,16 @@ end
 function Base.isequal(a::AbstractSyntaxStructure, b::AbstractSyntaxStructure)
     Base.isequal(tree(a), tree(b))
 end
+function Base.isequal(a::SyntaxTree, b::SyntaxTree)
+    error("Please, provide method Base.hash(::$(typeof(a)), ::$(typeof(b))).")
+end
 
-# Base.hash(a::AbstractSyntaxStructure) = Base.hash(tree(a)) # TODO: fix this, since this definition now gives a StackOverflow
+function Base.hash(a::AbstractSyntaxStructure) = Base.hash(tree(a))
+# TODO: fix this, since this definition now gives a StackOverflow
+# @Mauro: maybe now this works, for avoiding infinite recursion?
+function Base.hash(a::SyntaxTree)
+    error("Please, provide method Base.hash(::$(typeof(a))).")
+end
 
 #= NOTE: this could be useful
 Base.promote_rule(
@@ -681,7 +689,7 @@ Base.promote_rule(
 =#
 
 ############################################################################################
-############################### SyntaxBranch section #######################################
+################################### SyntaxBranch ###########################################
 ############################################################################################
 
 """
@@ -765,36 +773,41 @@ children(::SyntaxLeaf) = ()
 
 function joinformulas(
     op::Connective,
-    children::NTuple{N,Union{SyntaxToken,SyntaxBranch}}
+    children::NTuple{N,AbstractSyntaxStructure}
 ) where {N}
-    return SyntaxBranch(op, children)
+    return SyntaxBranch(op, tree.(children))
 end
 
 # Shows the type of the syntax tree and its syntaxstring.
-# Base.show(io::IO, t::SyntaxBranch) = print(io, "$(typeof(t))($(syntaxstring(t)))")
 function Base.show(io::IO, t::SyntaxBranch)
+    print(io, "$(typeof(t))($(syntaxstring(t)))")
     print(io, "$(syntaxstring(t))")
-    # print(io, "Allowed token types: $(tokenstype(t))")
 end
+
+############################################################################################
+# TODO understand where SyntaxBranch ends and SyntaxTree begins (where to move this separator)
+# Also complete the implementation of these.
+#################################### SyntaxTree ############################################
+############################################################################################
 
 
 """
-    Base.in(tok::SyntaxToken, tree::SyntaxBranch)::Bool
+    Base.in(tok::SyntaxToken, tree::SyntaxTree)::Bool
 
 Return whether a `SyntaxToken` appears in a syntax tree or not.
 
-See also [`SyntaxToken`](@ref), [`SyntaxBranch`](@ref), [`tokens`](@ref).
+See also [`SyntaxToken`](@ref), [`SyntaxTree`](@ref), [`tokens`](@ref).
 """
 function Base.in(tok::SyntaxToken, tree::SyntaxBranch)
     return tok == token(tree) || any([Base.in(tok, c) for c in children(tree)])
 end
 
 """
-    token(t::SyntaxBranch)::SyntaxToken
+    token(t::SyntaxTree)::SyntaxToken
 
-Getter for the token wrapped in a `SyntaxBranch`.
+Getter for the token wrapped in a `SyntaxTree`.
 
-See also [`SyntaxBranch`](@ref).
+See also [`SyntaxTree`](@ref).
 """
 token(t::SyntaxBranch) = t.token
 token(t::SyntaxLeaf) = t
@@ -805,7 +818,7 @@ tokentype(::T) where {T <: SyntaxLeaf} = T
 tokenstype(t::SyntaxBranch) = Union{tokentype(t),tokenstype.(children(t))...}
 
 """
-    tokens(t::SyntaxBranch)::AbstractVector{SyntaxToken}
+    tokens(t::SyntaxTree)::AbstractVector{SyntaxToken}
 
 List all tokens appearing in a syntax tree.
 
@@ -814,7 +827,7 @@ See also [`atoms`](@ref), [`ntokens`](@ref), [`operators`](@ref), [`SyntaxToken`
 function tokens(t::SyntaxBranch)::AbstractVector{SyntaxToken}
     return SyntaxToken[vcat(tokens.(children(t))...)..., token(t)]
 end
-tokens(t::SyntaxLeaf) = t
+tokens(t::SyntaxLeaf) = [t] # @Mauro: Why `t`?
 
 """
     operators(t::SyntaxTree)::AbstractVector{Operator}
@@ -835,11 +848,11 @@ operators(t::Truth) = Operator[t]
 operators(::Atom) = []
 
 """
-    operatorstype(t::SyntaxBranch)
+    operatorstype(t::SyntaxTree)
 
 Return all the different `Operator` types contained in the `SyntaxTree` rooted at `t`.
 
-See also [`Operator`](@ref), [`SyntaxBranch`](@ref), [`SyntaxTree`](@ref).
+See also [`Operator`](@ref), [`SyntaxTree`](@ref), [`SyntaxTree`](@ref).
 """
 operatorstype(t::SyntaxBranch) = typeintersect(Operator, tokenstype(t))
 
@@ -894,11 +907,11 @@ atoms(t::Truth) = Atom[]
 atoms(t::Atom) = [t]
 
 """
-    atomstype(t::SyntaxBranch)
+    atomstype(t::SyntaxTree)
 
 Return all the different `Atom` types contained in the `SyntaxTree` rooted at `t`.
 
-See also [`Atom`](@ref), [`SyntaxBranch`](@ref), [`SyntaxTree`](@ref).
+See also [`Atom`](@ref), [`SyntaxTree`](@ref), [`SyntaxTree`](@ref).
 """
 atomstype(t::SyntaxBranch) = typeintersect(Atom, tokenstype(t))
 
@@ -920,7 +933,7 @@ truths(t::Truth) = [t]
 truths(t::Atom) = []
 
 """
-    ntokens(t::SyntaxBranch)::Integer
+    ntokens(t::SyntaxTree)::Integer
 
 Return the count of all tokens appearing in a syntax tree.
 
@@ -929,12 +942,11 @@ See also [`SyntaxToken`](@ref), [`tokens`](@ref).
 function ntokens(t::SyntaxBranch)::Integer
     length(children(t)) == 0 ? 1 : 1 + sum(ntokens(c) for c in children(t))
 end
-
-# Helpers. TODO Remove?
+# Helpers. TODO complete: make sure that, altogether, these cover t::SyntaxTree
 ntokens(::SyntaxLeaf) = 1
 
 """
-    noperators(t::SyntaxBranch)::Integer
+    noperators(t::SyntaxTree)::Integer
 
 Return the count of all `Operator`s appearing in a syntax tree.
 
@@ -944,14 +956,13 @@ function noperators(t::SyntaxBranch)::Integer
     op = token(t) isa Operator ? 1 : 0
     return length(children(t)) == 0 ? op : op + sum(noperators(c) for c in children(t))
 end
-
-# Helpers. TODO Remove?
+# Helpers. TODO complete: make sure that, altogether, these cover t::SyntaxTree
 noperators(t::SyntaxLeaf) = error("Unexpected leaf token (type = $(typeof(t)))")
 noperators(t::Truth) = 1
 noperators(::Atom) = 0
 
 """
-    nconnectives(t::SyntaxBranch)::Integer
+    nconnectives(t::SyntaxTree)::Integer
 
 Return the count of all `Connective`s appearing in a syntax tree.
 
@@ -961,14 +972,13 @@ function nconnectives(t::SyntaxBranch)::Integer
     c = token(t) isa Connective ? 1 : 0
     return length(children(t)) == 0 ? c : c + sum(nconnectives(c) for c in children(t))
 end
-
-# Helpers. TODO Remove?
+# Helpers. TODO complete: make sure that, altogether, these cover t::SyntaxTree
 nconnectives(t::SyntaxLeaf) = error("Unexpected leaf token (type = $(typeof(t)))")
 nconnectives(t::Truth) = 1
 nconnectives(::Atom) = 0
 
 """
-    nleaves(t::SyntaxBranch)::Integer
+    nleaves(t::SyntaxTree)::Integer
 
 Return the count of all `SyntaxLeaf`s appearing in a syntax tree.
 
@@ -978,12 +988,11 @@ function nleaves(t::SyntaxBranch)::Integer
     op = token(t) isa SyntaxLeaf ? 1 : 0
     return length(children(t)) == 0 ? op : op + sum(nleaves(c) for c in children(t))
 end
-
-# Helpers. TODO Remove?
+# Helpers. TODO complete: make sure that, altogether, these cover t::SyntaxTree
 nleaves(t::SyntaxLeaf) = 1
 
 """
-    natoms(t::SyntaxBranch)::Integer
+    natoms(t::SyntaxTree)::Integer
 
 Return the count of all `Atom`s appearing in a syntax tree.
 
@@ -993,14 +1002,13 @@ function natoms(t::SyntaxBranch)::Integer
     a = token(t) isa Atom ? 1 : 0
     return length(children(t)) == 0 ? a : a + sum(natoms(c) for c in children(t))
 end
-
-# Helpers. TODO Remove?
+# Helpers. TODO complete: make sure that, altogether, these cover t::SyntaxTree
 natoms(t::SyntaxLeaf) = error("Unexpected leaf token (type = $(typeof(t)))")
 natoms(t::Truth) = 0
 natoms(::Atom) = 1
 
 """
-    ntruths(t::SyntaxBranch)::Integer
+    ntruths(t::SyntaxTree)::Integer
 
 Return the count of all `Truth`s appearing in a syntax tree.
 
@@ -1010,15 +1018,14 @@ function ntruths(t::SyntaxBranch)::Integer
     t = token(t) isa Truth ? 1 : 0
     return length(children(t)) == 0 ? t : t + sum(ntruths(c) for c in children(t))
 end
-
-# Helpers. TODO Remove?
+# Helpers. TODO complete: make sure that, altogether, these cover t::SyntaxTree
 ntruths(t::SyntaxLeaf) = error("Unexpected leaf token (type = $(typeof(t)))")
 ntruths(t::Truth) = 1
 ntruths(::Atom) = 0
 
 
 """
-    height(t::SyntaxBranch)::Integer
+    height(t::SyntaxTree)::Integer
 
 Return the height of a syntax tree.
 
@@ -1027,8 +1034,7 @@ See also [`SyntaxToken`](@ref), [`tokens`](@ref).
 function height(t::SyntaxBranch)::Integer
     length(children(t)) == 0 ? 0 : 1 + maximum(height(c) for c in children(t))
 end
-
-# Helpers. TODO Remove?
+# Helpers. TODO complete: make sure that, altogether, these cover t::SyntaxTree
 height(t::SyntaxLeaf) = 0
 
 # Helpers that make SyntaxBranch's map to the same dictionary key.
@@ -1040,7 +1046,7 @@ end
 Base.hash(a::SyntaxBranch) = Base.hash(syntaxstring(a))
 
 ############################################################################################
-########################### More on SyntaxBranch interfaces ################################
+################################ More on SyntaxBranch ######################################
 ############################################################################################
 
 # Refer to syntaxstring(tok::SyntaxToken; kwargs...) for documentation
@@ -1060,7 +1066,7 @@ function syntaxstring(
     # Parenthesization rules for binary operators in infix notation
     function _binary_infix_syntaxstring(
         tok::SyntaxToken,
-        ch::Union{SyntaxBranch,SyntaxLeaf}
+        ch::SyntaxTree
     )
         chtok = token(ch)
         chtokstring = syntaxstring(ch; ch_kwargs...)
@@ -1127,7 +1133,7 @@ Base.convert(::Type{S}, tok::SyntaxLeaf) where {S<:SyntaxBranch} = S(tok)
 Base.convert(::Type{AbstractSyntaxStructure}, tok::SyntaxLeaf) = SyntaxBranch(tok)
 
 ############################################################################################
-############################# AbstractAlphabet section #####################################
+################################# AbstractAlphabet #########################################
 ############################################################################################
 
 """
@@ -1312,7 +1318,7 @@ Base.isfinite(::Type{<:AlphabetOfAny}) = false
 Base.in(::Atom{PA}, ::AlphabetOfAny{AA}) where {PA,AA} = (PA <: AA)
 
 ############################################################################################
-############################### AbstractGrammar section ####################################
+################################### AbstractGrammar ########################################
 ############################################################################################
 
 """
@@ -1550,7 +1556,7 @@ function formulas(
 end
 
 ############################################################################################
-########################## AbstractAlgebra - Semantics section #############################
+############################## AbstractAlgebra (Semantics) #################################
 ############################################################################################
 
 """
@@ -1666,7 +1672,7 @@ function Base.convert(::Type{Truth}, t)::Truth
 end
 
 ############################################################################################
-############################### AbstractLogic section ######################################
+################################### AbstractLogic ##########################################
 ############################################################################################
 
 """
@@ -1755,7 +1761,7 @@ valuetype(::AbstractInterpretation{A,T}) where {A,T} = A
 truthtype(::AbstractInterpretation{A,T}) where {A,T} = T
 
 ############################################################################################
-############################### Check & Interpret section ##################################
+################################### Check & Interpret ######################################
 ############################################################################################
 
 """
@@ -1859,7 +1865,7 @@ function interpret(
 end
 
 ############################################################################################
-################################# Utilities section ########################################
+##################################### Utilities ############################################
 ############################################################################################
 
 # Formula interpretation via i[φ] -> φ
