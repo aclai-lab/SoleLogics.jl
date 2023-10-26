@@ -7,17 +7,17 @@ import Base: eltype, in, getindex, isiterable, iterate, IteratorSize, length, is
     Syntactical
     ├── Formula
     │   ├── AbstractSyntaxStructure
-    │   │   ├── SyntaxLeaf
-    │   │   │   ├── Atom
-    │   │   │   └── Truth
-    │   │   │       ├── BooleanTruth
-    │   │   │       │   ├── Top
-    │   │   │       │   └── Bot
-    │   │   │       └── ...
-    │   │   └── AbstractComposite
-    │   │       ├── SyntaxBranch
-    │   │       ├── LeftmostLinearForm
-    │   │       └── ...
+    │   │   ├── SyntaxTree <- TODO change
+    │   │   │   ├── SyntaxLeaf
+    │   │   │   │   ├── Atom
+    │   │   │   │   └── Truth
+    │   │   │   │       ├── BooleanTruth
+    │   │   │   │       │   ├── Top
+    │   │   │   │       │   └── Bot
+    │   │   │   │       └── ...
+    │   │   │   └── SyntaxBranch
+    │   │   ├── LeftmostLinearForm
+    │   │   └── ...
     │   └── AbstractMemoFormula
     │       └── TruthTable
     └── Connective
@@ -29,7 +29,7 @@ import Base: eltype, in, getindex, isiterable, iterate, IteratorSize, length, is
 
     Also:
     const Operator = Union{Connective,Truth}
-    const SyntaxTree = SyntaxTree
+    const SyntaxTree = Union{SyntaxBranch,SyntaxLeaf} <- TODO change
     const SyntaxToken = Union{Connective,SyntaxLeaf}
 =#
 
@@ -636,7 +636,7 @@ Base.promote_rule(
 ############################################################################################
 
 """
-struct SyntaxBranch{T<:Connective} <: AbstractComposite
+    struct SyntaxBranch{T<:Connective} <: AbstractComposite
         token::T
         children::NTuple{N,SyntaxTree} where {N}
     end
@@ -656,13 +656,13 @@ See also [`arity`](@ref), [`Atom`](@ref), [`atoms`](@ref), [`atomstype`](@ref),
 [`ntokens`](@ref), [`Operator`](@ref),[`operators`](@ref), [`operatorstype`](@ref),
 [`token`](@ref), [`tokens`](@ref), [`tokenstype`](@ref), [`tokentype`](@ref).
 """
-struct SyntaxBranch{T<:Connective} <: AbstractComposite
+struct SyntaxBranch{T<:Connective} <: SyntaxTree
 
     # The syntax token at the current node
     token::T
 
     # The child nodes of the current node
-    children::NTuple{N,Union{SyntaxBranch,SyntaxLeaf}} where {N}
+    children::NTuple{N,SyntaxTree} where {N}
 
     function _aritycheck(N, T, token, children)
         @assert arity(token) == N "Cannot instantiate SyntaxBranch{$(T)} with token " *
@@ -672,7 +672,7 @@ struct SyntaxBranch{T<:Connective} <: AbstractComposite
 
     function SyntaxBranch{T}(
         token::T,
-        children::NTuple{N,Union{SyntaxToken,AbstractComposite}} = (),
+        children::NTuple{N,SyntaxTree} = (),
     ) where {T<:Connective,N}
         children = convert.(SyntaxBranch, children)
 
@@ -688,7 +688,7 @@ struct SyntaxBranch{T<:Connective} <: AbstractComposite
 
     function SyntaxBranch(
         token::T,
-        children::NTuple{N,Union{SyntaxToken,AbstractComposite}} = (),
+        children::NTuple{N,SyntaxTree} = (),
     ) where {T<:Connective,N}
         children = convert.(SyntaxBranch, children)
 
@@ -765,38 +765,41 @@ end
 # Helpers. TODO Remove?
 tokens(t::SyntaxLeaf) = [t]
 
+# TODO also `connectives` and `leaves`
+
 """
-    operators(t::SyntaxBranch)::AbstractVector{Operator}
-    operators(::SyntaxLeaf)
+    operators(t::SyntaxTree)::AbstractVector{Operator}
 
 List all operators appearing in a syntax tree.
 
 See also [`atoms`](@ref), [`noperators`](@ref), [`Operator`](@ref), [`tokens`](@ref).
 """
-function operators(t::SyntaxBranch)::AbstractVector{Operator}
-    ops = token(t) isa Operator ? [token(t)] : []
-    return Operator[vcat(operators.(children(t))...)..., ops...]
+function operators(t::SyntaxTree)::AbstractVector{Operator}
+    error("Unexpected syntax tree (type = $(typeof(t)))")
 end
 
-# Helpers. TODO Remove?
-operators(t::SyntaxLeaf) = error("Unexpected leaf token (type = $(typeof(t)))")
+function operators(t::SyntaxBranch)::AbstractVector{Operator}
+    c = token(t) isa Operator ? [token(t)] : []
+    return Operator[vcat(operators.(children(t))...)..., c...]
+end
 operators(t::Truth) = Operator[t]
 operators(::Atom) = []
 
 """
-    atoms(t::SyntaxBranch)::AbstractVector{Atom}
+    atoms(t::SyntaxTree)::AbstractVector{Atom}
 
 List all `Atom`s appearing in a syntax tree.
 
 See also [`Atom`](@ref), [`natoms`](@ref), [`operators`](@ref), [`tokens`](@ref).
 """
-function atoms(t::SyntaxBranch)::AbstractVector{Atom}
+function atoms(t::SyntaxTree)::AbstractVector{Atom}
+    error("Unexpected syntax tree (type = $(typeof(t)))")
+end
+
+function atoms(t::SyntaxBranch)
     ps = token(t) isa Atom ? Atom[token(t)] : Atom[]
     return Atom[vcat(atoms.(children(t))...)..., ps...] |> unique
 end
-
-# Helpers. TODO Remove?
-atoms(t::SyntaxLeaf) = error("Unexpected leaf token (type = $(typeof(t)))")
 atoms(t::Truth) = Atom[]
 atoms(t::Atom) = [t]
 
@@ -967,17 +970,18 @@ Base.convert(::Type{S}, tok::SyntaxLeaf) where {S<:SyntaxBranch} = S(tok)
 Base.convert(::Type{AbstractSyntaxStructure}, tok::SyntaxLeaf) = SyntaxBranch(tok)
 
 """
-    tree(f::AbstractComposite)::SyntaxTree
+    tree(f::AbstractSyntaxStructure)::SyntaxTree
 
 Extract the `SyntaxBranch` representation of a formula
 (equivalent to `Base.convert(SyntaxBranch, f)`).
 
-See also [`AbstractComposite`](@ref), [`SyntaxBranch`](@ref).
+See also [`AbstractSyntaxStructure`](@ref), [`SyntaxBranch`](@ref).
 """
-function tree(f::AbstractComposite)::SyntaxTree
+function tree(f::AbstractSyntaxStructure)::SyntaxTree
     return error("Please, provide method tree(::$(typeof(f)))::SyntaxTree.")
 end
-Base.convert(::Type{SyntaxBranch}, f::AbstractComposite) = tree(f)
+
+Base.convert(::Type{SyntaxTree}, f::AbstractSyntaxStructure) = tree(f)
 
 tree(t::SyntaxTree) = t
 
@@ -1198,25 +1202,26 @@ end
 atomstype(g::AbstractGrammar) = eltype(alphabet(g))
 tokenstype(g::AbstractGrammar) = Union{operatorstype(g),atomstype(g)}
 
-function Base.in(tok::SyntaxToken, g::AbstractGrammar)
-    return error("Please, provide method Base.in(::$(typeof(tok)), ::$(typeof(g))).")
+
+"""
+    Base.in(t::SyntaxTree, g::AbstractGrammar)::Bool
+
+Return whether a `SyntaxTree`, belongs to a grammar.
+
+See also [`AbstractGrammar`](@ref), [`SyntaxTree`](@ref).
+"""
+function Base.in(::SyntaxTree, g::AbstractGrammar)::Bool
+    return error("Please, provide method Base.in(::SyntaxTree, ::$(typeof(g))).")
 end
 
 # Note: when using this file's syntax tokens, these methods suffice:
 Base.in(p::Atom, g::AbstractGrammar) = Base.in(p, alphabet(g))
-Base.in(op::Operator, g::AbstractGrammar) = (op <: operatorstype(g))
+Base.in(op::Truth, g::AbstractGrammar) = (op <: operatorstype(g))
 
-
-"""
-    Base.in(t::SyntaxBranch, g::AbstractGrammar)::Bool
-
-Return whether a `SyntaxBranch`, belongs to a grammar.
-
-See also [`AbstractGrammar`](@ref), [`SyntaxBranch`](@ref).
-"""
-function Base.in(::SyntaxBranch, g::AbstractGrammar)::Bool
-    return error("Please, provide method Base.in(::SyntaxBranch, ::$(typeof(g))).")
+function Base.in(tok::Connective, g::AbstractGrammar)
+    return error("Please, provide method Base.in(::$(typeof(tok)), ::$(typeof(g))).")
 end
+
 
 """
     formulas(
@@ -1323,7 +1328,7 @@ end
 
 # A complete grammar includes any *safe* syntax tree that can be built with
 #  the grammar token types.
-function Base.in(t::SyntaxBranch, g::CompleteFlatGrammar)::Bool
+function Base.in(t::SyntaxTree, g::CompleteFlatGrammar)::Bool
     return if token(t) isa Atom
         token(t) in alphabet(g)
     elseif token(t) isa Operator
@@ -1465,7 +1470,7 @@ See also [`AbstractAlgebra`](@ref).
 """
 iscrisp(a::AbstractAlgebra) = (length(domain(a)) == 2)
 
-joinformulas(c::Truth, ::Tuple{}) = SyntaxBranch(c)
+joinformulas(c::Truth, ::Tuple{}) = SyntaxTree(c)
 
 ############################################################################################
 
