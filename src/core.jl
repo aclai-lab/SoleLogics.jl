@@ -7,7 +7,7 @@ import Base: eltype, in, getindex, isiterable, iterate, IteratorSize, length, is
     Syntactical
     ├── Formula
     │   ├── AbstractSyntaxStructure
-    │   │   ├── SyntaxTree <- TODO change
+    │   │   ├── SyntaxTree
     │   │   │   ├── SyntaxLeaf
     │   │   │   │   ├── Atom
     │   │   │   │   └── Truth
@@ -29,7 +29,6 @@ import Base: eltype, in, getindex, isiterable, iterate, IteratorSize, length, is
 
     Also:
     const Operator = Union{Connective,Truth}
-    const SyntaxTree = Union{SyntaxBranch,SyntaxLeaf} <- TODO change
     const SyntaxToken = Union{Connective,SyntaxLeaf}
 =#
 
@@ -66,6 +65,16 @@ See also [`Formula`](@ref), [`AbstractLogic`](@ref), [`SyntaxBranch`](@ref),
 abstract type AbstractSyntaxStructure <: Formula end
 
 """
+    abstract type SyntaxTree <: AbstractSyntaxStructure end
+
+Generic syntax tree, which essentially consist in a composition of two syntactical elements:
+branches (wrapping `Connective`s) and leafs (`Truth` values and `Atom`s).
+
+See also [`SyntaxBranch`](@ref), [`SyntaxLeaf`](@ref).
+"""
+abstract type SyntaxTree <: AbstractSyntaxStructure end
+
+"""
     abstract type SyntaxLeaf <: AbstractSyntaxStructure end;
 
 Syntactic component that can be an `AbstractSyntaxStructure`'s leaf. The particularity of
@@ -74,7 +83,7 @@ allowed to have children in tree-like syntactical structures.
 
 See also [`AbstractSyntaxStructure`](@ref),  [`arity`](@ref), [`SyntaxBranch`](@ref).
 """
-abstract type SyntaxLeaf <: AbstractSyntaxStructure end
+abstract type SyntaxLeaf <: SyntaxTree end
 
 """
     abstract type AbstractComposite <: AbstractSyntaxStructure end
@@ -636,7 +645,7 @@ Base.promote_rule(
 ############################################################################################
 
 """
-    struct SyntaxBranch{T<:Connective} <: AbstractComposite
+    struct SyntaxBranch{T<:Connective} <: SyntaxTree
         token::T
         children::NTuple{N,SyntaxTree} where {N}
     end
@@ -875,16 +884,6 @@ function Base.isequal(a::SyntaxBranch, b::SyntaxBranch)
         all(((c1,c2),)->Base.isequal(c1, c2), zip(children(a), children(b)))
 end
 Base.hash(a::SyntaxBranch) = Base.hash(syntaxstring(a))
-
-"""
-    const SyntaxTree = Union{SyntaxBranch,SyntaxLeaf}
-
-Union type representing a generic syntax tree, which essentially consist in
-a composition of two syntactical elements: branches and leafs.
-
-See also [`SyntaxBranch`](@ref), [`SyntaxLeaf`](@ref).
-"""
-const SyntaxTree = Union{SyntaxBranch,SyntaxLeaf}
 
 # Refer to syntaxstring(tok::SyntaxToken; kwargs...) for documentation
 function syntaxstring(
