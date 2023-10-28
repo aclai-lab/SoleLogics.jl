@@ -2,12 +2,12 @@ import Base: convert, promote_rule, _promote
 import Base: eltype, in, getindex, isiterable, iterate, IteratorSize, length, isequal, hash
 
 #=
-    New syntactical type hierarchy
+    Syntactical Type Hierarchy
 
     Syntactical
     ├── Formula
     │   ├── AbstractSyntaxStructure
-    │   │   ├── SyntaxTree
+    │   │   ├── SyntaxTree          <- This is, essentialy, Union{SyntaxLeaf,SyntaxBranch}
     │   │   │   ├── SyntaxLeaf
     │   │   │   │   ├── Atom
     │   │   │   │   └── Truth
@@ -19,7 +19,8 @@ import Base: eltype, in, getindex, isiterable, iterate, IteratorSize, length, is
     │   │   ├── LeftmostLinearForm
     │   │   └── ...
     │   └── AbstractMemoFormula
-    │       └── TruthTable
+    │       ├── TruthTable
+    │       └── ...
     └── Connective
         ├── NamedConnective
         ├── AbstractRelationalOperator

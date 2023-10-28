@@ -9,24 +9,25 @@ const SL = SoleLogics # SL.name to reference unexported names
 @testset "TypeHierarchyUpdate" begin
 
 #=
-    New syntactical type hierarchy
+    Syntactical Type Hierarchy
 
     Syntactical
     ├── Formula
     │   ├── AbstractSyntaxStructure
-    │   │   ├── SyntaxLeaf
-    │   │   │   ├── Atom
-    │   │   │   └── Truth
-    │   │   │       ├── BooleanTruth
-    │   │   │       │   ├── Top
-    │   │   │       │   └── Bot
-    │   │   │       └── ...
-    │   │   └── AbstractComposite
-    │   │       ├── SyntaxBranch
-    │   │       ├── LeftmostLinearForm
-    │   │       └── ...
+    │   │   ├── SyntaxTree          <- This is, essentialy, Union{SyntaxLeaf,SyntaxBranch}
+    │   │   │   ├── SyntaxLeaf
+    │   │   │   │   ├── Atom
+    │   │   │   │   └── Truth
+    │   │   │   │       ├── BooleanTruth
+    │   │   │   │       │   ├── Top
+    │   │   │   │       │   └── Bot
+    │   │   │   │       └── ...
+    │   │   │   └── SyntaxBranch
+    │   │   ├── LeftmostLinearForm
+    │   │   └── ...
     │   └── AbstractMemoFormula
-    │       └── TruthTable
+    │       ├── TruthTable
+    │       └── ...
     └── Connective
         ├── NamedConnective
         ├── AbstractRelationalOperator
