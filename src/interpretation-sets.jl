@@ -32,30 +32,30 @@ truthtype(s::AbstractInterpretationSet) = truthtype(typeof(s))
 
 """
 TODO explain. In general, one cannot extract a single logical instance from a set, thus we represent it as a tuple of dataset + instance id (i_instance)
-TODO this struct firm could be better, but unfortunately the following doesn't work:
-    LogicalInstance{M<:AbstractInterpretation{A,T<:Truth}, S<:AbstractInterpretationSet{M}} <: AbstractInterpretation{A,T}
 """
 struct LogicalInstance{
     A,
     T<:Truth,
-    S<:AbstractInterpretationSet{AbstractInterpretation{A,T}} # TODO looks good; let's see if it works! Cuz, I'm not sure, maybe Julia requires you to replace this with {...,M<:AbstractInterpretation{A,T},AbstractInterpretationSet{M}}.
+    M<:AbstractInterpretation{A,T},
+    S<:AbstractInterpretationSet{M}
 } <: AbstractInterpretation{A,T}
 
     s::S
     i_instance::Int64
 
-    function LogicalInstance{A,T,S}(
+    function LogicalInstance{A,T,M,S}(
         s::S,
         i_instance::Integer
-    ) where {A,T<:Truth,S<:AbstractInterpretationSet{AbstractInterpretation{A,T}}}
-        new{A,T,S}(s, i_instance)
+    ) where {A,T<:Truth,M<:AbstractInterpretation{A,T},S<:AbstractInterpretationSet{M}}
+        new{A,T,M,S}(s, i_instance)
     end
 
     function LogicalInstance(
         s::AbstractInterpretationSet,
         i_instance::Integer
     )
-        LogicalInstance{valuetype(s),truthtype(s),typeof(s)}(s, i_instance)
+        LogicalInstance{valuetype(s),truthtype(s),typeof(s).parameters[1],typeof(s)}(
+            s, i_instance)
     end
 end
 

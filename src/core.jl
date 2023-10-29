@@ -586,6 +586,10 @@ end
 ############################## AbstractSyntaxStructure #####################################
 ############################################################################################
 
+# Here, AbstractSyntaxStructures interface is defined.
+# Each of the following methods forwards its logic to a (f::SyntaxTree) dispatch.
+# To see more, look at "SyntaxBranch & SyntaxTree" code section below.
+
 """
     tree(f::AbstractSyntaxStructure)::SyntaxTree
 
@@ -689,7 +693,7 @@ Base.promote_rule(
 =#
 
 ############################################################################################
-################################### SyntaxBranch ###########################################
+############################## SyntaxBranch & SyntaxTree ###################################
 ############################################################################################
 
 """
@@ -785,11 +789,6 @@ function Base.show(io::IO, t::SyntaxBranch)
 end
 
 ############################################################################################
-# TODO understand where SyntaxBranch ends and SyntaxTree begins (where to move this separator)
-# Also complete the implementation of these.
-#################################### SyntaxTree ############################################
-############################################################################################
-
 
 """
     Base.in(tok::SyntaxToken, tree::SyntaxTree)::Bool
