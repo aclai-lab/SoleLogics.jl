@@ -6,7 +6,7 @@ CurrentModule = SoleLogics
 
 ## [Syntax Basics](@id syntactical-base-definitions)
 
-Logical formulas are synctactical objects representing statements which level of truth can be assessed.
+Logical formulas are syntactical objects representing statements which level of truth can be assessed.
 Formulas arise from formal grammars (e.g., context-free grammars), and are most commonly represented as syntax trees.
 At the leaf nodes of a syntax tree are atoms (simple, atomic statements) or truth values (e.g., ⊤, representing truth),
 while at the internal nodes are logical connectives that allow for the composition of formulas to represent complex concepts.

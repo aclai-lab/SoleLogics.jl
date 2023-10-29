@@ -54,7 +54,7 @@ struct LogicalInstance{
         s::AbstractInterpretationSet,
         i_instance::Integer
     )
-        LogicalInstance{valuetype(s),truthtype(s),typeof(s).parameters[1],typeof(s)}(
+        LogicalInstance{valuetype(s),truthtype(s),interpretationtype(s),typeof(s)}( # (Ti impicco, Mauro ;))
             s, i_instance)
     end
 end
