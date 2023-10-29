@@ -670,13 +670,11 @@ function Base.isequal(a::SyntaxTree, b::SyntaxTree)
     error("Please, provide method Base.hash(::$(typeof(a)), ::$(typeof(b))).")
 end
 
-# Base.hash(a::AbstractSyntaxStructure) = Base.hash(tree(a))
-# # TODO: fix this, since this definition now gives a StackOverflow
-# # @Mauro: maybe now this works, for avoiding infinite recursion?
-# function Base.hash(a::SyntaxTree)
-#     error("Please, provide method Base.hash(::$(typeof(a))).")
-# end
-# # @ToGio: nope, I'll take a deeper look soon
+Base.hash(a::AbstractSyntaxStructure) = Base.hash(tree(a))
+
+function Base.hash(a::SyntaxTree)
+    error("Please, provide method Base.hash(::$(typeof(a))).")
+end
 
 #= NOTE: this could be useful
 Base.promote_rule(

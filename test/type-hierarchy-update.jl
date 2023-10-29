@@ -77,10 +77,10 @@ interp2             = TruthDict(1:4, BOT)
 @test Connective        <: Operator
 @test Truth             <: Operator
 @test Connective        <: SyntaxToken
-@test SyntaxLeaf      <: SyntaxToken
+@test SyntaxLeaf        <: SyntaxToken
 
-@test AbstractComposite <: AbstractSyntaxStructure
-@test SyntaxBranch        <: AbstractComposite
+@test SyntaxTree        <: AbstractSyntaxStructure
+@test SyntaxBranch      <: SyntaxTree
 
 @test NEGATION          isa NamedConnective
 @test CONJUNCTION       isa NamedConnective

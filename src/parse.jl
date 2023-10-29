@@ -59,7 +59,6 @@ Those are the vector $(repr(BASE_PARSABLE_OPERATORS)).
 See also [`parsetree`](@ref).
 """
 const BASE_PARSABLE_OPERATORS = [
-    ⊤, ⊥,
     BASE_PROPOSITIONAL_OPERATORS...,
     BASE_MODAL_OPERATORS...,
     BASE_MULTIMODAL_OPERATORS...,
