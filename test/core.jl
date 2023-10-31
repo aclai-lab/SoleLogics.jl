@@ -60,8 +60,8 @@ alphabet_mixed = AlphabetOfAny{Union{String,Number}}()
 
 @test_nowarn convert(SyntaxBranch, p1)
 @test_nowarn SyntaxBranch(p1)
-@test_broken SyntaxBranch{typeof(p1)}(p1) # @Gio maybe this inappropriate call could throw a warning? Or maybe is just legal such as SyntaxBranch(p1::Atom) dispatch (wtihtout the {typeof(p1)})
-# @Mauro You are right, I think it should error... Doesn't it? I see no constructor for SyntaxBranch{T}(::SyntaxLeaf). Maybe its the `Base.convert(::Type{S}, tok::SyntaxLeaf) where {S<:SyntaxBranch}`... Let's remove it? (cause note it does not comply with the semantics of Base.convert, cause it does not return a `SyntaxBranch`)
+@test_throws TypeError SyntaxBranch{typeof(p1)}(p1)
+
 @test_nowarn SyntaxBranch(p1)
 @test_throws AssertionError SyntaxBranch(p1, ())
 @test_throws AssertionError SyntaxBranch(p100, ())
