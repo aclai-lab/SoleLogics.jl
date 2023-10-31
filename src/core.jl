@@ -175,7 +175,7 @@ const SyntaxToken = Union{Connective,SyntaxLeaf}
 
 """
     arity(tok::Connective)::Integer
-    arity(t::SyntaxLeaf)::Integer
+    arity(l::SyntaxLeaf)::Integer
 
 Return the `arity` of a `Connective` or an `SyntaxLeaf`. The `arity` is an integer
 representing the number of allowed children in a `SyntaxBranch`. `Connective`s with `arity`
@@ -185,7 +185,7 @@ equal to 0, 1 or 2 are called `nullary`, `unary` and `binary`, respectively.
 See also [`SyntaxLeaf`](@ref), [`Connective`](@ref), [`SyntaxBranch`](@ref).
 """
 arity(t::Connective)::Integer = error("Please, provide method arity(::$(typeof(t))).")
-arity(t::SyntaxLeaf)::Integer = 0;
+arity(l::SyntaxLeaf)::Integer = 0;
 
 isnullary(a) = arity(a) == 0
 isunary(a) = arity(a) == 1
@@ -759,8 +759,8 @@ struct SyntaxBranch{T<:Connective} <: SyntaxTree
         return new{T}(token, children)
     end
 
-    function SyntaxBranch(t::SyntaxLeaf, args...)
-        @assert length(args) == 0 "Leaf $(t) (type $(typeof(t))) is nullary, " *
+    function SyntaxBranch(l::SyntaxLeaf, args...)
+        @assert length(args) == 0 "Leaf $(t) (type $(typeof(l))) is nullary, " *
             " and cannot take syntax children ($(length(args)) were given)."
         return t
     end
@@ -879,7 +879,7 @@ Getter for the token wrapped in a `SyntaxTree`.
 See also [`SyntaxTree`](@ref).
 """
 token(t::SyntaxBranch) = t.token
-token(t::SyntaxLeaf) = t
+token(l::SyntaxLeaf) = l
 
 tokentype(::SyntaxBranch{T}) where {T} = T
 tokentype(::T) where {T <: SyntaxLeaf} = T
@@ -896,7 +896,7 @@ See also [`atoms`](@ref), [`ntokens`](@ref), [`operators`](@ref), [`SyntaxToken`
 function tokens(t::SyntaxBranch)::AbstractVector{SyntaxToken}
     return SyntaxToken[vcat(tokens.(children(t))...)..., token(t)]
 end
-tokens(t::SyntaxLeaf) = [t] # @Mauro: Why `t`?
+tokens(l::SyntaxLeaf) = [l]
 
 """
     operators(t::SyntaxTree)::AbstractVector{Operator}
@@ -940,7 +940,7 @@ function connectives(t::SyntaxBranch)::AbstractVector{Connective}
     c = token(t) isa Connective ? [token(t)] : []
     return Connective[vcat(connectives.(children(t))...)..., c...]
 end
-connectives(t::SyntaxLeaf) = []
+connectives(l::SyntaxLeaf) = []
 
 """
     leaves(t::SyntaxTree)::AbstractVector{Operator}
@@ -1026,7 +1026,7 @@ function noperators(t::SyntaxBranch)::Integer
     return length(children(t)) == 0 ? op : op + sum(noperators(c) for c in children(t))
 end
 # Helpers. TODO complete: make sure that, altogether, these cover t::SyntaxTree
-noperators(t::SyntaxLeaf) = error("Unexpected leaf token (type = $(typeof(t)))")
+noperators(l::SyntaxLeaf) = error("Unexpected leaf token (type = $(typeof(l)))")
 noperators(t::Truth) = 1
 noperators(::Atom) = 0
 
@@ -1042,7 +1042,7 @@ function nconnectives(t::SyntaxBranch)::Integer
     return length(children(t)) == 0 ? c : c + sum(nconnectives(c) for c in children(t))
 end
 # Helpers. TODO complete: make sure that, altogether, these cover t::SyntaxTree
-nconnectives(t::SyntaxLeaf) = error("Unexpected leaf token (type = $(typeof(t)))")
+nconnectives(l::SyntaxLeaf) = error("Unexpected leaf token (type = $(typeof(l)))")
 nconnectives(t::Truth) = 1
 nconnectives(::Atom) = 0
 
@@ -1058,7 +1058,7 @@ function nleaves(t::SyntaxBranch)::Integer
     return length(children(t)) == 0 ? op : op + sum(nleaves(c) for c in children(t))
 end
 # Helpers. TODO complete: make sure that, altogether, these cover t::SyntaxTree
-nleaves(t::SyntaxLeaf) = 1
+nleaves(l::SyntaxLeaf) = 1
 
 """
     natoms(t::SyntaxTree)::Integer
@@ -1072,7 +1072,7 @@ function natoms(t::SyntaxBranch)::Integer
     return length(children(t)) == 0 ? a : a + sum(natoms(c) for c in children(t))
 end
 # Helpers. TODO complete: make sure that, altogether, these cover t::SyntaxTree
-natoms(t::SyntaxLeaf) = error("Unexpected leaf token (type = $(typeof(t)))")
+natoms(l::SyntaxLeaf) = error("Unexpected leaf token (type = $(typeof(l)))")
 natoms(t::Truth) = 0
 natoms(::Atom) = 1
 
@@ -1088,7 +1088,7 @@ function ntruths(t::SyntaxBranch)::Integer
     return length(children(t)) == 0 ? t : t + sum(ntruths(c) for c in children(t))
 end
 # Helpers. TODO complete: make sure that, altogether, these cover t::SyntaxTree
-ntruths(t::SyntaxLeaf) = error("Unexpected leaf token (type = $(typeof(t)))")
+ntruths(l::SyntaxLeaf) = error("Unexpected leaf token (type = $(typeof(l))))")
 ntruths(t::Truth) = 1
 ntruths(::Atom) = 0
 
@@ -1104,7 +1104,7 @@ function height(t::SyntaxBranch)::Integer
     length(children(t)) == 0 ? 0 : 1 + maximum(height(c) for c in children(t))
 end
 # Helpers. TODO complete: make sure that, altogether, these cover t::SyntaxTree
-height(t::SyntaxLeaf) = 0
+height(l::SyntaxLeaf) = 0
 
 # Helpers that make SyntaxBranch's map to the same dictionary key.
 # Useful for checking formulas on interpretations.
