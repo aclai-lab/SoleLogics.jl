@@ -14,7 +14,7 @@ const SL = SoleLogics # SL.name to reference unexported names
     Syntactical
     ├── Formula
     │   ├── AbstractSyntaxStructure
-    │   │   ├── SyntaxTree          <- This is, essentialy, Union{SyntaxLeaf,SyntaxBranch}
+    │   │   ├── SyntaxTree
     │   │   │   ├── SyntaxLeaf
     │   │   │   │   ├── Atom
     │   │   │   │   └── Truth

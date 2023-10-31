@@ -7,7 +7,7 @@ import Base: eltype, in, getindex, isiterable, iterate, IteratorSize, length, is
     Syntactical
     ├── Formula
     │   ├── AbstractSyntaxStructure
-    │   │   ├── SyntaxTree          <- This is, essentialy, Union{SyntaxLeaf,SyntaxBranch}
+    │   │   ├── SyntaxTree
     │   │   │   ├── SyntaxLeaf
     │   │   │   │   ├── Atom
     │   │   │   │   └── Truth
