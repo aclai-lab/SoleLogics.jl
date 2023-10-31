@@ -237,10 +237,8 @@ function tree(f::Formula)::SyntaxTree
     return error("Please, provide method tree(::$(typeof(f)))::SyntaxTree.")
 end
 
-# Helper
-Base.convert(::Type{SyntaxTree}, f::Formula) = tree(f)
-
 tree(t::SyntaxTree) = t
+SyntaxTree(t::SyntaxTree) = tree(t)
 
 # Here, Formulas interface is defined.
 # Each of the following methods forwards its logic to a (::SyntaxTree) dispatch.
@@ -1525,9 +1523,7 @@ function formulas(
     # formulas of `depth-1` using all non-terminal symbols.
     # Stop as soon as `maxdepth` is reached or `nformulas` have been generated.
     depth = 0
-    cur_formulas = Vector{SyntaxTree}(
-        convert.(SyntaxBranch, leaves(g)) # @Mauro by Gio: probably `leaves(g)` is fine, without conversion..?
-    )
+    cur_formulas = Vector{SyntaxTree}(leaves(g))
     all_formulas = SyntaxTree[cur_formulas...]
     while depth < maxdepth && (isnothing(nformulas) || length(all_formulas) < nformulas)
         _nformulas = length(all_formulas)
@@ -1820,10 +1816,10 @@ Return the truth value for a formula on a logical interpretation (or model).
 
 # Examples
 ```jldoctest
-julia> @atoms String p q
+julia> @atoms p q
 2-element Vector{Atom{String}}:
- Atom{String}("p")
- Atom{String}("q")
+ p
+ q
 
 julia> td = TruthDict([p => true, q => false])
 TruthDict with values:
