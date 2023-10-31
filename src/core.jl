@@ -760,9 +760,9 @@ struct SyntaxBranch{T<:Connective} <: SyntaxTree
     end
 
     function SyntaxBranch(l::SyntaxLeaf, args...)
-        @assert length(args) == 0 "Leaf $(t) (type $(typeof(l))) is nullary, " *
+        @assert length(args) == 0 "Leaf $(l) (type $(typeof(l))) is nullary, " *
             " and cannot take syntax children ($(length(args)) were given)."
-        return t
+        return l
     end
 end
 
