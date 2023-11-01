@@ -582,7 +582,8 @@ and [`Bot`](@ref) are tused.
 
 # Implementation
 
-TODO: when implementing a custom `Truth` subtype..., provide istop, isbot
+When implementing a custom `Truth` subtype, provide istop, isbot...
+TODO: write the interface to be implemented here, with an example.
 
 See also [`Top`](@ref), [`Bot`](@ref), [`BooleanTruth`](@ref), [`arity`](@ref);
 """
@@ -978,7 +979,6 @@ function alphabet(g::AbstractGrammar{A} where {A})::A
 end
 atomstype(g::AbstractGrammar) = eltype(alphabet(g))
 tokenstype(g::AbstractGrammar) = Union{operatorstype(g),atomstype(g)}
-
 
 """
     Base.in(t::SyntaxTree, g::AbstractGrammar)::Bool
