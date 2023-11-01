@@ -4,6 +4,11 @@
 # If you are a user, please, consider using the "?" section in the Julia REPL to read
 # docstrings.
 
+# @giopaglia by @mauro-milella: is this a good idea? Maybe this should live in a proper
+# directory inside ../docs ? I think this monolithic file is useful, look at how smooth
+# is core.jl now. Anyway, I would use this strange "include-the-docstrings" pattern only
+# for huge files such as core.jl (maybe, ONLY for core.jl). What do you think?
+
 doc_syntaxstring = """
     syntaxstring(φ::Syntactical; kwargs...)::String
     syntaxstring(φ::Formula; kwargs...)::String
