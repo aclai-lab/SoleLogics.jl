@@ -318,9 +318,9 @@ additional operators may be provided as a second argument.
 
 # Keyword Arguments
 - `function_notation::Bool = false`: if set to `true`, the expression is considered
-    in function notation (e.g, `"⨁(arg1, arg2)"`);
+    in function notation (e.g., `"⨁(arg1, arg2)"`);
     otherwise, it is considered in
-    [infix notation](https://en.wikipedia.org/wiki/Infix_notation) (e.g, `"arg1 ⨁ arg2"`);
+    [infix notation](https://en.wikipedia.org/wiki/Infix_notation) (e.g., `"arg1 ⨁ arg2"`);
 - `atom_parser::Base.Callable = Atom{String}`: a callable to be used for
     parsing atoms, once they are recognized in the expression. It must return
     the atom, or the `Atom` itself;

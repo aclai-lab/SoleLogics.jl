@@ -48,12 +48,9 @@ See also [`Formula`](@ref), [`Connective`](@ref).
 abstract type Syntactical end
 
 """$(doc_syntaxstring)"""
-function syntaxstring(φ::Syntactical; kwargs...)::String
-    return error("Please, provide method syntaxstring(::$(typeof(φ)); kwargs...).")
+function syntaxstring(s::Syntactical; kwargs...)::String
+    return error("Please, provide method syntaxstring(::$(typeof(s)); kwargs...).")
 end
-
-"""$(doc_syntaxstring)"""
-syntaxstring(value; kwargs...) = string(value)
 
 ############################################################################################
 #### Connective ############################################################################
@@ -68,7 +65,15 @@ for example, CONJUNCTION, DISJUNCTION and IMPLICATION (stylized as ∧, ∨ and 
 
 # Implementation
 
-When implementing a custom connective, one can override the default `precedence` and
+When implementing a new type `C` for a connective, please define its `arity`.
+For example, with a binary operator (e.g., ∨ or ∧):
+
+    arity(::C) = 2
+
+When implementing a new type `C` for a *commutative* connective with arity higher than 1,
+please provide a method `iscommutative(::C)`. This can speed up model checking operations.
+
+When implementing a custom binary connective, one can override the default `precedence` and
 `associativity` (see https://docs.julialang.org/en/v1/manual/mathematical-operations/#Operator-Precedence-and-Associativity).
 If the custom connective is a `NamedConnective` and renders as something considered as a
 `math symbol` (for example, `⊙`, see https://stackoverflow.com/a/60321302/5646732),
@@ -76,32 +81,32 @@ by the Julia parser, `Base.operator_precedence`
 and `Base.operator_associativity` are used to define these behaviors, and
 you might want to avoid providing these methods at all.
 
-When implementing a new type `C` for a *commutative* connective with arity higher than 1,
-please provide a method `iscommutative(::C)`. This can help model checking operations.
-
-See also [`SyntaxLeaf`](@ref), [`associativity`](@ref), [`check`](@ref),
-[`iscommutative`](@ref), [`NamedConnective`](@ref), [`precedence`](@ref),
+See also [`arity`](@ref),
+[`SyntaxBranch`](@ref), [`associativity`](@ref), [`precedence`](@ref),
+[`check`](@ref),
+[`iscommutative`](@ref), [`NamedConnective`](@ref),
 [`Syntactical`](@ref).
 """
 abstract type Connective <: Syntactical end
 
+"""$(doc_arity)"""
+arity(c::Connective)::Integer = error("Please, provide method arity(::$(typeof(c))).")
+
+# Helpers
+isnullary(c) = arity(c) == 0
+isunary(c)   = arity(c) == 1
+isbinary(c)  = arity(c) == 2
+isternary(c) = arity(c) == 3
+
 """$(doc_iscommutative)"""
 function iscommutative(c::Connective)
-    return arity(c) <= 1
+    return arity(c) <= 1 # Unless otherwise specified
 end
 
 """$(doc_precedence)"""
 function precedence(c::Connective)
     return error("Please, provide method precedence(c::$(typeof(c))).")
 end
-
-"""$(doc_arity)"""
-arity(c::Connective)::Integer = error("Please, provide method arity(::$(typeof(c))).")
-
-isnullary(c) = arity(c) == 0
-isunary(c)   = arity(c) == 1
-isbinary(c)  = arity(c) == 2
-isternary(c) = arity(c) == 3
 
 """$(doc_associativity)"""
 associativity(::Connective) = :left
@@ -124,55 +129,58 @@ See also [`AbstractSyntaxStructure`](@ref), [`SyntaxLeaf`](@ref),
 abstract type Formula <: Syntactical end
 
 """
-    tree(f::Formula)::SyntaxTree
+    tree(φ::Formula)::SyntaxTree
 
 Return the `SyntaxTree` representation of a formula;
-note that this is equivalent to `Base.convert(SyntaxTree, f)`.
+note that this is equivalent to `Base.convert(SyntaxTree, φ)`.
 
 See also [`Formula`](@ref), [`SyntaxTree`](@ref).
 """
-function tree(f::Formula)
-    return error("Please, provide method tree(::$(typeof(f)))::SyntaxTree.")
+function tree(φ::Formula)
+    return error("Please, provide method tree(::$(typeof(φ)))::SyntaxTree.")
 end
 
+Base.convert(::Type{SyntaxTree}, φ::Formula) = tree(φ)
+
 """$(doc_tokopprop)"""
-function tokens(f::Formula)#::AbstractVector{<:SyntaxToken} Commented out because, at this point in the code, return type is still an unknown symbol
-    return tokens(tree(f))
+function tokens(φ::Formula) # ::AbstractVector{<:SyntaxToken}
+    return tokens(tree(φ))
 end
 """$(doc_tokopprop)"""
-function operators(f::Formula)#::AbstractVector{<:Operator}
-    return operators(tree(f))
+function operators(φ::Formula) # ::AbstractVector{<:Operator}
+    return operators(tree(φ))
 end
 """$(doc_tokopprop)"""
-function connectives(f::Formula)#::AbstractVector{<:Connective}
-    return connectives(tree(f))
+function connectives(φ::Formula) # ::AbstractVector{<:Connective}
+    return connectives(tree(φ))
 end
 """$(doc_tokopprop)"""
-function leaves(f::Formula)#::AbstractVector{<:AbstractLeaf}
-    return leaves(tree(f))
+function leaves(φ::Formula) # ::AbstractVector{<:AbstractLeaf}
+    return leaves(tree(φ))
 end
 """$(doc_tokopprop)"""
-function atoms(f::Formula)#::AbstractVector{<:Atom}
-    return atoms(tree(f))
+function atoms(φ::Formula) # ::AbstractVector{<:Atom}
+    return atoms(tree(φ))
 end
 """$(doc_tokopprop)"""
-function truths(f::Formula)#::AbstractVector{<:Truth}
-    return truths(tree(f))
+function truths(φ::Formula) # ::AbstractVector{<:Truth}
+    return truths(tree(φ))
 end
 """$(doc_tokopprop)"""
-function ntokens(f::Formula)::Integer
-    return ntokens(tree(f))
+function ntokens(φ::Formula)::Integer
+    return ntokens(tree(φ))
 end
 """$(doc_tokopprop)"""
-function natoms(f::Formula)::Integer
-    return natoms(tree(f))
-end
-function nleaves(f::Formula)::Integer
-    return nleaves(tree(f));
+function natoms(φ::Formula)::Integer
+    return natoms(tree(φ))
 end
 """$(doc_tokopprop)"""
-function height(f::Formula)::Integer
-    return height(tree(f))
+function nleaves(φ::Formula)::Integer
+    return nleaves(tree(φ));
+end
+"""$(doc_tokopprop)"""
+function height(φ::Formula)::Integer
+    return height(tree(φ))
 end
 
 function Base.isequal(a::Formula, b::Formula)
@@ -181,7 +189,6 @@ end
 
 Base.hash(a::Formula) = Base.hash(tree(a))
 
-"""$(doc_syntaxstring)"""
 function syntaxstring(φ::Formula; kwargs...)
     syntaxstring(tree(φ); kwargs...)
 end
@@ -236,7 +243,7 @@ tree(t::SyntaxTree) = t
 SyntaxTree(t::SyntaxTree) = tree(t)
 
 
-"""$(doc_tokopprop)"""
+"""$(doc_syntaxtree_tokens)"""
 function tokens(t::SyntaxTree)
     return error("Unexpected syntax tree (type = $(typeof(t)))")
 end
@@ -566,8 +573,9 @@ Base.isequal(a::Atom, b) = Base.isequal(value(a), b)
 Base.isequal(a, b::Atom) = Base.isequal(a, value(b))
 Base.hash(a::Atom) = Base.hash(value(a))
 
-"""$(doc_syntaxstring)"""
 syntaxstring(a::Atom; kwargs...)::String = syntaxstring(value(a); kwargs...)
+
+syntaxstring(value; kwargs...) = string(value)
 
 ############################################################################################
 #### Truth #################################################################################
@@ -659,7 +667,6 @@ function Base.in(tok::SyntaxToken, tree::SyntaxBranch)::Bool
     return tok == token(tree) || any([Base.in(tok, c) for c in children(tree)])
 end
 
-"""$(doc_syntaxstring)"""
 function syntaxstring(
     φ::SyntaxBranch;
     function_notation = false,

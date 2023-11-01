@@ -10,17 +10,10 @@
 # for huge files such as core.jl (maybe, ONLY for core.jl). What do you think?
 
 doc_syntaxstring = """
-    syntaxstring(φ::Syntactical; kwargs...)::String
-    syntaxstring(φ::Formula; kwargs...)::String
-    syntaxstring(tok::SyntaxToken; kwargs...)::String
-    syntaxstring(a::Atom; kwargs...)::String
-    syntaxstring(φ::SyntaxBranch; function_notation=false,
-        remove_redundant_parentheses=true, kwargs...)::String
-    syntaxstring(φ::Any; kwargs...)::String
+    syntaxstring(s::Syntactical; kwargs...)::String
 
-
-Produce the string representation of a `Formula` or a `SyntaxToken` by performing
-a tree traversal of the syntax tree representation of the formula.
+Return the string representation of any syntactic object (e.g.,
+`Formula`, `SyntaxTree`, `SyntaxToken`, `Atom`, `Truth`, etc).
 Note that this representation may introduce redundant parentheses.
 `kwargs` can be used to specify how to display syntax tokens/trees under
 some specific conditions.
@@ -100,7 +93,7 @@ See also [`SyntaxLeaf`](@ref), [`Connective`](@ref), [`SyntaxBranch`](@ref).
 doc_precedence = """
     precedence(c::Connective)
 
-Return the precedence of a (binary) connective.
+Return the precedence of a binary connective.
 
 When using infix notation, and in the absence of parentheses,
 `precedence` establishes how binary connectives are interpreted.
@@ -288,7 +281,8 @@ doc_tokopprop = """
     natoms(f::Formula)::Integer
     ntruths(f::Formula)::Integer
 
-Return the list or the number of (unique) `SyntaxToken`s appearing in a formula.
+Return the list/number of unique `SyntaxToken`s, `Operator`s, etc...
+appearing in a formula.
 
 See also [`Formula`](@ref), [`SyntaxToken`](@ref).
 """
