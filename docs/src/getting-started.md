@@ -143,7 +143,7 @@ AlphabetOfAny
 
 AbstractGrammar
 alphabet(g::AbstractGrammar{A} where {A})
-Base.in(t::SyntaxBranch, g::AbstractGrammar)
+Base.in(φ::SyntaxBranch, g::AbstractGrammar)
 formulas(g::AbstractGrammar; maxdepth::Integer, nformulas::Union{Nothing,Integer} = nothing, args...)
 
 CompleteFlatGrammar{A<:AbstractAlphabet,O<:Operator}

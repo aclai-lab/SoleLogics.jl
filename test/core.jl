@@ -58,13 +58,12 @@ alphabet_mixed = AlphabetOfAny{Union{String,Number}}()
 @test Atom(1.0) in AlphabetOfAny{Number}()
 @test !(Atom(1) in AlphabetOfAny{String}())
 
-@test_nowarn convert(SyntaxBranch, p1)
-@test_nowarn SyntaxBranch(p1)
-@test_throws TypeError SyntaxBranch{typeof(p1)}(p1)
+@test_nowarn convert(SyntaxTree, p1)
+@test_nowarn SyntaxTree(p1)
+@test_throws MethodError SyntaxBranch(p1)
+@test_throws MethodError SyntaxBranch(p1, ())
+@test_throws MethodError SyntaxBranch(p100, ())
 
-@test_nowarn SyntaxBranch(p1)
-@test_throws AssertionError SyntaxBranch(p1, ())
-@test_throws AssertionError SyntaxBranch(p100, ())
 t1_int = p1
 t100_int = p100
 @test tokenstype(t1_int) == tokentype(t1_int)
@@ -127,7 +126,7 @@ t2_int = @test_nowarn ¬(t1_int)
 @test_nowarn p1 ∨ p100
 @test_nowarn ¬(p1) ∨ p1
 @test_nowarn ¬(p1) ∨ ¬(p1)
-@test_nowarn SyntaxBranch(⊤)
+@test_nowarn SyntaxTree(⊤)
 @test_nowarn ⊤ ∨ ⊤
 @test_nowarn p1 ∨ ⊤
 @test_nowarn ⊥ ∨ p1 ∨ ⊤
@@ -200,15 +199,15 @@ f3_int = f_int(⊥ ∨ (p1 ∧ p100 ∧ p2 ∧ ⊤))
 @test_nowarn TruthDict(Dict([p1 => true]))
 
 for i in 1:10
-    _tdict = TruthDict(Dict([p => rand([true, false]) for p in atoms(f3_int)]))
+    _tdict = TruthDict(Dict([p => rand([true, false]) for p in unique(atoms(f3_int))]))
     check(f3_int, _tdict) && @test all(collect(values(_tdict.truth)))
     !check(f3_int, _tdict) && @test !all(collect(values(_tdict.truth)))
 end
 
-tdict = TruthDict(Dict([p => true for p in atoms(f3_int)]))
+tdict = TruthDict(Dict([p => true for p in unique(atoms(f3_int))]))
 @test check(f3_int, tdict)
 
-tdict = TruthDict(Dict([p => false for p in atoms(f3_int)]))
+tdict = TruthDict(Dict([p => false for p in unique(atoms(f3_int))]))
 @test !check(f3_int, tdict)
 
 @test check(f3_int, DefaultedTruthDict([], true))

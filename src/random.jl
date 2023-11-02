@@ -265,7 +265,7 @@ function randformula(
     )::SyntaxBranch
         if height == 0
             # Sample atom from alphabet
-            return SyntaxBranch(picker(rng, atoms(alphabet)))
+            return picker(rng, atoms(alphabet))
         else
             # Sample operator and generate children (modal operators only if modaldepth > 0)
             ops, ops_w = begin

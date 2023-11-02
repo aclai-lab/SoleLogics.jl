@@ -66,9 +66,9 @@ struct AnchoredFormula{L<:AbstractLogic} <: Formula
         # Check that the atoms belong to the alphabet of the logic
         if !check_tree && check_atoms
             @assert all([p in alphabet(_logic[])
-                         for p in atoms(synstruct)]) "Cannot " *
+                         for p in unique(atoms(synstruct))]) "Cannot " *
                            "instantiate AnchoredFormula{$(L)} with illegal atoms: " *
-                           "$(filter((p)->!(p in alphabet(_logic[])), atoms(synstruct)))"
+                           "$(filter((p)->!(p in alphabet(_logic[])), unique(atoms(synstruct))))"
         end
 
         # Check that the token types of the tree are a subset of the tokens
@@ -85,7 +85,7 @@ struct AnchoredFormula{L<:AbstractLogic} <: Formula
     #     tokt::Union{SyntaxToken,AbstractSyntaxStructure};
     #     kwargs...
     # ) where {L<:AbstractLogic}
-    #     t = convert(SyntaxBranch, tokt)
+    #     t = convert(SyntaxTree, tokt)
     #     return AnchoredFormula{L,typeof(t)}(l, t; kwargs...)
     # end
 
@@ -135,7 +135,7 @@ function Base._promote(x::AnchoredFormula, y::AbstractSyntaxStructure)
 end
 
 function Base._promote(x::AnchoredFormula, y::SyntaxToken)
-    Base._promote(x, Base.convert(SyntaxBranch, y))
+    Base._promote(x, Base.convert(SyntaxTree, y)) # TODO fix
 end
 Base._promote(x::Union{SyntaxToken,AbstractSyntaxStructure}, y::AnchoredFormula) = reverse(Base._promote(y, x))
 
@@ -169,13 +169,13 @@ plus the `additional_operators` is instantiated.
 ```julia-repl
 julia> t = parseformula("◊((p∧q)→r)");
 
-julia> operators(logic(SoleLogics.baseformula(t)))
+julia> unique(operators(logic(SoleLogics.baseformula(t))))
 3-element Vector{Union{SoleLogics.NamedConnective{:→}, SoleLogics.NamedConnective{:◊}, SoleLogics.NamedConnective{:∧}}}:
  ∧
  ◊
  →
 
-julia> operators(logic(SoleLogics.baseformula(t; additional_operators = SoleLogics.BASE_MODAL_OPERATORS)))
+julia> unique(operators(logic(SoleLogics.baseformula(t; additional_operators = SoleLogics.BASE_MODAL_OPERATORS))))
 8-element Vector{Union{SoleLogics.BottomOperator, SoleLogics.NamedConnective{:¬}, SoleLogics.NamedConnective{:∧}, SoleLogics.NamedConnective{:∨}, SoleLogics.NamedConnective{:→}, SoleLogics.NamedConnective{:◊}, SoleLogics.NamedConnective{:□}, SoleLogics.TopOperator}}:
  ¬
  ∧
@@ -186,14 +186,15 @@ julia> operators(logic(SoleLogics.baseformula(t; additional_operators = SoleLogi
 ```
 """
 function baseformula(
-    tokf::Union{AbstractSyntaxStructure,Connective};
+    tokf::Formula;
     infer_logic = true,
     additional_operators::Union{Nothing,Vector{<:Operator}} = nothing,
     kwargs...,
 )
-    t = convert(SyntaxBranch, tokf)
+    t = convert(SyntaxTree, tokf)
 
     ops = isnothing(additional_operators) ? SoleLogics.operators(t) : additional_operators
+    ops = unique(ops)
     # operators = unique([additional_operators..., ops...])
     # props = atoms(t)
 

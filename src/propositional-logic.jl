@@ -62,7 +62,7 @@ See also [`AbstractInterpretation`](@ref).
 abstract type AbstractAssignment{A,T<:Truth} <: AbstractInterpretation{A,T} end
 
 """
-    Base.getindex(i::AbstractAssignment{AA,T}, p::Atom, args...)::T where {AA,T<:Truth}
+    Base.getindex(i::AbstractAssignment{AA,T}, a::Atom, args...)::T where {AA,T<:Truth}
 
 Return the truth value of an atom, given an assignment.
 
@@ -137,16 +137,16 @@ end
 
 # When interpreting a single atom, if the lookup fails then return the atom itself
 function interpret(
-    p::Atom,
+    a::Atom,
     i::AbstractAssignment,
     args...;
     kwargs...
 )
     try
-        Base.getindex(i, p, args...)
+        Base.getindex(i, a, args...)
     catch e
         if e isa BoundsError
-            p
+            a
         else
             rethrow(e)
         end
@@ -156,7 +156,7 @@ end
 interpret(t::Truth, args...; kwargs...) = t
 
 # Different ways to call interpret
-# i[p] -> (p itself, or a single Truth value!)
+# i[a] -> (a itself, or a single Truth value!)
 # This has to be user-defined when creating a custom AbstractAssignment concrete type.
 # Otherwise, an error is thrown noticing the user (see our most general dispatch).
 # Note by Gio: these are written for AbstractAssignment, but
@@ -312,14 +312,14 @@ struct TruthDict{
     end
 end
 
-function interpret(p::Atom, i::TruthDict, args...; kwargs...)
-    return Base.haskey(i, p) ? Base.getindex(i.truth, p) : p
+function interpret(a::Atom, i::TruthDict, args...; kwargs...)
+    return Base.haskey(i, a) ? Base.getindex(i.truth, a) : a
 end
 
-Base.haskey(i::TruthDict, p::Atom) = Base.haskey(i.truth, p)
+Base.haskey(i::TruthDict, a::Atom) = Base.haskey(i.truth, a)
 
 function inlinedisplay(i::TruthDict)
-    "TruthDict([$(join(["$(syntaxstring(p)) => $t" for (p,t) in i.truth], ", "))])"
+    "TruthDict([$(join(["$(syntaxstring(a)) => $t" for (a,t) in i.truth], ", "))])"
 end
 
 # Utility function to represent pretty tables horizontally
@@ -468,13 +468,13 @@ struct DefaultedTruthDict{
     end
 end
 
-function interpret(p::Atom, i::DefaultedTruthDict, args...; kwargs...)
-    return Base.haskey(i.truth, p) ? Base.getindex(i.truth, p) : i.default_truth
+function interpret(a::Atom, i::DefaultedTruthDict, args...; kwargs...)
+    return Base.haskey(i.truth, a) ? Base.getindex(i.truth, a) : i.default_truth
 end
-Base.haskey(i::DefaultedTruthDict, p::Atom) = true
+Base.haskey(i::DefaultedTruthDict, a::Atom) = true
 
 function inlinedisplay(i::DefaultedTruthDict)
-    "DefaultedTruthDict([$(join(["$(syntaxstring(p)) => $t" for (p,t) in i.truth], ", "))], $(i.default_truth))"
+    "DefaultedTruthDict([$(join(["$(syntaxstring(a)) => $t" for (a,t) in i.truth], ", "))], $(i.default_truth))"
 end
 
 function Base.show(
@@ -509,7 +509,7 @@ See also [`AbstractAssignment`](@ref), [`AbstractSyntaxStructure`](@ref),
 struct TruthTable{
     A,
     T<:Truth
-}
+} <: Formula # TODO is this correct? Remove?
     truth::Dict{<:AbstractAssignment{A,T},Vector{Pair{AbstractSyntaxStructure,T}}}
 end
 
@@ -528,12 +528,12 @@ end
 
 # A dictionary is interpreted as the map from atoms to truth values
 convert(::Type{AbstractInterpretation}, i::AbstractDict) = TruthDict(i)
-# Base.getindex(i::AbstractDict, p::Atom) = i[value(p)]
-Base.haskey(p::Atom, i::AbstractDict) = (value(p) in keys(i))
-check(p::Atom, i::AbstractDict) = Base.getindex(i, p)
+# Base.getindex(i::AbstractDict, a::Atom) = i[value(a)]
+Base.haskey(a::Atom, i::AbstractDict) = (value(a) in keys(i))
+check(a::Atom, i::AbstractDict) = Base.getindex(i, a)
 
 # A vector is interpreted as the set of true atoms
 convert(::Type{AbstractInterpretation}, i::AbstractVector) = DefaultedTruthDict(i, ⊥)
-# Base.getindex(i::AbstractVector, p::Atom) = (value(p) in i)
-# Base.in(p::Atom, i::AbstractVector) = true
-check(p::Atom, i::AbstractVector) = (p in i)
+# Base.getindex(i::AbstractVector, a::Atom) = (value(a) in i)
+# Base.in(a::Atom, i::AbstractVector) = true
+check(a::Atom, i::AbstractVector) = (a in i)

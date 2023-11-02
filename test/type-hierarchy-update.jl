@@ -25,9 +25,8 @@ const SL = SoleLogics # SL.name to reference unexported names
     │   │   │   └── SyntaxBranch
     │   │   ├── LeftmostLinearForm
     │   │   └── ...
-    │   └── AbstractMemoFormula
-    │       ├── TruthTable
-    │       └── ...
+    │   ├── TruthTable
+    │   └── ...
     └── Connective
         ├── NamedConnective
         ├── AbstractRelationalOperator

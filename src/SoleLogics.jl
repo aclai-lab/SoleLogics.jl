@@ -18,8 +18,6 @@ export Syntactical,
     Formula, AbstractSyntaxStructure, SyntaxTree, SyntaxLeaf,
     Atom, Truth, SyntaxBranch
 
-export AlphabetOfAny, ExplicitAlphabet
-
 export Operator, SyntaxToken
 
 export Top, TOP, ⊤
@@ -31,15 +29,22 @@ export syntaxstring
 export arity, valuetype, tokentype, tokenstype,
         atomstype, operatorstype, truthtype,
         associativity, precedence
-export interpret, check
-export value, token, children, alphabet, formulas
-export domain, top, bot, grammar, algebra, logic, tree
+export value, token, children, formulas
+export tree
 export istop, isbot
 
 export tokens, operators, connectives, leaves, atoms, natoms, height
-export @atoms, @synexpr
+
+export interpret, check
 
 include("core.jl")
+
+export AlphabetOfAny, ExplicitAlphabet
+
+export alphabet
+export domain, top, bot, grammar, algebra, logic
+
+include("logics.jl")
 
 export Connective
 export NamedConnective, ∧, ¬, ∨, →
@@ -96,6 +101,8 @@ include("random.jl")
 export AnchoredFormula
 
 include("anchored-formula.jl")
+
+export @atoms, @synexpr
 
 include("ui.jl")
 

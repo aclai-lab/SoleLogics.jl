@@ -751,8 +751,8 @@ end
 
 frame(i::KripkeStructure) = i.frame
 
-function interpret(p::Atom, i::KripkeStructure{W}, w::W) where {W<:AbstractWorld}
-    interpret(p, i.assignment[w])
+function interpret(a::Atom, i::KripkeStructure{W}, w::W) where {W<:AbstractWorld}
+    interpret(a, i.assignment[w])
 end
 
 function Base.show(io::IO, i::KripkeStructure)

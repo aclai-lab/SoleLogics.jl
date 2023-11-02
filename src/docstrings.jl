@@ -4,11 +4,6 @@
 # If you are a user, please, consider using the "?" section in the Julia REPL to read
 # docstrings.
 
-# @giopaglia by @mauro-milella: is this a good idea? Maybe this should live in a proper
-# directory inside ../docs ? I think this monolithic file is useful, look at how smooth
-# is core.jl now. Anyway, I would use this strange "include-the-docstrings" pattern only
-# for huge files such as core.jl (maybe, ONLY for core.jl). What do you think?
-
 doc_syntaxstring = """
     syntaxstring(s::Syntactical; kwargs...)::String
 
@@ -64,7 +59,7 @@ in a way that it produces a
 
 In particular, for the case of `Atom`s, the function calls itself on the wrapped value:
 
-    syntaxstring(p::Atom; kwargs...) = syntaxstring(value(p); kwargs...)
+    syntaxstring(a::Atom; kwargs...) = syntaxstring(value(a); kwargs...)
 
 The `syntaxstring` for any value defaults to its `string` representation, but it can be
 defined by defining the appropriate `syntaxstring` method.
@@ -80,7 +75,7 @@ See also [`SyntaxLeaf`](@ref), [`Operator`](@ref), [`parsetree`](@ref).
 
 doc_arity = """
     arity(tok::Connective)::Integer
-    arity(l::SyntaxLeaf)::Integer
+    arity(φ::SyntaxLeaf)::Integer # TODO extend to SyntaxTree SyntaxBranch
 
 Return the `arity` of a `Connective` or an `SyntaxLeaf`. The `arity` is an integer
 representing the number of allowed children in a `SyntaxBranch`. `Connective`s with `arity`
@@ -268,32 +263,32 @@ See also [`Formula`](@ref), [`Connective`](@ref).
 """
 
 doc_tokopprop = """
-    tokens(f::Formula)::AbstractVector{<:SyntaxToken}
-    operators(f::Formula)::AbstractVector{<:Operator}
-    connectives(f::Formula)::AbstractVector{<:Connective}
-    leaves(f::Formula)::AbstractVector{<:AbstractLeaf}
-    atoms(f::Formula)::AbstractVector{<:Atom}
-    truths(f::Formula)::AbstractVector{<:Truth}
-    ntokens(f::Formula)::Integer
-    noperators(f::Formula)::Integer
-    nconnectives(f::Formula)::Integer
-    nleaves(f::Formula)::Integer
-    natoms(f::Formula)::Integer
-    ntruths(f::Formula)::Integer
+    tokens(φ::Formula)::AbstractVector{<:SyntaxToken}
+    atoms(φ::Formula)::AbstractVector{<:Atom}
+    truths(φ::Formula)::AbstractVector{<:Truth}
+    leaves(φ::Formula)::AbstractVector{<:SyntaxLeaf}
+    connectives(φ::Formula)::AbstractVector{<:Connective}
+    operators(φ::Formula)::AbstractVector{<:Operator}
+    ntokens(φ::Formula)::Integer
+    natoms(φ::Formula)::Integer
+    ntruths(φ::Formula)::Integer
+    nleaves(φ::Formula)::Integer
+    nconnectives(φ::Formula)::Integer
+    noperators(φ::Formula)::Integer
 
-Return the list/number of unique `SyntaxToken`s, `Operator`s, etc...
+Return the list/number of (non-unique) `SyntaxToken`s, `Atoms`s, etc...
 appearing in a formula.
 
 See also [`Formula`](@ref), [`SyntaxToken`](@ref).
 """
 
 doc_syntaxtree_tokens = """
-    tokens(t::SyntaxTree)::AbstractVector{<:SyntaxToken}
+    tokens(φ::SyntaxTree)::AbstractVector{<:SyntaxToken}
 TODO
 """
 
 doc_syntaxtree_operators = """
-operators(t::SyntaxTree)::AbstractVector{Operator}
+operators(φ::SyntaxTree)::AbstractVector{Operator}
 
 List all operators appearing in a syntax tree.
 
@@ -301,7 +296,7 @@ See also [`atoms`](@ref), [`noperators`](@ref), [`Operator`](@ref), [`tokens`](@
 """
 
 doc_syntaxtree_connectives = """
-    connectives(t::SyntaxTree)::AbstractVector{Connective}
+    connectives(φ::SyntaxTree)::AbstractVector{Connective}
 
 List all connectives appearing in a syntax tree.
 
@@ -309,7 +304,7 @@ See also [`atoms`](@ref), [`Connective`](@ref), [`nconnectives`](@ref).
 """
 
 doc_syntaxtree_leaves = """
-    leaves(t::SyntaxTree)::AbstractVector{Operator}
+    leaves(φ::SyntaxTree)::AbstractVector{Operator}
 
 List all leaves appearing in a syntax tree.
 
@@ -317,7 +312,7 @@ See also  [`atoms`](@ref), [`nleaves`](@ref), [`SyntaxLeaf`](@ref),.
 """
 
 doc_syntaxtree_atoms = """
-    atoms(t::SyntaxTree)::AbstractVector{Atom}
+    atoms(φ::SyntaxTree)::AbstractVector{Atom}
 
 List all `Atom`s appearing in a syntax tree.
 
@@ -325,31 +320,31 @@ See also [`Atom`](@ref), [`natoms`](@ref).
 """
 
 doc_syntaxtree_truths = """
-    truths(t::SyntaxTree)::AbstractVector{Truth}
+    truths(φ::SyntaxTree)::AbstractVector{Truth}
 
 List all `Truth`s appearing in a syntax tree.
 
 See also [`Truth`](@ref), [`ntruths`](@ref).
 """
 
-doc_syntaxbranch_children = """
-    children(t::SyntaxBranch)
+doc_syntaxtree_children = """
+    children(φ::SyntaxTree)
 
-Getter for `t` children.
+Getter for `φ` children.
 
-See also [`SyntaxBranch`](@ref).
+See also [`SyntaxBranch`](@ref), [`SyntaxTree`](@ref).
 """
 
-doc_syntaxbranch_token = """
-    token(t::SyntaxBranch)::SyntaxToken
+doc_syntaxtree_token = """
+    token(φ::SyntaxTree)::SyntaxToken
 
-Getter for the token wrapped in a `SyntaxBranch`.
+Getter for the token wrapped in a `SyntaxTree`.
 
-See also [`SyntaxBranch`](@ref).
+See also [`SyntaxBranch`](@ref), [`SyntaxTree`](@ref).
 """
 
-doc_syntaxbranch_tokens = """
-    tokens(t::SyntaxBranch)
+doc_syntaxtree_tokens = """
+    tokens(φ::SyntaxBranch)
 
 List all tokens appearing in a syntax tree.
 
@@ -357,96 +352,89 @@ See also [`atoms`](@ref), [`ntokens`](@ref), [`operators`](@ref), [`SyntaxToken`
 """
 
 doc_syntaxbranch_operators = """
-    operators(t::SyntaxBranch)
+    operators(φ::SyntaxBranch)
 
 TODO
 """
 
 doc_syntaxbranch_connectives = """
-    connectives(t::SyntaxBranch)
+    connectives(φ::SyntaxBranch)
 
 TODO
 """
 
-doc_syntaxbranch_tokenstype = """
-    tokenstype(t::SyntaxBranch)
+doc_syntaxtree_tokenstype = """
+    tokenstype(φ::SyntaxBranch)
 
-Return all the different `SyntaxToken` types contained in the `SyntaxTree` rooted at `t`.
+Return all the different `SyntaxToken` types contained in the `SyntaxTree` rooted in `φ`.
 
 See also [`Operator`](@ref), [`SyntaxTree`](@ref), [`SyntaxTree`](@ref).
 """
 
 doc_syntaxbranch_operatorstype = """
-    operatorstype(t::SyntaxBranch)
+    operatorstype(φ::SyntaxBranch)
 
-Return all the different `SyntaxToken` types contained in the `SyntaxTree` rooted at `t`.
+Return all the different `SyntaxToken` types contained in the `SyntaxTree` rooted in `φ`.
 
 See also [`SyntaxToken`](@ref), [`SyntaxTree`](@ref), [`SyntaxTree`](@ref).
 """
 
 doc_syntaxbranch_ntokens = """
-    ntokens(t::SyntaxBranch)::Integer
+    ntokens(φ::SyntaxBranch)::Integer
 
-Return the count of all `SyntaxToken`s appearing in the `SyntaxTree` rooted at `t`.
+Return the count of all `SyntaxToken`s appearing in the `SyntaxTree` rooted in `φ`.
 
 See also [`SyntaxBranch`](@ref), [`SyntaxToken`](@ref), [`SyntaxTree`](@ref), [`tokens`](@ref).
 """
 
 doc_syntaxbranch_noperators = """
-    noperators(t::SyntaxTree)::Integer
+    noperators(φ::SyntaxTree)::Integer
 
-Return the count of all `Operator`s appearing in the [`SyntaxTree`] rooted at `t`.
+Return the count of all `Operator`s appearing in the [`SyntaxTree`] rooted in `φ`.
 
 See also [`operators`](@ref), [`SyntaxToken`](@ref).
 """
 
 doc_syntaxbranch_nconnectives = """
-    nconnectives(t::SyntaxTree)::Integer
+    nconnectives(φ::SyntaxTree)::Integer
 
-Return the count of all `Connective`s appearing in the [`SyntaxTree`] rooted at `t`.
+Return the count of all `Connective`s appearing in the [`SyntaxTree`] rooted in `φ`.
 
 See also [`connectives`](@ref), [`SyntaxToken`](@ref).
 """
 
 doc_syntaxbranch_nleaves = """
-    nleaves(t::SyntaxBranch)::Integer
+    nleaves(φ::SyntaxBranch)::Integer
 
-Return the count of all `SyntaxLeaf`s appearing in `t`.
+Return the count of all `SyntaxLeaf`s appearing in `φ`.
 
 See also [`SyntaxBranch`](@ref), [`SyntaxLeafs`](@ref).
 """
 
 doc_syntaxbranch_ntruths = """
-    ntruths(t::SyntaxTree)::Integer
+    ntruths(φ::SyntaxTree)::Integer
 
-Return the count of all `Truth`s appearing in the [`SyntaxTree`] rooted at `t`.
+Return the count of all `Truth`s appearing in the [`SyntaxTree`] rooted in `φ`.
 
 See also [`truths`](@ref), [`SyntaxToken`](@ref).
 """
 
 doc_syntaxbranch_atomstype = """
-    atomstype(t::SyntaxBranch)
+    atomstype(φ::SyntaxBranch)
 
-Return all the different `Atom` types contained in the `SyntaxTree` rooted at `t`.
+Return all the different `Atom` types contained in the `SyntaxTree` rooted in `φ`.
 
 See also [`Atom`](@ref), [`SyntaxBranch`](@ref), [`SyntaxTree`](@ref), [`SyntaxTree`](@ref).
 """
 
 doc_syntaxbranch_natoms = """
-    natoms(t::SyntaxTree)::Integer
+    natoms(φ::SyntaxTree)::Integer
 
-Return the count of all `Atom`s appearing in the [`SyntaxTree`] rooted at `t`.
+Return the count of all `Atom`s appearing in the [`SyntaxTree`] rooted in `φ`.
 
 See also [`atoms`](@ref), [`SyntaxToken`](@ref).
 """
 
-doc_syntaxbranch_height = """
-    height(t::SyntaxBranch)::Integer
-
-Return the height of the `SyntaxBranch` `t`.
-
-See also [`SyntaxBranch`](@ref).
-"""
 
 doc_formula_basein = """
     Base.in(tok::SyntaxToken, φ::Formula)::Bool
