@@ -323,10 +323,11 @@ function noperators(φ::SyntaxTree)::Integer
 end
 
 function Base.isequal(a::SyntaxTree, b::SyntaxTree)
-    return
+    return (
         (arity(a) == 0 && arity(b) == 0 && a == b) ||
         (Base.isequal(token(a), token(b)) &&
                 all(((c1,c2),)->Base.isequal(c1, c2), zip(children(a), children(b))))
+    )
 end
 
 Base.hash(φ::SyntaxTree) = Base.hash(token(φ), Base.hash(children(φ)))
