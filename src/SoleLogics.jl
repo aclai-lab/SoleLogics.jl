@@ -33,7 +33,8 @@ export value, token, children, formulas
 export tree
 export istop, isbot
 
-export tokens, operators, connectives, leaves, atoms, natoms, height
+export tokens, ntokens, atoms, natoms, truths, ntruths, leaves, nleaves,
+        connectives, nconnectives, operators, noperators, height
 
 export interpret, check
 

@@ -1,4 +1,3 @@
-
 #=
     Syntactical Type Hierarchy
 
@@ -280,13 +279,16 @@ function tokens(φ::SyntaxTree) # ::AbstractVector{<:SyntaxToken}
     return SyntaxToken[vcat(tokens.(children(φ))...)..., token(φ)]
 end
 function atoms(φ::SyntaxTree) # ::AbstractVector{<:Atom}
-    return Atom[vcat(atoms.(children(φ))...)...] |> unique
+    a = token(φ) isa Atom ? [token(φ)] : []
+    return Atom[vcat(atoms.(children(φ))...)..., a...] |> unique
 end
 function truths(φ::SyntaxTree) # ::AbstractVector{<:Truth}
-    return Truth[vcat(truths.(children(φ))...)...] |> unique
+    t = token(φ) isa Truth ? [token(φ)] : []
+    return Truth[vcat(truths.(children(φ))...)..., t...] |> unique
 end
 function leaves(φ::SyntaxTree) # ::AbstractVector{<:SyntaxLeaf}
-    return SyntaxLeaf[vcat(leaves.(children(φ))...)...]
+    l = token(φ) isa SyntaxLeaf ? [token(φ)] : []
+    return SyntaxLeaf[vcat(leaves.(children(φ))...)..., l...]
 end
 function connectives(φ::SyntaxTree) # ::AbstractVector{<:Connective}
     c = token(φ) isa Connective ? [token(φ)] : []

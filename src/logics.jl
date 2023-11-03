@@ -439,6 +439,12 @@ function formulas(
     return all_formulas
 end
 
+# This dispatches are needed, since ambiguities might arise when choosing between
+#   in(φ::SyntaxTree, g::SoleLogics.CompleteFlatGrammar) and
+#   in(p::Atom, g::SoleLogics.AbstractGrammar)
+Base.in(p::Atom, g::CompleteFlatGrammar) = Base.in(p, alphabet(g))
+Base.in(op::Truth, g::CompleteFlatGrammar) = (op <: operatorstype(g))
+
 ############################################################################################
 #### AbstractAlgebra, semantics ############################################################
 ############################################################################################

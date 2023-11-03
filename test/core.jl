@@ -89,7 +89,7 @@ grammar_int = SoleLogics.CompleteFlatGrammar(alphabet_int, SoleLogics.BASE_OPERA
 @test ! (Atom(1.0) in grammar_int)
 @test t1_int in grammar_int
 @test ! (t100_int in grammar_int)
-@test_throws ErrorException t1_int in alphabet(grammar_int)
+@test t1_int in alphabet(grammar_int)
 
 @test_nowarn formulas(grammar_int; maxdepth = 2, nformulas = 100)
 
@@ -112,8 +112,8 @@ f_int = @test_nowarn AnchoredFormula(logic_int, t1_int)
 @test p1 in f_int
 @test p1 in grammar(f_int)
 @test ! (p1_number in f_int)
-@test ! ( p100 in f_int )
-@test ! ( Atom("1") in f_int )
+@test ! (p100 in f_int)
+@test ! (Atom("1") in f_int)
 
 
 t2_int = @test_nowarn ¬(t1_int)
