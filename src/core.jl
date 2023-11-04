@@ -572,7 +572,7 @@ end
 function (op::Operator)(children::NTuple{N,Formula}) where {N}
     if arity(op) == 2 && length(children) > arity(op)
         if associativity(op) == :right
-            children = (c1, op(children[2:end]))
+            children = (children[1], op(children[2:end]))
         else
             children = (op(children[1:end-1]), children[end])
         end
@@ -587,9 +587,6 @@ function (op::Operator)(children::NTuple{N,Formula}) where {N}
     # println(typeof.(Base.promote(children...)))
     # println(typeof.(children))
 end
-
-# TODO is the purpose of this to remove ambiguity? TODO place properly, and add comment
-(c::Truth)(::Tuple{}) = c
 
 ############################################################################################
 #### SyntaxBranch ##########################################################################
