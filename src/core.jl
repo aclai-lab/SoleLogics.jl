@@ -349,6 +349,12 @@ function joinformulas(op::Connective, children::NTuple{N,SyntaxTree}) where {N}
     return SyntaxBranch(op, children)
 end
 
+
+function Base.show(io::IO, φ::SyntaxTree)
+    # print(io, "$(typeof(φ))($(syntaxstring(φ)))")
+    print(io, "$(typeof(φ)): $(syntaxstring(φ))")
+    # print(io, "$(syntaxstring(φ))")
+end
 # Syntax tree, the universal syntax structure representation,
 # wins when promoted with syntax structures/tokens and syntax trees.
 Base.promote_rule(::Type{<:SyntaxTree}, ::Type{<:SyntaxTree}) = SyntaxTree
@@ -414,9 +420,9 @@ function Base.in(tok::SyntaxToken, φ::SyntaxLeaf)::Bool
     return tok == φ
 end
 
-function Base.show(io::IO, tok::SyntaxToken)
-    print(io, syntaxstring(tok))
-end
+# function Base.show(io::IO, tok::SyntaxToken)
+#     print(io, syntaxstring(tok))
+# end
 
 ############################################################################################
 #### Atom ##################################################################################
@@ -728,11 +734,6 @@ function syntaxstring(
                tokstr * "$(lpar)" * join(
                     [syntaxstring(c; ch_kwargs...) for c in children(φ)], ", ") * "$(rpar)"
     end
-end
-
-function Base.show(io::IO, φ::SyntaxBranch)
-    print(io, "$(typeof(φ))($(syntaxstring(φ)))")
-    print(io, "$(syntaxstring(φ))")
 end
 
 function Base.in(tok::SyntaxToken, tree::SyntaxBranch)::Bool

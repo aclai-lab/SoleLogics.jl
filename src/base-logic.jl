@@ -146,7 +146,9 @@ function CONJUNCTION(
     c3::Formula,
     cs::Formula...
 )
-    children = (c1, CONJUNCTION(c2, c3, cs...))
+    @assert associativity(CONJUNCTION) == :left
+    cs2 = [c3, cs...]
+    children = (CONJUNCTION(c1, c2, cs2[1:end-1]...), cs2[end])
     T = Base.promote_type((typeof.(children))...)
     T <: SyntaxTree || (children = Base.promote(children...))
     return joinformulas(CONJUNCTION, children)
@@ -157,7 +159,9 @@ function DISJUNCTION(
     c3::Formula,
     cs::Formula...
 )
-    children = (c1, DISJUNCTION(c2, c3, cs...))
+    @assert associativity(DISJUNCTION) == :left
+    cs2 = [c3, cs...]
+    children = (DISJUNCTION(c1, c2, cs2[1:end-1]...), cs2[end])
     T = Base.promote_type((typeof.(children))...)
     T <: SyntaxTree || (children = Base.promote(children...))
     return joinformulas(DISJUNCTION, children)
@@ -168,6 +172,7 @@ function IMPLICATION(
     c3::Formula,
     cs::Formula...
 )
+    @assert associativity(IMPLICATION) == :right
     children = (c1, IMPLICATION(c2, c3, cs...))
     T = Base.promote_type((typeof.(children))...)
     T <: SyntaxTree || (children = Base.promote(children...))
