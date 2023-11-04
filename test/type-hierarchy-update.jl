@@ -139,7 +139,7 @@ interp2             = TruthDict(1:4, BOT)
 @test trees_implication |> children |> first == pandq
 @test trees_implication |> children |> last  == porq
 
-@test norm |> children |> first                     == SyntaxBranch(m)
+@test norm |> children |> first                     == SyntaxTree(m)
 @test norm |> children |> first |> token            == m
 @test norm |> children |> first |> token |> value   == value(m)
 
