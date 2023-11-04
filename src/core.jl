@@ -846,7 +846,7 @@ TruthDict with values:
 │      q │      p │
 │ String │ String │
 ├────────┼────────┤
-│  false │   true │ TODO @Mauro adjust all of these. (TruthDict functioning)
+│ Bot: ⊥ │ Top: ⊤ │
 └────────┴────────┘
 
 julia> interpret(CONJUNCTION(p,q), td)
