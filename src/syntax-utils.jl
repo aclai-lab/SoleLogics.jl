@@ -246,6 +246,10 @@ end
 
 ############################################################################################
 
+# TODO actually:
+# const CNF{SS<:AbstractSyntaxStructure} = Union{LeftmostLinearForm{typeof(∧),LeftmostLinearForm{typeof(∨),SS}},LeftmostLinearForm{typeof(∨),SS}}
+# const DNF{SS<:AbstractSyntaxStructure} = Union{LeftmostLinearForm{typeof(∨),LeftmostLinearForm{typeof(∧),SS}},LeftmostLinearForm{typeof(∧),SS}}
+
 """$(doc_lmlf)"""
 const LeftmostConjunctiveForm{SS<:AbstractSyntaxStructure} = LeftmostLinearForm{typeof(∧),SS}
 """$(doc_lmlf)"""

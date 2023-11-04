@@ -221,7 +221,7 @@ function joinformulas(c::Connective, ::NTuple{N,F})::F where {N,F<:Formula}
 end
 
 function joinformulas(c::Connective, children::Vararg{F,N})::F where {N,F<:Formula}
-    joinformulas(c, children)
+    return joinformulas(c, children)
 end
 
 ############################################################################################
@@ -241,6 +241,10 @@ See also [`Formula`](@ref), [`AbstractLogic`](@ref), [`SyntaxTree`](@ref),
 [`tree`](@ref).
 """
 abstract type AbstractSyntaxStructure <: Formula end
+
+function joinformulas(op::Connective, children::NTuple{N,AbstractSyntaxStructure}) where {N}
+    return joinformulas(op, tree.(children))
+end
 
 ############################################################################################
 #### SyntaxTree ############################################################################
@@ -280,11 +284,11 @@ function tokens(φ::SyntaxTree) # ::AbstractVector{<:SyntaxToken}
 end
 function atoms(φ::SyntaxTree) # ::AbstractVector{<:Atom}
     a = token(φ) isa Atom ? [token(φ)] : []
-    return Atom[vcat(atoms.(children(φ))...)..., a...] |> unique
+    return Atom[vcat(atoms.(children(φ))...)..., a...]
 end
 function truths(φ::SyntaxTree) # ::AbstractVector{<:Truth}
     t = token(φ) isa Truth ? [token(φ)] : []
-    return Truth[vcat(truths.(children(φ))...)..., t...] |> unique
+    return Truth[vcat(truths.(children(φ))...)..., t...]
 end
 function leaves(φ::SyntaxTree) # ::AbstractVector{<:SyntaxLeaf}
     l = token(φ) isa SyntaxLeaf ? [token(φ)] : []
@@ -341,6 +345,9 @@ leavestype(φ::SyntaxTree) = typeintersect(SyntaxLeaf, tokenstype(φ))
 connectivestype(φ::SyntaxTree) = typeintersect(Connective, tokenstype(φ))
 operatorstype(φ::SyntaxTree) = typeintersect(Operator, tokenstype(φ))
 
+function joinformulas(op::Connective, children::NTuple{N,SyntaxTree}) where {N}
+    return SyntaxBranch(op, children)
+end
 
 # Syntax tree, the universal syntax structure representation,
 # wins when promoted with syntax structures/tokens and syntax trees.
@@ -514,10 +521,12 @@ See also [`istop`](@ref), [`Truth`](@ref).
 isbot(t::Truth)::Bool = false
 
 # Helpers
-(c::Truth)(::Tuple{}) = c # TODO is this the correct place? What's the role for this? docstring?
 function Base.convert(::Type{Truth}, t)::Truth
     return error("Cannot interpret value $t of type ($(typeof(t))) as Truth.")
 end
+
+# Helper: joinformulas actually works for operators as well
+joinformulas(c::Truth, ::Tuple{}) = c
 
 ############################################################################################
 #### Operator ##############################################################################
@@ -550,27 +559,26 @@ function (op::Operator)(o::Any)
     return error("Cannot apply operator $(op)::$(typeof(op)) to object $(o)::$(typeof(o))")
 end
 
-function (op::Operator)(children::Union{SyntaxToken,Formula}...)
+function (op::Operator)(children::Formula...)
     return op(children)
 end
 
 function (op::Operator)(
-    children::NTuple{N,Union{SyntaxToken,Formula}},
+    children::NTuple{N,Formula},
 ) where {N}
     T = Base.promote_type((typeof.(children))...)
-    if T <: Union{SyntaxBranch,SyntaxToken}
-        return joinformulas(op, tree.(children))
-    elseif T <: AbstractSyntaxStructure
-        return joinformulas(op, children) # Force SyntaxBranch?
-        # return joinformulas(op, Base.promote(children...))
-        # println(typeof.(children))
-        # println(typeof.(Base.promote(children...)))
-        # return joinformulas(op, children)
-    else
-        # println(typeof.(children))
-        return joinformulas(op, Base.promote(children...))
-    end
+    T <: SyntaxTree || (children = Base.promote(children...))
+    # TODO maybe remove this?
+    # return joinformulas(op, tree.(children))
+    return joinformulas(op, children)
+    # return joinformulas(op, Base.promote(children...))
+    # println(typeof.(children))
+    # println(typeof.(Base.promote(children...)))
+    # println(typeof.(children))
 end
+
+# TODO is the purpose of this to remove ambiguity? TODO place properly, and add comment
+(c::Truth)(::Tuple{}) = c
 
 ############################################################################################
 #### SyntaxBranch ##########################################################################

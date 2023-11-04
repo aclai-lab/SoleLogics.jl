@@ -253,7 +253,6 @@ function Base.in(φ::Formula, g::AbstractGrammar)::Bool
 end
 
 # TODO are these correct?
-
 # Note: when using this file's syntax tokens, these methods suffice:
 Base.in(p::Atom, g::AbstractGrammar) = Base.in(p, alphabet(g))
 Base.in(op::Truth, g::AbstractGrammar) = (op <: operatorstype(g))
@@ -532,12 +531,6 @@ the top and the bottom. The antonym of crisp is *fuzzy*.
 See also [`AbstractAlgebra`](@ref).
 """
 iscrisp(a::AbstractAlgebra) = (length(domain(a)) == 2)
-
-joinformulas(c::Truth, ::Tuple{}) = SyntaxTree(c)
-
-function joinformulas(op::Connective, children::NTuple{N,AbstractSyntaxStructure}) where {N}
-    return SyntaxBranch(op, tree.(children))
-end
 
 ############################################################################################
 #### AbstractLogic #########################################################################

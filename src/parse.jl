@@ -44,7 +44,7 @@ end
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Input and construction ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-const STACK_TOKEN_TYPE = Union{<:SyntaxToken,Symbol}
+const STACK_TOKEN_TYPE = Union{SyntaxToken,Symbol}
 
 # Special symbols: syntax tokens cannot contain these:
 const DEFAULT_OPENING_PARENTHESIS = "("
@@ -66,7 +66,7 @@ const BASE_PARSABLE_OPERATORS = [
 
 # Check if a specific unary operator is in a valid position, during token recognition
 function _check_unary_validity(
-    tokens::Vector{STACK_TOKEN_TYPE},
+    tokens::Vector{<:STACK_TOKEN_TYPE},
     op::Operator,
     opening_parenthesis::Symbol,
     arg_delim::Symbol
@@ -229,7 +229,7 @@ end
 
 # Rearrange a serie of token, from infix to postfix notation
 function shunting_yard!(
-    tokens::Vector{STACK_TOKEN_TYPE};
+    tokens::Vector{<:STACK_TOKEN_TYPE};
     opening_parenthesis::Symbol = Symbol(DEFAULT_OPENING_PARENTHESIS),
     closing_parenthesis::Symbol = Symbol(DEFAULT_CLOSING_PARENTHESIS))
     tokstack = STACK_TOKEN_TYPE[] # support structure
@@ -431,15 +431,14 @@ function parseformula(
     # Build a formula starting from its function notation;
     # note that here, differently from the _postfixbuild case, operators associativity is
     # already covered by the function notation parenthesization.
-    function _prefixbuild(prefix::Vector{STACK_TOKEN_TYPE})
-        stack = Vector{Union{SyntaxBranch, STACK_TOKEN_TYPE}}()
+    function _prefixbuild(prefix::Vector{<:STACK_TOKEN_TYPE})
+        stack = Vector{Union{SyntaxBranch,STACK_TOKEN_TYPE}}()
 
         for tok in reverse(prefix)
             if tok isa Symbol || tok isa Atom
                 push!(stack, tok)
             elseif tok isa Operator
-                if (arity(tok) == 1 && stack[end] isa
-                    Union{SyntaxToken, AbstractSyntaxStructure})
+                if (arity(tok) == 1 && stack[end] isa AbstractSyntaxStructure)
                     # If operator arity is 1, then what follows could be a single AST
                     newtok = SyntaxBranch(tok, stack[end])
                     pop!(stack)
@@ -467,7 +466,7 @@ function parseformula(
 
                     children =
                         [popped[s] for s in 2:length(popped) if popped[s] isa
-                            Union{SyntaxToken, AbstractSyntaxStructure}]
+                            AbstractSyntaxStructure]
                     delims =
                         [s for s in 3:(length(popped)-2) if popped[s] == arg_delim]
 

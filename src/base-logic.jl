@@ -139,22 +139,39 @@ const → = IMPLICATION
 arity(::typeof(→)) = 2
 precedence(::typeof(→)) = 4 # As in Base.operator_precedence, this is for completeness
 
-# Helpers that allow the conjuction/disjuction of more than two tokens/formulas.
+# Helpers that allow the conjuction/disjuction/implication of more than two tokens/formulas.
 function CONJUNCTION(
-    c1::Union{SyntaxToken,AbstractSyntaxStructure},
-    c2::Union{SyntaxToken,AbstractSyntaxStructure},
-    c3::Union{SyntaxToken,AbstractSyntaxStructure},
-    cs::Union{SyntaxToken,AbstractSyntaxStructure}...
+    c1::Formula,
+    c2::Formula,
+    c3::Formula,
+    cs::Formula...
 )
-    return CONJUNCTION(c1, CONJUNCTION(c2, c3, cs...))
+    children = (c1, CONJUNCTION(c2, c3, cs...))
+    T = Base.promote_type((typeof.(children))...)
+    T <: SyntaxTree || (children = Base.promote(children...))
+    return joinformulas(CONJUNCTION, children)
 end
 function DISJUNCTION(
-    c1::Union{SyntaxToken,AbstractSyntaxStructure},
-    c2::Union{SyntaxToken,AbstractSyntaxStructure},
-    c3::Union{SyntaxToken,AbstractSyntaxStructure},
-    cs::Union{SyntaxToken,AbstractSyntaxStructure}...
+    c1::Formula,
+    c2::Formula,
+    c3::Formula,
+    cs::Formula...
 )
-    return DISJUNCTION(c1, DISJUNCTION(c2, c3, cs...))
+    children = (c1, DISJUNCTION(c2, c3, cs...))
+    T = Base.promote_type((typeof.(children))...)
+    T <: SyntaxTree || (children = Base.promote(children...))
+    return joinformulas(DISJUNCTION, children)
+end
+function IMPLICATION(
+    c1::Formula,
+    c2::Formula,
+    c3::Formula,
+    cs::Formula...
+)
+    children = (c1, IMPLICATION(c2, c3, cs...))
+    T = Base.promote_type((typeof.(children))...)
+    T <: SyntaxTree || (children = Base.promote(children...))
+    return joinformulas(IMPLICATION, children)
 end
 
 iscommutative(::typeof(∧)) = true

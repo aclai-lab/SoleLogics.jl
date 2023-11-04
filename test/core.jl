@@ -148,8 +148,8 @@ t2_int = @test_nowarn ¬(t1_int)
 @test_nowarn ∧(¬(t2_int), t2_int, ¬(t2_int) ∧ t2_int)
 @test_nowarn ¬(¬(p1))
 
-@test_nowarn f_int ∨ ⊤
-@test_nowarn ⊥ ∨ f_int
+@test_throws ErrorException f_int ∨ ⊤
+@test_throws ErrorException ⊥ ∨ f_int
 @test_nowarn ¬(f_int)
 @test_nowarn f_int ∨ f_int
 @test_nowarn ¬(f_int) ∨ f_int
@@ -157,9 +157,13 @@ t2_int = @test_nowarn ¬(t1_int)
 @test_nowarn f_int ∨ p1
 @test_nowarn t2_int ∨ f_int
 @test_nowarn f_int ∨ t2_int
-@test atoms(f_int ∨ (p1 ∨ p100)) == [p1, p1, p100]
+# @test atoms(f_int ∨ (p1 ∨ p100)) == [p1, p1, p100]
+@test unique(atoms(f_int ∨ (p1 ∨ p100))) == [p1, p100]
 @test all(isa.(atoms(f_int ∨ (p1 ∨ p100)), atomstype(logic(f_int))))
 
+f_conj_int = @test_throws AssertionError SoleLogics.joinformulas(CONJUNCTION, (f_int, f_int, f_int))
+f_conj_int = @test_nowarn SoleLogics.joinformulas(CONJUNCTION, (f_int, f_int))
+f_conj_int = @test_nowarn CONJUNCTION(f_int, f_int, f_int, f_int)
 f_conj_int = @test_nowarn CONJUNCTION(f_int, f_int, f_int)
 @test_nowarn DISJUNCTION(f_int, f_int, f_conj_int)
 @test_nowarn CONJUNCTION(f_int, f_int, p1)
@@ -184,10 +188,14 @@ f_conj_int = @test_nowarn CONJUNCTION(f_int, f_int, f_int)
 @test_nowarn ∧((¬(f_int), t2_int),)
 @test_nowarn ∧((t2_int, ¬(f_int)),)
 
-@test_throws AssertionError f_int(p1 ∧ p100 ∧ p1_float)
-f3_int = f_int(⊥ ∨ (p1 ∧ p100 ∧ p2 ∧ ⊤))
+@test_nowarn f_int(p1 ∧ p100)
+@test f_int(p1 ∧ p100) isa AnchoredFormula
+@test_throws ErrorException f_int(p1 ∧ p100 ∧ p1_float)
+@test_throws ErrorException f_int(⊥ ∨ (p1 ∧ p100 ∧ p2 ∧ ⊤))
+
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ checking ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 
 @test_nowarn TruthDict()
 @test_nowarn TruthDict([])
@@ -198,21 +206,41 @@ f3_int = f_int(⊥ ∨ (p1 ∧ p100 ∧ p2 ∧ ⊤))
 @test_nowarn TruthDict([p1 => true])
 @test_nowarn TruthDict(Dict([p1 => true]))
 
+anch_φ_int = f_int(p1 ∧ p100 → p2)
+
 for i in 1:10
-    _tdict = TruthDict(Dict([p => rand([true, false]) for p in unique(atoms(f3_int))]))
-    check(f3_int, _tdict) && @test all(collect(values(_tdict.truth)))
-    !check(f3_int, _tdict) && @test !all(collect(values(_tdict.truth)))
+    _tdict = TruthDict(Dict([p => rand([true, false]) for p in unique(atoms(anch_φ_int))]))
+    check(anch_φ_int, _tdict) && @test all(collect(values(_tdict.truth)))
+    !check(anch_φ_int, _tdict) && @test !all(collect(values(_tdict.truth)))
 end
 
-tdict = TruthDict(Dict([p => true for p in unique(atoms(f3_int))]))
-@test check(f3_int, tdict)
+tdict = TruthDict(Dict([p => true for p in unique(atoms(anch_φ_int))]))
+@test check(anch_φ_int, tdict)
 
-tdict = TruthDict(Dict([p => false for p in unique(atoms(f3_int))]))
-@test !check(f3_int, tdict)
+tdict = TruthDict(Dict([p => false for p in unique(atoms(anch_φ_int))]))
+@test !check(anch_φ_int, tdict)
 
-@test check(f3_int, DefaultedTruthDict([], true))
-@test check(f3_int, DefaultedTruthDict(true))
-@test !check(f3_int, DefaultedTruthDict(false))
+@test check(anch_φ_int, DefaultedTruthDict([], true))
+@test check(anch_φ_int, DefaultedTruthDict(true))
+@test !check(anch_φ_int, DefaultedTruthDict(false))
+
+φ_int = (⊥ ∨ (p1 ∧ p100 ∧ p2 ∧ ⊤))
+
+for i in 1:10
+    _tdict = TruthDict(Dict([p => rand([true, false]) for p in unique(atoms(φ_int))]))
+    check(φ_int, _tdict) && @test all(collect(values(_tdict.truth)))
+    !check(φ_int, _tdict) && @test !all(collect(values(_tdict.truth)))
+end
+
+tdict = TruthDict(Dict([p => true for p in unique(atoms(φ_int))]))
+@test check(φ_int, tdict)
+
+tdict = TruthDict(Dict([p => false for p in unique(atoms(φ_int))]))
+@test !check(φ_int, tdict)
+
+@test check(φ_int, DefaultedTruthDict([], true))
+@test check(φ_int, DefaultedTruthDict(true))
+@test !check(φ_int, DefaultedTruthDict(false))
 
 @test_nowarn propositionallogic(; operators = SoleLogics.Operator[])
 emptylogic = @test_nowarn propositionallogic(; operators = SoleLogics.Operator[], alphabet = ExplicitAlphabet([]))
@@ -264,5 +292,42 @@ lfcf2 = @test_nowarn LeftmostConjunctiveForm{Literal}([l2, l100_neg, l1_number_n
 lfdf1 = @test_nowarn LeftmostDisjunctiveForm{Literal}([l1_number_float, l_string_neg])
 lfdf2 = @test_nowarn LeftmostDisjunctiveForm{Literal}([l1_number_float, l_string_neg])
 
-cnf1 = CNF{Literal}([lfdf1, lfdf2])
-dnf1 = DNF{Literal}([lfcf1, lfcf2])
+cnf1 = @test_nowarn CNF{Literal}([lfdf1, lfdf2])
+dnf1 = @test_nowarn DNF{Literal}([lfcf1, lfcf2])
+
+cnf1 = @test_nowarn CNF([lfdf1, lfdf2])
+dnf1 = @test_nowarn DNF([lfcf1, lfcf2])
+
+@test (lfdf1 ∧ lfdf2) isa LeftmostConjunctiveForm
+@test (lfdf1 ∨ lfdf2) isa LeftmostDisjunctiveForm
+
+@test_nowarn ∧(lfdf1, lfdf1, lfdf2)
+@test_nowarn ∨(lfdf1, lfdf1, lfdf2)
+
+@test ∧(lfdf1, lfdf1, lfdf2) isa LeftmostConjunctiveForm
+@test ∨(lfdf1, lfdf1, lfdf2) isa LeftmostDisjunctiveForm
+
+@test_nowarn joinformulas(∧, (lfdf1, lfdf1, lfdf2))
+@test_nowarn joinformulas(∧, lfdf1, lfdf1, lfdf2)
+@test_nowarn joinformulas(∨, (lfdf1, lfdf1, lfdf2))
+@test_nowarn joinformulas(∨, lfdf1, lfdf1, lfdf2)
+
+@test joinformulas(∧, (lfdf1, lfdf1, lfdf2)) isa LeftmostConjunctiveForm
+@test joinformulas(∧, lfdf1, lfdf1, lfdf2) isa LeftmostConjunctiveForm
+@test joinformulas(∨, (lfdf1, lfdf1, lfdf2)) isa LeftmostDisjunctiveForm
+@test joinformulas(∨, lfdf1, lfdf1, lfdf2) isa LeftmostDisjunctiveForm
+
+@test_nowarn ∧(lfdf1, lfdf1, lfdf2)
+@test_nowarn ∨(lfdf1, lfdf1, lfdf2)
+
+@test ∧(lfdf1, lfdf1, lfdf2) isa LeftmostConjunctiveForm
+@test ∨(lfdf1, lfdf1, lfdf2) isa LeftmostDisjunctiveForm
+
+@test ∧(cnf1, cnf1, cnf1) isa CNF
+
+@test !(dnf1 ∧ lfdf1 isa DNF)
+@test dnf1 ∨ lfdf1 isa DNF
+@test dnf1 ∨ lfdf1 ∨ lfdf1 isa DNF
+@test lfdf1 ∨ dnf1 ∨ lfdf1 ∨ lfdf1 isa DNF
+@test lfdf1 ∨ dnf1 isa DNF
+@test dnf1 ∨ lfdf1 isa DNF

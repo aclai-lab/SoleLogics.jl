@@ -53,12 +53,11 @@ struct AnchoredFormula{L<:AbstractLogic} <: Formula
 
     function AnchoredFormula{L}(
         l::Union{L,Base.RefValue{L}},
-        φ::AbstractSyntaxStructure;
+        synstruct::AbstractSyntaxStructure;
         check_atoms::Bool = false,
         check_tree::Bool = false,
     ) where {L<:AbstractLogic}
         _logic = _l(l)
-        synstruct = convert(AbstractSyntaxStructure, φ)
 
         if check_tree
             return error("TODO implement check_tree parameter when constructing AnchoredFormula's!")
@@ -73,28 +72,30 @@ struct AnchoredFormula{L<:AbstractLogic} <: Formula
 
         # Check that the token types of the tree are a subset of the tokens
         #  allowed by the logic
-        @assert tokenstype(synstruct) <: tokenstype(_logic[]) "Cannot " *
-                             "instantiate AnchoredFormula{$(L)} with illegal token types $(tokenstype(synstruct)). " *
-                             "Token types should be <: $(tokenstype(_logic[]))."
+        if !(tokenstype(synstruct) <: tokenstype(_logic[]))
+            throw(ErrorException("Out of grammar! Cannot " *
+                 "instantiate AnchoredFormula{$(L)} with illegal token types `$(tokenstype(synstruct))`. " *
+                 "Token types should be <: $(tokenstype(_logic[]))."))
+        end
 
         return new{L}(_logic, synstruct)
     end
 
     # function AnchoredFormula{L}(
     #     l::Union{L,Base.RefValue{L}},
-    #     φ::AbstractSyntaxStructure;
+    #     synstruct::AbstractSyntaxStructure;
     #     kwargs...
     # ) where {L<:AbstractLogic}
-    #     t = convert(SyntaxTree, φ)
+    #     t = convert(SyntaxTree, synstruct)
     #     return AnchoredFormula{L,typeof(t)}(l, t; kwargs...)
     # end
 
     function AnchoredFormula(
         l::Union{L,Base.RefValue{L}},
-        φ;
+        synstruct;
         kwargs...
     ) where {L<:AbstractLogic}
-        return AnchoredFormula{L}(l, φ; kwargs...)
+        return AnchoredFormula{L}(l, synstruct; kwargs...)
     end
 end
 
@@ -119,7 +120,7 @@ function joinformulas(c::Connective, children::NTuple{N,AnchoredFormula}) where 
     # "TODO expand logic's set of operators (c is not in it: $(typeof(c)) ∉ $(operatorstype(l)))."
     @assert typeof(c) <: operatorstype(l) "Cannot join $(N) formulas via operator $(c): " *
         "this operator does not belong to the logic. $(typeof(c)) <: $(operatorstype(l)) should hold!"
-    return AnchoredFormula(l, joinformulas(c, map(synstruct, children)))
+    return AnchoredFormula(l, joinformulas(c, synstruct.(children)))
 end
 
 # When constructing a new formula from a syntax tree, the logic is passed by reference.

@@ -238,18 +238,18 @@ compositions such as `∧(f, f2, f3, ...)` and `∨(f, f2, f3, ...)` can be done
 thanks to the following two methods that were defined in SoleLogics:
 
     function ∧(
-        c1::Union{SyntaxToken,Formula},
-        c2::Union{SyntaxToken,Formula},
-        c3::Union{SyntaxToken,Formula},
-        cs::Union{SyntaxToken,Formula}...
+        c1::Formula,
+        c2::Formula,
+        c3::Formula,
+        cs::Formula...
     )
         return ∧(c1, ∧(c2, c3, cs...))
     end
     function ∨(
-        c1::Union{SyntaxToken,Formula},
-        c2::Union{SyntaxToken,Formula},
-        c3::Union{SyntaxToken,Formula},
-        cs::Union{SyntaxToken,Formula}...
+        c1::Formula,
+        c2::Formula,
+        c3::Formula,
+        cs::Formula...
     )
         return ∨(c1, ∨(c2, c3, cs...))
     end
