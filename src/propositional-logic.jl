@@ -236,8 +236,9 @@ struct TruthDict{
         T<:Truth,
         D<:AbstractDict{<:Atom{<:A},T},
     }
-        truthtype = supertype(T)
+        truthtype = supertype(T) <: Truth ? supertype(T) : Truth
         d = Dict{Atom{A},truthtype}(d)
+
         return new{A,truthtype,typeof(d)}(d)
     end
     function TruthDict{A,T}(d::AbstractDict{<:Atom,T}) where {A,T<:Truth}
@@ -496,7 +497,6 @@ end
 
 ############################################################################################
 
-# NOTE: the following has to be discussed @mauro-milella
 """
     struct TruthTable{A,T<:Truth}
 
