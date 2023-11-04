@@ -248,12 +248,18 @@ function Base.in(::SyntaxTree, g::AbstractGrammar)::Bool
     return error("Please, provide method Base.in(::SyntaxTree, ::$(typeof(g))).")
 end
 
+function Base.in(φ::Formula, g::AbstractGrammar)::Bool
+    return Base.in(tree(φ), g)
+end
+
+# TODO are these correct?
+
 # Note: when using this file's syntax tokens, these methods suffice:
 Base.in(p::Atom, g::AbstractGrammar) = Base.in(p, alphabet(g))
 Base.in(op::Truth, g::AbstractGrammar) = (op <: operatorstype(g))
-
 function Base.in(tok::Connective, g::AbstractGrammar)
-    return error("Please, provide method Base.in(::$(typeof(tok)), ::$(typeof(g))).")
+    return (op <: operatorstype(g))
+    # return error("Please, provide method Base.in(::$(typeof(tok)), ::$(typeof(g))).")
 end
 
 """

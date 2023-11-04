@@ -300,7 +300,6 @@ See also [`SyntaxBranch`](@ref), [`SyntaxTree`](@ref).
 
 doc_formula_basein = """
     Base.in(tok::SyntaxToken, φ::Formula)::Bool
-    Base.in(tok::SyntaxToken, tree::SyntaxBranch)::Bool
 
 Return whether a syntax token appears in a formula.
 

@@ -53,12 +53,12 @@ struct AnchoredFormula{L<:AbstractLogic} <: Formula
 
     function AnchoredFormula{L}(
         l::Union{L,Base.RefValue{L}},
-        tokt::Union{SyntaxToken,AbstractSyntaxStructure};
+        φ::AbstractSyntaxStructure;
         check_atoms::Bool = false,
         check_tree::Bool = false,
     ) where {L<:AbstractLogic}
         _logic = _l(l)
-        synstruct = convert(AbstractSyntaxStructure, tokt)
+        synstruct = convert(AbstractSyntaxStructure, φ)
 
         if check_tree
             return error("TODO implement check_tree parameter when constructing AnchoredFormula's!")
@@ -82,19 +82,19 @@ struct AnchoredFormula{L<:AbstractLogic} <: Formula
 
     # function AnchoredFormula{L}(
     #     l::Union{L,Base.RefValue{L}},
-    #     tokt::Union{SyntaxToken,AbstractSyntaxStructure};
+    #     φ::AbstractSyntaxStructure;
     #     kwargs...
     # ) where {L<:AbstractLogic}
-    #     t = convert(SyntaxTree, tokt)
+    #     t = convert(SyntaxTree, φ)
     #     return AnchoredFormula{L,typeof(t)}(l, t; kwargs...)
     # end
 
     function AnchoredFormula(
         l::Union{L,Base.RefValue{L}},
-        tokt;
+        φ;
         kwargs...
     ) where {L<:AbstractLogic}
-        return AnchoredFormula{L}(l, tokt; kwargs...)
+        return AnchoredFormula{L}(l, φ; kwargs...)
     end
 end
 
@@ -134,10 +134,7 @@ function Base._promote(x::AnchoredFormula, y::AbstractSyntaxStructure)
     return (x, x(y))
 end
 
-function Base._promote(x::AnchoredFormula, y::SyntaxToken)
-    Base._promote(x, Base.convert(SyntaxTree, y)) # TODO fix
-end
-Base._promote(x::Union{SyntaxToken,AbstractSyntaxStructure}, y::AnchoredFormula) = reverse(Base._promote(y, x))
+Base._promote(x::AbstractSyntaxStructure, y::AnchoredFormula) = reverse(Base._promote(y, x))
 
 iscrisp(f::AnchoredFormula) = iscrisp(logic(f))
 grammar(f::AnchoredFormula) = grammar(logic(f))
