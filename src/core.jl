@@ -569,14 +569,19 @@ function (op::Operator)(children::Formula...)
     return op(children)
 end
 
-function (op::Operator)(
-    children::NTuple{N,Formula},
-) where {N}
+function (op::Operator)(children::NTuple{N,Formula}) where {N}
+    if arity(op) == 2 && length(children) > arity(op)
+        if associativity(op) == :right
+            children = (c1, op(children[2:end]))
+        else
+            children = (op(children[1:end-1]), children[end])
+        end
+    end
     T = Base.promote_type((typeof.(children))...)
     T <: SyntaxTree || (children = Base.promote(children...))
-    # TODO maybe remove this?
-    # return joinformulas(op, tree.(children))
     return joinformulas(op, children)
+    # TODO remove this?
+    # return joinformulas(op, tree.(children))
     # return joinformulas(op, Base.promote(children...))
     # println(typeof.(children))
     # println(typeof.(Base.promote(children...)))

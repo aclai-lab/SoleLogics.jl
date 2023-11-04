@@ -139,45 +139,46 @@ const → = IMPLICATION
 arity(::typeof(→)) = 2
 precedence(::typeof(→)) = 4 # As in Base.operator_precedence, this is for completeness
 
-# Helpers that allow the conjuction/disjuction/implication of more than two tokens/formulas.
-function CONJUNCTION(
-    c1::Formula,
-    c2::Formula,
-    c3::Formula,
-    cs::Formula...
-)
-    @assert associativity(CONJUNCTION) == :left
-    cs2 = [c3, cs...]
-    children = (CONJUNCTION(c1, c2, cs2[1:end-1]...), cs2[end])
-    T = Base.promote_type((typeof.(children))...)
-    T <: SyntaxTree || (children = Base.promote(children...))
-    return joinformulas(CONJUNCTION, children)
-end
-function DISJUNCTION(
-    c1::Formula,
-    c2::Formula,
-    c3::Formula,
-    cs::Formula...
-)
-    @assert associativity(DISJUNCTION) == :left
-    cs2 = [c3, cs...]
-    children = (DISJUNCTION(c1, c2, cs2[1:end-1]...), cs2[end])
-    T = Base.promote_type((typeof.(children))...)
-    T <: SyntaxTree || (children = Base.promote(children...))
-    return joinformulas(DISJUNCTION, children)
-end
-function IMPLICATION(
-    c1::Formula,
-    c2::Formula,
-    c3::Formula,
-    cs::Formula...
-)
-    @assert associativity(IMPLICATION) == :right
-    children = (c1, IMPLICATION(c2, c3, cs...))
-    T = Base.promote_type((typeof.(children))...)
-    T <: SyntaxTree || (children = Base.promote(children...))
-    return joinformulas(IMPLICATION, children)
-end
+# TODO remove
+# # Helpers that allow the conjuction/disjuction/implication of more than two tokens/formulas.
+# function CONJUNCTION(
+#     c1::Formula,
+#     c2::Formula,
+#     c3::Formula,
+#     cs::Formula...
+# )
+#     @assert associativity(CONJUNCTION) == :left
+#     cs2 = [c3, cs...]
+#     children = (CONJUNCTION(c1, c2, cs2[1:end-1]...), cs2[end])
+#     T = Base.promote_type((typeof.(children))...)
+#     T <: SyntaxTree || (children = Base.promote(children...))
+#     return joinformulas(CONJUNCTION, children)
+# end
+# function DISJUNCTION(
+#     c1::Formula,
+#     c2::Formula,
+#     c3::Formula,
+#     cs::Formula...
+# )
+#     @assert associativity(DISJUNCTION) == :left
+#     cs2 = [c3, cs...]
+#     children = (DISJUNCTION(c1, c2, cs2[1:end-1]...), cs2[end])
+#     T = Base.promote_type((typeof.(children))...)
+#     T <: SyntaxTree || (children = Base.promote(children...))
+#     return joinformulas(DISJUNCTION, children)
+# end
+# function IMPLICATION(
+#     c1::Formula,
+#     c2::Formula,
+#     c3::Formula,
+#     cs::Formula...
+# )
+#     @assert associativity(IMPLICATION) == :right
+#     children = (c1, IMPLICATION(c2, c3, cs...))
+#     T = Base.promote_type((typeof.(children))...)
+#     T <: SyntaxTree || (children = Base.promote(children...))
+#     return joinformulas(IMPLICATION, children)
+# end
 
 iscommutative(::typeof(∧)) = true
 iscommutative(::typeof(∨)) = true
