@@ -253,17 +253,23 @@ Base.promote_rule(::Type{<:BooleanTruth}, ::Type{<:BooleanTruth}) = BooleanTruth
 Base.convert(::Type{Bool}, ::Top) = true
 Base.convert(::Type{Bool}, ::Bot) = false
 
-function Base.convert(::Union{Type{Truth},Type{BooleanTruth}}, t::Bool)
-    return (t ? Top : Bot)
+function Base.convert(::Type{<:BooleanTruth}, t::Bool)::BooleanTruth
+    return (t ? TOP : BOT)
 end
-function Base.convert(::Union{Type{Truth},Type{BooleanTruth}}, t::Integer)
+function Base.convert(::Type{<:BooleanTruth}, t::Integer)::BooleanTruth
     if isone(t)
-        return Top
+        return TOP
     elseif iszero(t)
-        return Bot
+        return BOT
     else
-        return error("Cannot interpret Integer value $t as Truth.")
+        return error("Cannot interpret Integer value $t as BooleanTruth.")
     end
+end
+function Base.convert(
+    ::Type{<:BooleanTruth},
+    ::Type{T}
+)::BooleanTruth where {T<:BooleanTruth}
+    return T
 end
 
 # NOTE: are these useful?

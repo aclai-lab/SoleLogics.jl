@@ -6,9 +6,9 @@ import Base: eltype, in, getindex, isiterable, iterate, IteratorSize, length, is
 ############################################################################################
 
 """
-    abstract type AbstractAlphabet{A} end
+    abstract type AbstractAlphabet{V} end
 
-Abstract type for representing an alphabet of atoms with values of type `A`.
+Abstract type for representing an alphabet of atoms with values of type `V`.
 An alphabet (or *propositional alphabet*) is a set of atoms
 (assumed to be
 [countable](https://en.wikipedia.org/wiki/Countable_set)).
@@ -55,18 +55,18 @@ By default, an alphabet is considered finite:
 See also [`AbstractGrammar`](@ref), [`AlphabetOfAny`](@ref), [`Atom`](@ref),
 [`ExplicitAlphabet`](@ref), [`atomstype`](@ref),  [`valuetype`](@ref).
 """
-abstract type AbstractAlphabet{A} end # TODO @Mauro all SomeAlphabetType{A} -> SomeAlphabetType{V}
+abstract type AbstractAlphabet{V} end
 
-Base.eltype(::Type{<:AbstractAlphabet{A}}) where {A} = Atom{A} # TODO @Mauro all SomeAtomType{A} -> SomeAtomType{V}
-atomstype(A::Type{<:AbstractAlphabet}) = eltype(A)
+Base.eltype(::Type{<:AbstractAlphabet{V}}) where {V} = Atom{V}
+atomstype(V::Type{<:AbstractAlphabet}) = eltype(V)
 atomstype(a::AbstractAlphabet) = atomstype(typeof(a))
 valuetype(a::Type{<:AbstractAlphabet}) = valuetype(atomstype(a))
 valuetype(a::AbstractAlphabet) = valuetype(atomstype(a))
 
 """
-An alphabet of `valuetype` `A` can be used for instantiating atoms of valuetype `A`.
+An alphabet of `valuetype` `V` can be used for instantiating atoms of valuetype `V`.
 """
-(::AbstractAlphabet{A})(a) where {A} = Atom{A}(a)
+(::AbstractAlphabet{V})(a) where {V} = Atom{V}(a)
 
 # Default behavior
 Base.isfinite(::Type{<:AbstractAlphabet}) = true
@@ -149,8 +149,8 @@ function Base.iterate(a::AbstractAlphabet, state)
 end
 
 # [Iteration interface](https://docs.julialang.org/en/v1/manual/interfaces/#man-interface-iteration) util.
-function Base.IteratorSize(::Type{A}) where {A<:AbstractAlphabet}
-    return Base.isfinite(A) ? Base.HasLength() : Base.IsInfinite()
+function Base.IteratorSize(::Type{V}) where {V<:AbstractAlphabet}
+    return Base.isfinite(V) ? Base.HasLength() : Base.IsInfinite()
 end
 
 ############################################################################################
@@ -158,27 +158,27 @@ end
 ############################################################################################
 
 """
-    struct ExplicitAlphabet{A} <: AbstractAlphabet{A}
-        atoms::Vector{Atom{A}}
+    struct ExplicitAlphabet{V} <: AbstractAlphabet{V}
+        atoms::Vector{Atom{V}}
     end
 
 An alphabet wrapping atoms in a (finite) `Vector`.
 
 See also [`AbstractAlphabet`](@ref), [`atoms`](@ref).
 """
-struct ExplicitAlphabet{A} <: AbstractAlphabet{A}
-    atoms::Vector{Atom{A}}
+struct ExplicitAlphabet{V} <: AbstractAlphabet{V}
+    atoms::Vector{Atom{V}}
 
-    function ExplicitAlphabet{A}(atoms) where {A}
-        return new{A}(collect(atoms))
+    function ExplicitAlphabet{V}(atoms) where {V}
+        return new{V}(collect(atoms))
     end
 
-    function ExplicitAlphabet(atoms::AbstractVector{Atom{A}}) where {A}
-        return ExplicitAlphabet{A}(collect(atoms))
+    function ExplicitAlphabet(atoms::AbstractVector{Atom{V}}) where {V}
+        return ExplicitAlphabet{V}(collect(atoms))
     end
 
-    function ExplicitAlphabet(atoms::AbstractVector{A}) where {A}
-        return ExplicitAlphabet{A}(Atom.(collect(atoms)))
+    function ExplicitAlphabet(atoms::AbstractVector{V}) where {V}
+        return ExplicitAlphabet{V}(Atom.(collect(atoms)))
     end
 end
 atoms(a::ExplicitAlphabet) = a.atoms
@@ -191,47 +191,47 @@ Base.convert(::Type{AbstractAlphabet}, alphabet::Vector{<:Atom}) =
 ############################################################################################
 
 """
-    struct AlphabetOfAny{A} <: AbstractAlphabet{A} end
+    struct AlphabetOfAny{V} <: AbstractAlphabet{V} end
 
-An implicit, infinite alphabet that includes all atoms with values of a subtype of A.
+An implicit, infinite alphabet that includes all atoms with values of a subtype of V.
 
 See also [`AbstractAlphabet`](@ref).
 """
-struct AlphabetOfAny{A} <: AbstractAlphabet{A} end
+struct AlphabetOfAny{V} <: AbstractAlphabet{V} end
 Base.isfinite(::Type{<:AlphabetOfAny}) = false
-Base.in(::Atom{PA}, ::AlphabetOfAny{AA}) where {PA,AA} = (PA <: AA)
+Base.in(::Atom{PV}, ::AlphabetOfAny{VV}) where {PV,VV} = (PV <: VV)
 
 ############################################################################################
 #### AbstractGrammar #######################################################################
 ############################################################################################
 
 """
-    abstract type AbstractGrammar{A<:AbstractAlphabet,O<:Operator} end
+    abstract type AbstractGrammar{V<:AbstractAlphabet,O<:Operator} end
 
 Abstract type for representing a
 [context-free grammar](https://en.wikipedia.org/wiki/Context-free_grammar)
-based on a *single* alphabet of type `A`, and a set of operators
+based on a *single* alphabet of type `V`, and a set of operators
 that consists of all the (singleton) child types of `O`.
-A context-free grammar is a simple structure for defining formulas inductively.
+V context-free grammar is a simple structure for defining formulas inductively.
 
 See also [`alphabet`](@ref),
 [`atomstype`](@ref), [`tokenstype`](@ref),
 [`operatorstype`](@ref), [`alphabettype`](@ref),
 [`AbstractAlphabet`](@ref), [`Operator`](@ref).
 """
-abstract type AbstractGrammar{A<:AbstractAlphabet,O<:Operator} end
+abstract type AbstractGrammar{V<:AbstractAlphabet,O<:Operator} end
 
-operatorstype(::AbstractGrammar{A,O}) where {A,O} = O
-alphabettype(::AbstractGrammar{A,O}) where {A,O} = A
+operatorstype(::AbstractGrammar{V,O}) where {V,O} = O
+alphabettype(::AbstractGrammar{V,O}) where {V,O} = V
 
 """
-    alphabet(g::AbstractGrammar{A} where {A})::A
+    alphabet(g::AbstractGrammar{V} where {V})::V
 
 Return the propositional alphabet of a grammar.
 
 See also [`AbstractAlphabet`](@ref), [`AbstractGrammar`](@ref).
 """
-function alphabet(g::AbstractGrammar{A} where {A})::A
+function alphabet(g::AbstractGrammar{V} where {V})::V
     return error("Please, provide method alphabet(::$(typeof(g))).")
 end
 atomstype(g::AbstractGrammar) = eltype(alphabet(g))
@@ -282,7 +282,7 @@ to a given maximum depth;
 See also [`AbstractGrammar`](@ref), [`SyntaxBranch`](@ref).
 """
 function formulas(
-    g::AbstractGrammar{A,O} where {A,O};
+    g::AbstractGrammar{V,O} where {V,O};
     maxdepth::Integer,
     nformulas::Union{Nothing,Integer} = nothing,
     args...
@@ -309,13 +309,13 @@ Base.hash(a::AbstractGrammar) = Base.hash(alphabet(a), Base.hash(operatorstype(a
 ############################################################################################
 
 """
-    struct CompleteFlatGrammar{A<:AbstractAlphabet,O<:Operator} <: AbstractGrammar{A,O}
-        alphabet::A
+    struct CompleteFlatGrammar{V<:AbstractAlphabet,O<:Operator} <: AbstractGrammar{V,O}
+        alphabet::V
         operators::Vector{<:O}
     end
 
-A grammar of all well-formed formulas obtained by the arity-complying composition
-of atoms of an alphabet of type `A`, and all operators in `operators`.
+V grammar of all well-formed formulas obtained by the arity-complying composition
+of atoms of an alphabet of type `V`, and all operators in `operators`.
 With n operators, this grammar has exactly n+1 production rules.
 For example, with `operators = [∧,∨]`, the grammar (in Backus-Naur form) is:
 
@@ -327,32 +327,32 @@ with p ∈ alphabet. Note: it is *flat* in the sense that all rules substitute t
 See also [`AbstractGrammar`](@ref), [`Operator`](@ref), [`alphabet`](@ref),
 [`formulas`](@ref), [`connectives`](@ref), [`operators`](@ref), [`leaves`](@ref).
 """
-struct CompleteFlatGrammar{A<:AbstractAlphabet,O<:Operator} <: AbstractGrammar{A,O}
-    alphabet::A
+struct CompleteFlatGrammar{V<:AbstractAlphabet,O<:Operator} <: AbstractGrammar{V,O}
+    alphabet::V
     operators::Vector{<:O}
 
-    function CompleteFlatGrammar{A,O}(
-        alphabet::A,
+    function CompleteFlatGrammar{V,O}(
+        alphabet::V,
         operators::Vector{<:O},
-    ) where {A<:AbstractAlphabet,O<:Operator}
-        return new{A,O}(alphabet, operators)
+    ) where {V<:AbstractAlphabet,O<:Operator}
+        return new{V,O}(alphabet, operators)
     end
 
-    function CompleteFlatGrammar{A}(
-        alphabet::A,
+    function CompleteFlatGrammar{V}(
+        alphabet::V,
         operators::Vector{<:Operator},
-    ) where {A<:AbstractAlphabet}
-        return new{A,Union{typeof.(operators)...}}(
+    ) where {V<:AbstractAlphabet}
+        return new{V,Union{typeof.(operators)...}}(
             alphabet,
             Vector{Union{typeof.(operators)...}}(operators)
         )
     end
 
     function CompleteFlatGrammar(
-        alphabet::A,
+        alphabet::V,
         operators::Vector{<:Operator},
-    ) where {A<:AbstractAlphabet}
-        return new{A,Union{typeof.(operators)...}}(
+    ) where {V<:AbstractAlphabet}
+        return new{V,Union{typeof.(operators)...}}(
             alphabet,
             Vector{Union{typeof.(operators)...}}(operators)
         )
@@ -384,7 +384,7 @@ function leaves(g::AbstractGrammar)
     return [atoms(alphabet(g))..., filter(isnullary, operators(g))...]
 end
 
-# A complete grammar includes any *safe* syntax tree that can be built with
+# V complete grammar includes any *safe* syntax tree that can be built with
 #  the grammar token types.
 function Base.in(φ::SyntaxTree, g::CompleteFlatGrammar)::Bool
     return if token(φ) isa Atom
@@ -402,7 +402,7 @@ end
 
 """
     formulas(
-        g::CompleteFlatGrammar{A,O} where {A,O};
+        g::CompleteFlatGrammar{V,O} where {V,O};
         maxdepth::Integer,
         nformulas::Union{Nothing,Integer} = nothing
     )::Vector{SyntaxBranch}
@@ -412,7 +412,7 @@ Generate all formulas whose `SyntaxBranch`s that are not taller than a given `ma
 See also [`AbstractGrammar`](@ref), [`SyntaxBranch`](@ref).
 """
 function formulas(
-    g::CompleteFlatGrammar{A,O} where {A,O};
+    g::CompleteFlatGrammar{V,O} where {V,O};
     maxdepth::Integer,
     nformulas::Union{Nothing,Integer} = nothing,
 )::Vector{SyntaxTree}
@@ -537,7 +537,7 @@ iscrisp(a::AbstractAlgebra) = (length(domain(a)) == 2)
 ############################################################################################
 
 """
-    abstract type AbstractLogic{G<:AbstractGrammar,A<:AbstractAlgebra} end
+    abstract type AbstractLogic{G<:AbstractGrammar,V<:AbstractAlgebra} end
 
 Abstract type of a logic, which comprehends a context-free grammar (*syntax*) and
 an algebra (*semantics*).
@@ -549,7 +549,7 @@ the methods `grammar` and `algebra` should be implemented.
 
 See also [`AbstractAlgebra`](@ref), [`AbstractGrammar`](@ref).
 """
-abstract type AbstractLogic{G<:AbstractGrammar,A<:AbstractAlgebra} end
+abstract type AbstractLogic{G<:AbstractGrammar,V<:AbstractAlgebra} end
 
 """
     grammar(l::AbstractLogic{G})::G where {G<:AbstractGrammar}
@@ -577,13 +577,13 @@ Base.in(φ::SyntaxBranch, l::AbstractLogic) = Base.in(φ, grammar(l))
 Base.in(p::Atom, l::AbstractLogic) = Base.in(p, alphabet(l))
 
 """
-    algebra(l::AbstractLogic{G,A})::A where {G,A}
+    algebra(l::AbstractLogic{G,V})::V where {G,V}
 
 Return the `algebra` of a given logic.
 
 See also [`AbstractAlgebra`](@ref), [`AbstractLogic`](@ref).
 """
-function algebra(l::AbstractLogic{G,A})::A where {G,A}
+function algebra(l::AbstractLogic{G,V})::V where {G,V}
     return error("Please, provide method algebra(::$(typeof(l))).")
 end
 

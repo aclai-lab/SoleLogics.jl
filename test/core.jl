@@ -199,7 +199,7 @@ f_conj_int = @test_nowarn CONJUNCTION(f_int, f_int, f_int)
 
 @test_nowarn TruthDict()
 @test_nowarn TruthDict([])
-@test_throws MethodError TruthDict((2,3),)
+@test_throws ErrorException TruthDict((2,3),)
 @test_nowarn TruthDict((2,true),)
 @test_nowarn TruthDict((p1, true),)
 @test_nowarn TruthDict([(p1, true),])

@@ -179,18 +179,17 @@ interpret(t::Truth, args...; kwargs...) = t
 
 A logical interpretation instantiated as a dictionary,
 explicitly assigning truth values to a *finite* set of atoms.
-If prompted for the value of an unknown atom, it throws an error.
 
 # Examples
 ```julia-repl
 julia> TruthDict(1:4)
 TruthDict with values:
-┌───────┬───────┬───────┬───────┐
-│     4 │     2 │     3 │     1 │
-│ Int64 │ Int64 │ Int64 │ Int64 │
-├───────┼───────┼───────┼───────┤
-│  true │  true │  true │  true │
-└───────┴───────┴───────┴───────┘
+┌────────┬────────┬────────┬────────┐
+│      4 │      2 │      3 │      1 │
+│  Int64 │  Int64 │  Int64 │  Int64 │
+├────────┼────────┼────────┼────────┤
+│ Top: ⊤ │ Top: ⊤ │ Top: ⊤ │ Top: ⊤ │
+└────────┴────────┴────────┴────────┘
 
 
 julia> t1 = TruthDict(1:4, false); t1[5] = true; t1
@@ -217,6 +216,10 @@ true
 
 ```
 
+!!! note
+If prompted for the value of an unknown atom, this throws an error.
+If not specified, `BooleanTruth`s is the default `Truth` value type.
+
 See also
 [`DefaultedTruthDict`](@ref),
 [`AbstractAssignment`](@ref), [`AbstractInterpretation`](@ref).
@@ -236,7 +239,10 @@ struct TruthDict{
         T<:Truth,
         D<:AbstractDict{<:Atom{<:A},T},
     }
-        truthtype = supertype(T) <: Truth ? supertype(T) : Truth
+        # If the truth dict only contains a Top, then we want to upcast the dictionary
+        # to contain the whole BooleanTruth group.
+        # If T is already BooleanTruth, for example, then we want to keep it as is.
+        truthtype = isconcretetype(T) ? supertype(T) : T
         d = Dict{Atom{A},truthtype}(d)
 
         return new{A,truthtype,typeof(d)}(d)
@@ -260,7 +266,7 @@ struct TruthDict{
         return TruthDict(Dict([(Atom{A}(a),v) for (a,v) in d]))
     end
     function TruthDict(d::AbstractDict)
-        d = Dict([(a, convert(Truth, v)) for (a,v) in d])
+        d = Dict([(a, convert(BooleanTruth, v)) for (a,v) in d])
         return TruthDict(d)
     end
     function TruthDict(v::AbstractVector, truth_value = ⊤)

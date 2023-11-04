@@ -526,7 +526,12 @@ See also [`istop`](@ref), [`Truth`](@ref).
 """
 isbot(t::Truth)::Bool = false
 
-# Helpers
+function Base.convert(::Type{Truth}, t::Bool)
+    error("Please, provide method convert(::Type{Truth}, t::$(typeof(t))).")
+end
+function Base.convert(::Type{Truth}, t::Integer)
+    error("Please, provide method convert(::Type{Truth}, t::$(typeof(t))).")
+end
 function Base.convert(::Type{Truth}, t)::Truth
     return error("Cannot interpret value $t of type ($(typeof(t))) as Truth.")
 end
