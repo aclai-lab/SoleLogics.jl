@@ -46,7 +46,9 @@ struct Point{N,T} <: GeometricalWorld
     Point(xyz::Vararg) = Point(xyz)
 end
 
-show(io::IO, r::Point) = print(io, "($(join(r.xyz, ",")))")
+show(io::IO, w::Point) = print(io, "($(join(w.xyz, ",")))")
+
+Base.getindex(w::Point) = Base.getindex(w.xyz)
 
 goeswithdim(::Type{P}, ::Val{N}) where {N,P<:Point{N}} = true
 

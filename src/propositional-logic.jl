@@ -7,8 +7,8 @@ const BasePropositionalLogic = AbstractLogic{G,A} where {ALP,G<:AbstractGrammar{
 """
     propositionallogic(;
         alphabet = AlphabetOfAny{String}(),
-        operators = [⊤, ⊥, ¬, ∧, ∨, →],
-        grammar = CompleteFlatGrammar(AlphabetOfAny{String}(), [⊤, ⊥, ¬, ∧, ∨, →]),
+        operators = $(BASE_PROPOSITIONAL_OPERATORS),
+        grammar = CompleteFlatGrammar(AlphabetOfAny{String}(), $(BASE_PROPOSITIONAL_OPERATORS)),
         algebra = BooleanAlgebra(),
     )
 
@@ -51,36 +51,35 @@ end
 ############################################################################################
 
 """
-    abstract type AbstractAssignment{A,T<:Truth} <: AbstractInterpretation{A,T} end
+    abstract type AbstractAssignment <: AbstractInterpretation end
 
-A propositional assigment (or, simply, an *assigment*) is a propositional interpretation,
-encoding a mapping from `Atom`s of value type `A`
-to truth values of type `T`.
+Abstract type for assigments, that is, interpretations of propositional logic,
+encoding mappings from `Atom`s to truth values.
 
 See also [`AbstractInterpretation`](@ref).
 """
-abstract type AbstractAssignment{A,T<:Truth} <: AbstractInterpretation{A,T} end
+abstract type AbstractAssignment <: AbstractInterpretation end
 
 """
-    Base.getindex(i::AbstractAssignment{AA,T}, a::Atom, args...)::T where {AA,T<:Truth}
+    Base.getindex(i::AbstractAssignment, a::Atom, args...)::Truth
 
 Return the truth value of an atom, given an assignment.
 
 See also [`AbstractInterpretation`](@ref).
 """
 function Base.getindex(
-    i::AbstractAssignment{AA,T},
+    i::AbstractAssignment,
     ::Atom,
     args...
-)::T where {AA,T<:Truth}
+)::Truth
     return error("Please, provide method " *
                  "Base.getindex(::$(typeof(i)), " *
                  "::Atom, " *
-                 "args...::$(typeof(args))::$(truthtype(i)).")
+                 "args...::$(typeof(args))::Truth.")
 end
 
 """
-    Base.haskey(::Atom{A}, i::AbstractAssignment{A})::Bool where {A}
+    Base.haskey(i::AbstractAssignment, ::Atom)::Bool
 
 Return whether an assigment has a truth value for a given atom.
 
@@ -94,17 +93,18 @@ end
 
 # Helpers
 function Base.getindex(
-    i::AbstractAssignment{AA,T},
+    i::AbstractAssignment,
     a,
-    args...
-)::T where {AA,T<:Truth}
+    args...;
+    kwargs...
+)::Truth
     # if !(a isa Atom)
         Base.getindex(i, Atom(a))
     # else
     #     return error("Please, provide method" *
     #                  " Base.getindex(::$(typeof(i))," *
     #                  " a," *
-    #                  " args...::$(typeof(args))::$(truthtype(i)).")
+    #                  " args...::$(typeof(args))::Truth.")
     # end
 end
 function Base.haskey(i::AbstractAssignment, a)::Bool
@@ -116,6 +116,11 @@ function Base.haskey(i::AbstractAssignment, a)::Bool
     #                  " a)::Bool.")
     # end
 end
+
+# Needed for resolving ambiguities
+# Formula interpretation via i[φ] -> φ
+Base.getindex(i::AbstractAssignment, φ::Formula, args...; kwargs...) =
+    interpret(φ, i, args...; kwargs...)
 
 
 function inlinedisplay(i::AbstractAssignment)
@@ -162,7 +167,7 @@ end
         A,
         T<:Truth,
         D<:AbstractDict{<:Atom{<:A},T}
-    } <: AbstractAssignment{A,T}
+    } <: AbstractAssignment
         truth::D
     end
 
@@ -219,7 +224,7 @@ struct TruthDict{
     A,
     T<:Truth,
     D<:AbstractDict{<:Atom{<:A},T}
-} <: AbstractAssignment{A,T}
+} <: AbstractAssignment
 
     truth::D
 
@@ -375,7 +380,7 @@ end
         A,
         T<:Truth,
         D<:AbstractDict{<:Atom{<:A},T}
-    } <: AbstractAssignment{A,T}
+    } <: AbstractAssignment
         truth::D
         default_truth::T
     end
@@ -413,7 +418,7 @@ struct DefaultedTruthDict{
     A,
     T<:Truth,
     D<:AbstractDict{<:Atom{<:A},T}
-} <: AbstractAssignment{A,T}
+} <: AbstractAssignment
 
     truth::D
 
@@ -508,7 +513,7 @@ struct TruthTable{
     A,
     T<:Truth
 } <: Formula # TODO is this correct? Remove?
-    truth::Dict{<:AbstractAssignment{A,T},Vector{Pair{AbstractSyntaxStructure,T}}}
+    truth::Dict{<:AbstractAssignment,Vector{Pair{AbstractSyntaxStructure,T}}}
 end
 
 ############################################################################################

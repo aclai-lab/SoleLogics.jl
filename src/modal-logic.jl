@@ -484,38 +484,13 @@ include("algebras/frames.jl")
 ############################################################################################
 ############################################################################################
 
-# """
-#     abstract type AbstractModalAssignment{W<:AbstractWorld,A,T<:Truth} end
-
-# A modal assignment is a mapping from `World`s to propositional assignments;
-# or equivalently, a mapping from `World`s, `Atom`s of value type `A`
-# to truth values of type `T`.
-
-# See also [`AbstractAssignment`](@ref), [`AbstractFrame`](@ref).
-# """
-# abstract type AbstractModalAssignment{W<:AbstractWorld,A,T<:Truth} <: AbstractDict{W,<:AbstractAssignment{A,T}} end
-
-# """
-# TODO
-# """
-# function interpret(::Atom{A}, ::AbstractModalAssignment{W,A,T}, ::W) where {W<:AbstractWorld,A,T<:Truth}
-#     return error("Please, provide ...")
-# end
-
-# struct GenericModalAssignment{W<:AbstractWorld,A,T<:Truth} <: AbstractModalAssignment{W,A,T}
-#     dict::Dict{W,AbstractAssignment{A,T}}
-# end
-
-############################################################################################
-
-
 """
     abstract type AbstractKripkeStructure{
         W<:AbstractWorld,
         A,
         T<:Truth,
         FR<:AbstractFrame{W},
-    } <: AbstractInterpretation{A,T} end
+    } <: AbstractInterpretation end
 
 Abstract type for representing
 [Kripke structures](https://en.wikipedia.org/wiki/Kripke_structure_(model_checking))'s).
@@ -531,22 +506,22 @@ abstract type AbstractKripkeStructure{
     A,
     T<:Truth,
     FR<:AbstractFrame{W},
-} <: AbstractInterpretation{A,T} end
+} <: AbstractInterpretation end
 
 function interpret(
-    ::Atom,
-    ::AbstractKripkeStructure{W,A,T},
-    ::W,
-)::T where {W<:AbstractWorld,A,T<:Truth}
-    return error("Please, provide ...")
+    φ::Atom,
+    i::AbstractKripkeStructure{W,A,T},
+    w::W,
+)::Formula where {W<:AbstractWorld,A,T<:Truth}
+    return error("Please, provide method interpret(::$(typeof(φ)), ::$(typeof(i)), ::$(typeof(w))).")
 end
 
 function interpret(
-    ::Formula,
-    ::AbstractKripkeStructure{W,A,T},
-    ::Union{W,Nothing},
-)::T where {W<:AbstractWorld,A,T<:Truth}
-    return error("Please, provide ...")
+    φ::Formula,
+    i::AbstractKripkeStructure{W,A,T},
+    w::Union{W,Nothing},
+)::Formula where {W<:AbstractWorld,A,T<:Truth}
+    return error("Please, provide method interpret(::$(typeof(φ)), ::$(typeof(i)), ::$(typeof(w))).")
 end
 
 function frame(i::AbstractKripkeStructure{W,A,T,FR})::FR where {W<:AbstractWorld,A,T<:Truth,FR<:AbstractFrame{W}}
@@ -620,7 +595,7 @@ julia> valuation = Dict([
     worlds[5] => TruthDict([p => false, q => true]),
  ])
 
-# Kripke Frame and valuation function are merged in a Kripke Model (or Kripke Structure)
+# Kripke Frame and valuation function are merged in a Kripke Structure
 julia> kstruct = KripkeStructure(kframe, valuation)
 
 julia> [w => check(fmodal, kstruct, w) for w in worlds]
@@ -726,7 +701,7 @@ end
         A,
         T<:Truth,
         FR<:AbstractFrame{W},
-        AS<:AbstractDict{W,A where A<:AbstractAssignment{A,T}}
+        AS<:AbstractDict{W,AS where AS<:AbstractAssignment}
     } <: AbstractKripkeStructure{W,A,T,FR}
         frame::FR
         assignment::AS
@@ -742,7 +717,7 @@ struct KripkeStructure{
     A,
     T<:Truth,
     FR<:AbstractFrame{W},
-    AS<:AbstractAssignment{A,T},
+    AS<:AbstractAssignment,
     MAS<:AbstractDict{W,AS}
 } <: AbstractKripkeStructure{W,A,T,FR}
     frame::FR

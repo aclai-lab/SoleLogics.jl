@@ -753,12 +753,10 @@ end
 ############################################################################################
 
 """
-    abstract type AbstractInterpretation{A,T<:Truth} end
+    abstract type AbstractInterpretation end
 
-Abstract type for representing a propositional
-[interpretation](https://en.wikipedia.org/wiki/Interpretation_(logic))
-(or propositional model)
-that associates truth values of a type `T` to atoms of value type `A`.
+Abstract type for representing a logical
+[interpretation](https://en.wikipedia.org/wiki/Interpretation_(logic)).
 In the case of
 [propositional logic](https://simple.wikipedia.org/wiki/Propositional_logic),
 is essentially a map *atom → truth value*.
@@ -767,10 +765,14 @@ Properties expressed via logical formulas can be `check`ed on logical interpreta
 
 See also [`check`](@ref), [`AbstractAssignment`](@ref), [`AbstractKripkeStructure`](@ref).
 """
-abstract type AbstractInterpretation{A,T<:Truth} end
+abstract type AbstractInterpretation end
 
-valuetype(::AbstractInterpretation{A,T}) where {A,T} = A
-truthtype(::AbstractInterpretation{A,T}) where {A,T} = T
+function valuetype(i::AbstractInterpretation)
+    return error("Please, provide method valuetype(::$(typeof(i))).")
+end
+function truthtype(i::AbstractInterpretation)
+    return error("Please, provide method truthtype(::$(typeof(i))).")
+end
 
 ############################################################################################
 #### Interpret & Check #####################################################################

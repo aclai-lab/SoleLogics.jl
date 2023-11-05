@@ -36,9 +36,9 @@ TODO explain. In general, one cannot extract a single logical instance from a se
 struct LogicalInstance{
     A,
     T<:Truth,
-    M<:AbstractInterpretation{A,T},
+    M<:AbstractInterpretation,
     S<:AbstractInterpretationSet{M}
-} <: AbstractInterpretation{A,T}
+} <: AbstractInterpretation
 
     s::S
     i_instance::Int64
@@ -46,7 +46,7 @@ struct LogicalInstance{
     function LogicalInstance{A,T,M,S}(
         s::S,
         i_instance::Integer
-    ) where {A,T<:Truth,M<:AbstractInterpretation{A,T},S<:AbstractInterpretationSet{M}}
+    ) where {A,T<:Truth,M<:AbstractInterpretation,S<:AbstractInterpretationSet{M}}
         new{A,T,M,S}(s, i_instance)
     end
 
