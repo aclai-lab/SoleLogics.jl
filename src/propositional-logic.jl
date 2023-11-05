@@ -67,15 +67,9 @@ Return the truth value of an atom, given an assignment.
 
 See also [`AbstractInterpretation`](@ref).
 """
-function Base.getindex(
-    i::AbstractAssignment,
-    ::Atom,
-    args...
-)::Truth
+function Base.getindex(i::AbstractAssignment, ::Atom, args...)::Truth
     return error("Please, provide method " *
-                 "Base.getindex(::$(typeof(i)), " *
-                 "::Atom, " *
-                 "args...::$(typeof(args))::Truth.")
+                 "Base.getindex(::$(typeof(i)), ::Atom, args...::$(typeof(args))::Truth.")
 end
 
 """
@@ -86,18 +80,11 @@ Return whether an assigment has a truth value for a given atom.
 See also [`AbstractInterpretation`](@ref).
 """
 function Base.haskey(i::AbstractAssignment, ::Atom)::Bool
-    return error("Please, provide method " *
-                 "Base.haskey(::$(typeof(i)), " *
-                 "::Atom)::Bool.")
+    return error("Please, provide method Base.haskey(::$(typeof(i)), ::Atom)::Bool.")
 end
 
 # Helpers
-function Base.getindex(
-    i::AbstractAssignment,
-    a,
-    args...;
-    kwargs...
-)::Truth
+function Base.getindex(i::AbstractAssignment, a, args...; kwargs...)
     # if !(a isa Atom)
         Base.getindex(i, Atom(a))
     # else
@@ -122,31 +109,20 @@ end
 Base.getindex(i::AbstractAssignment, φ::Formula, args...; kwargs...) =
     interpret(φ, i, args...; kwargs...)
 
-
 function inlinedisplay(i::AbstractAssignment)
     return error("Please, provide method inlinedisplay(::$(typeof(i)))::String.")
 end
 
 # TODO: get inspiration from PAndQ package and write interpret function.
 # TODO: change collatetruth name (concepts are "unite and simplify")
-function interpret(
-    tree::SyntaxBranch,
-    i::AbstractAssignment,
-    args...;
-    kwargs...
-)
+function interpret(tree::SyntaxBranch, i::AbstractAssignment, args...; kwargs...)
     return collatetruth(token(tree), Tuple(
         [interpret(ch, i, args...; kwargs...) for ch in children(tree)]
     ))
 end
 
 # When interpreting a single atom, if the lookup fails then return the atom itself
-function interpret(
-    a::Atom,
-    i::AbstractAssignment,
-    args...;
-    kwargs...
-)
+function interpret(a::Atom, i::AbstractAssignment, args...; kwargs...)
     try
         Base.getindex(i, a, args...)
     catch error
@@ -250,11 +226,6 @@ struct TruthDict{
         return TruthDict{A,T,typeof(d)}(d)
     end
     function TruthDict(d::AbstractDict{<:Atom,T}) where {T<:Truth}
-        # DEBUG:
-        # A = Union{valuetype.(keys(d))...}
-        # P = Union{[Atom{_A} for _A in valuetype.(keys(d))]...}
-        # println(A)
-        # println(d)
         A = typejoin(valuetype.(keys(d))...)
         return TruthDict{A,T,typeof(d)}(d)
     end
@@ -316,11 +287,13 @@ struct TruthDict{
     end
 end
 
+Base.getindex(i::TruthDict, a::Atom, args...) = getindex(i.truth, a, args...)
+
+Base.haskey(i::TruthDict, a::Atom) = Base.haskey(i.truth, a)
+
 function interpret(a::Atom, i::TruthDict, args...; kwargs...)
     return Base.haskey(i, a) ? Base.getindex(i.truth, a) : a
 end
-
-Base.haskey(i::TruthDict, a::Atom) = Base.haskey(i.truth, a)
 
 function inlinedisplay(i::TruthDict)
     "TruthDict([$(join(["$(syntaxstring(a)) => $t" for (a,t) in i.truth], ", "))])"
