@@ -227,6 +227,7 @@ struct TruthDict{
     end
     function TruthDict(d::AbstractDict{<:Atom,T}) where {T<:Truth}
         A = typejoin(valuetype.(keys(d))...)
+        d = Dict{Atom{A},T}(d)
         return TruthDict{A,T,typeof(d)}(d)
     end
     function TruthDict(d::AbstractDict{A,T}) where {A,T<:Truth}
