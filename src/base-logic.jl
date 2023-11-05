@@ -4,8 +4,8 @@
         ts::NTuple{N,T},
     )::T where {N,T<:Truth}
 
-Return the truth value of a composed formula c(φ1, ..., φN), given the `N`
-truth values of its immediate sub-formulas.
+Return the truth value for a composed formula c(φ1, ..., φN), given the `N`
+truth values for its immediate sub-formulas.
 
 See also [`AbstractAlgebra`](@ref) [`Connective`](@ref), [`Truth`](@ref).
 """
@@ -22,16 +22,14 @@ function collatetruth(
     end
 end
 
-# collatetruth is defined for every operator, both Connectives and Truth values.
+# With generic formulas, it composes formula
+function collatetruth(c::Connective, ts::NTuple{N,T}) where {N,T<:Formula}
+    c(ts)
+end
 
-# `collatetruth` for any truth value returns itself.
+# Helper (so that collatetruth work for all operators)
 collatetruth(t::Truth, ::Tuple{}) = t
 
-function collatetruth(c::Connective, ts::NTuple{N,T}) where {N,T<:Formula}
-    @assert arity(c) == N
-        "Connective $(syntaxstring(c)) cannot be applied on its children $(ts)"
-    c(ts...)
-end
 ############################################################################################
 ##################################### BASE CONNECTIVES #####################################
 ############################################################################################

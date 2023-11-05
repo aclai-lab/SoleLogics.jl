@@ -20,11 +20,11 @@ conjuctive normal form (CNF) or disjunctive normal form (DNF), defined as:
 # Examples
 ```julia-repl
 julia> LeftmostLinearForm(→, parseformula.(["p", "q", "r"]))
-LeftmostLinearForm{SoleLogics.NamedOperator{:→},SyntaxBranch{Atom{String}}}
+LeftmostLinearForm{SoleLogics.NamedOperator{:→},Atom{String}} TODO recheck these
     (p) → (q) → (r)
 
 julia> LeftmostConjunctiveForm(parseformula.(["¬p", "q", "¬r"]))
-LeftmostLinearForm{SoleLogics.NamedOperator{:∧},SyntaxBranch}
+LeftmostLinearForm{SoleLogics.NamedOperator{:∧},SyntaxTree}
     (¬(p)) ∧ (q) ∧ (¬(r))
 
 julia> LeftmostDisjunctiveForm{Literal}([Literal(false, Atom("p")), Literal(true, Atom("q")), Literal(false, Atom("r"))])
@@ -39,7 +39,7 @@ true
 
 """$(doc_lmlf)
 
-See also [`AbstractSyntaxStructure`](@ref), [`SyntaxBranch`](@ref),
+See also [`AbstractSyntaxStructure`](@ref), [`SyntaxTree`](@ref),
 [`LeftmostConjunctiveForm`](@ref), [`LeftmostDisjunctiveForm`](@ref),
 [`Literal`](@ref).
 """
@@ -52,10 +52,9 @@ struct LeftmostLinearForm{C<:Connective,SS<:AbstractSyntaxStructure} <: Abstract
         a = arity(C()) # TODO maybe add member connective::C and use that instead of C()
         n_children = length(children)
 
-        if a == 0
-            n_children == 0 ||
-                error("Mismatching number of children ($n_children) and connective's arity ($a).")
-        elseif a == 1
+        length(children) > 0 || error("Cannot instantiate LeftmostLinearForm{$(C)} with no children.")
+
+        if a == 1
             n_children == 1 ||
                 error("Mismatching number of children ($n_children) and connective's arity ($a).")
         else
@@ -71,7 +70,6 @@ struct LeftmostLinearForm{C<:Connective,SS<:AbstractSyntaxStructure} <: Abstract
     function LeftmostLinearForm{C}(
         children::Vector,
     ) where {C<:Connective}
-        length(children) > 0 || error("Cannot instantiate LeftmostLinearForm{$(C)} with no children.")
         SS = SoleBase._typejoin(typeof.(children)...)
         LeftmostLinearForm{C,SS}(children)
     end
@@ -91,7 +89,7 @@ struct LeftmostLinearForm{C<:Connective,SS<:AbstractSyntaxStructure} <: Abstract
     end
 
     function LeftmostLinearForm(
-        tree::SyntaxBranch,
+        tree::SyntaxTree,
         conn::Union{<:SoleLogics.Connective,Nothing} = nothing
     )
         # Check conn correctness; it should not be nothing (thus, auto inferred) if
@@ -105,11 +103,11 @@ struct LeftmostLinearForm{C<:Connective,SS<:AbstractSyntaxStructure} <: Abstract
             conn = token(tree)
         end
 
-        # Get a vector of `SyntaxBranch`s, having `conn` as common ancestor, then,
+        # Get a vector of `SyntaxTree`s, having `conn` as common ancestor, then,
         # call LeftmostLinearForm constructor.
         _children = AbstractSyntaxStructure[]
 
-        function _dig_and_retrieve(tree::SyntaxBranch, conn::SoleLogics.Connective)
+        function _dig_and_retrieve(tree::SyntaxTree, conn::SoleLogics.Connective)
             token(tree) != conn ?
             push!(_children, tree) :    # Lexical scope
             for c in children(tree)
@@ -128,6 +126,8 @@ connective(::LeftmostLinearForm{C}) where {C} = C()
 operatortype(::LeftmostLinearForm{C}) where {C} = C
 childrentype(::LeftmostLinearForm{C,SS}) where {C,SS} = SS
 
+nchildren(lf::LeftmostLinearForm) = length(children(lf))
+
 Base.length(lf::LeftmostLinearForm) = Base.length(children(lf))
 function Base.getindex(
     lf::LeftmostLinearForm{C,SS},
@@ -136,8 +136,6 @@ function Base.getindex(
     return LeftmostLinearForm{C,SS}(children(lf)[idxs])
 end
 Base.getindex(lf::LeftmostLinearForm, idx::Integer) = Base.getindex(lf,[idx])
-
-nchildren(lf::LeftmostLinearForm) = length(children(lf))
 
 # TODO: add parameter remove_redundant_parentheses
 # TODO: add parameter parenthesize_atoms
@@ -150,15 +148,11 @@ function syntaxstring(
         syntaxstring(tree(lf); function_notation = function_notation, kwargs...)
     else
         ch = children(lf)
-        if length(ch) == 0
-            syntaxstring(connective(lf); kwargs...)
-        else
-            children_ss = map(
-                c->syntaxstring(c; kwargs...),
-                ch
-            )
-            "(" * join(children_ss, ") $(syntaxstring(connective(lf); kwargs...)) (") * ")"
-        end
+        children_ss = map(
+            c->syntaxstring(c; kwargs...),
+            ch
+        )
+        "(" * join(children_ss, ") $(syntaxstring(connective(lf); kwargs...)) (") * ")"
     end
 end
 
@@ -168,20 +162,17 @@ function tree(lf::LeftmostLinearForm)
     cs = children(lf)
 
     st = begin
-        if length(cs) == 0
-            # No children
-            SyntaxBranch(conn)
-        elseif length(cs) == 1
+        if length(cs) == 1
             # Only child
-            tree(cs[1])
+            tree(first(cs))
         else
-            function _tree(childs::Vector{<:SyntaxBranch})
-                @assert (length(childs) != 0) "$(childs); $(lf); $(conn); $(a); $(cs)"
-                return length(childs) == a ?
-                    SyntaxBranch(conn, childs...) :
-                    SyntaxBranch(conn, childs[1:(a-1)]..., _tree(childs[a:end]))
+            function _tree(chs::Vector{<:SyntaxTree})
+                @assert (length(chs) != 0) "$(chs); $(lf); $(conn); $(a)."
+                return length(chs) == a ?
+                    SyntaxBranch(conn, chs...) :
+                    SyntaxBranch(conn, chs[1:(a-1)]..., _tree(chs[a:end])) # Left-most unwinding
             end
-            _tree(tree.(children(lf)))
+            _tree(tree.(cs))
         end
     end
 
@@ -193,9 +184,9 @@ function Base.show(io::IO, lf::LeftmostLinearForm{C,SS}) where {C,SS}
     println(io, "\t$(syntaxstring(lf))")
 end
 
-Base.promote_rule(::Type{<:LeftmostLinearForm}, ::Type{<:LeftmostLinearForm}) = SyntaxBranch
-Base.promote_rule(::Type{SS}, ::Type{LF}) where {SS<:AbstractSyntaxStructure,LF<:LeftmostLinearForm} = SyntaxBranch
-Base.promote_rule(::Type{LF}, ::Type{SS}) where {LF<:LeftmostLinearForm,SS<:AbstractSyntaxStructure} = SyntaxBranch
+Base.promote_rule(::Type{<:LeftmostLinearForm}, ::Type{<:LeftmostLinearForm}) = SyntaxTree
+Base.promote_rule(::Type{SS}, ::Type{LF}) where {SS<:AbstractSyntaxStructure,LF<:LeftmostLinearForm} = SyntaxTree
+Base.promote_rule(::Type{LF}, ::Type{SS}) where {LF<:LeftmostLinearForm,SS<:AbstractSyntaxStructure} = SyntaxTree
 
 ############################################################################################
 
@@ -233,7 +224,7 @@ prop(l::Literal) = l.prop
 
 atomstype(::Literal{T}) where {T} = T
 
-tree(l::Literal) = ispos(l) ? SyntaxBranch(l.prop) : ¬(SyntaxBranch(l.prop))
+tree(l::Literal) = ispos(l) ? l.prop : ¬(l.prop)
 
 hasdual(l::Literal) = true
 dual(l::Literal) = Literal(!ispos(l), prop(l))
@@ -272,27 +263,29 @@ ndisjuncts(m::Union{LeftmostDisjunctiveForm,DNF}) = nchildren(m)
 
 ############################################################################################
 
-subtrees(tree::SyntaxBranch) = [Iterators.flatten(_subtrees.(children(tree)))...]
-_subtrees(tree::SyntaxBranch) = [tree, Iterators.flatten(_subtrees.(children(tree)))...]
+subtrees(tree::SyntaxTree) = [Iterators.flatten(_subtrees.(children(tree)))...]
+_subtrees(tree::SyntaxTree) = [tree, Iterators.flatten(_subtrees.(children(tree)))...]
 
 """
     treewalk(
-        st::SyntaxBranch,
+        st::SyntaxTree,
         args...;
         rng::AbstractRNG = Random.GLOBAL_RNG,
         criterion::Function = ntokens,
         toleaf::Bool = true,
         returnnode::Bool = false,
         transformnode::Function = nothing,
-    )::SyntaxBranch
+    )::SyntaxTree
 
-Return a subtree from passed SyntaxBranch by following options:
+Return a subtree of syntax tree, by following these options:
  - `criterion`: function used to calculate the probability of stopping at a random node;
  - `returnnode`: true if only the subtree is to be returned;
  - `transformnode`: function that will be applied to the chosen subtree.
+
+TODO explain better
 """
 function treewalk(
-    st::SyntaxBranch,
+    st::SyntaxTree,
     args...;
     rng::AbstractRNG = Random.GLOBAL_RNG,
     criterion::Function = c->true,
@@ -366,18 +359,18 @@ julia> syntaxstring.(SoleLogics.subformulas(parsebaseformula("◊((p∧q)→r)")
 ```
 
 See also
-[`SyntaxBranch`](@ref)), [`Formula`](@ref).
+[`SyntaxTree`](@ref)), [`Formula`](@ref).
 """
 subformulas(f::Formula, args...; kwargs...) = subformulas(tree(f), args...; kwargs...)
-function subformulas(t::SyntaxBranch; sorted=true)
-    # function _subformulas(_t::SyntaxBranch)
-    #     SyntaxBranch[
-    #         (map(SyntaxBranch, Iterators.flatten(subformulas.(children(_t)))))...,
-    #         SyntaxBranch(_t)
+function subformulas(t::SyntaxTree; sorted=true)
+    # function _subformulas(_t::SyntaxTree)
+    #     SyntaxTree[
+    #         (map(SyntaxTree, Iterators.flatten(subformulas.(children(_t)))))...,
+    #         _t
     #     ]
     # end
-    function _subformulas(_t::SyntaxBranch)
-        SyntaxBranch[
+    function _subformulas(_t::SyntaxTree)
+        SyntaxTree[
             (Iterators.flatten(subformulas.(children(_t))))...,
             _t
         ]
@@ -435,11 +428,11 @@ julia> syntaxstring(SoleLogics.normalize(f; profile = :readability, allow_atom_f
 ```
 
 See also
-[`SyntaxBranch`](@ref)), [`Formula`](@ref).
+[`SyntaxTree`](@ref)), [`Formula`](@ref).
 """
 normalize(f::Formula, args...; kwargs...) = normalize(tree(f), args...; kwargs...)
 function normalize(
-    t::SyntaxBranch;
+    t::SyntaxTree;
     profile = :readability,
     remove_boxes = nothing,
     reduce_negations = nothing,
@@ -519,7 +512,7 @@ function normalize(
                 ∧(_normalize(grandchildren[1]), _normalize(¬(grandchildren[2])))
             elseif reduce_negations && chtok isa Atom
                 if allow_atom_flipping && hasdual(chtok)
-                    SyntaxBranch(dual(chtok))
+                    dual(chtok)
                 else
                     ¬(_normalize(child))
                 end
@@ -538,9 +531,9 @@ function normalize(
                 dual_op(_normalize(¬(grandchildren[1])))
                 # end
             elseif (reduce_negations || simplify_constants) && chtok == ⊤ && arity(chtok) == 1
-                SyntaxBranch(⊥)
+                ⊥
             elseif (reduce_negations || simplify_constants) && chtok == ⊥ && arity(chtok) == 1
-                SyntaxBranch(⊤)
+                ⊤
             elseif !forced_negation_removal
                 SyntaxBranch(tok, _normalize.(ch))
             else
@@ -558,35 +551,35 @@ function normalize(
             if (tok == ∨) && arity(tok) == 2
                 if     token(ch[1]) == ⊥  ch[2]          # ⊥ ∨ φ ≡ φ
                 elseif token(ch[2]) == ⊥  ch[1]          # φ ∨ ⊥ ≡ φ
-                elseif token(ch[1]) == ⊤  SyntaxBranch(⊤)  # ⊤ ∨ φ ≡ ⊤
-                elseif token(ch[2]) == ⊤  SyntaxBranch(⊤)  # φ ∨ ⊤ ≡ ⊤
+                elseif token(ch[1]) == ⊤  ⊤              # ⊤ ∨ φ ≡ ⊤
+                elseif token(ch[2]) == ⊤  ⊤              # φ ∨ ⊤ ≡ ⊤
                 else                      newt
                 end
             elseif (tok == ∧) && arity(tok) == 2
-                if     token(ch[1]) == ⊥  SyntaxBranch(⊥)  # ⊥ ∧ φ ≡ ⊥
-                elseif token(ch[2]) == ⊥  SyntaxBranch(⊥)  # φ ∧ ⊥ ≡ ⊥
+                if     token(ch[1]) == ⊥  ⊥              # ⊥ ∧ φ ≡ ⊥
+                elseif token(ch[2]) == ⊥  ⊥              # φ ∧ ⊥ ≡ ⊥
                 elseif token(ch[1]) == ⊤  ch[2]          # ⊤ ∧ φ ≡ φ
                 elseif token(ch[2]) == ⊤  ch[1]          # φ ∧ ⊤ ≡ φ
                 else                      newt
                 end
             elseif (tok == →) && arity(tok) == 2
-                if     token(ch[1]) == ⊥  SyntaxBranch(⊤)       # ⊥ → φ ≡ ⊤
+                if     token(ch[1]) == ⊥  ⊤                   # ⊥ → φ ≡ ⊤
                 elseif token(ch[2]) == ⊥  _normalize(¬ch[1])  # φ → ⊥ ≡ ¬φ
                 elseif token(ch[1]) == ⊤  ch[2]               # ⊤ → φ ≡ φ
-                elseif token(ch[2]) == ⊤  SyntaxBranch(⊤)       # φ → ⊤ ≡ ⊤
+                elseif token(ch[2]) == ⊤  ⊤                   # φ → ⊤ ≡ ⊤
                 else                      SyntaxBranch(∨, _normalize(¬ch[1]), ch[2])
                 end
             elseif (tok == ¬) && arity(tok) == 1
-                if     token(ch[1]) == ⊤  SyntaxBranch(⊥)
-                elseif token(ch[1]) == ⊥  SyntaxBranch(⊤)
+                if     token(ch[1]) == ⊤  ⊥
+                elseif token(ch[1]) == ⊥  ⊤
                 else                      newt
                 end
             elseif SoleLogics.isbox(tok) && arity(tok) == 1
-                if     token(ch[1]) == ⊤  SyntaxBranch(⊤)
+                if     token(ch[1]) == ⊤  ⊤
                 else                      newt
                 end
             elseif SoleLogics.isdiamond(tok) && arity(tok) == 1
-                if     token(ch[1]) == ⊥  SyntaxBranch(⊥)
+                if     token(ch[1]) == ⊥  ⊥
                 else                      newt
                 end
             else
@@ -616,7 +609,7 @@ function normalize(
         end
     end
 
-    function _isless(st1::SyntaxBranch, st2::SyntaxBranch)
+    function _isless(st1::SyntaxTree, st2::SyntaxTree)
         isless(Base.hash(st1), Base.hash(st2))
     end
 
@@ -659,10 +652,10 @@ true
 ```
 
 See also
-[`isgrounding`](@ref)), [`SyntaxBranch`](@ref)), [`Formula`](@ref).
+[`isgrounding`](@ref)), [`SyntaxTree`](@ref)), [`Formula`](@ref).
 """
 isgrounded(f::Formula) = isgrounded(tree(f))
-function isgrounded(t::SyntaxBranch)::Bool
+function isgrounded(t::SyntaxTree)::Bool
     # (println(token(t)); println(children(t)); true) &&
     return (token(t) isa SoleLogics.AbstractRelationalOperator && isgrounding(relation(token(t)))) ||
     # (token(t) in [◊,□]) ||

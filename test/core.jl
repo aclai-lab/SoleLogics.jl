@@ -344,3 +344,13 @@ dnf1 = @test_nowarn DNF([lfcf1, lfcf2])
 @test lfdf1 ∨ dnf1 ∨ lfdf1 ∨ lfdf1 isa DNF
 @test lfdf1 ∨ dnf1 isa DNF
 @test dnf1 ∨ lfdf1 isa DNF
+
+
+
+
+@test_nowarn SoleLogics.collatetruth(CONJUNCTION, (⊤, ⊤))
+@test_nowarn SoleLogics.collatetruth(TOP, ())
+@test_nowarn SoleLogics.collatetruth(TOP, ())
+@test_nowarn TOP()
+@test_nowarn TOP(())
+@test_nowarn TOP((),)
