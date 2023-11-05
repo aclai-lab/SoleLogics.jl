@@ -485,84 +485,64 @@ include("algebras/frames.jl")
 ############################################################################################
 
 """
-    abstract type AbstractKripkeStructure{
-        W<:AbstractWorld,
-        A,
-        T<:Truth,
-        FR<:AbstractFrame{W},
-    } <: AbstractInterpretation end
+    abstract type AbstractKripkeStructure <: AbstractInterpretation end
 
 Abstract type for representing
 [Kripke structures](https://en.wikipedia.org/wiki/Kripke_structure_(model_checking))'s).
 It comprehends a directed graph structure (Kripke frame), where nodes are referred to as
 *worlds*, and the binary relation between them is referred to as the
 *accessibility relation*. Additionally, each world is associated with a mapping from
-`Atom`s of value type `A` to truth values of type `T`.
+`Atom`s to truth values.
 
-See also [`AbstractInterpretation`](@ref).
+See also [`frame`](@ref), [`worldtype`](@ref),
+[`accessibles`](@ref), [`AbstractInterpretation`](@ref).
 """
-abstract type AbstractKripkeStructure{
-    W<:AbstractWorld,
-    A,
-    T<:Truth,
-    FR<:AbstractFrame{W},
-} <: AbstractInterpretation end
+abstract type AbstractKripkeStructure <: AbstractInterpretation end
 
 function interpret(
     φ::Atom,
-    i::AbstractKripkeStructure{W,A,T},
-    w::W,
-)::Formula where {W<:AbstractWorld,A,T<:Truth}
+    i::AbstractKripkeStructure,
+    w::AbstractWorld,
+)::Formula
     return error("Please, provide method interpret(::$(typeof(φ)), ::$(typeof(i)), ::$(typeof(w))).")
 end
 
 function interpret(
     φ::Formula,
-    i::AbstractKripkeStructure{W,A,T},
-    w::Union{W,Nothing},
-)::Formula where {W<:AbstractWorld,A,T<:Truth}
+    i::AbstractKripkeStructure,
+    w::Union{AbstractWorld,Nothing},
+)::Formula
     return error("Please, provide method interpret(::$(typeof(φ)), ::$(typeof(i)), ::$(typeof(w))).")
 end
 
-function frame(i::AbstractKripkeStructure{W,A,T,FR})::FR where {W<:AbstractWorld,A,T<:Truth,FR<:AbstractFrame{W}}
+function frame(i::AbstractKripkeStructure)::AbstractFrame
     return error("Please, provide method frame(i::$(typeof(i))).")
 end
 
 """
-    truthtype(::Type{<:AbstractKripkeStructure{W,A,T}}) where {W<:AbstractWorld,A,T<:Truth} = T
-    truthtype(i::AbstractKripkeStructure) = truthtype(typeof(i))
+    worldtype(i::AbstractKripkeStructure)
 
-The truth type of the model.
-
-See also [`AbstractKripkeStructure`](@ref).
-"""
-truthtype(::Type{<:AbstractKripkeStructure{W,A,T}}) where {W<:AbstractWorld,A,T<:Truth} = T
-truthtype(i::AbstractKripkeStructure) = truthtype(typeof(i))
-
-"""
-    worldtype(::Type{<:AbstractKripkeStructure{W,A,T}}) where {W<:AbstractWorld,A,T<:Truth} = W
-    worldtype(i::AbstractKripkeStructure) = worldtype(typeof(i))
-
-The world type of the model.
+Return the world type of Kripke structure.
 
 See also [`AbstractKripkeStructure`](@ref).
 """
-worldtype(::Type{<:AbstractKripkeStructure{W,A,T}}) where {W<:AbstractWorld,A,T<:Truth} = W
-worldtype(i::AbstractKripkeStructure) = worldtype(typeof(i))
+function worldtype(i::AbstractKripkeStructure)::Type
+    return error("Please, provide method worldtype(::$(typeof(i))).")
+end
 
 accessibles(i::AbstractKripkeStructure, args...) = accessibles(frame(i), args...)
 allworlds(i::AbstractKripkeStructure, args...) = allworlds(frame(i), args...)
 nworlds(i::AbstractKripkeStructure) = nworlds(frame(i))
 
 """
-function check(
-    φ::SyntaxBranch,
-    i::AbstractKripkeStructure{W,A,T},
-    w::Union{Nothing,<:AbstractWorld} = nothing;
-    use_memo::Union{Nothing,AbstractDict{<:Formula,<:WorldSet}} = nothing,
-    perform_normalization::Bool = true,
-    memo_max_height::Union{Nothing,Int} = nothing,
-)::T where {W<:AbstractWorld,A,T<:Truth}
+    function check(
+        φ::SyntaxBranch,
+        i::AbstractKripkeStructure,
+        w::Union{Nothing,<:AbstractWorld} = nothing;
+        use_memo::Union{Nothing,AbstractDict{<:Formula,<:WorldSet}} = nothing,
+        perform_normalization::Bool = true,
+        memo_max_height::Union{Nothing,Int} = nothing,
+    )::Truth
 
 Check a formula on a specific word in a [`KripkeStructure`](@ref).
 
@@ -611,12 +591,13 @@ See also [`SyntaxBranch`](@ref), [`AbstractWorld`](@ref), [`KripkeStructure`](@r
 """
 function check(
     φ::SyntaxBranch,
-    i::AbstractKripkeStructure{W,A,T},
+    i::AbstractKripkeStructure,
     w::Union{Nothing,<:AbstractWorld} = nothing; # TODO remove defaulting
     use_memo::Union{Nothing,AbstractDict{<:Formula,<:WorldSet}} = nothing,
     perform_normalization::Bool = true,
     memo_max_height::Union{Nothing,Int} = nothing,
-)::T where {W<:AbstractWorld,A,T<:Truth}
+)::Truth
+    W = worldtype(i)
 
     if isnothing(w)
         if nworlds(frame(i)) == 1
@@ -702,7 +683,7 @@ end
         T<:Truth,
         FR<:AbstractFrame{W},
         AS<:AbstractDict{W,AS where AS<:AbstractAssignment}
-    } <: AbstractKripkeStructure{W,A,T,FR}
+    } <: AbstractKripkeStructure
         frame::FR
         assignment::AS
     end
@@ -719,7 +700,7 @@ struct KripkeStructure{
     FR<:AbstractFrame{W},
     AS<:AbstractAssignment,
     MAS<:AbstractDict{W,AS}
-} <: AbstractKripkeStructure{W,A,T,FR}
+} <: AbstractKripkeStructure
     frame::FR
     assignment::MAS
 end

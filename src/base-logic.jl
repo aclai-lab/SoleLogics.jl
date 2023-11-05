@@ -13,10 +13,6 @@ function collatetruth(
     c::Connective,
     ts::NTuple{N,T},
 )::T where {N,T<:Truth}
-    # if truthtype(a) != T
-    #     return error("Cannot collate $(length(ts)) truth values of type $(T) " *
-    #                  "with algebra $(typeof(a)) with truth type $(truthtype(a))).")
-    # else
     if arity(c) != length(ts)
         return error("Cannot collate $(length(ts)) truth values for " *
                      "connective $(typeof(c)) with arity $(arity(c))).")
