@@ -168,9 +168,8 @@ TruthDict with values:
 │     5 │     4 │     2 │     3 │     1 │
 │ Int64 │ Int64 │ Int64 │ Int64 │ Int64 │
 ├───────┼───────┼───────┼───────┼───────┤
-│  true │ false │ false │ false │ false │
+│     ⊤ │     ⊥ │     ⊥ │     ⊥ │     ⊥ │
 └───────┴───────┴───────┴───────┴───────┘
-
 
 julia> t2 = TruthDict(["a" => true, "b" => false, "c" => true])
 TruthDict with values:
@@ -178,7 +177,7 @@ TruthDict with values:
 │      c │      b │      a │
 │ String │ String │ String │
 ├────────┼────────┼────────┤
-│   true │  false │   true │
+│      ⊤ │      ⊥ │      ⊤ │
 └────────┴────────┴────────┘
 
 julia> check(parsebaseformula("a ∨ b"), t2)
@@ -367,14 +366,13 @@ it returns `default_truth`.
 # Examples
 ```julia-repl
 julia> t1 = DefaultedTruthDict(string.(1:4), false); t1["5"] = false; t1
-DefaultedTruthDict with default truth `false` and values:
+DefaultedTruthDict with default truth `⊥` and values:
 ┌────────┬────────┬────────┬────────┬────────┐
 │      4 │      1 │      5 │      2 │      3 │
 │ String │ String │ String │ String │ String │
 ├────────┼────────┼────────┼────────┼────────┤
-│   true │   true │  false │   true │   true │
+│      ⊤ │      ⊤ │      ⊥ │      ⊤ │      ⊤ │
 └────────┴────────┴────────┴────────┴────────┘
-
 
 julia> check(parsebaseformula("1 ∨ 2"), t1)
 true
@@ -400,7 +398,7 @@ struct DefaultedTruthDict{
 
     function DefaultedTruthDict{A,T,D}(
         d::D,
-        default_truth::T = false,
+        default_truth::T = BOT,
     ) where {
         A,
         T<:Truth,
@@ -411,7 +409,7 @@ struct DefaultedTruthDict{
 
     function DefaultedTruthDict(
         d::TruthDict{A,T,D},
-        default_truth::T = false,
+        default_truth::T = BOT, # @Gio by @mauro-milella, T was <:Truth, but default_truth was false and this type discrepancy
     ) where {
         A,
         T<:Truth,
@@ -429,18 +427,18 @@ struct DefaultedTruthDict{
             Pair,
             Tuple,
         },
-        default_truth::T = false,
-    ) where {A,T<:Truth}
-        if length(a) == 0
+        default_truth::T = BOT, # @Gio by @mauro-milella, i substituted false with BOT because, after all, this is going to be converted (see method logic)
+    ) where {A,T<:Union{Bool,Truth}}
+    if length(a) == 0
             return DefaultedTruthDict(default_truth)
         else
-            return DefaultedTruthDict(TruthDict(a), default_truth)
+            return DefaultedTruthDict(TruthDict(a),
+                typeof(default_truth) <: Truth ? default_truth :
+                convert(Truth, default_truth))
         end
     end
 
-    function DefaultedTruthDict(
-        default_truth::T = false,
-    ) where {T<:Truth}
+    function DefaultedTruthDict(default_truth::T) where {T<:Union{Bool,Truth}}
         d = Dict{Atom{Any},T}([])
         return DefaultedTruthDict{Any,T,typeof(d)}(d, default_truth)
     end
