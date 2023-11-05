@@ -548,7 +548,7 @@ function normalize(
     newt = begin
         tok, ch = token(newt), children(newt)
         if simplify_constants && tok isa Operator
-            if (tok == ∨) && arity(tok) == 2
+            if (tok == ∨) && arity(tok) == 2 # TODO maybe use istop, isbot?
                 if     token(ch[1]) == ⊥  ch[2]          # ⊥ ∨ φ ≡ φ
                 elseif token(ch[2]) == ⊥  ch[1]          # φ ∨ ⊥ ≡ φ
                 elseif token(ch[1]) == ⊤  ⊤              # ⊤ ∨ φ ≡ ⊤
