@@ -83,7 +83,7 @@ const tocenterrel = ToCenteredRel();
 
 accessibles(fr::AbstractMultiModalFrame, ::AbstractWorld, r::ToCenteredRel) = [centralworld(fr)]
 
-arity(::Type{<:ToCenteredRel}) = 2
+arity(::ToCenteredRel) = 2
 
 syntaxstring(::Type{<:ToCenteredRel}; kwargs...) = "◉"
 

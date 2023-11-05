@@ -105,7 +105,11 @@ end
 
 """$(doc_precedence)"""
 function precedence(c::Connective)
-    return error("Please, provide method precedence(c::$(typeof(c))).")
+    if arity(c) == 1
+        return Base.operator_precedence(:(¬))
+    else
+        return error("Please, provide method precedence(c::$(typeof(c))).")
+    end
 end
 
 """$(doc_associativity)"""

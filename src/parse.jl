@@ -2,7 +2,7 @@ import Base: parse
 
 function Base.parse(
     F::Type{<:Formula},
-    str::AbstractString,
+    str::String,
     args...;
     kwargs...
 )
@@ -12,26 +12,26 @@ end
 """
     parseformula(
         F::Type{<:Formula},
-        str::AbstractString,
+        str::String,
         args...;
         kwargs...
     )
 
 Parses a formula of type `F` from a string. When `F` is not specified, it defaults to
-    `SyntaxBranch` and [`parsetree`](@ref) is called.
+    `SyntaxTree` and [`parsetree`](@ref) is called.
 
 See also [`parsetree`](@ref), [`parsebaseformula`](@ref).
 """
 function parseformula(
     F::Type{<:Formula},
-    str::AbstractString,
+    str::String,
     args...;
     kwargs...
 )
     return error("Please, provide method parseformula(::Type{$(F)}, str, ::$(typeof(args))...; ::$(typeof(kwargs))...).")
 end
 
-parseformula(str, args...; kwargs...) = parseformula(SyntaxBranch, str, args...; kwargs...)
+parseformula(str::String, args...; kwargs...) = parseformula(SyntaxTree, str, args...; kwargs...)
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Utils ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -260,6 +260,7 @@ function shunting_yard!(
             #  is placed at the top of the stack.
             while !isempty(tokstack) &&
                 (tokstack[end] isa Operator &&
+                # isbinary(tokstack[end]) && TODO needed?
                 precedence(tokstack[end]) >= precedence(tok) &&
                 associativity(tok) == :left)
                 push!(postfix, pop!(tokstack))
@@ -300,7 +301,7 @@ end
         arg_delim::String = $(repr(DEFAULT_ARG_DELIM))
     )
 
-Return a `SyntaxBranch` which is the result of parsing `expression`
+Return a `SyntaxTree` which is the result of parsing `expression`
  via the [Shunting yard](https://en.wikipedia.org/wiki/Shunting_yard_algorithm)
  algorithm.
 By default, this function is only able to parse operators in
@@ -356,12 +357,12 @@ julia> syntaxstring(parsetree("¬1→0"; atom_parser = (x -> Atom{Float64}(parse
 "(¬1.0) → 0.0"
 ```
 
-See also [`SyntaxBranch`](@ref), [`syntaxstring`](@ref), [].
+See also [`SyntaxTree`](@ref), [`syntaxstring`](@ref), [].
 """
-parsetree(str, args...; kwargs...) = parseformula(SyntaxBranch, str, args...; kwargs...)
+parsetree(str::String, args...; kwargs...) = parseformula(SyntaxTree, str, args...; kwargs...)
 
 function parseformula(
-    ::Type{SyntaxBranch},
+    ::Type{SyntaxTree},
     expression::String,
     additional_operators::Union{Nothing,Vector{<:Operator}} = nothing;
     function_notation::Bool = false,
@@ -510,7 +511,7 @@ function parseformula(
 end
 
 function parseformula(
-    F::Type{SyntaxBranch},
+    F::Type{SyntaxTree},
     expression::String,
     logic::AbstractLogic;
     kwargs...

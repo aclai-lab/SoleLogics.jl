@@ -175,7 +175,7 @@ true
 
 When implementing a new relation type `R`, please provide the methods:
 
-    arity(::Type{R})::Int = ...
+    arity(::R)::Int = ...
     syntaxstring(::R; kwargs...)::String = ...
 
 If the relation is symmetric relation, please specify its converse relation `CR` with:
@@ -210,15 +210,13 @@ See also
 abstract type AbstractRelation end
 
 """
-    arity(::Type{<:AbstractRelation})::Integer
-    arity(t::AbstractRelation)::Integer = arity(typeof(t))
+    arity(::AbstractRelation)::Integer
 
 Return the `arity` of the relation.
 
 See also [`AbstractRelation`](@ref).
 """
-arity(R::Type{<:AbstractRelation})::Integer = error("Please, provide method arity(::$(Type{R})).")
-arity(r::AbstractRelation)::Integer = arity(typeof(r))
+arity(r::AbstractRelation)::Integer = error("Please, provide method arity(::$(typeof(r))).")
 
 syntaxstring(R::Type{<:AbstractRelation}; kwargs...)::String = error("Please, provide method syntaxstring(::$(Type{R}); kwargs...).")
 syntaxstring(r::AbstractRelation; kwargs...)::String = syntaxstring(typeof(r); kwargs...)
@@ -888,8 +886,6 @@ See also [`DiamondRelationalOperator`](@ref), [`BoxRelationalOperator`](@ref),
 """
 abstract type AbstractRelationalOperator{R<:AbstractRelation} <: Connective end
 
-arity(::Type{<:AbstractRelationalOperator{R}}) where {R<:AbstractRelation} = arity(R)-1
-
 doc_op_rel = """
     relationtype(::AbstractRelationalOperator{R}) where {R<:AbstractRelation} = R
     relation(op::AbstractRelationalOperator) = relationtype(op)()
@@ -903,6 +899,9 @@ See also [`AbstractFrame`](@ref).
 relationtype(::AbstractRelationalOperator{R}) where {R<:AbstractRelation} = R
 """$(doc_op_rel)"""
 relation(op::AbstractRelationalOperator) = relationtype(op)()
+
+arity(op::AbstractRelationalOperator) = arity(relation(op))-1
+
 
 """
     struct DiamondRelationalOperator{R<:AbstractRelation} <: AbstractRelationalOperator{R} end
@@ -964,8 +963,19 @@ function diamond(r::AbstractRelation) DiamondRelationalOperator(r) end
 function box() BOX end
 function box(r::AbstractRelation) BoxRelationalOperator(r) end
 
-globaldiamond = diamond(globalrel) # @deprecate (see deprecate.jl)
-globalbox = box(globalrel)         # ...
+globaldiamond = diamond(globalrel)
+globalbox = box(globalrel)
+
+identitydiamond = diamond(identityrel)
+identitybox = box(identityrel)
+
+# Well known operators
+Base.show(io::IO, c::Union{
+    typeof(globaldiamond),
+    typeof(globalbox),
+    typeof(identitydiamond),
+    typeof(identitybox)
+}) = print(io, "$(syntaxstring(c))")
 
 const BASE_MULTIMODAL_OPERATORS = [BASE_PROPOSITIONAL_OPERATORS...,
     globaldiamond,

@@ -51,7 +51,7 @@ struct RectangleRelation{R1<:IABase,R2<:IABase} <: GeometricalRelation
     end
 end
 
-arity(::Type{<:RectangleRelation}) = 2
+arity(::RectangleRelation) = 2
 hasconverse(::Type{<:RectangleRelation}) = true
 
 function syntaxstring(::Type{R}; kwargs...) where {_XR<:IABase,_YR<:IABase,R<:RectangleRelation{_XR,_YR}}

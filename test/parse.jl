@@ -188,7 +188,7 @@ SoleLogics.arity(::typeof(QUATERNOP)) = 4
 
 struct _TestRel <: AbstractRelation end;
 testrel  = _TestRel();
-SoleLogics.arity(::Type{_TestRel}) = 2
+SoleLogics.arity(::_TestRel) = 2
 SoleLogics.syntaxstring(::Type{_TestRel}; kwargs...) = "Test,Relation"
 
 # If AbstractRelationalOperator interface changes, just redefine the following:
@@ -286,3 +286,6 @@ f = parsetree(s)
         );
         function_notation = true
     )
+
+# If commenting the while !isempty(tokstack) ... end block, it works
+@test_broken parsetree("10 ∧ ⟨G⟩ 2 ∧ [=] -1"; atom_parser = x->(Atom{Int64}(parse(Int, x))))

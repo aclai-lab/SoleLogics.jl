@@ -110,7 +110,7 @@ See also
 """
 abstract type RCCRelation <: GeometricalRelation end
 
-arity(::Type{<:RCCRelation}) = 2
+arity(::RCCRelation) = 2
 hasconverse(::Type{<:RCCRelation}) = true
 
 # Property: all RCC relations are topological

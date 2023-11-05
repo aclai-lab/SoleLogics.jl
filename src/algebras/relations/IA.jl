@@ -119,7 +119,7 @@ See also [`IARelations`](@ref),
 """
 abstract type IntervalRelation <: GeometricalRelation end
 
-arity(::Type{<:IntervalRelation}) = 2
+arity(::IntervalRelation) = 2
 hasconverse(::Type{<:IntervalRelation}) = true
 
 struct _IA_A  <: IntervalRelation end; const IA_A  = _IA_A();  # After

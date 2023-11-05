@@ -56,7 +56,7 @@ struct IdentityRel <: AbstractRelation end;
 """$(doc_identityrel)"""
 const identityrel   = IdentityRel();
 
-arity(::Type{IdentityRel}) = 2
+arity(::IdentityRel) = 2
 
 syntaxstring(::Type{IdentityRel}; kwargs...) = "="
 
@@ -98,7 +98,7 @@ struct GlobalRel <: AbstractRelation end;
 """$(doc_globalrel)"""
 const globalrel  = GlobalRel();
 
-arity(::Type{GlobalRel}) = 2
+arity(::GlobalRel) = 2
 
 syntaxstring(::Type{GlobalRel}; kwargs...) = "G"
 
