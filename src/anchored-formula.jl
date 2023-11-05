@@ -151,7 +151,7 @@ normalize(f::AnchoredFormula; kwargs...) = f(normalize(tree(f); kwargs...))
 
 """
     function baseformula(
-        tokf::Union{AbstractSyntaxToken,Formula};
+        φ::Formula;
         infer_logic = true,
         additional_operators::Union{Nothing,Vector{<:Operator}} = nothing,
         kwargs...,
@@ -184,12 +184,12 @@ julia> unique(operators(logic(SoleLogics.baseformula(t; additional_operators = S
 ```
 """
 function baseformula(
-    tokf::Formula;
+    φ::Formula;
     infer_logic = true,
     additional_operators::Union{Nothing,Vector{<:Operator}} = nothing,
     kwargs...,
 )
-    t = convert(SyntaxTree, tokf)
+    t = convert(SyntaxTree, φ)
 
     ops = isnothing(additional_operators) ? SoleLogics.operators(t) : additional_operators
     ops = unique(ops)
@@ -216,7 +216,7 @@ function baseformula(
             )
         else
             unknown_ops = setdiff(ops, BASE_PROPOSITIONAL_OPERATORS, BASE_MODAL_OPERATORS, BASE_MULTIMODAL_OPERATORS)
-            error("Could not infer logic from object of type $(typeof(tokf)): $(t). Unknown operators: $(unknown_ops).")
+            error("Could not infer logic from object of type $(typeof(φ)): $(t). Unknown operators: $(unknown_ops).")
         end
     end
     AnchoredFormula(logic, t)
