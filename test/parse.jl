@@ -189,28 +189,28 @@ SoleLogics.arity(::typeof(QUATERNOP)) = 4
 struct _TestRel <: AbstractRelation end;
 testrel  = _TestRel();
 SoleLogics.arity(::_TestRel) = 2
-SoleLogics.syntaxstring(::Type{_TestRel}; kwargs...) = "Test,Relation"
+SoleLogics.syntaxstring(::_TestRel; kwargs...) = "Test,Relation"
 
 # If AbstractRelationalOperator interface changes, just redefine the following:
 struct SoleRelationalOperator{R<:AbstractRelation} <: AbstractRelationalOperator{R} end
 (SoleRelationalOperator)(r::AbstractRelation) = SoleRelationalOperator{typeof(r)}()
 SoleLogics.syntaxstring(op::SoleRelationalOperator; kwargs...) =
-    "🌅$(syntaxstring(relationtype(op);  kwargs...))🌄"
+    "🌅$(syntaxstring(relation(op);  kwargs...))🌄"
 
 struct PipeRelationalOperator{R<:AbstractRelation} <: AbstractRelationalOperator{R} end
 (PipeRelationalOperator)(r::AbstractRelation) = PipeRelationalOperator{typeof(r)}()
 SoleLogics.syntaxstring(op::PipeRelationalOperator; kwargs...) =
-    "|$(syntaxstring(relationtype(op);  kwargs...))|"
+    "|$(syntaxstring(relation(op);  kwargs...))|"
 
 struct CurlyRelationalOperator{R<:AbstractRelation} <: AbstractRelationalOperator{R} end
 (CurlyRelationalOperator)(r::AbstractRelation) = CurlyRelationalOperator{typeof(r)}()
 SoleLogics.syntaxstring(op::CurlyRelationalOperator; kwargs...) =
-    "{$(syntaxstring(relationtype(op);  kwargs...))}"
+    "{$(syntaxstring(relation(op);  kwargs...))}"
 
 struct MyCustomRelationalOperator{R<:AbstractRelation} <: AbstractRelationalOperator{R} end
 (MyCustomRelationalOperator)(r::AbstractRelation) = MyCustomRelationalOperator{typeof(r)}()
 SoleLogics.syntaxstring(op::MyCustomRelationalOperator; kwargs...) =
-    "LEFT CUSTOM PARENTHESIS $(syntaxstring(relationtype(op);  kwargs...)) RIGHT CUSTOM PARENTHESIS"
+    "LEFT CUSTOM PARENTHESIS $(syntaxstring(relation(op);  kwargs...)) RIGHT CUSTOM PARENTHESIS"
 f = parsetree("LEFT CUSTOM PARENTHESIS G RIGHT CUSTOM PARENTHESIS p ∧ ¬" *
     "LEFT CUSTOM PARENTHESIS G RIGHT CUSTOM PARENTHESIS q", [MyCustomRelationalOperator(globalrel)])
 

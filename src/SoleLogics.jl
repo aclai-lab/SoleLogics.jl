@@ -71,7 +71,7 @@ export DIAMOND, BOX, ◊, □
 
 export KripkeStructure
 export AbstractRelationalOperator, DiamondRelationalOperator, BoxRelationalOperator
-export relationtype, truthtype, worldtype
+export truthtype, worldtype
 
 export AbstractWorld
 

@@ -39,8 +39,8 @@ accesses itself. The relation is also symmetric, reflexive and transitive.
 julia> syntaxstring(SoleLogics.identityrel)
 "="
 
-julia> SoleLogics.converse(IdentityRel)
-IdentityRel
+julia> SoleLogics.converse(identityrel)
+IdentityRel()
 ```
 
 See also
@@ -58,10 +58,10 @@ const identityrel   = IdentityRel();
 
 arity(::IdentityRel) = 2
 
-syntaxstring(::Type{IdentityRel}; kwargs...) = "="
+syntaxstring(::IdentityRel; kwargs...) = "="
 
-hasconverse(::Type{IdentityRel}) = true
-converse(::Type{IdentityRel}) = IdentityRel
+hasconverse(::IdentityRel) = true
+converse(::IdentityRel) = identityrel
 issymmetric(::IdentityRel) = true
 isreflexive(::IdentityRel) = true
 istransitive(::IdentityRel) = true
@@ -81,8 +81,8 @@ The relation is also symmetric, reflexive and transitive.
 julia> syntaxstring(SoleLogics.globalrel)
 "G"
 
-julia> SoleLogics.converse(GlobalRel)
-GlobalRel
+julia> SoleLogics.converse(globalrel)
+GlobalRel()
 ```
 
 See also
@@ -100,10 +100,10 @@ const globalrel  = GlobalRel();
 
 arity(::GlobalRel) = 2
 
-syntaxstring(::Type{GlobalRel}; kwargs...) = "G"
+syntaxstring(::GlobalRel; kwargs...) = "G"
 
-hasconverse(::Type{GlobalRel}) = true
-converse(::Type{GlobalRel}) = GlobalRel
+hasconverse(::GlobalRel) = true
+converse(::GlobalRel) = globalrel
 issymmetric(::GlobalRel) = true
 isreflexive(::GlobalRel) = true
 istransitive(::GlobalRel) = true

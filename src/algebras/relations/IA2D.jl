@@ -52,16 +52,16 @@ struct RectangleRelation{R1<:IABase,R2<:IABase} <: GeometricalRelation
 end
 
 arity(::RectangleRelation) = 2
-hasconverse(::Type{<:RectangleRelation}) = true
+hasconverse(::RectangleRelation) = true
 
-function syntaxstring(::Type{R}; kwargs...) where {_XR<:IABase,_YR<:IABase,R<:RectangleRelation{_XR,_YR}}
-    "$(syntaxstring(_XR; kwargs...)),$(syntaxstring(_YR; kwargs...))"
+function syntaxstring(r::RectangleRelation; kwargs...)
+    "$(syntaxstring(r.x; kwargs...)),$(syntaxstring(r.y; kwargs...))"
 end
 
 # Properties
-converse(r::Type{RectangleRelation{R1,R2}})  where {R1<:IABase,R2<:IABase} = RectangleRelation{converse(R1),converse(R2)}
-istransitive(r::RectangleRelation{R1,R2})  where {R1<:IABase,R2<:IABase} = istransitive(R1)  && istransitive(R2)
-istopological(r::RectangleRelation{R1,R2}) where {R1<:IABase,R2<:IABase} = istopological(R1) && istopological(R2)
+converse(r::RectangleRelation)      = RectangleRelation(converse(r.x),converse(r.y))
+istransitive(r::RectangleRelation)  = istransitive(r.x)  && istransitive(r.y)
+istopological(r::RectangleRelation) = istopological(r.x) && istopological(r.y)
 
 ############################################################################################
 

@@ -57,10 +57,10 @@ See also [`truthtype`](@ref), [`worldtype`](@ref),
 abstract type AbstractFrame{W<:AbstractWorld} end
 
 """
-    worldtype(::Type{<:AbstractFrame{W}}) where {W<:AbstractWorld} = W
-    worldtype(fr::AbstractFrame) = worldtype(typeof(fr))
+    worldtype(fr::AbstractFrame)
+    worldtype(i::AbstractKripkeStructure)
 
-Return the world type of the frame.
+Return the world type of the Kripke frame/structure.
 
 See also [`AbstractFrame`](@ref).
 """
@@ -178,15 +178,15 @@ When implementing a new relation type `R`, please provide the methods:
     arity(::R)::Int = ...
     syntaxstring(::R; kwargs...)::String = ...
 
-If the relation is symmetric relation, please specify its converse relation `CR` with:
+If the relation is symmetric relation, please specify its converse relation `cr` with:
 
-    hasconverse(::Type{R}) = true
-    converse(::Type{R}) = CR
+    hasconverse(::R) = true
+    converse(::R) = cr
 
 If the relation is reflexive or transitive, flag it with:
 
-    isreflexive(::Type{R}) = true
-    istransitive(::Type{R}) = true
+    isreflexive(::R) = true
+    istransitive(::R) = true
 
 Most importantly, the logical semantics for `R` should be defined via `accessibles` methods;
 refer to the help for `accessibles`.
@@ -218,45 +218,33 @@ See also [`AbstractRelation`](@ref).
 """
 arity(r::AbstractRelation)::Integer = error("Please, provide method arity(::$(typeof(r))).")
 
-syntaxstring(R::Type{<:AbstractRelation}; kwargs...)::String = error("Please, provide method syntaxstring(::$(Type{R}); kwargs...).")
-syntaxstring(r::AbstractRelation; kwargs...)::String = syntaxstring(typeof(r); kwargs...)
+function syntaxstring(r::AbstractRelation; kwargs...)::String
+    return error("Please, provide method syntaxstring(::$(typeof(r)); kwargs...).")
+end
 
 doc_conv_rel = """
-    converse(R::Type{<:AbstractRelation})::Type{<:AbstractRelation}
-    converse(r::AbstractRelation)::AbstractRelation = converse(typeof(r))()
+    converse(r::AbstractRelation)::AbstractRelation
 
-If it exists, return the converse relation (type) of a given relation (type).
+If the relation `hasconverse`,
+return the converse relation (type) of a given relation (type).
 
 See also [`issymmetric`](@ref), [`isreflexive`](@ref), [`istransitive`](@ref), [`AbstractRelation`](@ref).
-
 """
 
-# # Implementation
-
-# This trait is implemented as:
-
-#     hasconverse(R::Type{<:AbstractRelation})::Bool = false
-#     hasconverse(r::AbstractRelation)::Bool = hasconverse(typeof(r))
-
-#     converse(R::Type{<:AbstractRelation})::Type{<:AbstractRelation} = error("Please, provide method converse(::\$(Type{R})).")
-#     converse(r::AbstractRelation)::AbstractRelation = converse(typeof(r))()
-
-# When defining a new symmetric relation `R` with converse `CR`, please define the two methods:
-
-#     hasconverse(R::Type{R}) = true
-#     converse(R::Type{R}) = CR
 
 """$(doc_conv_rel)"""
-hasconverse(R::Type{<:AbstractRelation})::Bool = false
-hasconverse(r::AbstractRelation)::Bool = hasconverse(typeof(r))
+function hasconverse(r::AbstractRelation)::Bool
+    return false
+end
 
 """$(doc_conv_rel)"""
-converse(R::Type{<:AbstractRelation})::Type{<:AbstractRelation} = error("Please, provide method converse(::$(Type{R})).")
-converse(r::AbstractRelation)::AbstractRelation = converse(typeof(r))()
+function converse(r::AbstractRelation)::AbstractRelation
+    return error("Please, provide method converse(::$(typeof(r))).")
+end
 
 
 """
-    issymmetric(::AbstractRelation) = hasconverse(r) ? converse(r) == r : false
+    issymmetric(r::AbstractRelation) = hasconverse(r) ? converse(r) == r : false
 
 Return whether it is known that a relation is symmetric.
 
@@ -517,17 +505,7 @@ function frame(i::AbstractKripkeStructure)::AbstractFrame
     return error("Please, provide method frame(i::$(typeof(i))).")
 end
 
-"""
-    worldtype(i::AbstractKripkeStructure)
-
-Return the world type of Kripke structure.
-
-See also [`AbstractKripkeStructure`](@ref).
-"""
-function worldtype(i::AbstractKripkeStructure)::Type
-    return error("Please, provide method worldtype(::$(typeof(i))).")
-end
-
+worldtype(i::AbstractKripkeStructure) = worldtype(frame(i))
 accessibles(i::AbstractKripkeStructure, args...) = accessibles(frame(i), args...)
 allworlds(i::AbstractKripkeStructure, args...) = allworlds(frame(i), args...)
 nworlds(i::AbstractKripkeStructure) = nworlds(frame(i))
@@ -943,8 +921,8 @@ ismodal(::Type{<:BoxRelationalOperator}) = true
 isbox(::Type{<:DiamondRelationalOperator}) = false
 isbox(::Type{<:BoxRelationalOperator}) = true
 
-syntaxstring(op::DiamondRelationalOperator; kwargs...) = "⟨$(syntaxstring(relationtype(op); kwargs...))⟩"
-syntaxstring(op::BoxRelationalOperator; kwargs...)     = "[$(syntaxstring(relationtype(op); kwargs...))]"
+syntaxstring(op::DiamondRelationalOperator; kwargs...) = "⟨$(syntaxstring(relation(op); kwargs...))⟩"
+syntaxstring(op::BoxRelationalOperator; kwargs...)     = "[$(syntaxstring(relation(op); kwargs...))]"
 
 hasdual(::DiamondRelationalOperator) = true
 dual(op::DiamondRelationalOperator) = BoxRelationalOperator{relationtype(op)}()
@@ -1082,7 +1060,8 @@ function collateworlds(
         if hasconverse(r)
             # BOX STRATEGY 1
             negws = setdiff(collect(allworlds(fr)), ws)
-            negboxws = union(W[], [accessibles(fr, w, converse(r)) for w in negws]...)
+            negboxws = union(W[], [
+                accessibles(fr, w, converse(r)) for w in negws]...)
             setdiff(collect(allworlds(fr)), negboxws)
             # BOX STRATEGY 3
             # filter(w1->all((w2)->w1 in accessibles(fr, w2, converse(r)), ws), collect(allworlds(fr)))

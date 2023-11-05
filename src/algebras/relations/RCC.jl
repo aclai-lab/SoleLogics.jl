@@ -111,7 +111,7 @@ See also
 abstract type RCCRelation <: GeometricalRelation end
 
 arity(::RCCRelation) = 2
-hasconverse(::Type{<:RCCRelation}) = true
+hasconverse(::RCCRelation) = true
 
 # Property: all RCC relations are topological
 istopological(r::RCCRelation) = true
@@ -125,22 +125,22 @@ struct _Topo_TPPi   <: RCCRelation end; const Topo_TPPi   = _Topo_TPPi();   # Ta
 struct _Topo_NTPP   <: RCCRelation end; const Topo_NTPP   = _Topo_NTPP();   # Non-tangential proper part
 struct _Topo_NTPPi  <: RCCRelation end; const Topo_NTPPi  = _Topo_NTPPi();  # Non-tangential proper part inverse
 
-syntaxstring(::Type{_Topo_DC}; kwargs...)    = "DC"
-syntaxstring(::Type{_Topo_EC}; kwargs...)    = "EC"
-syntaxstring(::Type{_Topo_PO}; kwargs...)    = "PO"
-syntaxstring(::Type{_Topo_TPP}; kwargs...)   = "TPP"
-syntaxstring(::Type{_Topo_TPPi}; kwargs...)  = "T̅P̅P̅"
-syntaxstring(::Type{_Topo_NTPP}; kwargs...)  = "NTPP"
-syntaxstring(::Type{_Topo_NTPPi}; kwargs...) = "N̅T̅P̅P̅"
+syntaxstring(::_Topo_DC; kwargs...)    = "DC"
+syntaxstring(::_Topo_EC; kwargs...)    = "EC"
+syntaxstring(::_Topo_PO; kwargs...)    = "PO"
+syntaxstring(::_Topo_TPP; kwargs...)   = "TPP"
+syntaxstring(::_Topo_TPPi; kwargs...)  = "T̅P̅P̅"
+syntaxstring(::_Topo_NTPP; kwargs...)  = "NTPP"
+syntaxstring(::_Topo_NTPPi; kwargs...) = "N̅T̅P̅P̅"
 
 # Properties
-converse(r::Type{_Topo_DC}) = _Topo_DC
-converse(r::Type{_Topo_EC}) = _Topo_EC
-converse(r::Type{_Topo_PO}) = _Topo_PO
-converse(r::Type{_Topo_TPP}) = _Topo_TPPi
-converse(r::Type{_Topo_TPPi}) = _Topo_TPP
-converse(r::Type{_Topo_NTPP}) = _Topo_NTPPi
-converse(r::Type{_Topo_NTPPi}) = _Topo_NTPP
+converse(r::_Topo_DC) = Topo_DC
+converse(r::_Topo_EC) = Topo_EC
+converse(r::_Topo_PO) = Topo_PO
+converse(r::_Topo_TPP) = Topo_TPPi
+converse(r::_Topo_TPPi) = Topo_TPP
+converse(r::_Topo_NTPP) = Topo_NTPPi
+converse(r::_Topo_NTPPi) = Topo_NTPP
 
 issymmetric(r::_Topo_DC) = true
 issymmetric(r::_Topo_EC) = true
@@ -155,14 +155,14 @@ struct _Topo_DR     <: RCCRelation end; const Topo_DR     = _Topo_DR();     # Di
 struct _Topo_PP     <: RCCRelation end; const Topo_PP     = _Topo_PP();     # Proper part
 struct _Topo_PPi    <: RCCRelation end; const Topo_PPi    = _Topo_PPi();    # Proper part inverse
 
-syntaxstring(::Type{_Topo_DR}; kwargs...)    = "DR"
-syntaxstring(::Type{_Topo_PP}; kwargs...)    = "PP"
-syntaxstring(::Type{_Topo_PPi}; kwargs...)   = "P̅P̅"
+syntaxstring(::_Topo_DR; kwargs...)    = "DR"
+syntaxstring(::_Topo_PP; kwargs...)    = "PP"
+syntaxstring(::_Topo_PPi; kwargs...)   = "P̅P̅"
 
 # Properties
-converse(r::Type{_Topo_DR}) = _Topo_DR
-converse(r::Type{_Topo_PP}) = _Topo_PPi
-converse(r::Type{_Topo_PPi}) = _Topo_PP
+converse(r::_Topo_DR) = Topo_DR
+converse(r::_Topo_PP) = Topo_PPi
+converse(r::_Topo_PPi) = Topo_PP
 issymmetric(r::_Topo_DR) = true
 istransitive(r::_Topo_PP) = true
 istransitive(r::_Topo_PPi) = true

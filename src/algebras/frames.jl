@@ -85,9 +85,9 @@ accessibles(fr::AbstractMultiModalFrame, ::AbstractWorld, r::ToCenteredRel) = [c
 
 arity(::ToCenteredRel) = 2
 
-syntaxstring(::Type{<:ToCenteredRel}; kwargs...) = "◉"
+syntaxstring(::ToCenteredRel; kwargs...) = "◉"
 
-hasconverse(::Type{<:ToCenteredRel}) = false
+hasconverse(::ToCenteredRel) = false
 istransitive(::ToCenteredRel) = true
 isgrounding(::ToCenteredRel) = true
 

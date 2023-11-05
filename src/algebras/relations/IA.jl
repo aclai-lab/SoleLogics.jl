@@ -120,7 +120,7 @@ See also [`IARelations`](@ref),
 abstract type IntervalRelation <: GeometricalRelation end
 
 arity(::IntervalRelation) = 2
-hasconverse(::Type{<:IntervalRelation}) = true
+hasconverse(::IntervalRelation) = true
 
 struct _IA_A  <: IntervalRelation end; const IA_A  = _IA_A();  # After
 struct _IA_L  <: IntervalRelation end; const IA_L  = _IA_L();  # Later
@@ -136,18 +136,18 @@ struct _IA_Ei <: IntervalRelation end; const IA_Ei = _IA_Ei(); # Ends inverse
 struct _IA_Di <: IntervalRelation end; const IA_Di = _IA_Di(); # During inverse
 struct _IA_Oi <: IntervalRelation end; const IA_Oi = _IA_Oi(); # Overlaps inverse
 
-syntaxstring(::Type{_IA_A}; kwargs...)  = "A"
-syntaxstring(::Type{_IA_L}; kwargs...)  = "L"
-syntaxstring(::Type{_IA_B}; kwargs...)  = "B"
-syntaxstring(::Type{_IA_E}; kwargs...)  = "E"
-syntaxstring(::Type{_IA_D}; kwargs...)  = "D"
-syntaxstring(::Type{_IA_O}; kwargs...)  = "O"
-syntaxstring(::Type{_IA_Ai}; kwargs...) = "A̅"
-syntaxstring(::Type{_IA_Li}; kwargs...) = "L̅"
-syntaxstring(::Type{_IA_Bi}; kwargs...) = "B̅"
-syntaxstring(::Type{_IA_Ei}; kwargs...) = "E̅"
-syntaxstring(::Type{_IA_Di}; kwargs...) = "D̅"
-syntaxstring(::Type{_IA_Oi}; kwargs...) = "O̅"
+syntaxstring(::_IA_A; kwargs...)  = "A"
+syntaxstring(::_IA_L; kwargs...)  = "L"
+syntaxstring(::_IA_B; kwargs...)  = "B"
+syntaxstring(::_IA_E; kwargs...)  = "E"
+syntaxstring(::_IA_D; kwargs...)  = "D"
+syntaxstring(::_IA_O; kwargs...)  = "O"
+syntaxstring(::_IA_Ai; kwargs...) = "A̅"
+syntaxstring(::_IA_Li; kwargs...) = "L̅"
+syntaxstring(::_IA_Bi; kwargs...) = "B̅"
+syntaxstring(::_IA_Ei; kwargs...) = "E̅"
+syntaxstring(::_IA_Di; kwargs...) = "D̅"
+syntaxstring(::_IA_Oi; kwargs...) = "O̅"
 
 # Properties
 istransitive(r::_IA_L) = true
@@ -161,18 +161,18 @@ istransitive(r::_IA_Ei) = true
 istopological(r::_IA_D) = true
 istopological(r::_IA_Di) = true
 
-converse(::Type{_IA_A}) = _IA_Ai
-converse(::Type{_IA_L}) = _IA_Li
-converse(::Type{_IA_B}) = _IA_Bi
-converse(::Type{_IA_E}) = _IA_Ei
-converse(::Type{_IA_D}) = _IA_Di
-converse(::Type{_IA_O}) = _IA_Oi
-converse(::Type{_IA_Ai}) = _IA_A
-converse(::Type{_IA_Li}) = _IA_L
-converse(::Type{_IA_Bi}) = _IA_B
-converse(::Type{_IA_Ei}) = _IA_E
-converse(::Type{_IA_Di}) = _IA_D
-converse(::Type{_IA_Oi}) = _IA_O
+converse(::_IA_A) = IA_Ai
+converse(::_IA_L) = IA_Li
+converse(::_IA_B) = IA_Bi
+converse(::_IA_E) = IA_Ei
+converse(::_IA_D) = IA_Di
+converse(::_IA_O) = IA_Oi
+converse(::_IA_Ai) = IA_A
+converse(::_IA_Li) = IA_L
+converse(::_IA_Bi) = IA_B
+converse(::_IA_Ei) = IA_E
+converse(::_IA_Di) = IA_D
+converse(::_IA_Oi) = IA_O
 
 ############################################################################################
 
@@ -185,11 +185,11 @@ struct _IA_DiorBiorEi <: IntervalRelation end; const IA_DiorBiorEi = _IA_DiorBio
 # Even coarser relations: IA3
 struct _IA_I          <: IntervalRelation end; const IA_I          = _IA_I();   # Intersecting (ABEDO ∪ ABEDO inverse)
 
-converse(::Type{_IA_AorO}) = _IA_AiorOi
-converse(::Type{_IA_DorBorE}) = _IA_DiorBiorEi
-converse(::Type{_IA_AiorOi}) = _IA_AorO
-converse(::Type{_IA_DiorBiorEi}) = _IA_DorBorE
-converse(::Type{_IA_I}) = _IA_I
+converse(::_IA_AorO) = IA_AiorOi
+converse(::_IA_DorBorE) = IA_DiorBiorEi
+converse(::_IA_AiorOi) = IA_AorO
+converse(::_IA_DiorBiorEi) = IA_DorBorE
+converse(::_IA_I) = IA_I
 
 # Properties
 istransitive(r::_IA_DorBorE) = true
@@ -205,8 +205,8 @@ IA32IARelations(::_IA_I)          = [
     IA_Ai, IA_Oi, IA_Di, IA_Bi, IA_Ei
 ]
 
-syntaxstring(r::Type{<:Union{_IA_AorO,_IA_DorBorE,_IA_AiorOi,_IA_DiorBiorEi}}; kwargs...) = join(map(_r->syntaxstring(_r; kwargs...), IA72IARelations(r())), "∨")
-syntaxstring(::Type{_IA_I}; kwargs...)          = "I"
+syntaxstring(r::Union{_IA_AorO,_IA_DorBorE,_IA_AiorOi,_IA_DiorBiorEi}; kwargs...) = join(map(_r->syntaxstring(_r; kwargs...), IA72IARelations(r)), "∨")
+syntaxstring(::_IA_I; kwargs...)          = "I"
 
 ############################################################################################
 
