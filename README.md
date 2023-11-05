@@ -160,6 +160,8 @@ The package is developed by the [ACLAI Lab](https://aclai.unife.it/en/) @ Univer
 
 *SoleLogics.jl* lays the logical foundations for [*Sole.jl*](https://github.com/aclai-lab/Sole.jl), an open-source framework for *symbolic machine learning*, originally designed for machine learning based on modal logics (see [Eduard I. Stan](https://eduardstan.github.io/)'s PhD thesis *'Foundations of Modal Symbolic Learning'* [here](https://www.repository.unipr.it/bitstream/1889/5219/5/main.pdf)).
 
+Thanks to Jakob Peters ([PAndQ.jl](https://github.com/jakobjpeters/PAndQ.jl/)) for the interesting discussions and ideas.
+
 ## More on Sole
 - [SoleData.jl](https://github.com/aclai-lab/SoleData.jl)
 - [SoleFeatures.jl](https://github.com/aclai-lab/SoleFeatures.jl) 
