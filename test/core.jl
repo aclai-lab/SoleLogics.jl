@@ -217,6 +217,10 @@ for i in 1:10
     check(anch_φ_int, _tdict) && @test all(istop, collect(values(_tdict.truth)))
     !check(anch_φ_int, _tdict) && @test !all(istop, collect(values(_tdict.truth)))
     check(anch2_φ_int, _tdict)
+
+    @test_nowarn _tdict[anch_φ_int]
+    @test_nowarn anch_φ_int(_tdict)
+    @test anch_φ_int(_tdict) == _tdict[anch_φ_int]
 end
 
 tdict = TruthDict(Dict([p => true for p in unique(atoms(anch_φ_int))]))
