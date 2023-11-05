@@ -202,6 +202,10 @@ See also [`Bot`](@ref), [`Top`](@ref), [`BooleanAlgebra`](@ref).
 """
 abstract type BooleanTruth <: Truth end
 
+function Base.show(io::IO, φ::BooleanTruth)
+    print(io, "$(syntaxstring(φ))")
+end
+
 doc_TOP = """
     struct Top <: Truth end
     const TOP = Top()
@@ -222,6 +226,7 @@ const ⊤ = TOP
 syntaxstring(o::Top; kwargs...) = "⊤"
 
 istop(t::Top) = true
+truthsupertype(T::Type{Top}) = BooleanTruth
 
 doc_BOTTOM = """
     struct Bot <: Truth end
@@ -243,6 +248,7 @@ const ⊥ = BOT
 syntaxstring(o::Bot; kwargs...) = "⊥"
 
 isbot(t::Bot) = true
+truthsupertype(T::Type{Bot}) = BooleanTruth
 
 # NOTE: it could be useful to provide a macro to easily create
 # a new set of Truth types. In particular, a new subtree of types must be planted
@@ -253,10 +259,10 @@ Base.promote_rule(::Type{<:BooleanTruth}, ::Type{<:BooleanTruth}) = BooleanTruth
 Base.convert(::Type{Bool}, ::Top) = true
 Base.convert(::Type{Bool}, ::Bot) = false
 
-function Base.convert(::Type{<:BooleanTruth}, t::Bool)::BooleanTruth
+function Base.convert(::Type{BooleanTruth}, t::Bool)::BooleanTruth
     return (t ? TOP : BOT)
 end
-function Base.convert(::Type{<:BooleanTruth}, t::Integer)::BooleanTruth
+function Base.convert(::Type{BooleanTruth}, t::Integer)::BooleanTruth
     if isone(t)
         return TOP
     elseif iszero(t)
@@ -265,12 +271,9 @@ function Base.convert(::Type{<:BooleanTruth}, t::Integer)::BooleanTruth
         return error("Cannot interpret Integer value $t as BooleanTruth.")
     end
 end
-function Base.convert(
-    ::Type{<:BooleanTruth},
-    ::Type{T}
-)::BooleanTruth where {T<:BooleanTruth}
-    return T
-end
+
+Base.convert(::Type{Truth}, t::Bool) = Base.convert(BooleanTruth, t)
+Base.convert(::Type{Truth}, t::Integer) = Base.convert(BooleanTruth, t)
 
 # NOTE: are these useful?
 hasdual(::typeof(⊤)) = true
@@ -300,8 +303,8 @@ bot(::BooleanAlgebra) = BOT
 
 function collatetruth(
     c::Connective,
-    ch::NTuple{N,T}
-)::BooleanTruth where {N,T<:BooleanTruth}
+    ch::NTuple{N,T where T<:BooleanTruth}
+)::BooleanTruth where {N}
     _collatetruth(c, convert.(Bool, ch)) == true ? TOP : BOT
 end
 

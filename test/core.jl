@@ -200,6 +200,7 @@ f_conj_int = @test_nowarn CONJUNCTION(f_int, f_int, f_int)
 @test_nowarn TruthDict()
 @test_nowarn TruthDict([])
 @test_throws ErrorException TruthDict((2,3),)
+@test_nowarn TruthDict((2,0),)
 @test_nowarn TruthDict((2,true),)
 @test_nowarn TruthDict((p1, true),)
 @test_nowarn TruthDict([(p1, true),])
@@ -207,12 +208,15 @@ f_conj_int = @test_nowarn CONJUNCTION(f_int, f_int, f_int)
 @test_nowarn TruthDict([p1 => true])
 @test_nowarn TruthDict(Dict([p1 => true]))
 
-anch_φ_int = f_int(p1 ∧ p100 → p2)
+anch_φ_int = f_int(p1 ∧ p100 ∧ p2)
+anch2_φ_int = f_int(p1 ∧ p100 → p2)
 
 for i in 1:10
     _tdict = TruthDict(Dict([p => rand([true, false]) for p in unique(atoms(anch_φ_int))]))
-    check(anch_φ_int, _tdict) && @test all(collect(values(_tdict.truth)))
-    !check(anch_φ_int, _tdict) && @test !all(collect(values(_tdict.truth)))
+    # i == 1 && println(_tdict)
+    check(anch_φ_int, _tdict) && @test all(istop, collect(values(_tdict.truth)))
+    !check(anch_φ_int, _tdict) && @test !all(istop, collect(values(_tdict.truth)))
+    check(anch2_φ_int, _tdict)
 end
 
 tdict = TruthDict(Dict([p => true for p in unique(atoms(anch_φ_int))]))
@@ -229,8 +233,12 @@ tdict = TruthDict(Dict([p => false for p in unique(atoms(anch_φ_int))]))
 
 for i in 1:10
     _tdict = TruthDict(Dict([p => rand([true, false]) for p in unique(atoms(φ_int))]))
-    check(φ_int, _tdict) && @test all(collect(values(_tdict.truth)))
-    !check(φ_int, _tdict) && @test !all(collect(values(_tdict.truth)))
+    check(φ_int, _tdict) && @test all(istop, collect(values(_tdict.truth)))
+    !check(φ_int, _tdict) && @test !all(istop, collect(values(_tdict.truth)))
+
+    @test_nowarn _tdict[φ_int]
+    @test_nowarn φ_int(_tdict)
+    @test φ_int(_tdict) == _tdict[φ_int]
 end
 
 tdict = TruthDict(Dict([p => true for p in unique(atoms(φ_int))]))

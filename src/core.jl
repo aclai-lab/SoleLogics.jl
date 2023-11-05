@@ -526,12 +526,17 @@ See also [`istop`](@ref), [`Truth`](@ref).
 """
 isbot(t::Truth)::Bool = false
 
-function Base.convert(::Type{Truth}, t::Bool)
-    error("Please, provide method convert(::Type{Truth}, t::$(typeof(t))).")
+"""
+    truthsupertype(T::Type{<:Truth})::Type
+
+Return the supertype of a `Truth` type that includes all values of the same algebra.
+
+See also [`Truth`](@ref), [`TruthDict`](@ref).
+"""
+function truthsupertype(T::Type{<:Truth})
+    return T
 end
-function Base.convert(::Type{Truth}, t::Integer)
-    error("Please, provide method convert(::Type{Truth}, t::$(typeof(t))).")
-end
+
 function Base.convert(::Type{Truth}, t)::Truth
     return error("Cannot interpret value $t of type ($(typeof(t))) as Truth.")
 end
@@ -585,12 +590,6 @@ function (op::Operator)(children::NTuple{N,Formula}) where {N}
     T = Base.promote_type((typeof.(children))...)
     T <: SyntaxTree || (children = Base.promote(children...))
     return joinformulas(op, children)
-    # TODO remove this?
-    # return joinformulas(op, tree.(children))
-    # return joinformulas(op, Base.promote(children...))
-    # println(typeof.(children))
-    # println(typeof.(Base.promote(children...)))
-    # println(typeof.(children))
 end
 
 ############################################################################################
@@ -774,8 +773,64 @@ valuetype(::AbstractInterpretation{A,T}) where {A,T} = A
 truthtype(::AbstractInterpretation{A,T}) where {A,T} = T
 
 ############################################################################################
-#### Check & Interpret #####################################################################
+#### Interpret & Check #####################################################################
 ############################################################################################
+
+"""
+    interpret(
+        φ::Formula,
+        i::AbstractInterpretation,
+        args...;
+        kwargs...
+    )::Formula
+
+Return the truth value for a formula on a logical interpretation (or model).
+
+# Examples
+```jldoctest
+julia> @atoms p q
+2-element Vector{Atom{String}}:
+ p
+ q
+
+julia> td = TruthDict([p => true, q => false])
+TruthDict with values:
+┌────────┬────────┐
+│      q │      p │
+│ String │ String │
+├────────┼────────┤
+│      ⊥ │      ⊤ │
+└────────┴────────┘
+
+julia> interpret(CONJUNCTION(p,q), td)
+⊥
+```
+
+See also [`check`](@ref), [`Formula`](@ref), [`AbstractInterpretation`](@ref),
+[`AbstractAlgebra`](@ref).
+"""
+function interpret(
+    φ::Formula,
+    i::AbstractInterpretation,
+    args...;
+    kwargs...
+)::Formula
+    interpret(tree(φ), i, args...; kwargs...)
+end
+
+function interpret(
+    φ::SyntaxBranch,
+    i::AbstractInterpretation,
+    args...;
+    kwargs...
+)::Formula
+    return error("Please, provide method " *
+                 "interpret(φ::SyntaxBranch, i::$(typeof(i)), " *
+                 "args...::$(typeof(args)); " *
+                 "kwargs...::$(typeof(kwargs))::$(truthtype(i)).")
+end
+
+interpret(t::Truth, i::AbstractInterpretation, args...; kwargs...) = t
 
 """
     check(
@@ -821,60 +876,6 @@ function check(
     kwargs...
 )::Bool
     istop(interpret(φ, i, args...; kwargs...))
-end
-
-"""
-    interpret(
-        φ::Formula,
-        i::AbstractInterpretation,
-        args...;
-        kwargs...
-    )::Formula
-
-Return the truth value for a formula on a logical interpretation (or model).
-
-# Examples
-```jldoctest
-julia> @atoms p q
-2-element Vector{Atom{String}}:
- p
- q
-
-julia> td = TruthDict([p => true, q => false])
-TruthDict with values:
-┌────────┬────────┐
-│      q │      p │
-│ String │ String │
-├────────┼────────┤
-│ Bot: ⊥ │ Top: ⊤ │
-└────────┴────────┘
-
-julia> interpret(CONJUNCTION(p,q), td)
-⊥
-```
-
-See also [`check`](@ref), [`Formula`](@ref), [`AbstractInterpretation`](@ref),
-[`AbstractAlgebra`](@ref).
-"""
-function interpret(
-    φ::Formula,
-    i::AbstractInterpretation,
-    args...;
-    kwargs...
-)::Formula
-    interpret(tree(φ), i, args...; kwargs...)
-end
-
-function interpret(
-    φ::SyntaxBranch,
-    i::AbstractInterpretation,
-    args...;
-    kwargs...
-)::Formula
-    return error("Please, provide method " *
-                 "interpret(φ::SyntaxBranch, i::$(typeof(i)), " *
-                 "args...::$(typeof(args)); " *
-                 "kwargs...::$(typeof(kwargs))::$(truthtype(i)).")
 end
 
 ############################################################################################

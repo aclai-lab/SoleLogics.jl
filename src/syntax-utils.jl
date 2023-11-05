@@ -49,7 +49,7 @@ struct LeftmostLinearForm{C<:Connective,SS<:AbstractSyntaxStructure} <: Abstract
     function LeftmostLinearForm{C,SS}(
         children::Vector,
     ) where {C<:Connective,SS<:AbstractSyntaxStructure}
-        a = arity(C)
+        a = arity(C()) # TODO maybe add member connective::C and use that instead of C()
         n_children = length(children)
 
         if a == 0

@@ -153,17 +153,6 @@ function interpret(
     end
 end
 
-interpret(t::Truth, args...; kwargs...) = t
-
-# Different ways to call interpret
-# i[a] -> (a itself, or a single Truth value!)
-# This has to be user-defined when creating a custom AbstractAssignment concrete type.
-# Otherwise, an error is thrown noticing the user (see our most general dispatch).
-# Note by Gio: these are written for AbstractAssignment, but
-#  isn't this true for any AbstractInterpretation? That is, also at the non-propositional level?
-#  Probably. Therefore, these should be moved to core and AbstractAssignment->AbstractInterpretation.
-# By Mauro: Done, see core.jl after AbstractInterpretation definition
-
 ############################################################################################
 #################################### IMPLEMENTATIONS #######################################
 ############################################################################################
@@ -188,7 +177,7 @@ TruthDict with values:
 │      4 │      2 │      3 │      1 │
 │  Int64 │  Int64 │  Int64 │  Int64 │
 ├────────┼────────┼────────┼────────┤
-│ Top: ⊤ │ Top: ⊤ │ Top: ⊤ │ Top: ⊤ │
+│      ⊤ │      ⊤ │      ⊤ │      ⊤ │
 └────────┴────────┴────────┴────────┘
 
 
@@ -218,7 +207,9 @@ true
 
 !!! note
 If prompted for the value of an unknown atom, this throws an error.
-If not specified, `BooleanTruth`s is the default `Truth` value type.
+If boolean, integer, or float values are specified, they are converted to
+`Truth` values.
+If the structure is initialized as empty, `BooleanTruth` values are assumed.
 
 See also
 [`DefaultedTruthDict`](@ref),
@@ -239,13 +230,13 @@ struct TruthDict{
         T<:Truth,
         D<:AbstractDict{<:Atom{<:A},T},
     }
-        # If the truth dict only contains a Top, then we want to upcast the dictionary
-        # to contain the whole BooleanTruth group.
-        # If T is already BooleanTruth, for example, then we want to keep it as is.
-        truthtype = isconcretetype(T) ? supertype(T) : T
-        d = Dict{Atom{A},truthtype}(d)
+        # Example:
+        # If the truth dict only contains a `Top`, then we want to upcast the dictionary
+        # to expect `BooleanTruth`, not only `Top`'s.
+        _T = truthsupertype(T)
+        d = Dict{Atom{A},_T}(d)
 
-        return new{A,truthtype,typeof(d)}(d)
+        return new{A,_T,typeof(d)}(d)
     end
     function TruthDict{A,T}(d::AbstractDict{<:Atom,T}) where {A,T<:Truth}
         return TruthDict{A,T,typeof(d)}(d)
@@ -266,7 +257,7 @@ struct TruthDict{
         return TruthDict(Dict([(Atom{A}(a),v) for (a,v) in d]))
     end
     function TruthDict(d::AbstractDict)
-        d = Dict([(a, convert(BooleanTruth, v)) for (a,v) in d])
+        d = Dict([(a, convert(Truth, v)) for (a,v) in d])
         return TruthDict(d)
     end
     function TruthDict(v::AbstractVector, truth_value = ⊤)
@@ -309,7 +300,8 @@ struct TruthDict{
     function TruthDict{A}() where {
         A,
     }
-        return TruthDict{A,BooleanTruth}()
+        T = BooleanTruth
+        return TruthDict{A,T}()
     end
     function TruthDict()
         A = Any
