@@ -947,6 +947,18 @@ globalbox = box(globalrel)
 identitydiamond = diamond(identityrel)
 identitybox = box(identityrel)
 
+arity(::typeof(globaldiamond)) = 1
+arity(::typeof(globalbox)) = 1
+
+arity(::typeof(identitydiamond)) = 1
+arity(::typeof(identitybox)) = 1
+
+precedence(::typeof(globaldiamond)) = precedence(DIAMOND)
+precedence(::typeof(globalbox)) = precedence(BOX)
+
+precedence(::typeof(identitydiamond)) = precedence(BOX)
+precedence(::typeof(identitybox)) = precedence(BOX)
+
 # Well known operators
 Base.show(io::IO, c::Union{
     typeof(globaldiamond),

@@ -398,12 +398,21 @@ function parseformula(
     #  out and only SyntaxToken are considered.
     function _postfixbuild(postfix::Vector{<:SyntaxToken})
         stack = SyntaxTree[]
-
         for tok in postfix
             # Stack collapses, composing a new part of the syntax tree
             if tok isa Operator
-                children = [pop!(stack) for _ in 1:arity(tok)]
-                push!(stack, SyntaxBranch(tok, Tuple(reverse(children))))
+                try
+                    children = [pop!(stack) for _ in 1:arity(tok)]
+                    push!(stack, SyntaxBranch(tok, Tuple(reverse(children))))
+                catch error
+                    if error isa ArgumentError
+                        error("Parsing failed, please implement arity, precedence and " *
+                        "associativity for all the connectives. To know more, see " *
+                        "the documentation of Connective.")
+                    else
+                        rethrow(error)
+                    end
+                end
             elseif tok isa Atom
                 push!(stack, tok)
             else
@@ -425,8 +434,9 @@ function parseformula(
     function _infixbuild()
         tokens = tokenizer(expression, operators, atom_parser,
             additional_whitespaces, opening_parenthesis, closing_parenthesis)
-        return _postfixbuild(shunting_yard!(tokens,
-            opening_parenthesis = opening_parenthesis, closing_parenthesis = closing_parenthesis))
+        return _postfixbuild(
+            shunting_yard!(tokens, opening_parenthesis = opening_parenthesis,
+                closing_parenthesis = closing_parenthesis))
     end
 
     # Build a formula starting from its function notation;
