@@ -58,11 +58,21 @@ Base.show(io::IO, c::NamedConnective) = print(io, "$(syntaxstring(c))")
 syntaxstring(c::NamedConnective; kwargs...) = string(name(c))
 
 function precedence(c::NamedConnective)
-    Base.operator_precedence(SoleLogics.name(c))
+    op = SoleLogics.name(c)
+    if Base.isoperator(op)
+        Base.operator_precedence(op)
+    else
+        error("Please, provide method SoleLogics.precedence(::$(typeof(c))).")
+    end
 end
 
 function associativity(c::NamedConnective)
-    Base.operator_associativity(SoleLogics.name(c))
+    op = SoleLogics.name(c)
+    if Base.isoperator(op)
+        Base.operator_associativity(op)
+    else
+        error("Please, provide method SoleLogics.associativity(::$(typeof(c))).")
+    end
 end
 
 doc_NEGATION = """

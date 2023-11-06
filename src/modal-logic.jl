@@ -759,6 +759,8 @@ const ◊ = DIAMOND
 ismodal(::Type{typeof(◊)}) = true
 isbox(::Type{typeof(◊)}) = false
 arity(::typeof(◊)) = 1
+precedence(::typeof(◊)) = Base.operator_precedence(:¬)
+associativity(::typeof(◊)) = Base.operator_associativity(:¬)
 
 doc_BOX = """
     const BOX = NamedConnective{:□}()
@@ -777,6 +779,8 @@ const □ = BOX
 ismodal(::Type{typeof(□)}) = true
 isbox(::Type{typeof(□)}) = true
 arity(::typeof(□)) = 1
+precedence(::typeof(□)) = Base.operator_precedence(:¬)
+associativity(::typeof(□)) = Base.operator_associativity(:¬)
 
 hasdual(::typeof(DIAMOND)) = true
 dual(::typeof(DIAMOND)) = BOX
@@ -877,6 +881,21 @@ relation(op::AbstractRelationalOperator) = relationtype(op)()
 
 arity(op::AbstractRelationalOperator) = arity(relation(op))-1
 
+function precedence(op::AbstractRelationalOperator)
+    if isunary(op)
+        Base.operator_precedence(:¬)
+    else
+        error("Please, provide method SoleLogics.precedence(::$(typeof(op))).")
+    end
+end
+
+function associativity(op::AbstractRelationalOperator)
+    if isunary(op)
+        Base.operator_associativity(:¬)
+    else
+        error("Please, provide method SoleLogics.associativity(::$(typeof(op))).")
+    end
+end
 
 """
     struct DiamondRelationalOperator{R<:AbstractRelation} <: AbstractRelationalOperator{R} end

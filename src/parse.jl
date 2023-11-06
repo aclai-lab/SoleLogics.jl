@@ -259,10 +259,13 @@ function shunting_yard!(
             # If tok is an operator, something must be done until another operator
             #  is placed at the top of the stack.
             while !isempty(tokstack) &&
-                (tokstack[end] isa Operator &&
-                # isbinary(tokstack[end]) && TODO needed?
-                precedence(tokstack[end]) >= precedence(tok) &&
-                associativity(tok) == :left)
+                tokstack[end] isa Operator && (
+                    precedence(tokstack[end]) < precedence(tok) ||
+                    (
+                        precedence(tokstack[end]) == precedence(tok) &&
+                        associativity(tokstack[end]) == :left
+                    )
+                )
                 push!(postfix, pop!(tokstack))
             end
             # Now push the current operator onto the tokstack
@@ -361,15 +364,6 @@ See also [`SyntaxTree`](@ref), [`syntaxstring`](@ref), [].
 """
 parsetree(str::String, args...; kwargs...) = parseformula(SyntaxTree, str, args...; kwargs...)
 
-function _isvalid_connective(op::Connective)
-    # Note: not sure if this is needed: any connective have at least the fallback
-    #  precedence method. Remove?
-    if isempty(methods(precedence, Tuple{typeof(op)}))
-        @warn "The `precedence` dispatch is not defined for connective $(op). " *
-        "This might lead to logical errors."
-    end
-end
-
 function parseformula(
     ::Type{SyntaxTree},
     expression::String,
@@ -385,8 +379,6 @@ function parseformula(
         isnothing(additional_operators) ? Operator[] : additional_operators)
     operators = Vector{Operator}(
         unique([BASE_PARSABLE_OPERATORS..., additional_operators...]))
-
-    [_isvalid_connective(c) for c in operators if c isa Connective]
 
     # TODO: expand special sequences to special *sequences* (strings of characters)
     # TODO: check that no special sequence is a substring of another one.
@@ -415,13 +407,13 @@ function parseformula(
                 try
                     children = [pop!(stack) for _ in 1:arity(tok)]
                     push!(stack, SyntaxBranch(tok, Tuple(reverse(children))))
-                catch error
-                    if error isa ArgumentError
-                        error("Parsing failed, please implement `precedence` for all the " *
+                catch e
+                    if e isa ArgumentError
+                        error("Parsing failed. Possible solution is to implement `precedence` for all the " *
                         "connectives. To know more about custom connectives interface, " *
                         "read the Connective documentation.")
                     else
-                        rethrow(error)
+                        rethrow(e)
                     end
                 end
             elseif tok isa Atom

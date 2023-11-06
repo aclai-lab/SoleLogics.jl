@@ -112,7 +112,8 @@ t2 = @test_nowarn TruthDict(Pair{Real,Bool}[1.0 => true, 2 => true, 3 => true])
 @test syntaxstring(normalize(parsetree("¬¬ p"))) == "p"
 @test syntaxstring(normalize(parsetree("¬¬¬ p"))) == "¬p"
 @test syntaxstring(normalize(parsetree("¬¬¬¬ p"))) == "p"
-@test syntaxstring(normalize(parsetree("¬¬¬ □□□ ◊◊◊ p ∧ ¬¬¬ q"))) == "◊◊◊□□□¬p ∧ ¬q"
+@test syntaxstring(normalize(parsetree("¬¬¬ □□□ ◊◊◊ p ∧ ¬¬¬ q")); remove_redundant_parentheses = true) == "¬q ∧ ◊◊◊□□□¬p"
+@test syntaxstring(normalize(parsetree("¬¬¬ □□□ ◊◊◊ p → ¬¬¬ q")); remove_redundant_parentheses = true) == "¬q ∨ □□□◊◊◊p"
 
 # normalization: diamond and box compression ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

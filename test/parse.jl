@@ -90,6 +90,9 @@ end
 @test syntaxstring(parsetree("¬¬¬ □□□ ◊◊◊ p ∧ ¬¬¬ q"); function_notation = true) ==
     "∧(¬(¬(¬(□(□(□(◊(◊(◊(p))))))))), ¬(¬(¬(q))))"
 
+@test token(parsetree("¬¬¬ □□□ ◊◊◊ p ∧ ¬¬¬ q")) == ∧
+@test token(parsetree("¬¬¬ □□□ ◊◊◊ p → ¬¬¬ q")) == →
+
 fxs = [
     "(¬(¬(⟨G⟩(q))) → (([G](p)) ∧ ([G](q))))", #¬((¬(⟨G⟩(q))) → (([G](p)) ∧ ([G](q))))
     "((¬(q ∧ q)) ∧ ((p ∧ p) ∧ (q → q))) → ([G]([G](⟨G⟩(p))))",

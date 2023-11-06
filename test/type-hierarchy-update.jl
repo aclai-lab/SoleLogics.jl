@@ -118,6 +118,18 @@ interp2             = TruthDict(1:4, BOT)
 @test parsetree("p → (q → r)") == (@synexpr p → (q → r))
 @test parsetree("p → (q ∧ r)") == (@synexpr p → (q ∧ r))
 
+@test syntaxstring((@synexpr □(□(□(p))) ∧ q)) == syntaxstring(parsetree("□□□p ∧ q"))
+@test syntaxstring((@synexpr □(p) ∧ q)) == syntaxstring(parsetree("□p ∧ q"))
+
+@test syntaxstring((@synexpr p ∧ □(□(□(q))))) == syntaxstring(parsetree("p ∧ □□□q"))
+@test syntaxstring((@synexpr p ∧ □(q))) == syntaxstring(parsetree("p ∧ □q"))
+
+@test syntaxstring((@synexpr □(□(□(p))) → q)) == syntaxstring(parsetree("□□□p → q"))
+@test syntaxstring((@synexpr □(p) → q)) == syntaxstring(parsetree("□p → q"))
+
+@test syntaxstring((@synexpr p → □(□(□(q))))) == syntaxstring(parsetree("p → □□□q"))
+@test syntaxstring((@synexpr p → □(q))) == syntaxstring(parsetree("p → □q"))
+
 @test natoms(pandq)                 == 2
 @test natoms(trees_implication)     == natoms(pandq) + natoms(porq)
 @test Set(atoms(pandq))             == Set(atoms(qandp))
