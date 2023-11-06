@@ -263,7 +263,7 @@ emptylogic = @test_nowarn propositionallogic(; operators = SoleLogics.Operator[]
 @test propositionallogic() isa SoleLogics.BasePropositionalLogic
 @test propositionallogic(; operators = [¬, ∨]) isa SoleLogics.BasePropositionalLogic
 
-@test_throws AssertionError propositionallogic(; operators = [¬, ∨])(¬ p1)
+@test_throws ErrorException propositionallogic(; operators = [¬, ∨])(¬ p1)
 @test_nowarn propositionallogic(; operators = [¬, ∨])(¬ p_string)
 @test propositionallogic(; alphabet = ["p", "q"]) isa SoleLogics.BasePropositionalLogic
 

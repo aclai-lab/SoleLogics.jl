@@ -73,9 +73,9 @@ struct AnchoredFormula{L<:AbstractLogic} <: Formula
         # Check that the token types of the tree are a subset of the tokens
         #  allowed by the logic
         if !(tokenstype(synstruct) <: tokenstype(_logic[]))
-            throw(ErrorException("Out of grammar! Cannot " *
+            return error("Out of grammar! Cannot " *
                  "instantiate AnchoredFormula{$(L)} with illegal token types `$(tokenstype(synstruct))`. " *
-                 "Token types should be <: $(tokenstype(_logic[]))."))
+                 "Token types should be <: $(tokenstype(_logic[])).")
         end
 
         return new{L}(_logic, synstruct)

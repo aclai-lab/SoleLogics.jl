@@ -362,6 +362,8 @@ See also [`SyntaxTree`](@ref), [`syntaxstring`](@ref), [].
 parsetree(str::String, args...; kwargs...) = parseformula(SyntaxTree, str, args...; kwargs...)
 
 function _isvalid_connective(op::Connective)
+    # Note: not sure if this is needed: any connective have at least the fallback
+    #  precedence method. Remove?
     if isempty(methods(precedence, Tuple{typeof(op)}))
         @warn "The `precedence` dispatch is not defined for connective $(op). " *
         "This might lead to logical errors."
@@ -441,11 +443,20 @@ function parseformula(
     # Build a formula starting from its infix notation;
     # actually this is a preprocessing who fallbacks into `_postfixbuild`
     function _infixbuild()
-        tokens = tokenizer(expression, operators, atom_parser,
-            additional_whitespaces, opening_parenthesis, closing_parenthesis)
+        tokens = tokenizer(
+            expression,
+            operators,
+            atom_parser,
+            additional_whitespaces,
+            opening_parenthesis,
+            closing_parenthesis,
+        )
         return _postfixbuild(
-            shunting_yard!(tokens, opening_parenthesis = opening_parenthesis,
-                closing_parenthesis = closing_parenthesis))
+            shunting_yard!(tokens,
+                opening_parenthesis = opening_parenthesis,
+                closing_parenthesis = closing_parenthesis
+            )
+        )
     end
 
     # Build a formula starting from its function notation;

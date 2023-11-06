@@ -478,7 +478,7 @@ Abstract type for representing
 It comprehends a directed graph structure (Kripke frame), where nodes are referred to as
 *worlds*, and the binary relation between them is referred to as the
 *accessibility relation*. Additionally, each world is associated with a mapping from
-`Atom`s to truth values.
+`Atom`s to `Truth` values.
 
 See also [`frame`](@ref), [`worldtype`](@ref),
 [`accessibles`](@ref), [`AbstractInterpretation`](@ref).
@@ -759,8 +759,6 @@ const ◊ = DIAMOND
 ismodal(::Type{typeof(◊)}) = true
 isbox(::Type{typeof(◊)}) = false
 arity(::typeof(◊)) = 1
-precedence(::typeof(◊)) = precedence(NEGATION)
-
 
 doc_BOX = """
     const BOX = NamedConnective{:□}()
@@ -779,7 +777,6 @@ const □ = BOX
 ismodal(::Type{typeof(□)}) = true
 isbox(::Type{typeof(□)}) = true
 arity(::typeof(□)) = 1
-precedence(::typeof(□)) = 15
 
 hasdual(::typeof(DIAMOND)) = true
 dual(::typeof(DIAMOND)) = BOX
@@ -946,18 +943,6 @@ globalbox = box(globalrel)
 
 identitydiamond = diamond(identityrel)
 identitybox = box(identityrel)
-
-arity(::typeof(globaldiamond)) = 1
-arity(::typeof(globalbox)) = 1
-
-arity(::typeof(identitydiamond)) = 1
-arity(::typeof(identitybox)) = 1
-
-precedence(::typeof(globaldiamond)) = precedence(DIAMOND)
-precedence(::typeof(globalbox)) = precedence(BOX)
-
-precedence(::typeof(identitydiamond)) = precedence(BOX)
-precedence(::typeof(identitybox)) = precedence(BOX)
 
 # Well known operators
 Base.show(io::IO, c::Union{

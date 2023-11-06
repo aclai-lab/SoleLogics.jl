@@ -369,6 +369,20 @@ Base.promote_rule(::Type{S}, ::Type{<:AbstractSyntaxStructure}) where {S<:Syntax
 SyntaxTree(φ::Formula) = tree(φ)
 Base.convert(::Type{SyntaxTree}, φ::Formula) = tree(φ)
 
+# Syntax tree composition
+function SyntaxTree(φ::SyntaxTree, ::Tuple{})
+    return φ
+end
+function SyntaxTree(φ::SyntaxTree)
+    return φ
+end
+function SyntaxTree(c::Connective, φs::NTuple{N,SyntaxTree}) where {N}
+    return SyntaxBranch(c, φs)
+end
+function SyntaxTree(c::Connective, φs::Vararg{SyntaxTree,N}) where {N}
+    return SyntaxTree(c, φs)
+end
+
 ############################################################################################
 #### SyntaxLeaf ############################################################################
 ############################################################################################
@@ -544,6 +558,9 @@ end
 function Base.convert(::Type{Truth}, t)::Truth
     return error("Cannot interpret value $t of type ($(typeof(t))) as Truth.")
 end
+
+# Fallback
+Base.convert(::Type{Truth}, t::Truth) = t
 
 # Helper: joinformulas actually works for operators as well
 joinformulas(c::Truth, ::Tuple{}) = c
@@ -750,8 +767,6 @@ function Base.in(tok::SyntaxToken, tree::SyntaxBranch)::Bool
     return tok == token(tree) || any([Base.in(tok, c) for c in children(tree)])
 end
 
-
-
 ############################################################################################
 #### AbstractInterpretation ################################################################
 ############################################################################################
@@ -891,6 +906,11 @@ end
 # Formula interpretation via i[φ] -> φ
 Base.getindex(i::AbstractInterpretation, φ::Formula, args...; kwargs...) =
     interpret(φ, i, args...; kwargs...)
+
+# Helper
+function Base.getindex(i::AbstractInterpretation, v, args...; kwargs...)
+    Base.getindex(i, Atom(v), args...; kwargs...)
+end
 
 # Formula interpretation via φ(i) -> φ
 (φ::Formula)(i::AbstractInterpretation, args...; kwargs...) =
