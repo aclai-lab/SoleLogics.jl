@@ -169,6 +169,16 @@ fxs = ["→(→(q, p), ¬q)", "∧(∧(q, p), ¬q)"]
 @test_throws ArgumentError parsetree("p";
     atom_parser = (x -> Atom{Float64}(parse(Float64, x))))
 
+@test_nowarn parsetree("10 ∧ ⟨G⟩ 2 ∧ [=] -1", Connective[];
+    atom_parser = x->(Atom{Int64}(parse(Int, x))))
+@test_nowarn parsetree("10 ∧ ⟨G⟩ 2 ∧ [=] -1";
+    atom_parser = x->(Atom{Int64}(parse(Int, x))))
+@test_nowarn parseformula("10 ∧ ⟨G⟩ 2 ∧ [=] -1", Connective[];
+    atom_parser = x->(Atom{Int64}(parse(Int, x))))
+@test_nowarn parseformula("10 ∧ ⟨G⟩ 2 ∧ [=] -1";
+    atom_parser = x->(Atom{Int64}(parse(Int, x))))
+
+
 # custom operators ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 TERNOP = SoleLogics.NamedOperator{:⇶}()
