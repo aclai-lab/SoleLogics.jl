@@ -283,6 +283,7 @@ Return a subtree of syntax tree, by following these options:
  - `transformnode`: function that will be applied to the chosen subtree.
 
 TODO explain better
+TODO is this available in AbstractTrees?
 """
 function treewalk(
     st::SyntaxTree,

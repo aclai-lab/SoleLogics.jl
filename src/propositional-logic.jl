@@ -381,9 +381,9 @@ struct DefaultedTruthDict{
         },
         default_truth = BOT,
     ) where {A,T<:Union{Any,Truth}}
-    default_truth = convert(Truth, default_truth)
+        default_truth = convert(Truth, default_truth)
 
-    if length(d) == 0
+        if length(d) == 0
             return DefaultedTruthDict(default_truth)
         else
             d = TruthDict(d)

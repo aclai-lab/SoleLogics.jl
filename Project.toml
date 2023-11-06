@@ -4,6 +4,7 @@ authors = ["Mauro MILELLA", "Giovanni PAGLIARINI", "Eduard I. STAN"]
 version = "0.6.0"
 
 [deps]
+AbstractTrees = "1520ce14-60c1-5f80-bbc7-55ef81b5835c"
 DataStructures = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
 Dictionaries = "85a47980-9c8c-11e8-2b9f-f7ca1fa99fb4"
 Graphs = "86223c79-3864-5bf0-83f7-82e725a168b6"

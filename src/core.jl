@@ -254,6 +254,8 @@ end
 #### SyntaxTree ############################################################################
 ############################################################################################
 
+import AbstractTrees: children
+
 """
     abstract type SyntaxTree <: AbstractSyntaxStructure end
 
@@ -437,10 +439,6 @@ end
 function Base.in(tok::SyntaxToken, φ::SyntaxLeaf)::Bool
     return tok == φ
 end
-
-# function Base.show(io::IO, tok::SyntaxToken)
-#     print(io, syntaxstring(tok))
-# end
 
 ############################################################################################
 #### Atom ##################################################################################
