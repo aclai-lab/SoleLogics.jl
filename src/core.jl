@@ -379,10 +379,10 @@ function SyntaxTree(φ::SyntaxTree)
     return φ
 end
 function SyntaxTree(c::Connective, φs::NTuple{N,SyntaxTree}) where {N}
-    return SyntaxBranch(c, φs)
+    return joinformulas(c, φs)
 end
 function SyntaxTree(c::Connective, φs::Vararg{SyntaxTree,N}) where {N}
-    return SyntaxTree(c, φs)
+    return joinformulas(c, φs)
 end
 
 ############################################################################################
@@ -403,10 +403,6 @@ abstract type SyntaxLeaf <: SyntaxTree end
 children(::SyntaxLeaf) = ()
 
 token(φ::SyntaxLeaf) = φ
-
-# # TODO remove ??
-# Base.convert(::Type{S}, tok::SyntaxLeaf) where {S<:SyntaxTree} = S(tok)
-# Base.convert(::Type{SyntaxTree}, tok::SyntaxLeaf) = SyntaxTree(tok)
 
 ############################################################################################
 #### SyntaxToken ###########################################################################

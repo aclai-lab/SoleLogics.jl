@@ -948,11 +948,13 @@ dual(op::BoxRelationalOperator)     = DiamondRelationalOperator{relationtype(op)
 ############################################################################################
 
 """
+TODO document
 """
 function diamond() DIAMOND end
 function diamond(r::AbstractRelation) DiamondRelationalOperator(r) end
 
 """
+TODO document
 """
 function box() BOX end
 function box(r::AbstractRelation) BoxRelationalOperator(r) end
