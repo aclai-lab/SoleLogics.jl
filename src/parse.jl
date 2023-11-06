@@ -415,13 +415,13 @@ function parseformula(
                 try
                     children = [pop!(stack) for _ in 1:arity(tok)]
                     push!(stack, SyntaxBranch(tok, Tuple(reverse(children))))
-                catch error
-                    if error isa ArgumentError
+                catch e
+                    if e isa ArgumentError
                         error("Parsing failed, please implement `precedence` for all the " *
                         "connectives. To know more about custom connectives interface, " *
                         "read the Connective documentation.")
                     else
-                        rethrow(error)
+                        rethrow(e)
                     end
                 end
             elseif tok isa Atom

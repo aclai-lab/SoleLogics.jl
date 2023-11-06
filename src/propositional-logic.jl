@@ -259,7 +259,7 @@ function _hpretty_table(io::IO, keys::Any, values::Any)
         # Try to draw a complete table
         data = hcat([x for x in values]...)
         pretty_table(io, data; header=header)
-    catch error
+    catch e
         if e isa DimensionMismatch
             # If it is not possible to draw a complete table, throw a custom error.
             @error "Some syntax structures are not resolved with all the interpretations "
