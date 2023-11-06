@@ -409,7 +409,8 @@ function parseformula(
                     push!(stack, SyntaxBranch(tok, Tuple(reverse(children))))
                 catch e
                     if e isa ArgumentError
-                        error("Parsing failed. Possible solution is to implement `precedence` for all the " *
+                        error("Parsing failed. " *
+                        "Possible solution is to implement `precedence` for all the " *
                         "connectives. To know more about custom connectives interface, " *
                         "read the Connective documentation.")
                     else
