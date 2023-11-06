@@ -54,23 +54,11 @@ end
     abstract type AbstractAssignment <: AbstractInterpretation end
 
 Abstract type for assigments, that is, interpretations of propositional logic,
-encoding mappings from `Atom`s to truth values.
+encoding mappings from `Atom`s to `Truth` values.
 
 See also [`AbstractInterpretation`](@ref).
 """
 abstract type AbstractAssignment <: AbstractInterpretation end
-
-"""
-    Base.getindex(i::AbstractAssignment, a::Atom, args...)::Truth
-
-Return the truth value of an atom, given an assignment.
-
-See also [`AbstractInterpretation`](@ref).
-"""
-function Base.getindex(i::AbstractAssignment, ::Atom, args...)::Truth
-    return error("Please, provide method " *
-                 "Base.getindex(::$(typeof(i)), ::Atom, args...::$(typeof(args))::Truth.")
-end
 
 """
     Base.haskey(i::AbstractAssignment, ::Atom)::Bool
@@ -83,55 +71,28 @@ function Base.haskey(i::AbstractAssignment, ::Atom)::Bool
     return error("Please, provide method Base.haskey(::$(typeof(i)), ::Atom)::Bool.")
 end
 
-# Helpers
-function Base.getindex(i::AbstractAssignment, a, args...; kwargs...)
-    # if !(a isa Atom)
-        Base.getindex(i, Atom(a))
-    # else
-    #     return error("Please, provide method" *
-    #                  " Base.getindex(::$(typeof(i))," *
-    #                  " a," *
-    #                  " args...::$(typeof(args))::Truth.")
-    # end
+# Helper
+function Base.haskey(i::AbstractAssignment, v)::Bool
+    Base.haskey(i, Atom(v))
 end
-function Base.haskey(i::AbstractAssignment, a)::Bool
-    # if !(a isa Atom)
-        Base.haskey(i, Atom(a))
-    # else
-    #     return error("Please, provide method" *
-    #                  " Base.haskey(::$(typeof(i))," *
-    #                  " a)::Bool.")
-    # end
-end
-
-# Needed for resolving ambiguities
-# Formula interpretation via i[φ] -> φ
-Base.getindex(i::AbstractAssignment, φ::Formula, args...; kwargs...) =
-    interpret(φ, i, args...; kwargs...)
 
 function inlinedisplay(i::AbstractAssignment)
     return error("Please, provide method inlinedisplay(::$(typeof(i)))::String.")
 end
 
-# TODO: get inspiration from PAndQ package and write interpret function.
-# TODO: change collatetruth name (concepts are "unite and simplify")
-function interpret(tree::SyntaxBranch, i::AbstractAssignment, args...; kwargs...)
-    return collatetruth(token(tree), Tuple(
-        [interpret(ch, i, args...; kwargs...) for ch in children(tree)]
-    ))
+# When interpreting a single atom, if the lookup fails, then return the atom itself
+function interpret(a::Atom, i::AbstractAssignment, args...; kwargs...)::SyntaxLeaf
+    if Base.haskey(i, a)
+        Base.getindex(i, a, args...; kwargs...)
+    else
+        a
+    end
 end
 
-# When interpreting a single atom, if the lookup fails then return the atom itself
-function interpret(a::Atom, i::AbstractAssignment, args...; kwargs...)
-    try
-        Base.getindex(i, a, args...)
-    catch error
-        if e isa BoundsError
-            a
-        else
-            rethrow(e)
-        end
-    end
+function interpret(φ::SyntaxBranch, i::AbstractAssignment, args...; kwargs...)::Formula
+    return collatetruth(token(φ), Tuple(
+        [interpret(ch, i, args...; kwargs...) for ch in children(φ)]
+    ))
 end
 
 ############################################################################################
@@ -259,23 +220,14 @@ struct TruthDict{
 
     # Empty dict
 
-    function TruthDict{A,T,D}() where {
-        A,
-        T<:Truth,
-        D<:AbstractDict{<:Atom{<:A},T},
-    }
+    function TruthDict{A,T,D}() where {A,T<:Truth,D<:AbstractDict{<:Atom{<:A},T}}
         return TruthDict{A,T,D}(D())
     end
-    function TruthDict{A,T}() where {
-        A,
-        T<:Truth,
-    }
+    function TruthDict{A,T}() where {A,T<:Truth}
         d = Dict{Atom{A},T}()
         return TruthDict{A,T,typeof(d)}(d)
     end
-    function TruthDict{A}() where {
-        A,
-    }
+    function TruthDict{A}() where {A}
         T = BooleanTruth
         return TruthDict{A,T}()
     end
@@ -286,8 +238,6 @@ struct TruthDict{
         return TruthDict{A,T,typeof(d)}(d)
     end
 end
-
-Base.getindex(i::TruthDict, a::Atom, args...) = getindex(i.truth, a, args...)
 
 Base.haskey(i::TruthDict, a::Atom) = Base.haskey(i.truth, a)
 
@@ -398,7 +348,7 @@ struct DefaultedTruthDict{
 
     function DefaultedTruthDict{A,T,D}(
         d::D,
-        default_truth::T = BOT,
+        default_truth::T,
     ) where {
         A,
         T<:Truth,
@@ -409,17 +359,19 @@ struct DefaultedTruthDict{
 
     function DefaultedTruthDict(
         d::TruthDict{A,T,D},
-        default_truth::T = BOT, # @Gio by @mauro-milella, T was <:Truth, but default_truth was false and this type discrepancy
+        default_truth::T2 = BOT,
     ) where {
         A,
         T<:Truth,
+        T2<:Union{Any,Truth},
         D<:AbstractDict{<:Atom{<:A},T}
     }
+        default_truth = convert(Truth, default_truth)
         return DefaultedTruthDict{A,T,D}(d.truth, default_truth)
     end
 
     function DefaultedTruthDict(
-        a::Union{
+        d::Union{
             AbstractDict{<:Atom,T},
             AbstractDict{A,T},
             AbstractVector{<:Union{Tuple,Pair}},
@@ -427,27 +379,32 @@ struct DefaultedTruthDict{
             Pair,
             Tuple,
         },
-        default_truth::T = BOT, # @Gio by @mauro-milella, i substituted false with BOT because, after all, this is going to be converted (see method logic)
-    ) where {A,T<:Union{Bool,Truth}}
-    if length(a) == 0
+        default_truth = BOT,
+    ) where {A,T<:Union{Any,Truth}}
+    default_truth = convert(Truth, default_truth)
+
+    if length(d) == 0
             return DefaultedTruthDict(default_truth)
         else
-            return DefaultedTruthDict(TruthDict(a),
-                typeof(default_truth) <: Truth ? default_truth :
-                convert(Truth, default_truth))
+            d = TruthDict(d)
+            # @assert truthsupertype(truthtype(d)) ==  truthsupertype(default_truth)
+            return DefaultedTruthDict(d, default_truth)
         end
     end
 
-    function DefaultedTruthDict(default_truth::T) where {T<:Union{Bool,Truth}}
+    function DefaultedTruthDict(default_truth = BOT)
+        default_truth = convert(Truth, default_truth)
+        T = truthsupertype(typeof(default_truth))
         d = Dict{Atom{Any},T}([])
         return DefaultedTruthDict{Any,T,typeof(d)}(d, default_truth)
     end
 end
 
+Base.haskey(i::DefaultedTruthDict, a::Atom) = true
+
 function interpret(a::Atom, i::DefaultedTruthDict, args...; kwargs...)
     return Base.haskey(i.truth, a) ? Base.getindex(i.truth, a) : i.default_truth
 end
-Base.haskey(i::DefaultedTruthDict, a::Atom) = true
 
 function inlinedisplay(i::DefaultedTruthDict)
     "DefaultedTruthDict([$(join(["$(syntaxstring(a)) => $t" for (a,t) in i.truth], ", "))], $(i.default_truth))"
@@ -501,7 +458,7 @@ function check(
     check(φ, convert(AbstractInterpretation, i), args...)
 end
 
-# A dictionary is interpreted as the map from atoms to truth values
+# A dictionary is interpreted as the map from atoms to `Truth` values
 convert(::Type{AbstractInterpretation}, i::AbstractDict) = TruthDict(i)
 # Base.getindex(i::AbstractDict, a::Atom) = i[value(a)]
 Base.haskey(a::Atom, i::AbstractDict) = (value(a) in keys(i))

@@ -169,8 +169,8 @@ function tree(lf::LeftmostLinearForm)
             function _tree(chs::Vector{<:SyntaxTree})
                 @assert (length(chs) != 0) "$(chs); $(lf); $(conn); $(a)."
                 return length(chs) == a ?
-                    SyntaxBranch(conn, chs...) :
-                    SyntaxBranch(conn, chs[1:(a-1)]..., _tree(chs[a:end])) # Left-most unwinding
+                    SyntaxTree(conn, chs...) :
+                    SyntaxTree(conn, chs[1:(a-1)]..., _tree(chs[a:end])) # Left-most unwinding
             end
             _tree(tree.(cs))
         end
@@ -319,7 +319,7 @@ function treewalk(
                     returnnode=returnnode,
                     transformnode=transformnode,
                 ) :
-                SyntaxBranch(
+                SyntaxTree(
                     token(st),
                     (
                         chs[1:(idx_randnode-1)]...,
@@ -535,12 +535,12 @@ function normalize(
             elseif (reduce_negations || simplify_constants) && chtok == ⊥ && arity(chtok) == 1
                 ⊤
             elseif !forced_negation_removal
-                SyntaxBranch(tok, _normalize.(ch))
+                SyntaxTree(tok, _normalize.(ch))
             else
                 error("Unknown chtok when removing negations: $(chtok) (type = $(typeof(chtok)))")
             end
         else
-            SyntaxBranch(tok, _normalize.(ch))
+            SyntaxTree(tok, _normalize.(ch))
         end
     end
 
@@ -567,7 +567,7 @@ function normalize(
                 elseif token(ch[2]) == ⊥  _normalize(¬ch[1])  # φ → ⊥ ≡ ¬φ
                 elseif token(ch[1]) == ⊤  ch[2]               # ⊤ → φ ≡ φ
                 elseif token(ch[2]) == ⊤  ⊤                   # φ → ⊤ ≡ ⊤
-                else                      SyntaxBranch(∨, _normalize(¬ch[1]), ch[2])
+                else                      SyntaxTree(∨, _normalize(¬ch[1]), ch[2])
                 end
             elseif (tok == ¬) && arity(tok) == 1
                 if     token(ch[1]) == ⊤  ⊥
@@ -625,7 +625,7 @@ function normalize(
                 end
                 tree(LeftmostLinearForm(tok, ch))
             else
-                SyntaxBranch(tok, ch)
+                SyntaxTree(tok, ch)
             end
         end
     end

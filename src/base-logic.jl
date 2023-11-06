@@ -80,7 +80,6 @@ const NEGATION = NamedConnective{:¬}()
 """$(doc_NEGATION)"""
 const ¬ = NEGATION
 arity(::typeof(¬)) = 1
-precedence(::typeof(¬)) = 15 # Inspired by Base.operator_precedence(:(^)) which is 15
 
 doc_CONJUNCTION = """
     const CONJUNCTION = NamedConnective{:∧}()
@@ -97,7 +96,6 @@ const CONJUNCTION = NamedConnective{:∧}()
 """$(doc_CONJUNCTION)"""
 const ∧ = CONJUNCTION
 arity(::typeof(∧)) = 2
-precedence(::typeof(∧)) = 12 # Base.operator_precedence(:∧) is 12, this is for completeness
 
 doc_DISJUNCTION = """
     const DISJUNCTION = NamedConnective{:∨}()
@@ -114,7 +112,6 @@ const DISJUNCTION = NamedConnective{:∨}()
 """$(doc_DISJUNCTION)"""
 const ∨ = DISJUNCTION
 arity(::typeof(∨)) = 2
-precedence(::typeof(∨)) = precedence(CONJUNCTION) - 1;
 
 doc_IMPLICATION = """
     const IMPLICATION = NamedConnective{:→}()
@@ -131,7 +128,6 @@ const IMPLICATION = NamedConnective{:→}()
 """$(doc_IMPLICATION)"""
 const → = IMPLICATION
 arity(::typeof(→)) = 2
-precedence(::typeof(→)) = 4 # As in Base.operator_precedence, this is for completeness
 
 # TODO remove
 # # Helpers that allow the conjuction/disjuction/implication of more than two tokens/formulas.
