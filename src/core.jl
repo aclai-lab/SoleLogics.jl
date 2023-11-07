@@ -105,8 +105,8 @@ end
 
 """$(doc_precedence)"""
 function precedence(c::Connective)
-    if arity(c) == 1
-        return Base.operator_precedence(:(¬))
+    if (Base.isoperator(Symbol(c)) && Base.operator_precedence(Symbol(c)) > 0)
+        return Base.operator_precedence(Symbol(c))
     else
         return error("Please, provide method precedence(c::$(typeof(c))).")
     end

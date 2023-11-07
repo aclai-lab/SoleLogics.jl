@@ -109,9 +109,6 @@ It is possible to assign a specific precedence to a connective type `C` by provi
 julia> precedence(∧) == Base.operator_precedence(:∧)
 true
 
-julia> precedence(¬) == Base.operator_precedence(:¬)
-true
-
 julia> precedence(∧), precedence(∨), precedence(→)
 ∨(12, 11, 4)
 

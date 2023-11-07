@@ -67,7 +67,7 @@ end
 @test syntaxstring(parseformula("p→q"); function_notation = true) == "→(p, q)"
 
 @test filter(!isspace, syntaxstring(parseformula("¬p∧q∧(¬s∧¬z)");
-    function_notation = true)) == "∧(¬(p),∧(q,∧(¬(s),¬(z))))"
+function_notation = true)) == "∧(∧(¬(p),q),∧(¬(s),¬(z)))"
 
 @test_nowarn parseformula("→(∧(¬p, q), ∧(¬s, ¬z))", function_notation=true)
 @test_nowarn parseformula("→(∧(¬p; q); ∧(¬s; ¬z))",

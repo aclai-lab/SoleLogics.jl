@@ -343,11 +343,11 @@ function parseformula(
                 while !isempty(tokstack) &&
                     tokstack[end] isa Connective && (
                         # precedence(tokstack[end]) > precedence(tok) && associativity(tok) == :left
-                        precedence(tokstack[end]) < precedence(tok) || (precedence(tokstack[end]) == precedence(tok) && associativity(tokstack[end]) == :left)
+                        # precedence(tokstack[end]) < precedence(tok) || (precedence(tokstack[end]) == precedence(tok) && associativity(tokstack[end]) == :left)
                         # precedence(tokstack[end]) < precedence(tok) || (precedence(tokstack[end]) == precedence(tok) && associativity(tokstack[end]) == :right)
                         # precedence(tokstack[end]) < precedence(tok) || (precedence(tokstack[end]) == precedence(tok) && associativity(tok) == :left)
                         # precedence(tokstack[end]) < precedence(tok) || (precedence(tokstack[end]) == precedence(tok) && associativity(tok) == :right)
-                        # precedence(tokstack[end]) > precedence(tok) || (precedence(tokstack[end]) == precedence(tok) && associativity(tokstack[end]) == :left)
+                        precedence(tokstack[end]) > precedence(tok) || (precedence(tokstack[end]) == precedence(tok) && associativity(tokstack[end]) == :left)
                         # precedence(tokstack[end]) > precedence(tok) || (precedence(tokstack[end]) == precedence(tok) && associativity(tokstack[end]) == :right)
                         # precedence(tokstack[end]) > precedence(tok) || (precedence(tokstack[end]) == precedence(tok) && associativity(tok) == :left)
                         # precedence(tokstack[end]) > precedence(tok) || (precedence(tokstack[end]) == precedence(tok) && associativity(tok) == :right)
