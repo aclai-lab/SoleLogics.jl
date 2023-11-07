@@ -107,13 +107,6 @@ interp2             = TruthDict(1:4, BOT)
 @test trees_implication |> syntaxstring ==
     SL.composeformulas(IMPLICATION, (pandq, porq)) |> syntaxstring
 
-# @test Base.operator_precedence(TOP)         == SL.MAX_PRECEDENCE
-# @test Base.operator_precedence(BOT)      == SL.MAX_PRECEDENCE
-# @test Base.operator_precedence(NEGATION)    == SL.HIGH_PRECEDENCE
-# @test Base.operator_precedence(CONJUNCTION) == SL.BASE_PRECEDENCE
-# @test Base.operator_precedence(DISJUNCTION) == SL.BASE_PRECEDENCE
-# @test Base.operator_precedence(IMPLICATION) == SL.LOW_PRECEDENCE
-
 @test parseformula("p → q ∧ r") == (@synexpr p → q ∧ r)
 @test parseformula("p → (q → r)") == (@synexpr p → (q → r))
 @test parseformula("p → (q ∧ r)") == (@synexpr p → (q ∧ r))
