@@ -365,6 +365,7 @@ function Base.show(io::IO, φ::SyntaxTree)
     print(io, "$(typeof(φ)): $(syntaxstring(φ))")
     # print(io, "$(syntaxstring(φ))")
 end
+
 # Syntax tree, the universal syntax structure representation,
 # wins when promoted with syntax structures/tokens and syntax trees.
 Base.promote_rule(::Type{<:SyntaxTree}, ::Type{<:SyntaxTree}) = SyntaxTree
@@ -598,6 +599,7 @@ function (op::Operator)(children::Formula...)
     return op(children)
 end
 
+# function (op::Operator)(children::NTuple{N, F}) where {N,F<:Formula}
 function (op::Operator)(children::NTuple{N,Formula}) where {N}
     if arity(op) == 2 && length(children) > arity(op)
         if associativity(op) == :right
@@ -606,10 +608,14 @@ function (op::Operator)(children::NTuple{N,Formula}) where {N}
             children = (op(children[1:end-1]), children[end])
         end
     end
-    T = Base.promote_type((typeof.(children))...)
-    T <: SyntaxTree || (children = Base.promote(children...))
+    _F = Base.promote_type((typeof.(children))...)
+    # TODO figure out!!
+    # _F <: Union{F,SyntaxTree} || (children = Base.promote(children...))
+    _F <: SyntaxTree || (children = Base.promote(children...))
     return joinformulas(op, children)
 end
+
+(c::Truth)(::Tuple{}) = c
 
 ############################################################################################
 #### SyntaxBranch ##########################################################################

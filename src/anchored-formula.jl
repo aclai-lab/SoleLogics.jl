@@ -134,7 +134,6 @@ function Base._promote(x::AnchoredFormula, y::AbstractSyntaxStructure)
     @inline
     return (x, x(y))
 end
-
 Base._promote(x::AbstractSyntaxStructure, y::AnchoredFormula) = reverse(Base._promote(y, x))
 
 iscrisp(f::AnchoredFormula) = iscrisp(logic(f))
@@ -303,11 +302,10 @@ function randbaseformula(
     )
 end
 
-"""$(doc_randformula)"""
 function randbaseformula(
     height::Integer,
     alphabet,
-    operators::Vector{<:Operator};
+    operators::AbstractVector{<:Operator};
     picker::Function=rand,
     kwargs...
 )::AnchoredFormula
@@ -317,19 +315,6 @@ function randbaseformula(
         alphabet = alphabet,
         additional_operators = operators,
     )
-end
-
-function randbaseformula(
-    height::Integer,
-    alphabet::AbstractAlphabet,
-    operators::AbstractVector{<:Operator},
-    args...;
-    rng::AbstractRNG = Random.GLOBAL_RNG,
-    picker = rand,
-    weights = Union{AbstractWeights, Nothing},
-    kwargs...
-)::AnchoredFormula
-    return error("TODO: implement this")
 end
 
 function randbaseformula(

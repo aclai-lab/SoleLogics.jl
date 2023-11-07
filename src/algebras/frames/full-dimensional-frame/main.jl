@@ -25,12 +25,15 @@ abstract type AbstractDimensionalFrame{N,W<:AbstractWorld} <: AbstractMultiModal
     end
 
 Abstract type for full dimensional frames.
-Given a N-dimensional array of size (X, Y, Z, ...)
+Given a `N`-dimensional array of size (X, Y, Z, ...)
 the corresponding full dimensional frame is a graph where there is exactly one vertex
 for each
-N-hyperrectangle (e.g., an Interval/Interval2D) in the space (1:X, 1:Y, 1:Z, ...).
+M-hyperrectangle in the space (1:X, 1:Y, 1:Z, ...),
+with `M ≤ N`.
 
-Here, a `N`-hyperrectangle is an `N` tuple of intervals, where
+Here, the `M`-hyperrectangle can be either a [`Point`](@ref),
+or a `N`-tuple of intervals
+(e.g., [`Interval`](@ref) or [`Interval2D`](@ref)), where
 each interval is a pair of natural numbers (x,y) where: i) x > 0; ii) y > 0; iii) x < y.
 
 The current implementation can handle N ∈ {0,1,2}.
@@ -78,16 +81,20 @@ struct FullDimensionalFrame{N,W<:AbstractWorld} <: AbstractDimensionalFrame{N,W}
     end
     
     function FullDimensionalFrame(channelsize::Tuple{})
-        FullDimensionalFrame{0,OneWorld}(channelsize)
+        W = OneWorld
+        FullDimensionalFrame{0,W}(channelsize)
     end
-    function FullDimensionalFrame(channelsize::Tuple{Int})
-        FullDimensionalFrame{1,Interval{Int}}(channelsize)
+    function FullDimensionalFrame(channelsize::Tuple{Int}, W::Type{<:AbstractWorld} = Interval{Int})
+        FullDimensionalFrame{1,W}(channelsize)
     end
-    function FullDimensionalFrame(channelsize::Tuple{Int,Int})
-        FullDimensionalFrame{2,Interval2D{Int}}(channelsize)
+    function FullDimensionalFrame(channelsize::Tuple{Int,Int}, W::Type{<:AbstractWorld} = Interval2D{Int})
+        FullDimensionalFrame{2,W}(channelsize)
     end
-    function FullDimensionalFrame(channelsize...)
+    function FullDimensionalFrame(channelsize::Vararg{Int,N}) where {N}
         FullDimensionalFrame(channelsize)
+    end
+    function FullDimensionalFrame()
+        return error("Could not instantiate FullDimensionalFrame with no dimensions")
     end
 end
 
@@ -109,43 +116,57 @@ Z(fr::FullDimensionalFrame) = fr[3]
 _intervals_in(a::Integer, b::Integer) = Iterators.filter(((x,y),)->x<y, Iterators.product(a:b-1, a+1:b))
 intervals_in(a::Integer, b::Integer) = IterTools.imap(Interval{Int}, _intervals_in(a, b))
 short_intervals_in(a::Integer, b::Integer) = IterTools.imap((x)->Interval{Int}(x,x+1), a:b-1)
+points_in(a::Integer, b::Integer) = IterTools.imap((x)->Point(x), a:b)
+points_in(a1::Integer, b1::Integer, a2::Integer, b2::Integer) = IterTools.imap(((x,y),)->Point(x,y), Iterators.product(a1:b1, a2:b2))
 
 # Convenience function: enumerate all interval2Ds in a given range
 intervals2D_in(a1::Integer, a2::Integer, b1::Integer, b2::Integer) = IterTools.imap(Interval2D{Int}, Iterators.product(_intervals_in(a1, a2), _intervals_in(b1, b2)))
 
-# _accessibles(fr::Full0DFrame, ::OneWorld, ::IdentityRel) = [OneWorld()]
-
 const Full0DFrame = FullDimensionalFrame{0,OneWorld}
 const Full1DFrame = FullDimensionalFrame{1,Interval{Int}}
+const Full1DPointFrame = FullDimensionalFrame{1,Point1D{Int}}
 const Full2DFrame = FullDimensionalFrame{2,Interval2D{Int}}
+const Full2DPointFrame = FullDimensionalFrame{2,Point2D{Int}}
 
 ############################################################################################
 
-allworlds(fr::FullDimensionalFrame{0}) = [OneWorld()]
-allworlds(fr::FullDimensionalFrame{1}) = intervals_in(1, X(fr)+1)
-allworlds(fr::FullDimensionalFrame{2}) = intervals2D_in(1, X(fr)+1, 1, Y(fr)+1)
+allworlds(fr::Full0DFrame)      = [OneWorld()]
+allworlds(fr::Full1DFrame)      = intervals_in(1, X(fr)+1)
+allworlds(fr::Full1DPointFrame) = points_in(1, X(fr))
+allworlds(fr::Full2DFrame)      = intervals2D_in(1, X(fr)+1, 1, Y(fr)+1)
+allworlds(fr::Full2DPointFrame) = points_in(1, X(fr), 1, Y(fr))
 
-nworlds(fr::FullDimensionalFrame{0}) = 1
-nworlds(fr::FullDimensionalFrame{1}) = div(X(fr)*(X(fr)+1), 2)
-nworlds(fr::FullDimensionalFrame{2}) = div(X(fr)*(X(fr)+1), 2) * div(Y(fr)*(Y(fr)+1), 2)
-nworlds(fr::FullDimensionalFrame{3}) = div(X(fr)*(X(fr)+1), 2) * div(Y(fr)*(Y(fr)+1), 2) * div(Z(fr)*(Z(fr)+1), 2)
+nworlds(fr::Full0DFrame)      = 1
+nworlds(fr::Full1DFrame)      = X(fr)
+nworlds(fr::Full1DPointFrame) = div(X(fr)*(X(fr)+1), 2)
+nworlds(fr::Full2DFrame)      = X(fr)*Y(fr)
+nworlds(fr::Full2DPointFrame) = div(X(fr)*(X(fr)+1), 2) * div(Y(fr)*(Y(fr)+1), 2)
 
 ############################################################################################
 
-emptyworld(fr::FullDimensionalFrame{0}) = OneWorld()
-emptyworld(fr::FullDimensionalFrame{1}) = Interval{Int}(-1,0)
-emptyworld(fr::FullDimensionalFrame{2}) = Interval2D{Int}(Interval{Int}(-1,0),Interval{Int}(-1,0))
+emptyworld(fr::Full0DFrame)      = OneWorld()
+emptyworld(fr::Full1DFrame)      = Interval{Int}(-1,0)
+emptyworld(fr::Full1DPointFrame) = Point(-1)
+emptyworld(fr::Full2DFrame)      = Interval2D{Int}(Interval{Int}(-1,0),Interval{Int}(-1,0))
+emptyworld(fr::Full2DPointFrame) = Point(-1, -1)
 
 # Smallest centered hyperrectangle
-_centralworld(X::Integer) = Interval{Int}(div(X+1, 2),(div(X+1, 2))+1+(isodd(X) ? 0 : 1))
-centralworld(fr::FullDimensionalFrame{0}) = OneWorld()
-centralworld(fr::FullDimensionalFrame{1}) = _centralworld(X(fr))
-centralworld(fr::FullDimensionalFrame{2}) = Interval2D{Int}(_centralworld(X(fr)),_centralworld(Y(fr)))
+_centralint(X::Integer) = Interval{Int}(div(X+1, 2),(div(X+1, 2))+1+(isodd(X) ? 0 : 1))
+centralworld(fr::Full0DFrame)      = OneWorld()
+centralworld(fr::Full1DFrame)      = _centralint(X(fr))
+centralworld(fr::Full1DPointFrame) = Point(div(X(fr)+1, 2))
+centralworld(fr::Full2DFrame)      = Interval2D{Int}(_centralint(X(fr)),_centralint(Y(fr)))
+centralworld(fr::Full2DPointFrame) = Point(div(X(fr)+1, 2), div(Y(fr)+1, 2))
 
 ############################################################################################
 
 include("Full1DFrame+IA.jl")
 include("Full1DFrame+RCC.jl")
 
+include("Full1DPointFrame.jl")
+
 include("Full2DFrame+IA2D.jl")
 include("Full2DFrame+RCC.jl")
+
+# TODO
+# include("Full2DPointFrame.jl")

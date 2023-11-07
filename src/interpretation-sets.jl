@@ -19,19 +19,20 @@ See also [`valuetype`](@ref), [`truthtype`](@ref),
 abstract type AbstractInterpretationSet{M<:AbstractInterpretation} <: AbstractDataset end
 
 # TODO improve general doc.
-interpretationtype(::Type{AbstractInterpretationSet{M}}) where {M} = M
+interpretationtype(::Type{S}) where {M,S<:AbstractInterpretationSet{M}} = M
 interpretationtype(s::AbstractInterpretationSet) = interpretationtype(typeof(s))
 
 # TODO improve general doc.
-valuetype(::Type{AbstractInterpretationSet{M}}) where {M} = valuetype(M)
+valuetype(::Type{S}) where {M,S<:AbstractInterpretationSet{M}} = valuetype(M)
 valuetype(s::AbstractInterpretationSet) = valuetype(typeof(s))
 
 # TODO improve general doc.
-truthtype(::Type{AbstractInterpretationSet{M}}) where {M} = truthtype(M)
+truthtype(::Type{S}) where {M,S<:AbstractInterpretationSet{M}} = truthtype(M)
 truthtype(s::AbstractInterpretationSet) = truthtype(typeof(s))
 
 """
-TODO explain. In general, one cannot extract a single logical instance from a set, thus we represent it as a tuple of dataset + instance id (i_instance)
+TODO explain. In general, one may not be able to extract a single logical instance from a
+set, thus we represent it as a tuple of dataset + instance id (i_instance).
 """
 struct LogicalInstance{
     M<:AbstractInterpretation,

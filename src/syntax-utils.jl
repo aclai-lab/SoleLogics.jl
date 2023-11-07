@@ -184,6 +184,7 @@ function Base.show(io::IO, lf::LeftmostLinearForm{C,SS}) where {C,SS}
     println(io, "\t$(syntaxstring(lf))")
 end
 
+# TODO fix
 Base.promote_rule(::Type{<:LeftmostLinearForm}, ::Type{<:LeftmostLinearForm}) = SyntaxTree
 Base.promote_rule(::Type{SS}, ::Type{LF}) where {SS<:AbstractSyntaxStructure,LF<:LeftmostLinearForm} = SyntaxTree
 Base.promote_rule(::Type{LF}, ::Type{SS}) where {LF<:LeftmostLinearForm,SS<:AbstractSyntaxStructure} = SyntaxTree
@@ -441,22 +442,25 @@ function normalize(
     allow_atom_flipping = nothing,
     forced_negation_removal = nothing,
     remove_identities = nothing,
+    remove_functionals = nothing,
     rotate_commutatives = nothing
 )
     if profile == :readability
         if isnothing(remove_boxes)               remove_boxes = false end
         if isnothing(reduce_negations)           reduce_negations = true end
         if isnothing(simplify_constants)         simplify_constants = true end
-        if isnothing(allow_atom_flipping) allow_atom_flipping = false end
-        if isnothing(remove_identities)          remove_identities = false end
+        if isnothing(allow_atom_flipping)        allow_atom_flipping = false end
+        if isnothing(remove_identities)          remove_identities = true end
+        if isnothing(remove_functionals)         remove_functionals = true end
         if isnothing(rotate_commutatives)        rotate_commutatives = true end
         # TODO leave \to's instead of replacing them with \lor's...
     elseif profile == :modelchecking
         if isnothing(remove_boxes)               remove_boxes = true end
         if isnothing(reduce_negations)           reduce_negations = true end
         if isnothing(simplify_constants)         simplify_constants = true end
-        if isnothing(allow_atom_flipping) allow_atom_flipping = false end
+        if isnothing(allow_atom_flipping)        allow_atom_flipping = false end
         if isnothing(remove_identities)          remove_identities = true end
+        if isnothing(remove_functionals)         remove_functionals = true end
         if isnothing(rotate_commutatives)        rotate_commutatives = true end
     else
         error("Unknown normalization profile: $(repr(profile))")
@@ -484,10 +488,13 @@ function normalize(
 
     newt = t
 
-    # Remove modal operators based on the identity relation
+    # Remove modal operators based on the identity relation, or other functional relations
     newt = begin
         tok, ch = token(newt), children(newt)
-        if remove_identities && tok isa AbstractRelationalOperator &&
+        if remove_functionals && tok isa AbstractRelationalOperator &&
+            isfunctional(relation(tok)) && arity(tok) == 1
+            first(ch)
+        elseif remove_identities && tok isa AbstractRelationalOperator &&
             relation(tok) == identityrel && arity(tok) == 1
             first(ch)
         else

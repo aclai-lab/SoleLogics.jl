@@ -94,9 +94,7 @@ end
 ############################################################################################
 
 """
-    abstract type AbstractUniModalFrame{
-        W<:AbstractWorld,
-    } <: AbstractFrame{W} end
+    abstract type AbstractUniModalFrame{W<:AbstractWorld} <: AbstractFrame{W} end
 
 A frame of a modal logic based on a single (implicit) accessibility relation.
 
@@ -178,10 +176,14 @@ When implementing a new relation type `R`, please provide the methods:
     arity(::R)::Int = ...
     syntaxstring(::R; kwargs...)::String = ...
 
-If the relation is symmetric relation, please specify its converse relation `cr` with:
+If the relation is symmetric, please specify its converse relation `cr` with:
 
     hasconverse(::R) = true
     converse(::R) = cr
+
+If the relation is functional, please flag it with:
+
+    isfunctional(::R) = true
 
 If the relation is reflexive or transitive, flag it with:
 
@@ -200,6 +202,7 @@ See also
 [`syntaxstring`](@ref),
 [`converse`](@ref),
 [`hasconverse`](@ref),
+[`isfunctional`](@ref),
 [`IdentityRel`](@ref),
 [`GlobalRel`](@ref),
 [`accessibles`](@ref),
@@ -244,6 +247,16 @@ end
 
 
 """
+    isfunctional(r::AbstractRelation) = false
+
+Return whether it is known that a relation is isfunctional.
+
+See also [`hasconverse`](@ref), [`converse`](@ref),
+[`issymmetric`](@ref), [`istransitive`](@ref), [`isgrounding`](@ref), [`AbstractRelation`](@ref).
+"""
+isfunctional(r::AbstractRelation) = false
+
+"""
     issymmetric(r::AbstractRelation) = hasconverse(r) ? converse(r) == r : false
 
 Return whether it is known that a relation is symmetric.
@@ -269,7 +282,7 @@ isreflexive(::AbstractRelation) = false
 Return whether it is known that a relation is transitive.
 
 See also
-[`isreflexive`](@ref), [`issymmetric`](@ref), [`isgrounding`](@ref), [`AbstractRelation`](@ref).
+[`isfunctional`](@ref), [`issymmetric`](@ref), [`isgrounding`](@ref), [`AbstractRelation`](@ref).
 """
 istransitive(::AbstractRelation) = false
 
@@ -289,9 +302,7 @@ include("algebras/relations.jl")
 ############################################################################################
 
 """
-    abstract type AbstractMultiModalFrame{
-        W<:AbstractWorld,
-    } <: AbstractFrame{W} end
+    abstract type AbstractMultiModalFrame{W<:AbstractWorld} <: AbstractFrame{W} end
 
 A frame of a multi-modal logic, that is, a modal logic based on a set
 of accessibility relations.
@@ -303,9 +314,12 @@ should be defined via `accessibles` methods; refer to the help for `accessibles`
 
 See also [`AbstractUniModalFrame`](@ref), [`AbstractFrame`](@ref).
 """
-abstract type AbstractMultiModalFrame{
-    W<:AbstractWorld,
-} <: AbstractFrame{W} end
+abstract type AbstractMultiModalFrame{W<:AbstractWorld} <: AbstractFrame{W} end
+
+# Shortcut: when enumerating accessibles through global relation, delegate to `allworlds`
+accessibles(fr::AbstractMultiModalFrame, ::GlobalRel) = allworlds(fr)
+accessibles(fr::AbstractMultiModalFrame, ::AbstractWorld, r::GlobalRel) = accessibles(fr, r)
+accessibles(fr::AbstractMultiModalFrame, w::AbstractWorld,    ::IdentityRel) = [w]
 
 
 """

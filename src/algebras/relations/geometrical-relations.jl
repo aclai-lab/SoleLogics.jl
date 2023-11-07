@@ -25,6 +25,9 @@ istopological(r::GeometricalRelation) = false
 
 ############################################################################################
 
+# Point relations
+include("Point-relations.jl")
+
 # 1D Allen relations
 include("IA.jl")
 
