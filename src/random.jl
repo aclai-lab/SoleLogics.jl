@@ -77,7 +77,7 @@ function Base.rand(
     args...;
     kwargs...
 )
-    randformula(height, alphabet(g), operators(g), args...; rng=rng, kwargs...)
+    randformula(rng, height, alphabet(g), operators(g), args...; kwargs...)
 end
 
 function Base.rand(
@@ -173,8 +173,8 @@ function StatsBase.sample(
     kwargs...
 )
     randformula(
-        height, alphabet(g), operators(g);
-        rng=rng, picker=StatsBase.sample, weights=weights, args..., kwargs...)
+        rng, height, alphabet(g), operators(g);
+        picker=StatsBase.sample, weights=weights, args..., kwargs...)
 end
 
 function StatsBase.sample(
@@ -199,14 +199,14 @@ doc_randformula = """
         alphabet,
         operators::AbstractVector{<:Operator};
         rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG
-    )::SyntaxBranch
+    )::SyntaxTree
 
     # TODO @Mauro implement this method.
     function randformula(
         height::Integer,
         g::AbstractGrammar;
         rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG
-    )::SyntaxBranch
+    )::SyntaxTree
 
 Return a pseudo-randomic `SyntaxBranch`.
 
@@ -235,16 +235,15 @@ See also [`AbstractAlphabet`](@ref), [`SyntaxBranch`](@ref).
 
 """$(doc_randformula)"""
 function randformula(
+    rng::AbstractRNG,
     height::Integer,
     alphabet,
     operators::AbstractVector{<:Operator};
     modaldepth::Integer = height,
-    rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG,
     picker::Function = rand,
     opweights::Union{AbstractWeights,AbstractVector{<:Real},Nothing} = nothing
-)::SyntaxBranch
+)::SyntaxTree
     alphabet = convert(AbstractAlphabet, alphabet)
-    initrng(rng)
 
     @assert isnothing(opweights) ||
         length(opweights) == length(operators) "Mismatching numbers of operators " *
@@ -262,7 +261,7 @@ function randformula(
         rng::AbstractRNG,
         height::Integer,
         modaldepth::Integer
-    )::SyntaxBranch
+    )::SyntaxTree
         if height == 0
             # Sample atom from alphabet
             return picker(rng, atoms(alphabet))
@@ -294,14 +293,26 @@ function randformula(
     return _randformula(rng, height, modaldepth)
 end
 
+# Helper
+function randformula(
+    height::Integer,
+    args...;
+    rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG,
+    kwargs...
+)
+    initrng(rng)
+    randformula(rng, height, args...; kwargs...)
+end
+
 function randformula(
     height::Integer,
     g::AbstractGrammar,
     args...;
     rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG,
     kwargs...
-)::SyntaxBranch
-    randbaseformula(height, alphabet(g), operator(g), args...; rng=rng, kwargs...)
+)
+    initrng(rng)
+    randformula(rng, height, alphabet(g), operator(g), args...; kwargs...)
 end
 
 #= ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Kripke Structures ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ =#
@@ -442,7 +453,7 @@ end
 #     ws = Worlds{PointWorld}(world_gen(n))
 #     adjs = fanfan(n, in_degree, out_degree, threshold = threshold, rng = rng)
 #     evs = dispense_alphabet(ws, P = P, rng = rng)
-#     return KripkeStructure{PointWorld}(ws, adjs, evs)
+#     return KripkeStructure(ws, adjs, evs)
 # end
 
 # # Generate and return a Kripke structure.
@@ -467,7 +478,7 @@ end
 #     ws = Worlds{PointWorld}(world_gen(n))
 #     adjs = fx(n, kwargs...)
 #     evs = dispense_alphabet(ws, P = P)
-#     return KripkeStructure{PointWorld}(ws, adjs, evs)
+#     return KripkeStructure(ws, adjs, evs)
 # end
 
 # =#

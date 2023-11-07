@@ -151,7 +151,7 @@ function gen_kmodel(
     ws = Worlds{Point}(world_gen(n))
     adjs = fanfan(n, in_degree, out_degree, threshold = threshold, rng = rng)
     evs = dispense_alphabet(ws, P = P, rng = rng)
-    return KripkeStructure{Point}(ws, adjs, evs)
+    return KripkeStructure(ws, adjs, evs)
 end
 
 # Generate and return a kripke structure.
@@ -176,5 +176,5 @@ function gen_kmodel(n::Integer, P::LetterAlphabet, method::Symbol, kwargs...)
     ws = Worlds{Point}(world_gen(n))
     adjs = fx(n, kwargs...)
     evs = dispense_alphabet(ws, P = P)
-    return KripkeStructure{Point}(ws, adjs, evs)
+    return KripkeStructure(ws, adjs, evs)
 end

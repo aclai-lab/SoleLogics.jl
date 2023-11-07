@@ -2,61 +2,26 @@ import Base: parse
 
 function Base.parse(
     F::Type{<:Formula},
-    str::String,
+    expr::String,
     args...;
     kwargs...
 )
-    return parseformula(F, str, args...; kwargs...)
+    return parseformula(F, expr, args...; kwargs...)
 end
-
-"""
-    parseformula(
-        F::Type{<:Formula},
-        str::String,
-        args...;
-        kwargs...
-    )
-
-Parses a formula of type `F` from a string. When `F` is not specified, it defaults to
-    `SyntaxTree` and [`parsetree`](@ref) is called.
-
-See also [`parsetree`](@ref), [`parsebaseformula`](@ref).
-"""
-function parseformula(
-    F::Type{<:Formula},
-    str::String,
-    args...;
-    kwargs...
-)
-    return error("Please, provide method parseformula(::Type{$(F)}, str, ::$(typeof(args))...; ::$(typeof(kwargs))...).")
-end
-
-parseformula(str::String, args...; kwargs...) = parseformula(SyntaxTree, str, args...; kwargs...)
-
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Utils ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-function strip_whitespaces(
-    expression::String;
-    additional_whitespaces::Vector{Char} = Char[]
-)
-    return strip(x -> isspace(x) || x in additional_whitespaces, expression)
-end
-
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Input and construction ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 const STACK_TOKEN_TYPE = Union{SyntaxToken,Symbol}
 
 # Special symbols: syntax tokens cannot contain these:
-const DEFAULT_OPENING_PARENTHESIS = "("
-const DEFAULT_CLOSING_PARENTHESIS = ")"
-const DEFAULT_ARG_DELIM       = ","
-
+const DEFAULT_OPENING_PARENTHESIS = "(" # TODO use these in `syntaxstring` as well, and add the same arguments (with same name).
+const DEFAULT_CLOSING_PARENTHESIS = ")" # TODO use these in `syntaxstring` as well, and add the same arguments (with same name).
+const DEFAULT_ARG_DELIM           = "," # TODO use these in `syntaxstring` as well, and add the same arguments (with same name).
 
 """
-Operators considered valid by default, when parsing.
-Those are the vector $(repr(BASE_PARSABLE_OPERATORS)).
+    const BASE_PARSABLE_OPERATORS = $(repr(BASE_PARSABLE_OPERATORS))
 
-See also [`parsetree`](@ref).
+Vector of (standard) operators that are automatically taken care of when parsing.
+
+See also [`parseformula`](@ref).
 """
 const BASE_PARSABLE_OPERATORS = [
     BASE_PROPOSITIONAL_OPERATORS...,
@@ -64,261 +29,24 @@ const BASE_PARSABLE_OPERATORS = [
     BASE_MULTIMODAL_OPERATORS...,
 ] |> unique
 
-# Check if a specific unary operator is in a valid position, during token recognition
-function _check_unary_validity(
-    tokens::Vector{<:STACK_TOKEN_TYPE},
-    op::Operator,
-    opening_parenthesis::Symbol,
-    arg_delim::Symbol
-)
-    # A unary operator is always preceeded by some other operator or a opening_parenthesis
-    if (arity(op) == 1 && !isempty(tokens) &&
-        (tokens[end] !== opening_parenthesis && tokens[end] !== arg_delim &&
-        !(tokens[end] isa Operator))
-    )
-        error("Malformed input: operator `" * syntaxstring(op) *
-              "` encountered following `" *
-              (tokens[end] isa Symbol ? string(tokens[end]) : syntaxstring(tokens[end])) *
-              "`.")
-    end
-end
-
-# Raw tokens are cutted out from the initial expression
-function _recognize_tokens(
-    expression::String,
-    splitters::Vector{String},
-    additional_whitespaces::Vector{Char}
-)::Vector{String}
-    potential_token = ""
-    raw_tokens = String[]
-
-    # Important: this allows to have splitters that are prefixes of other splitters.
-    sort!(splitters, by=length, rev=true)
-
-    i = 1
-    while i <= sizeof(expression)
-        splitter_found = false
-
-        for splitter in splitters
-            # Here, splitter might be a special sequence (a Symbol, see above)
-            #  but we need to operate over string types here.
-            splitter = string(splitter)
-            # The longest correct splitter starting at index `i` is found (if possible)
-            splitrange = findnext(splitter, expression, i)
-
-            if (!isnothing(splitrange) && first(splitrange) == i)
-                # Iterator is teleported to the next (possibly UNICODE) char
-                i = nextind(expression, last(splitrange))
-
-                # Currently loaded token is pushed: a new potential token has to be collect
-                push!(raw_tokens, potential_token)
-                potential_token = ""
-
-                # Splitter is pushed: since a correct splitter is found
-                #  set a flag to avoid repeating the iterator increment later.
-                push!(raw_tokens, splitter)
-                splitter_found = true
-                break
-            end
-        end
-
-        # If no splitter has been found in this cycle,
-        #  then simply continue collecting a new potential splitter.
-        if (!splitter_found)
-            potential_token = potential_token * expression[i]
-            i = nextind(expression, i)
-        end
-    end
-
-    # Last potential token has to be pushed
-    if (!isempty(potential_token))
-        push!(raw_tokens, potential_token)
-    end
-
-    # Strings in "additional_whitespaces" are stripped out;
-    #  for example, if '@' is an additional whitespace then "@p @" becomes just "p".
-    raw_tokens =
-        map(x -> strip_whitespaces(x, additional_whitespaces = additional_whitespaces),
-        raw_tokens)
-    return filter(!isempty, raw_tokens)
-end
-
-# Raw tokens are interpreted and, thus, made processable by a parser
-function _interpret_tokens(
-    raw_tokens::Vector{String},
-    string_to_op::Dict{String,<:Operator},
-    atom_parser::Base.Callable;
-    opening_parenthesis::Symbol,
-    closing_parenthesis::Symbol,
-    arg_delim::Symbol
-)
-    tokens = STACK_TOKEN_TYPE[]
-
-    i = 1
-    while i <= length(raw_tokens)
-        tok = begin
-            if (Symbol(raw_tokens[i]) in [opening_parenthesis, closing_parenthesis, arg_delim])
-                # If the token is a special symbol -> push it as is
-                Symbol(raw_tokens[i])
-            else
-                st = syntaxstring(raw_tokens[i])
-                if (st in keys(string_to_op))
-                    # If the token is an operator -> perform check and push it as is
-                    op = string_to_op[st]
-                    _check_unary_validity(tokens, op, opening_parenthesis, arg_delim)
-                    op
-                else
-                    # If the token is something else -> parse as Atom and push it
-                    atom = Atom(atom_parser(st))
-                    # @assert atom isa Atom string(atom) *
-                    #     " is not an atom. Please, provide a valid atom_parser."
-                    atom
-                end
-            end
-        end
-
-        push!(tokens, tok)
-        i += 1
-    end
-
-    return tokens
-end
-
-# A simple lexer capable of distinguish operators in a string.
-function tokenizer(
-    expression::String,
-    operators::Vector{<:Operator},
-    atom_parser::Base.Callable,
-    additional_whitespaces::Vector{Char},
-    opening_parenthesis::Symbol = Symbol(DEFAULT_OPENING_PARENTHESIS),
-    closing_parenthesis::Symbol = Symbol(DEFAULT_CLOSING_PARENTHESIS),
-    arg_delim::Symbol = Symbol(DEFAULT_ARG_DELIM),
-)
-    # Strip input's whitespaces
-    expression = String(
-        strip_whitespaces(expression, additional_whitespaces = additional_whitespaces))
-
-    # Get the string representions of the given `operators`
-    string_to_op = Dict{String,Operator}([syntaxstring(op) => op for op in operators])
-
-    # Operators whose syntaxstring is padded with spaces might cause ambiguities
-    invalidops = filter(o -> syntaxstring(o) !=
-        strip_whitespaces(syntaxstring(o), additional_whitespaces = additional_whitespaces),
-        operators)
-    @assert length(invalidops) == 0 "Cannot safely parse operators that are " *
-        "prefixed/suffixed by whitespaces: " * join(invalidops, ", ")
-
-    # Each parsing method has to know which symbols represent opening/closing a context;
-    #  additionaly, parsing in function notation needs to know how arguments are separated.
-    special_delimiters = vcat(opening_parenthesis, closing_parenthesis)
-    if !(isnothing(arg_delim))
-        push!(special_delimiters, arg_delim)
-    end
-
-    splitters = Vector{String}(vcat(string.(special_delimiters),
-        collect(keys(string_to_op))))
-
-    # Determine which tokens are separated for sure
-    raw_tokens = _recognize_tokens(expression, splitters, additional_whitespaces)
-
-    # Interpret each raw token
-    return _interpret_tokens(raw_tokens, string_to_op, atom_parser;
-        opening_parenthesis = opening_parenthesis, closing_parenthesis = closing_parenthesis,
-        arg_delim = arg_delim)
-end
-
-# Rearrange a serie of token, from infix to postfix notation
-function shunting_yard!(
-    tokens::Vector{<:STACK_TOKEN_TYPE};
-    opening_parenthesis::Symbol = Symbol(DEFAULT_OPENING_PARENTHESIS),
-    closing_parenthesis::Symbol = Symbol(DEFAULT_CLOSING_PARENTHESIS))
-    tokstack = STACK_TOKEN_TYPE[] # support structure
-    postfix = SyntaxToken[] # returned structure: tokens rearranged in postfix
-
-    for tok in tokens
-        if tok isa Symbol
-            # If tok is a Symbol, then it might be a special parsing symbol
-            if tok === opening_parenthesis
-                # Start a new "context" in the expression
-                push!(tokstack, tok)
-            elseif tok === closing_parenthesis
-                # `tokstack` shrinks and postfix vector is filled
-                while !isempty(tokstack)
-                    popped = pop!(tokstack)
-                    if popped !== opening_parenthesis
-                        push!(postfix, popped)
-                    else
-                        break
-                    end
-                end
-            else
-                error("Unexpected special symbol encountered: `$(tok)`.")
-            end
-
-        elseif tok isa Operator
-            # If tok is an operator, something must be done until another operator
-            #  is placed at the top of the stack.
-            while !isempty(tokstack) &&
-                tokstack[end] isa Operator && (
-                    precedence(tokstack[end]) < precedence(tok) ||
-                    (
-                        precedence(tokstack[end]) == precedence(tok) &&
-                        associativity(tokstack[end]) == :left
-                    )
-                )
-                push!(postfix, pop!(tokstack))
-            end
-            # Now push the current operator onto the tokstack
-            push!(tokstack, tok)
-
-        elseif tok isa Atom
-            push!(postfix, tok)
-        else
-            error("Parsing error! Unexpected token type encountered: `$(typeof(tok))`.")
-        end
-    end
-
-    # Consume the leftovers in the tokstack
-    while !isempty(tokstack)
-        popped = pop!(tokstack)
-
-        # Starting expression is not well formatted, or a opening_parenthesis is found
-        if !(popped isa Operator)
-            error("Parsing error! Mismatching parentheses detected.")
-        end
-        push!(postfix, popped)
-    end
-
-    return postfix
-end
-
 """
-    parsetree(
-        expression::String,
-        additional_operators::Union{Nothing,Vector{<:Operator}} = nothing;
-        function_notation::Bool = false,
-        atom_parser::Base.Callable = Atom{String},
-        additional_whitespaces::Vector{Char} = Char[],
-        opening_parenthesis::String = $(repr(DEFAULT_OPENING_PARENTHESIS)),
-        closing_parenthesis::String = $(repr(DEFAULT_CLOSING_PARENTHESIS)),
-        arg_delim::String = $(repr(DEFAULT_ARG_DELIM))
-    )
+    parseformula(expr::String, additional_operators = nothing; kwargs...)
+    parseformula(F::Type{<:Formula}, expr::String, additional_operators = nothing; kwargs...)
 
-Return a `SyntaxTree` which is the result of parsing `expression`
- via the [Shunting yard](https://en.wikipedia.org/wiki/Shunting_yard_algorithm)
- algorithm.
+Parse a formula of type `F` from a string expression (its [`syntaxstring`](@ref)).
+When `F` is not specified, it defaults to `SyntaxTree`.
+
 By default, this function is only able to parse operators in
-`SoleLogics.BASE_PARSABLE_OPERATORS` (see arguments section);
-additional operators may be provided as a second argument.
+[`SoleLogics.BASE_PARSABLE_OPERATORS`](@ref) (e.g.,
+$(join(repr.(BASE_PARSABLE_OPERATORS[1:min(4, length(BASE_PARSABLE_OPERATORS))]), ", ")));
+additional, non-standard operators may be provided as a vector `additional_operators`,
+and their `syntaxstring`'s will be used for parsing them.
+Note that, in case of clashing `syntaxstring`'s,
+the provided additional operators will override the standard ones.
 
-# Arguments
-- `expression::String`: expression to be parsed;
-- `additional_operators::Vector{<:Operator}`: additional, non-standard operators
-    needed to correctly parse the expression.
-    When left unset, only the operators in `SoleLogics.BASE_PARSABLE_OPERATORS` are
-    correctly parsed: $(join(repr(BASE_PARSABLE_OPERATORS), ", "));
-    note that, in case of clashing `syntaxstring`'s,
-    the provided additional operators will override these.
+When parsing `SyntaxTree`s,
+the [Shunting yard](https://en.wikipedia.org/wiki/Shunting_yard_algorithm)
+algorithm is used, and the method allows the following keywords arguments.
 
 # Keyword Arguments
 - `function_notation::Bool = false`: if set to `true`, the expression is considered
@@ -328,14 +56,14 @@ additional operators may be provided as a second argument.
 - `atom_parser::Base.Callable = Atom{String}`: a callable to be used for
     parsing atoms, once they are recognized in the expression. It must return
     the atom, or the `Atom` itself;
-- `additional_whitespaces`::Vector{Char} = Char[]: characters to be stripped out from each
+- `additional_whitespaces::Vector{Char} = Char[]`: characters to be stripped out from each
     syntax token.
     For example, if `'@' in additional_whitespaces`, "¬@p@" is parsed just as "¬p".
-- `opening_parenthesis`::String = $(repr(DEFAULT_OPENING_PARENTHESIS)):
+- `opening_parenthesis::String = $(repr(DEFAULT_OPENING_PARENTHESIS))`:
     the string signaling the opening of an expression block;
-- `closing_parenthesis`::String = $(repr(DEFAULT_CLOSING_PARENTHESIS)):
+- `closing_parenthesis::String = $(repr(DEFAULT_CLOSING_PARENTHESIS))`:
     the string signaling the closing of an expression block;
-- `arg_delim`::String = $(repr(DEFAULT_ARG_DELIM)):
+- `arg_delim::String = $(repr(DEFAULT_ARG_DELIM))`:
     when `function_notation = true`,
     the string that delimits the different arguments of a function call.
 
@@ -350,23 +78,42 @@ additional operators may be provided as a second argument.
 
 # Examples
 ```julia-repl
-julia> syntaxstring(parsetree("¬p∧q∧(¬s∧¬z)"))
+julia> syntaxstring(parseformula("¬p∧q∧(¬s∧¬z)"))
 "¬p ∧ q ∧ ¬s ∧ ¬z"
 
-julia> syntaxstring(parsetree("∧(¬p,∧(q,∧(¬s,¬z)))", function_notation=true))
+julia> syntaxstring(parseformula("∧(¬p,∧(q,∧(¬s,¬z)))", function_notation=true))
 "¬p ∧ q ∧ ¬s ∧ ¬z"
 
-julia> syntaxstring(parsetree("¬1→0"; atom_parser = (x -> Atom{Float64}(parse(Float64, x)))))
+julia> syntaxstring(parseformula("¬1→0"; atom_parser = (x -> Atom{Float64}(parse(Float64, x)))))
 "(¬1.0) → 0.0"
 ```
 
-See also [`SyntaxTree`](@ref), [`syntaxstring`](@ref), [].
+!!! note
+For any `Formula` type `F`, this
+function should be the inverse of [`syntaxstring`](@ref);
+that is, if `φ::F` then the following should hold, for at least some `args`,
+and for every `kwargs` allowing correct parsing:
+`φ == parseformula(F, syntaxstring(φ, args...; kwargs...), args...; kwargs...)`.
+
+See also [`SyntaxTree`](@ref), [`syntaxstring`](@ref).
 """
-parsetree(str::String, args...; kwargs...) = parseformula(SyntaxTree, str, args...; kwargs...)
+function parseformula(F::Type{<:Formula}, expr::String, args...; kwargs...)
+    return error("Please, provide method parseformula(::Type{$(F)}, expr::String, ::$(typeof(args))...; ::$(typeof(kwargs))...).")
+end
+
+parseformula(expr::String, args...; kwargs...) = parseformula(SyntaxTree, expr, args...; kwargs...)
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Utils ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+function strip_whitespaces(expr::String; additional_whitespaces::Vector{Char} = Char[])
+    return strip(x -> isspace(x) || x in additional_whitespaces, expr)
+end
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ SyntaxTree ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 function parseformula(
-    ::Type{SyntaxTree},
-    expression::String,
+    F::Type{<:SyntaxTree},
+    expr::String,
     additional_operators::Union{Nothing,Vector{<:Operator}} = nothing;
     function_notation::Bool = false,
     atom_parser::Base.Callable = Atom{String},
@@ -374,7 +121,7 @@ function parseformula(
     opening_parenthesis::String = DEFAULT_OPENING_PARENTHESIS,
     closing_parenthesis::String = DEFAULT_CLOSING_PARENTHESIS,
     arg_delim::String = DEFAULT_ARG_DELIM,
-)
+)::F
     additional_operators = (
         isnothing(additional_operators) ? Operator[] : additional_operators)
     operators = Vector{Operator}(
@@ -390,11 +137,241 @@ function parseformula(
 
     opening_parenthesis = Symbol(opening_parenthesis)
     closing_parenthesis = Symbol(closing_parenthesis)
-    arg_delim       = Symbol(arg_delim)
+    arg_delim           = Symbol(arg_delim)
 
-    # parsetree workflow:
+    # parseformula workflow:
     # 1) function_notation = false; _infixbuild -> _postfixbuild
     # 2) function_notation = true;  _fxbuild    -> _prefixbuild
+
+    # A simple lexer capable of distinguish operators in a string.
+    function tokenizer(
+        expr::String,
+        operators::Vector{<:Operator},
+        atom_parser::Base.Callable,
+        additional_whitespaces::Vector{Char},
+        opening_parenthesis::Symbol = Symbol(DEFAULT_OPENING_PARENTHESIS),
+        closing_parenthesis::Symbol = Symbol(DEFAULT_CLOSING_PARENTHESIS),
+        arg_delim::Symbol = Symbol(DEFAULT_ARG_DELIM),
+    )
+
+        # Raw tokens are cutted out from the initial expr
+        function _recognize_tokens(
+            expr::String,
+            splitters::Vector{String},
+            additional_whitespaces::Vector{Char}
+        )::Vector{String}
+            potential_token = ""
+            raw_tokens = String[]
+
+            # Important: this allows to have splitters that are prefixes of other splitters.
+            sort!(splitters, by=length, rev=true)
+
+            i = 1
+            while i <= sizeof(expr)
+                splitter_found = false
+
+                for splitter in splitters
+                    # Here, splitter might be a special sequence (a Symbol, see above)
+                    #  but we need to operate over string types here.
+                    splitter = string(splitter)
+                    # The longest correct splitter starting at index `i` is found (if possible)
+                    splitrange = findnext(splitter, expr, i)
+
+                    if (!isnothing(splitrange) && first(splitrange) == i)
+                        # Iterator is teleported to the next (possibly UNICODE) char
+                        i = nextind(expr, last(splitrange))
+
+                        # Currently loaded token is pushed: a new potential token has to be collect
+                        push!(raw_tokens, potential_token)
+                        potential_token = ""
+
+                        # Splitter is pushed: since a correct splitter is found
+                        #  set a flag to avoid repeating the iterator increment later.
+                        push!(raw_tokens, splitter)
+                        splitter_found = true
+                        break
+                    end
+                end
+
+                # If no splitter has been found in this cycle,
+                #  then simply continue collecting a new potential splitter.
+                if (!splitter_found)
+                    potential_token = potential_token * expr[i]
+                    i = nextind(expr, i)
+                end
+            end
+
+            # Last potential token has to be pushed
+            if (!isempty(potential_token))
+                push!(raw_tokens, potential_token)
+            end
+
+            # Strings in "additional_whitespaces" are stripped out;
+            #  for example, if '@' is an additional whitespace then "@p @" becomes just "p".
+            raw_tokens =
+                map(x -> strip_whitespaces(x, additional_whitespaces = additional_whitespaces),
+                raw_tokens)
+            return filter(!isempty, raw_tokens)
+        end
+
+        # Raw tokens are interpreted and, thus, made processable by a parser
+        function _interpret_tokens(
+            raw_tokens::Vector{String},
+            string_to_op::Dict{String,<:Operator},
+            atom_parser::Base.Callable;
+            opening_parenthesis::Symbol,
+            closing_parenthesis::Symbol,
+            arg_delim::Symbol
+        )
+
+            # Check if a specific non-infix (= non-binary) operator is in a valid position, during token recognition
+            function _check_noninfix_validity(
+                tokens::Vector{<:STACK_TOKEN_TYPE},
+                op::Operator,
+                opening_parenthesis::Symbol,
+                arg_delim::Symbol
+            )
+                # A non-infix (= non-binary) operator is always preceeded by some other operator or a opening_parenthesis
+                if (arity(op) != 2 && !isempty(tokens) &&
+                    (tokens[end] !== opening_parenthesis && tokens[end] !== arg_delim &&
+                    !(tokens[end] isa Operator))
+                )
+                    error("Malformed input: operator `" * syntaxstring(op) *
+                          "` encountered following `" *
+                          (tokens[end] isa Symbol ? string(tokens[end]) : syntaxstring(tokens[end])) *
+                          "`.")
+                end
+            end
+
+            tokens = STACK_TOKEN_TYPE[]
+
+            i = 1
+            while i <= length(raw_tokens)
+                tok = begin
+                    if (Symbol(raw_tokens[i]) in [opening_parenthesis, closing_parenthesis, arg_delim])
+                        # If the token is a special symbol -> push it as is
+                        Symbol(raw_tokens[i])
+                    else
+                        st = syntaxstring(raw_tokens[i])
+                        if (st in keys(string_to_op))
+                            # If the token is an operator -> perform check and push it as is
+                            op = string_to_op[st]
+                            _check_noninfix_validity(tokens, op, opening_parenthesis, arg_delim)
+                            op
+                        else
+                            # If the token is something else -> parse as Atom and push it
+                            atom = Atom(atom_parser(st))
+                            # @assert atom isa Atom string(atom) *
+                            #     " is not an atom. Please, provide a valid atom_parser."
+                            atom
+                        end
+                    end
+                end
+
+                push!(tokens, tok)
+                i += 1
+            end
+
+            return tokens
+        end
+
+        # Strip input's whitespaces
+        expr = String(
+            strip_whitespaces(expr, additional_whitespaces = additional_whitespaces))
+
+        # Get the string representions of the given `operators`
+        string_to_op = Dict{String,Operator}([syntaxstring(op) => op for op in operators])
+
+        # Operators whose syntaxstring is padded with spaces might cause ambiguities
+        invalidops = filter(o -> syntaxstring(o) !=
+            strip_whitespaces(syntaxstring(o), additional_whitespaces = additional_whitespaces),
+            operators)
+        @assert length(invalidops) == 0 "Cannot safely parse operators that are " *
+            "prefixed/suffixed by whitespaces: " * join(invalidops, ", ")
+
+        # Each parsing method has to know which symbols represent opening/closing a context;
+        #  additionaly, parsing in function notation needs to know how arguments are separated.
+        special_delimiters = vcat(opening_parenthesis, closing_parenthesis)
+        if !(isnothing(arg_delim))
+            push!(special_delimiters, arg_delim)
+        end
+
+        splitters = Vector{String}(vcat(string.(special_delimiters),
+            collect(keys(string_to_op))))
+
+        # Determine which tokens are separated for sure
+        raw_tokens = _recognize_tokens(expr, splitters, additional_whitespaces)
+
+        # Interpret each raw token
+        return _interpret_tokens(raw_tokens, string_to_op, atom_parser;
+            opening_parenthesis = opening_parenthesis, closing_parenthesis = closing_parenthesis,
+            arg_delim = arg_delim)
+    end
+
+    # Rearrange a serie of token, from infix to postfix notation
+    function shunting_yard!(
+        tokens::Vector{<:STACK_TOKEN_TYPE};
+        opening_parenthesis::Symbol = Symbol(DEFAULT_OPENING_PARENTHESIS),
+        closing_parenthesis::Symbol = Symbol(DEFAULT_CLOSING_PARENTHESIS))
+        tokstack = STACK_TOKEN_TYPE[] # support structure
+        postfix = SyntaxToken[] # returned structure: tokens rearranged in postfix
+
+        for tok in tokens
+            if tok isa Symbol
+                # If tok is a Symbol, then it might be a special parsing symbol
+                if tok === opening_parenthesis
+                    # Start a new "context" in the expr
+                    push!(tokstack, tok)
+                elseif tok === closing_parenthesis
+                    # `tokstack` shrinks and postfix vector is filled
+                    while !isempty(tokstack)
+                        popped = pop!(tokstack)
+                        if popped !== opening_parenthesis
+                            push!(postfix, popped)
+                        else
+                            break
+                        end
+                    end
+                else
+                    error("Unexpected special symbol encountered: `$(tok)`.")
+                end
+
+            elseif tok isa Operator
+                # If tok is an operator, something must be done until another operator
+                #  is placed at the top of the stack.
+                while !isempty(tokstack) &&
+                    tokstack[end] isa Operator && (
+                        precedence(tokstack[end]) < precedence(tok) ||
+                        (
+                            precedence(tokstack[end]) == precedence(tok) &&
+                            associativity(tokstack[end]) == :left
+                        )
+                    )
+                    push!(postfix, pop!(tokstack))
+                end
+                # Now push the current operator onto the tokstack
+                push!(tokstack, tok)
+
+            elseif tok isa Atom
+                push!(postfix, tok)
+            else
+                error("Parsing error! Unexpected token type encountered: `$(typeof(tok))`.")
+            end
+        end
+
+        # Consume the leftovers in the tokstack
+        while !isempty(tokstack)
+            popped = pop!(tokstack)
+
+            # Starting expr is not well formatted, or a opening_parenthesis is found
+            if !(popped isa Operator)
+                error("Parsing error! Mismatching parentheses detected.")
+            end
+            push!(postfix, popped)
+        end
+
+        return postfix
+    end
 
     # Build a formula starting from its postfix notation, preprocessed with shunting yard.
     #  In other words, all special symbols (e.g. opening_parenthesis) are already filtered
@@ -427,7 +404,7 @@ function parseformula(
         stacklen = length(stack)
         if stacklen != 1
             error("Malformed input when parsing expression: " *
-                "$(repr(expression)). (postfix: `$(postfix), stacklen = $(stacklen)`).")
+                "$(repr(expr)). (postfix: `$(postfix), stacklen = $(stacklen)`).")
         end
 
         return stack[1]
@@ -437,7 +414,7 @@ function parseformula(
     # actually this is a preprocessing who fallbacks into `_postfixbuild`
     function _infixbuild()
         tokens = tokenizer(
-            expression,
+            expr,
             operators,
             atom_parser,
             additional_whitespaces,
@@ -511,12 +488,12 @@ function parseformula(
 
         if (isempty(stack))
             error("Malformed expression: parsing stack is " *
-                "empty when parsing $(repr(expression)).")
+                "empty when parsing $(repr(expr)).")
         end
 
         if (length(stack) > 1)
             error("Malformed expression: parsing stack could not interpret " *
-                "`$(stack)` when parsing $(repr(expression)).")
+                "`$(stack)` when parsing $(repr(expr)).")
         end
 
         return stack[1]
@@ -525,7 +502,7 @@ function parseformula(
     # Build a formula starting from its prefix notation;
     # actually this is a preprocessing who fallbacks into `_prefixbuild`
     function _fxbuild()
-        tokens = tokenizer(expression, operators, atom_parser,
+        tokens = tokenizer(expr, operators, atom_parser,
             additional_whitespaces, opening_parenthesis, closing_parenthesis, arg_delim)
         return _prefixbuild(tokens)
     end
@@ -533,19 +510,22 @@ function parseformula(
     return (function_notation ? _fxbuild() : _infixbuild())
 end
 
+# Helper
 function parseformula(
-    F::Type{SyntaxTree},
-    expression::String,
+    F::Type{<:SyntaxTree},
+    expr::String,
+    g::AbstractGrammar;
+    kwargs...
+)
+    parseformula(F, expr, operators(g); kwargs...)
+end
+
+# Helper
+function parseformula(
+    F::Type{<:SyntaxTree},
+    expr::String,
     logic::AbstractLogic;
     kwargs...
 )
-    parseformula(F, expression, operators(logic); kwargs...)
+    parseformula(F, expr, operators(logic); kwargs...)
 end
-
-# function parsebaseformula(
-#     expression::String;
-#     operators::Union{Nothing,Vector{<:Operator}} = nothing,
-#     kwargs...,
-# )
-#     parsebaseformula(expression; additional_operators = operators, kwargs...)
-# end

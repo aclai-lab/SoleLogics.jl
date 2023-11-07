@@ -22,16 +22,16 @@
 
     # Associativity tests
 
-    @test parsetree("(1 → 2) → 3") != parsetree("1 → 2 → 3")
-    @test parsetree("1 → (2 → 3)") == parsetree("1 → 2 → 3")
+    @test parseformula("(1 → 2) → 3") != parseformula("1 → 2 → 3")
+    @test parseformula("1 → (2 → 3)") == parseformula("1 → 2 → 3")
 
-    @test →(Atom.(["1","2","3"])...) == parsetree("1 → 2 → 3")
-    @test ∧(Atom.(["1","2","3"])...) == parsetree("1 ∧ 2 ∧ 3")
+    @test →(Atom.(["1","2","3"])...) == parseformula("1 → 2 → 3")
+    @test ∧(Atom.(["1","2","3"])...) == parseformula("1 ∧ 2 ∧ 3")
 
-    @test (@synexpr a → b → c) == parsetree("a → b → c")
-    @test (@synexpr Atom("1") → Atom("2") → Atom("3"))  == parsetree("1 → 2 → 3")
+    @test (@synexpr a → b → c) == parseformula("a → b → c")
+    @test (@synexpr Atom("1") → Atom("2") → Atom("3"))  == parseformula("1 → 2 → 3")
 
-    @test (Atom("1") → Atom("2") → Atom("3")) == parsetree("1 → 2 → 3")
-    @test (Atom("1") ∧ Atom("2") ∧ Atom("3")) == parsetree("1 ∧ 2 ∧ 3")
+    @test (Atom("1") → Atom("2") → Atom("3")) == parseformula("1 → 2 → 3")
+    @test (Atom("1") ∧ Atom("2") ∧ Atom("3")) == parseformula("1 ∧ 2 ∧ 3")
 
 end

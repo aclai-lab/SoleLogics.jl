@@ -1,5 +1,7 @@
 using StatsBase
 import SoleLogics: arity
+using SoleLogics: parsebaseformula
+
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ random logic ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -31,7 +33,7 @@ w = [5,1,1,1,1,1,1]
 @test all([begin
         f = randbaseformula(3, _alphabet, _operators)
         s = syntaxstring(f)
-        s == syntaxstring(parsetree(s))
+        s == syntaxstring(parseformula(s))
     end for i in 1:1000])
 
 @test all([begin

@@ -114,21 +114,21 @@ interp2             = TruthDict(1:4, BOT)
 # @test Base.operator_precedence(DISJUNCTION) == SL.BASE_PRECEDENCE
 # @test Base.operator_precedence(IMPLICATION) == SL.LOW_PRECEDENCE
 
-@test parsetree("p → q ∧ r") == (@synexpr p → q ∧ r)
-@test parsetree("p → (q → r)") == (@synexpr p → (q → r))
-@test parsetree("p → (q ∧ r)") == (@synexpr p → (q ∧ r))
+@test parseformula("p → q ∧ r") == (@synexpr p → q ∧ r)
+@test parseformula("p → (q → r)") == (@synexpr p → (q → r))
+@test parseformula("p → (q ∧ r)") == (@synexpr p → (q ∧ r))
 
-@test syntaxstring((@synexpr □(□(□(p))) ∧ q)) == syntaxstring(parsetree("□□□p ∧ q"))
-@test syntaxstring((@synexpr □(p) ∧ q)) == syntaxstring(parsetree("□p ∧ q"))
+@test syntaxstring((@synexpr □(□(□(p))) ∧ q)) == syntaxstring(parseformula("□□□p ∧ q"))
+@test syntaxstring((@synexpr □(p) ∧ q)) == syntaxstring(parseformula("□p ∧ q"))
 
-@test syntaxstring((@synexpr p ∧ □(□(□(q))))) == syntaxstring(parsetree("p ∧ □□□q"))
-@test syntaxstring((@synexpr p ∧ □(q))) == syntaxstring(parsetree("p ∧ □q"))
+@test syntaxstring((@synexpr p ∧ □(□(□(q))))) == syntaxstring(parseformula("p ∧ □□□q"))
+@test syntaxstring((@synexpr p ∧ □(q))) == syntaxstring(parseformula("p ∧ □q"))
 
-@test syntaxstring((@synexpr □(□(□(p))) → q)) == syntaxstring(parsetree("□□□p → q"))
-@test syntaxstring((@synexpr □(p) → q)) == syntaxstring(parsetree("□p → q"))
+@test syntaxstring((@synexpr □(□(□(p))) → q)) == syntaxstring(parseformula("□□□p → q"))
+@test syntaxstring((@synexpr □(p) → q)) == syntaxstring(parseformula("□p → q"))
 
-@test syntaxstring((@synexpr p → □(□(□(q))))) == syntaxstring(parsetree("p → □□□q"))
-@test syntaxstring((@synexpr p → □(q))) == syntaxstring(parsetree("p → □q"))
+@test syntaxstring((@synexpr p → □(□(□(q))))) == syntaxstring(parseformula("p → □□□q"))
+@test syntaxstring((@synexpr p → □(q))) == syntaxstring(parseformula("p → □q"))
 
 @test natoms(pandq)                 == 2
 @test natoms(trees_implication)     == natoms(pandq) + natoms(porq)

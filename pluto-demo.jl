@@ -94,7 +94,7 @@ end
 # Define a new logical operator `⊕`
 begin
 	import SoleLogics: arity
-	const ⊕ = SoleLogics.NamedOperator{:⊕}()
+	const ⊕ = SoleLogics.NamedConnective{:⊕}()
 	SoleLogics.arity(::typeof(⊕)) = 2
 
 	# Compose a formula with `⊕`

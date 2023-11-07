@@ -1,4 +1,5 @@
 # using Revise; using SoleLogics; using Test
+using SoleLogics: parsebaseformula
 
 @testset "Propositional model checking" begin
 
@@ -9,17 +10,17 @@ d0 = Dict(["a" => true, "b" => false, "c" => true])
 @test d0["a"]
 @test !d0["b"]
 @test check(parsebaseformula("a ∧ ¬b"), d0)
-@test check(parsebaseformula("a ∧ c"), d0)
+@test check(parseformula("a ∧ c"), d0)
 
 v0 = ["a", "c"]
 @test "a" in v0
 @test !("b" in v0)
 @test !(Atom("a") in v0)
-@test check(parsebaseformula("a ∧ ¬b"), v0)
+@test check(parseformula("a ∧ ¬b"), v0)
 @test check(parsebaseformula("a ∧ c"), v0)
 
 @test !check(parsebaseformula("a ∧ b"), ["a"])
-@test !check(parsebaseformula("a ∧ ¬b"), ["a", "b"])
+@test !check(parseformula("a ∧ ¬b"), ["a", "b"])
 @test check(parsebaseformula("a ∧ ¬b"), ["a"])
 
 @test_nowarn TruthDict(1:4)
@@ -79,7 +80,7 @@ t2 = @test_nowarn TruthDict(Pair{Real,Bool}[1.0 => true, 2 => true, 3 => true])
 @test_nowarn DefaultedTruthDict(1.0 => true)
 @test_nowarn DefaultedTruthDict(Atom(1.0) => true)
 
-@test !check(parsebaseformula("a ∧ b"), DefaultedTruthDict(["a"]))
+@test !check(parseformula("a ∧ b"), DefaultedTruthDict(["a"]))
 @test !check(parsebaseformula("a ∧ ¬b"), DefaultedTruthDict(["a", "b"]))
 @test check(parsebaseformula("a ∧ ¬b"), DefaultedTruthDict(["a"]))
 
@@ -109,54 +110,54 @@ t2 = @test_nowarn TruthDict(Pair{Real,Bool}[1.0 => true, 2 => true, 3 => true])
 
 #  normalization: negations compression ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-@test syntaxstring(normalize(parsetree("¬¬ p"))) == "p"
-@test syntaxstring(normalize(parsetree("¬¬¬ p"))) == "¬p"
-@test syntaxstring(normalize(parsetree("¬¬¬¬ p"))) == "p"
-@test syntaxstring(normalize(parsetree("¬¬¬ □□□ ◊◊◊ p ∧ ¬¬¬ q")); remove_redundant_parentheses = true) == "¬q ∧ ◊◊◊□□□¬p"
-@test syntaxstring(normalize(parsetree("¬¬¬ □□□ ◊◊◊ p → ¬¬¬ q")); remove_redundant_parentheses = true) == "¬q ∨ □□□◊◊◊p"
+@test syntaxstring(normalize(parseformula("¬¬ p"))) == "p"
+@test syntaxstring(normalize(parseformula("¬¬¬ p"))) == "¬p"
+@test syntaxstring(normalize(parseformula("¬¬¬¬ p"))) == "p"
+@test syntaxstring(normalize(parseformula("¬¬¬ □□□ ◊◊◊ p ∧ ¬¬¬ q")); remove_redundant_parentheses = true) == "¬q ∧ ◊◊◊□□□¬p"
+@test syntaxstring(normalize(parseformula("¬¬¬ □□□ ◊◊◊ p → ¬¬¬ q")); remove_redundant_parentheses = true) == "¬q ∨ □□□◊◊◊p"
 
 # normalization: diamond and box compression ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-@test syntaxstring(normalize(parsetree("¬◊¬p"))) == "□p"
-@test syntaxstring(normalize(parsetree("¬□¬p"))) == "◊p"
+@test syntaxstring(normalize(parseformula("¬◊¬p"))) == "□p"
+@test syntaxstring(normalize(parseformula("¬□¬p"))) == "◊p"
 
 # normalization: rotate commutatives ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-_test_rot_comm1 = normalize(parsetree("((d ∧ c) ∧ ((e ∧ f) ∧ (g ∧ h))) ∧ (b ∧ a)"))
+_test_rot_comm1 = normalize(parseformula("((d ∧ c) ∧ ((e ∧ f) ∧ (g ∧ h))) ∧ (b ∧ a)"))
 for f in [
-    parsetree("(a∧b)∧(c∧d)∧(e∧f)∧(g∧h)")
-    parsetree("(c∧d)∧(b∧a)∧(f∧e)∧(g∧h)")
-    parsetree("(a∧b)∧(f∧e)∧(d∧c)∧(g∧h)")
-    parsetree("(b∧a)∧(h∧g)∧(d∧c)∧(f∧e)")
-    parsetree("(b∧a)∧(c∧d)∧(f∧e)∧(g∧h)")
-    parsetree("(a∧b)∧(d∧c)∧(f∧e)∧(g∧h)")
-    parsetree("(b∧a)∧(d∧c)∧(f∧e)∧(h∧g)")
+    parseformula("(a∧b)∧(c∧d)∧(e∧f)∧(g∧h)")
+    parseformula("(c∧d)∧(b∧a)∧(f∧e)∧(g∧h)")
+    parseformula("(a∧b)∧(f∧e)∧(d∧c)∧(g∧h)")
+    parseformula("(b∧a)∧(h∧g)∧(d∧c)∧(f∧e)")
+    parseformula("(b∧a)∧(c∧d)∧(f∧e)∧(g∧h)")
+    parseformula("(a∧b)∧(d∧c)∧(f∧e)∧(g∧h)")
+    parseformula("(b∧a)∧(d∧c)∧(f∧e)∧(h∧g)")
 ]
     @test syntaxstring(f |> normalize) == syntaxstring(_test_rot_comm1)
 end
 
-_test_rot_comm2 = normalize(parsetree("(a∧b)∧(c∧d)∧(e∧f)∧(g∧h)"))
+_test_rot_comm2 = normalize(parseformula("(a∧b)∧(c∧d)∧(e∧f)∧(g∧h)"))
 for f in [
-    parsetree("(c∧d)∧(b∧a)∧(f∧e)∧(g∧h)"),
-    parsetree("(a∧b)∧(f∧e)∧(d∧c)∧(g∧h)"),
-    parsetree("(b∧a)∧(h∧g)∧(d∧c)∧(f∧e)")
+    parseformula("(c∧d)∧(b∧a)∧(f∧e)∧(g∧h)"),
+    parseformula("(a∧b)∧(f∧e)∧(d∧c)∧(g∧h)"),
+    parseformula("(b∧a)∧(h∧g)∧(d∧c)∧(f∧e)")
 ]
     @test syntaxstring(f |> normalize) == syntaxstring(_test_rot_comm2)
 end
 
-_test_rot_comm3 = normalize(parsetree("b∧a∧d∧c∧e∧f∧h∧g"))
+_test_rot_comm3 = normalize(parseformula("b∧a∧d∧c∧e∧f∧h∧g"))
 for f in [
-    parsetree("a∧b∧c∧d∧e∧f∧g∧h"),
-    parsetree("g∧d∧a∧b∧c∧f∧e∧h")
+    parseformula("a∧b∧c∧d∧e∧f∧g∧h"),
+    parseformula("g∧d∧a∧b∧c∧f∧e∧h")
 ]
     @test syntaxstring(f |> normalize) == syntaxstring(_test_rot_comm3)
 
 end
 
-_test_rot_comm4 = normalize(parsetree("g∧c∧f∧((p∧¬q)→r)∧h∧d∧a∧b"))
+_test_rot_comm4 = normalize(parseformula("g∧c∧f∧((p∧¬q)→r)∧h∧d∧a∧b"))
 for f in [
-    parsetree("a∧b∧c∧d∧((p∧¬q)→r)∧f∧g∧h"),
-    parsetree("g∧d∧a∧b∧c∧f∧((p∧¬q)→r)∧h")
+    parseformula("a∧b∧c∧d∧((p∧¬q)→r)∧f∧g∧h"),
+    parseformula("g∧d∧a∧b∧c∧f∧((p∧¬q)→r)∧h")
 ]
     @test syntaxstring(f |> normalize) == syntaxstring(_test_rot_comm4)
 end

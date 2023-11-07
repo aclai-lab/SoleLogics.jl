@@ -255,9 +255,9 @@ truthsupertype(T::Type{Bot}) = BooleanTruth
 # as children of Truth, and new promotion rules are to be defined like below.
 Base.promote_rule(::Type{<:BooleanTruth}, ::Type{<:BooleanTruth}) = BooleanTruth
 
-# Helpers
-Base.convert(::Type{Bool}, ::Top) = true
-Base.convert(::Type{Bool}, ::Bot) = false
+# # Helpers but dangerous!! TODO remove
+# Base.convert(::Type{Bool}, ::Top) = true
+# Base.convert(::Type{Bool}, ::Bot) = false
 
 function Base.convert(::Type{BooleanTruth}, t::Bool)::BooleanTruth
     return (t ? TOP : BOT)
@@ -305,7 +305,7 @@ function collatetruth(
     c::Connective,
     ch::NTuple{N,T where T<:BooleanTruth}
 )::BooleanTruth where {N}
-    _collatetruth(c, convert.(Bool, ch)) == true ? TOP : BOT
+    _collatetruth(c, istop.(ch)) == true ? TOP : BOT
 end
 
 # Standard semantics for NOT, AND, OR, IMPLIES

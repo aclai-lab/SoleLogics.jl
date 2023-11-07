@@ -91,7 +91,7 @@ include("syntax-utils.jl")
 
 include("interpretation-sets.jl")
 
-export parsebaseformula, parseformula, parsetree
+export parseformula
 
 include("parse.jl")
 

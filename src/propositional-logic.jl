@@ -100,11 +100,7 @@ end
 ############################################################################################
 
 """
-    struct TruthDict{
-        A,
-        T<:Truth,
-        D<:AbstractDict{<:Atom{<:A},T}
-    } <: AbstractAssignment
+    struct TruthDict{D<:AbstractDict{A where A<:Atom,T where T<:Truth}} <: AbstractAssignment
         truth::D
     end
 
@@ -141,7 +137,7 @@ TruthDict with values:
 │      ⊤ │      ⊥ │      ⊤ │
 └────────┴────────┴────────┘
 
-julia> check(parsebaseformula("a ∨ b"), t2)
+julia> check(parseformula("a ∨ b"), t2)
 true
 
 ```
@@ -156,42 +152,24 @@ See also
 [`DefaultedTruthDict`](@ref),
 [`AbstractAssignment`](@ref), [`AbstractInterpretation`](@ref).
 """
-struct TruthDict{
-    A,
-    T<:Truth,
-    D<:AbstractDict{<:Atom{<:A},T}
-} <: AbstractAssignment
+struct TruthDict{D<:AbstractDict} <: AbstractAssignment
 
     truth::D
 
-    function TruthDict{A,T,D}(
-        d::D,
-    ) where {
-        A,
-        T<:Truth,
-        D<:AbstractDict{<:Atom{<:A},T},
-    }
+    function TruthDict{D}(d::D) where {A<:Atom,T<:Truth,D<:AbstractDict{A,T}}
         # Example:
         # If the truth dict only contains a `Top`, then we want to upcast the dictionary
         # to expect `BooleanTruth`, not only `Top`'s.
         _T = truthsupertype(T)
-        d = Dict{Atom{A},_T}(d)
+        d = Dict{A,_T}(d)
 
-        return new{A,_T,typeof(d)}(d)
+        return new{typeof(d)}(d)
     end
-    function TruthDict{A,T}(d::AbstractDict{<:Atom,T}) where {A,T<:Truth}
-        return TruthDict{A,T,typeof(d)}(d)
+    function TruthDict(d::AbstractDict{A,T}) where {A<:Atom,T<:Truth}
+        return TruthDict{typeof(d)}(d)
     end
-    function TruthDict{A}(d::AbstractDict{<:Atom,T}) where {A,T<:Truth}
-        return TruthDict{A,T,typeof(d)}(d)
-    end
-    function TruthDict(d::AbstractDict{<:Atom,T}) where {T<:Truth}
-        A = typejoin(valuetype.(keys(d))...)
-        d = Dict{Atom{A},T}(d)
-        return TruthDict{A,T,typeof(d)}(d)
-    end
-    function TruthDict(d::AbstractDict{A,T}) where {A,T<:Truth}
-        return TruthDict(Dict([(Atom{A}(a),v) for (a,v) in d]))
+    function TruthDict(d::AbstractDict{V,T}) where {V,T<:Truth}
+        return TruthDict(Dict([(Atom{V}(a),v) for (a,v) in d]))
     end
     function TruthDict(d::AbstractDict)
         d = Dict([(a, convert(Truth, v)) for (a,v) in d])
@@ -220,22 +198,13 @@ struct TruthDict{
 
     # Empty dict
 
-    function TruthDict{A,T,D}() where {A,T<:Truth,D<:AbstractDict{<:Atom{<:A},T}}
-        return TruthDict{A,T,D}(D())
-    end
-    function TruthDict{A,T}() where {A,T<:Truth}
-        d = Dict{Atom{A},T}()
-        return TruthDict{A,T,typeof(d)}(d)
-    end
-    function TruthDict{A}() where {A}
-        T = BooleanTruth
-        return TruthDict{A,T}()
+    function TruthDict{D}() where {A<:Atom,T<:Truth,D<:AbstractDict{A,T}}
+        return TruthDict{D}(D())
     end
     function TruthDict()
-        A = Any
-        T = Truth
-        d = Dict{Atom{A},T}([])
-        return TruthDict{A,T,typeof(d)}(d)
+        T = BooleanTruth
+        d = Dict{Atom,T}([])
+        return TruthDict{typeof(d)}(d)
     end
 end
 
@@ -271,20 +240,18 @@ end
 
 function Base.show(
     io::IO,
-    i::TruthDict{A,T,D},
-) where {A,T<:Truth,D<:AbstractDict{<:Atom{<:A},T}}
+    i::TruthDict,
+)
     if isempty(i.truth)
         print(io, "Empty TruthDict")
-        return
     else
         println(io, "TruthDict with values:")
+        _hpretty_table(
+            io,
+            i.truth |> keys,  # Iterators.flatten([i.truth |> keys]),
+            i.truth |> values # Iterators.flatten([i.truth |> values])
+        )
     end
-
-    _hpretty_table(
-        io,
-        i.truth |> keys,  # Iterators.flatten([i.truth |> keys]),
-        i.truth |> values # Iterators.flatten([i.truth |> values])
-    )
 end
 
 # Helpers
@@ -300,9 +267,8 @@ end
 
 """
     struct DefaultedTruthDict{
-        A,
-        T<:Truth,
-        D<:AbstractDict{<:Atom{<:A},T}
+        D<:AbstractDict{A where A<:Atom,T where T<:Truth},
+        T<:Truth
     } <: AbstractAssignment
         truth::D
         default_truth::T
@@ -324,10 +290,10 @@ DefaultedTruthDict with default truth `⊥` and values:
 │      ⊤ │      ⊤ │      ⊥ │      ⊤ │      ⊤ │
 └────────┴────────┴────────┴────────┴────────┘
 
-julia> check(parsebaseformula("1 ∨ 2"), t1)
+julia> check(parseformula("1 ∨ 2"), t1)
 true
 
-julia> check(parsebaseformula("1 ∧ 5"), t1)
+julia> check(parseformula("1 ∧ 5"), t1)
 false
 
 ```
@@ -337,50 +303,40 @@ See also
 [`AbstractAssignment`](@ref), [`AbstractInterpretation`](@ref).
 """
 struct DefaultedTruthDict{
-    A,
-    T<:Truth,
-    D<:AbstractDict{<:Atom{<:A},T}
+    D<:AbstractDict,
+    T<:Truth
 } <: AbstractAssignment
 
     truth::D
 
     default_truth::T
 
-    function DefaultedTruthDict{A,T,D}(
+    function DefaultedTruthDict{D,T}(
         d::D,
         default_truth::T,
-    ) where {
-        A,
-        T<:Truth,
-        D<:AbstractDict{<:Atom{<:A},T},
-    }
-        return new{A,T,D}(d, default_truth)
+    ) where {D<:AbstractDict{<:Atom,<:Truth},T<:Truth}
+        return new{D,T}(d, default_truth)
     end
 
     function DefaultedTruthDict(
-        d::TruthDict{A,T,D},
-        default_truth::T2 = BOT,
-    ) where {
-        A,
-        T<:Truth,
-        T2<:Union{Any,Truth},
-        D<:AbstractDict{<:Atom{<:A},T}
-    }
+        d::TruthDict{D},
+        default_truth::T = BOT,
+    ) where {D<:AbstractDict{<:Atom,<:Truth},T<:Union{Any,Truth}}
         default_truth = convert(Truth, default_truth)
-        return DefaultedTruthDict{A,T,D}(d.truth, default_truth)
+        return DefaultedTruthDict{D,T}(d.truth, default_truth)
     end
 
     function DefaultedTruthDict(
         d::Union{
-            AbstractDict{<:Atom,T},
-            AbstractDict{A,T},
+            AbstractDict{<:Atom,<:Union{Any,Truth}},
+            AbstractDict{<:Any,<:Union{Any,Truth}},
             AbstractVector{<:Union{Tuple,Pair}},
             AbstractVector,
             Pair,
             Tuple,
         },
-        default_truth = BOT,
-    ) where {A,T<:Union{Any,Truth}}
+        default_truth::T = BOT,
+    ) where {T<:Union{Any,Truth}}
         default_truth = convert(Truth, default_truth)
 
         if length(d) == 0
@@ -395,8 +351,8 @@ struct DefaultedTruthDict{
     function DefaultedTruthDict(default_truth = BOT)
         default_truth = convert(Truth, default_truth)
         T = truthsupertype(typeof(default_truth))
-        d = Dict{Atom{Any},T}([])
-        return DefaultedTruthDict{Any,T,typeof(d)}(d, default_truth)
+        d = Dict{Atom,T}([])
+        return DefaultedTruthDict{typeof(d),T}(d, default_truth)
     end
 end
 
@@ -412,8 +368,8 @@ end
 
 function Base.show(
     io::IO,
-    i::DefaultedTruthDict{A,T,D},
-) where {A,T<:Truth,D<:AbstractDict{<:Atom{<:A},T}}
+    i::DefaultedTruthDict,
+)
     println(io, "DefaultedTruthDict with default truth `$(i.default_truth)` and values:")
     _hpretty_table(io, i.truth |> keys, i.truth |> values)
 end

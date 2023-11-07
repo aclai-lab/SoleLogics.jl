@@ -25,12 +25,16 @@ test_suites = [
         "formulas/input.jl"
     ]),
 
-   ("Logics", ["logics/operators.jl", "logics/logics.jl"]),
+    ("Logics", ["logics/operators.jl", "logics/logics.jl"]),
 
     ("Algebras", [
         "algebras/worlds.jl",
         "algebras/frames.jl",
     ]),
+
+    # ("Demos", [
+    #     "pluto-demo.jl",
+    # ]),
 ]
 
 @testset "SoleLogics.jl" begin

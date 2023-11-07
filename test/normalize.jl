@@ -4,7 +4,7 @@ using SoleLogics
 using Graphs
 using Random
 
-@test (normalize(parsetree("◊((¬(□(q))) → ⊥)")) |> syntaxstring) == "◊□q"
+@test (normalize(parseformula("◊((¬(□(q))) → ⊥)")) |> syntaxstring) == "◊□q"
 
 p = Atom("p")
 q = Atom("q")
@@ -44,17 +44,17 @@ for K in [K0, K1]
     end
 end
 
-# φ = parsetree("(¬((q → p) → (q ∨ q))) → ⊤")
+# φ = parseformula("(¬((q → p) → (q ∨ q))) → ⊤")
 # [check(φ, K, w; perform_normalization = false) for w in worlds]
-# φ = parsetree("¬(¬(¬(¬q ∨ p) ∨ (q ∨ q))) ∨ ⊤")
+# φ = parseformula("¬(¬(¬(¬q ∨ p) ∨ (q ∨ q))) ∨ ⊤")
 # [check(φ, K, w; perform_normalization = false) for w in worlds]
-# φ = parsetree("¬(¬(¬(¬q ∨ p) ∨ (q ∨ q)))")
+# φ = parseformula("¬(¬(¬(¬q ∨ p) ∨ (q ∨ q)))")
 # [check(φ, K, w; perform_normalization = false) for w in worlds]
-# nφ = parsetree("(¬(q)) ∧ ((¬(q)) ∨ p)")
+# nφ = parseformula("(¬(q)) ∧ ((¬(q)) ∨ p)")
 # [check(nφ, K, w; perform_normalization = false) for w in worlds]
 #
 
-# φ = parsetree("¬p → ⊤")
+# φ = parseformula("¬p → ⊤")
 
 # syntaxstring(φ) = "◊(((q → r) → (r ∨ r)) ∧ ((¬(p)) → ⊤))"
 # syntaxstring(nφ) = "◊(((q ∧ (¬(r))) ∨ r) ∧ (¬(p)))"

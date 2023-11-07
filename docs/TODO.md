@@ -14,7 +14,7 @@
 #     # Usage
 #     ## Parsing Formulas
 #     Consider the string representation of a logical formula (in infix notation, e.g., "p∧q" or in function notation, e.g. "∧(p,q)". Such expressions can easily be parsed to a `SyntaxTree` representation using the method `parsebaseformula`. As you can see from the documentation, it is highly customizable, allowing parsing custom-defined operators and changing how recognized atoms must be interpreted (e.g. in "true∧false" atoms are booleans, while in "1∧0" they are integers).
-#     The `SyntaxBranch` returned by `parsebaseformula` can be paired with a logic (a grammar and an algebra) using `parsebaseformula`, thus returning a AnchoredFormula: the latter method disposes of the same flexibility of `parsetree` TODO not true.
+#     The `SyntaxBranch` returned by `parsebaseformula` can be paired with a logic (a grammar and an algebra) using `parsebaseformula`, thus returning a AnchoredFormula: the latter method disposes of the same flexibility of `parseformula` TODO not true.
 #     ## Generating random formulas
 #     Random formulas generation is provided by the following methods:
 #     - randformula (which returns a SyntaxBranch);

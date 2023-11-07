@@ -247,9 +247,9 @@ The `grammar` and `algebra` of the associated logic is inferred using
 the `baseformula` function from the operators encountered
 in the expression, and those in `additional_operators`.
 
-See [`parsetree`](@ref), [`baseformula`](@ref).
+See [`parseformula`](@ref), [`baseformula`](@ref).
 """
-parsebaseformula(str, args...; kwargs...) = parseformula(AnchoredFormula, str, args...; kwargs...)
+parsebaseformula(expr::String, args...; kwargs...) = parseformula(AnchoredFormula, expr, args...; kwargs...)
 
 function parseformula(
     ::Type{AnchoredFormula},
@@ -264,7 +264,7 @@ function parseformula(
     additional_operators =
         (isnothing(additional_operators) ? Operator[] : additional_operators)
 
-    t = parsetree(expression, additional_operators; kwargs...)
+    t = parseformula(SyntaxTree, expression, additional_operators; kwargs...)
     baseformula(t;
         # additional_operators = unique(Operator[operators..., SoleLogics.operators(t)...]),
         additional_operators = length(additional_operators) == 0 ? nothing :
@@ -282,7 +282,7 @@ function parseformula(
     logic::AbstractLogic;
     kwargs...,
 )
-    AnchoredFormula(logic, parsetree(expression, operators(logic); kwargs...))
+    AnchoredFormula(logic, parseformula(SyntaxTree, expression, operators(logic); kwargs...))
 end
 
 
@@ -328,7 +328,7 @@ function randbaseformula(
     picker = rand,
     weights = Union{AbstractWeights, Nothing},
     kwargs...
-)::SyntaxBranch
+)::AnchoredFormula
     return error("TODO: implement this")
 end
 
@@ -338,6 +338,6 @@ function randbaseformula(
     args...;
     rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG,
     kwargs...
-)::SyntaxBranch
+)::AnchoredFormula
     randbaseformula(height, alphabet(g), operator(g), args...; rng=rng, kwargs...)
 end

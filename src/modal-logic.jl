@@ -512,13 +512,13 @@ nworlds(i::AbstractKripkeStructure) = nworlds(frame(i))
 
 """
     function check(
-        φ::SyntaxBranch,
+        φ::SyntaxTree,
         i::AbstractKripkeStructure,
         w::Union{Nothing,<:AbstractWorld} = nothing;
         use_memo::Union{Nothing,AbstractDict{<:Formula,<:WorldSet}} = nothing,
         perform_normalization::Bool = true,
         memo_max_height::Union{Nothing,Int} = nothing,
-    )::Truth
+    )::Bool
 
 Check a formula on a specific word in a [`KripkeStructure`](@ref).
 
@@ -563,16 +563,16 @@ julia> [w => check(fmodal, kstruct, w) for w in worlds]
  SoleLogics.World{Int64}(5) => 0
 ```
 
-See also [`SyntaxBranch`](@ref), [`AbstractWorld`](@ref), [`KripkeStructure`](@ref).
+See also [`SyntaxTree`](@ref), [`AbstractWorld`](@ref), [`KripkeStructure`](@ref).
 """
 function check(
-    φ::SyntaxBranch,
+    φ::SyntaxTree,
     i::AbstractKripkeStructure,
     w::Union{Nothing,<:AbstractWorld} = nothing; # TODO remove defaulting
     use_memo::Union{Nothing,AbstractDict{<:Formula,<:WorldSet}} = nothing,
     perform_normalization::Bool = true,
     memo_max_height::Union{Nothing,Int} = nothing,
-)::Truth
+)::Bool
     W = worldtype(i)
 
     if isnothing(w)
@@ -593,14 +593,14 @@ function check(
 
     memo_structure = begin
         if isnothing(use_memo)
-            ThreadSafeDict{SyntaxBranch,WorldSet{W}}()
+            ThreadSafeDict{SyntaxTree,WorldSet{W}}()
         else
             use_memo
         end
     end
 
     if !isnothing(memo_max_height)
-        forget_list = Vector{SyntaxBranch}()
+        forget_list = Vector{SyntaxTree}()
     end
 
     fr = frame(i)
@@ -621,10 +621,12 @@ function check(
                 worldset = begin
                     if tok isa Connective
                         _c(collateworlds(fr, tok, map(f->readformula(memo_structure, f), children(ψ))))
-                    elseif tok isa Atom
-                        _f(_w->check(tok, i, _w), _c(allworlds(fr)))
+                    elseif tok isa SyntaxLeaf
+                        _f(_w->begin
+                            istop(interpret(tok, i, _w))
+                        end, _c(allworlds(fr)))
                     else
-                        error("Unexpected token encountered in _check: $(typeof(tok))")
+                        error("Unexpected token encountered in check: $(typeof(tok))")
                     end
                 end
                 setformula(memo_structure, ψ, Vector{W}(worldset))
@@ -654,11 +656,8 @@ end
 
 """
     struct KripkeStructure{
-        W<:AbstractWorld,
-        A,
-        T<:Truth,
-        FR<:AbstractFrame{W},
-        AS<:AbstractDict{W,AS where AS<:AbstractAssignment}
+        FR<:AbstractFrame,
+        MAS<:AbstractDict
     } <: AbstractKripkeStructure
         frame::FR
         assignment::AS
@@ -670,12 +669,8 @@ explicitly; it wraps a `frame`, and an abstract dictionary that assigns an inter
 each world.
 """
 struct KripkeStructure{
-    W<:AbstractWorld,
-    A,
-    T<:Truth,
-    FR<:AbstractFrame{W},
-    AS<:AbstractAssignment,
-    MAS<:AbstractDict{W,AS}
+    FR<:AbstractFrame,
+    MAS<:AbstractDict
 } <: AbstractKripkeStructure
     frame::FR
     assignment::MAS
@@ -683,7 +678,7 @@ end
 
 frame(i::KripkeStructure) = i.frame
 
-function interpret(a::Atom, i::KripkeStructure{W}, w::W) where {W<:AbstractWorld}
+function interpret(a::Atom, i::KripkeStructure, w::W) where {W<:AbstractWorld}
     interpret(a, i.assignment[w])
 end
 

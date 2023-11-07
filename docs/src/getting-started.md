@@ -114,13 +114,13 @@ SoleLogics.tree(::Formula)
 SoleLogics.jl allows you to: 
 
 - Extract the string representation of a formula (via `syntaxstring`);
-- Parse formulas from strings (via `parsetree`).
+- Parse formulas from strings (via `parseformula`).
 
 These features are highly customizable, and leverage three properties of syntactical tokens: [`arity`](@ref), connective [`precedence`](@ref) and connective [`associativity`](@ref).
 
 ```@docs
 syntaxstring
-parsetree
+parseformula
 ```
 
 ### Grammar

@@ -8,6 +8,8 @@ Base.@deprecate check(
     kwargs...
 ) check(tree(φ), X, i_instance, args...; kwargs...)
 
+Base.@deprecate parsetree(s::String, args...; kwargs...) parseformula(s, args...; kwargs...)
+
 const global_diamond = globaldiamond
 const global_box = globalbox
 

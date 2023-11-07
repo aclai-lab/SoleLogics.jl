@@ -349,7 +349,7 @@ of a given formula.
 
 # Examples
 ```julia-repl
-julia> syntaxstring.(SoleLogics.subformulas(parsebaseformula("◊((p∧q)→r)")))
+julia> syntaxstring.(SoleLogics.subformulas(parseformula("◊((p∧q)→r)")))
 6-element Vector{String}:
  "p"
  "q"
@@ -416,7 +416,7 @@ BEWARE: it currently assumes the underlying algebra is Boolean!
 
 # Examples
 ```julia-repl
-julia> f = parsebaseformula("□¬((p∧¬q)→r)∧⊤");
+julia> f = parseformula("□¬((p∧¬q)→r)∧⊤");
 
 julia> syntaxstring(f)
 "□¬((p ∧ ¬q) → r) ∧ ⊤"
@@ -643,7 +643,7 @@ on every world.
 
 # Examples
 ```julia-repl
-julia> f = parsebaseformula("⟨G⟩p → [G]q");
+julia> f = parseformula("⟨G⟩p → [G]q");
 
 julia> syntaxstring(f)
 "(⟨G⟩p) → ([G]q)"

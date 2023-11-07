@@ -25,26 +25,26 @@ The following `kwargs` are currently supported:
 
 # Examples
 ```jldoctest
-julia> syntaxstring(parsetree("p∧q∧r∧s∧t"))
+julia> syntaxstring(parseformula("p∧q∧r∧s∧t"))
 "p ∧ q ∧ r ∧ s ∧ t"
 
-julia> syntaxstring(parsetree("p∧q∧r∧s∧t"), function_notation=true)
+julia> syntaxstring(parseformula("p∧q∧r∧s∧t"), function_notation=true)
 "∧(∧(∧(∧(p, q), r), s), t)"
 
-julia> syntaxstring(parsetree("p∧q∧r∧s∧t"), remove_redundant_parentheses=false)
+julia> syntaxstring(parseformula("p∧q∧r∧s∧t"), remove_redundant_parentheses=false)
 "((((p) ∧ (q)) ∧ (r)) ∧ (s)) ∧ (t)""
 
-julia> syntaxstring(parsetree("p∧q∧r∧s∧t"), remove_redundant_parentheses=true, parenthesize_atoms=true)
+julia> syntaxstring(parseformula("p∧q∧r∧s∧t"), remove_redundant_parentheses=true, parenthesize_atoms=true)
 "(p) ∧ (q) ∧ (r) ∧ (s) ∧ (t)"
 
-julia> syntaxstring(parsetree("◊((p∧s)→q)"))
+julia> syntaxstring(parseformula("◊((p∧s)→q)"))
 "◊((p ∧ s) → q)"
 
-julia> syntaxstring(parsetree("◊((p∧s)→q)"); function_notation = true)
+julia> syntaxstring(parseformula("◊((p∧s)→q)"); function_notation = true)
 "◊(→(∧(p, s), q))"
 ```
 
-See also [`parsetree`](@ref), [`parsetree`](@ref),
+See also [`parseformula`](@ref),
 [`SyntaxBranch`](@ref), [`SyntaxToken`](@ref).
 
 # Implementation
@@ -70,7 +70,7 @@ defined by defining the appropriate `syntaxstring` method.
     For similar reasons, `syntaxstring`s should not contain parentheses (`'('`, `')'`),
     and, when parsing in function notation, commas (`','`).
 
-See also [`SyntaxLeaf`](@ref), [`Operator`](@ref), [`parsetree`](@ref).
+See also [`SyntaxLeaf`](@ref), [`Operator`](@ref), [`parseformula`](@ref).
 """
 
 doc_arity = """
@@ -94,12 +94,12 @@ When using infix notation, and in the absence of parentheses,
 `precedence` establishes how binary connectives are interpreted.
 A precedence value is a standard integer, and
 connectives with high precedence take precedence over connectives with lower precedences.
-This affects how formulas are shown (via `syntaxstring`) and parsed (via `parsetree`).
+This affects how formulas are shown (via `syntaxstring`) and parsed (via `parseformula`).
 
 By default, the value for a `NamedConnective` is derived from the `Base.operator_precedence`
 of its symbol (`name`).
 Because of this, when dealing with a custom connective `⊙`,
-it will be the case that `parsetree("p ⊙ q ∧ r") == (@synexpr p ⊙ q ∧ r)`.
+it will be the case that `parseformula("p ⊙ q ∧ r") == (@synexpr p ⊙ q ∧ r)`.
 
 It is possible to assign a specific precedence to a connective type `C` by providing a method
 `Base.operator_precedence(::C)`.
@@ -162,13 +162,13 @@ Return whether a (binary) connective is right-associative.
 When using infix notation, and in the absence of parentheses,
 `associativity establishes how binary connectives of the same `precedence`
 are interpreted. This affects how formulas are
-shown (via `syntaxstring`) and parsed (via `parsetree`).
+shown (via `syntaxstring`) and parsed (via `parseformula`).
 
 By default, the value for a `NamedConnective` is derived from the `Base.operator_precedence`
 of its symbol (`name`); thus, for example, most connectives are left-associative
 (e.g., `∧` and `∨`), while `→` is right-associative.
 Because of this, when dealing with a custom connective `⊙`,
-it will be the case that `parsetree("p ⊙ q ∧ r") == (@synexpr p ⊙ q ∧ r)`.
+it will be the case that `parseformula("p ⊙ q ∧ r") == (@synexpr p ⊙ q ∧ r)`.
 
 # Examples
 ```jldoctest
@@ -178,14 +178,14 @@ julia> associativity(∧)
 julia> associativity(→)
 :right
 
-julia> syntaxstring(parsetree("p → q → r"); remove_redundant_parentheses = false)
+julia> syntaxstring(parseformula("p → q → r"); remove_redundant_parentheses = false)
 "p → (q → r)"
 
-julia> syntaxstring(parsetree("p ∧ q ∨ r"); remove_redundant_parentheses = false)
+julia> syntaxstring(parseformula("p ∧ q ∨ r"); remove_redundant_parentheses = false)
 "(p ∧ q) ∨ r"
 ```
 
-See also [`Connective`](@ref), [`parsetree`](@ref), [`precedence`](@ref),
+See also [`Connective`](@ref), [`parseformula`](@ref), [`precedence`](@ref),
 [`syntaxstring`](@ref).
 """
 
@@ -327,9 +327,9 @@ hasdual(::O) = true
 The dual of an `Atom` (that is, the atom with inverted semantics)
 is defined as:
 
-dual(p::Atom{A}) where {A} = Atom(dual(value(p)))
+dual(p::Atom{V}) where {V} = Atom(dual(value(p)))
 
-As such, `hasdual(::A)` and `dual(::A)` should be defined when wrapping objects of type `A`.
+As such, `hasdual(::V)` and `dual(::V)` should be defined when wrapping objects of type `A`.
 
 See also [`normalize`](@ref), [`SyntaxToken`](@ref).
 """
