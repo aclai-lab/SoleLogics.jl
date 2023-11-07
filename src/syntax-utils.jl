@@ -20,15 +20,15 @@ conjuctive normal form (CNF) or disjunctive normal form (DNF), defined as:
 # Examples
 ```julia-repl
 julia> LeftmostLinearForm(→, parseformula.(["p", "q", "r"]))
-LeftmostLinearForm{SoleLogics.NamedOperator{:→},Atom{String}} TODO recheck these
+LeftmostLinearForm{SoleLogics.NamedConnective{:→},Atom{String}} TODO recheck these
     (p) → (q) → (r)
 
 julia> LeftmostConjunctiveForm(parseformula.(["¬p", "q", "¬r"]))
-LeftmostLinearForm{SoleLogics.NamedOperator{:∧},SyntaxTree}
+LeftmostLinearForm{SoleLogics.NamedConnective{:∧},SyntaxTree}
     (¬(p)) ∧ (q) ∧ (¬(r))
 
 julia> LeftmostDisjunctiveForm{Literal}([Literal(false, Atom("p")), Literal(true, Atom("q")), Literal(false, Atom("r"))])
-LeftmostLinearForm{SoleLogics.NamedOperator{:∨},Literal}
+LeftmostLinearForm{SoleLogics.NamedConnective{:∨},Literal}
     (¬(p)) ∨ (q) ∨ (¬(r))
 
 julia> LeftmostDisjunctiveForm([LeftmostConjunctiveForm(parseformula.(["¬p", "q", "¬r"]))]) isa SoleLogics.DNF

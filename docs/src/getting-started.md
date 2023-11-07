@@ -40,7 +40,7 @@ julia> CONJUNCTION
 
 # SyntaxBranch's are arity-compliant
 julia> st = SyntaxBranch(CONJUNCTION, p)
-ERROR: AssertionError: Cannot instantiate SyntaxBranch{SoleLogics.NamedOperator{:∧}} 
+ERROR: AssertionError: Cannot instantiate SyntaxBranch{SoleLogics.NamedConnective{:∧}} 
 with token ∧ of arity 2 and 1 children.
 
 # In fact, the conjunction operator in a syntax tree must have exactly 2 children 
@@ -84,7 +84,7 @@ SoleLogics.Connective
     SoleLogics.jl offers the possibility to implement custom operators. To see an in-depth example, please refer to section [Customization](@ref customization-section).
 
 ```@docs
-SoleLogics.NamedOperator
+SoleLogics.NamedConnective
 SoleLogics.precedence
 SoleLogics.associativity
 SoleLogics.iscommutative

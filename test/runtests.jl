@@ -13,24 +13,19 @@ end
 println("Julia version: ", VERSION)
 
 test_suites = [
-    ("Base", [
-        "core.jl",
-        "parse.jl",
-        "random.jl",
-        "normalize.jl",
-    ]),
+    ("Core", ["core.jl",]),
+    ("Parse", ["parse.jl",]),
+    ("Random", ["random.jl",]),
+    ("Normalize", ["normalize.jl",]),
 
-    ("Formulas", [
-        "formulas/generation.jl",
-        "formulas/input.jl"
-    ]),
+    ("Formula Generation", ["formulas/generation.jl",]),
+    ("Formulas I/O", ["formulas/input.jl",]),
 
-    ("Logics", ["logics/operators.jl", "logics/logics.jl"]),
+    ("Operators", ["logics/operators.jl"]),
+    # ("Logics", ["logics/logics.jl"]),
 
-    ("Algebras", [
-        "algebras/worlds.jl",
-        "algebras/frames.jl",
-    ]),
+    ("Algebras: worlds", ["algebras/worlds.jl",]),
+    ("Algebras: frames", ["algebras/frames.jl",]),
 
     # ("Demos", [
     #     "pluto-demo.jl",

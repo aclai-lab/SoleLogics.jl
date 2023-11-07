@@ -19,10 +19,10 @@ end
 
 @testset "Random+Parsing" begin
 
-TERNOP = SoleLogics.NamedOperator{:⇶}()
+TERNOP = SoleLogics.NamedConnective{:⇶}()
 SoleLogics.arity(::typeof(TERNOP)) = 3
 
-QUATERNOP = SoleLogics.NamedOperator{:⩰}()
+QUATERNOP = SoleLogics.NamedConnective{:⩰}()
 SoleLogics.arity(::typeof(QUATERNOP)) = 4
 
 _alphabet = ExplicitAlphabet(["p", "q", "r", "s"])

@@ -101,16 +101,19 @@ begin
 	parseformula("¬p ∧ q") ⊕ p |> syntaxstring |> println
 
 	# Generate a random formula with the new operator `⊕`
-	randformula(Random.MersenneTwister(5), 2, [p,q], [¬, ∨, ⊕]) |> syntaxstring |> println
+	φnew = randformula(Random.MersenneTwister(5), 2, [p,q], [¬, ∨, ⊕])
+
+    φnew |> syntaxstring |> println
 end
 
 # ╔═╡ b226299d-57f7-481e-97a7-f51796f266a3
 # Give XOR semantics to the operator `⊕`
 begin
 	import SoleLogics: collatetruth
-	SoleLogics.collatetruth(::SoleLogics.BooleanAlgebra, ::typeof(⊕), (t1, t2)::NTuple{2,Bool}) = Base.xor(t1, t2)
-
-	check(φ, I)
+    function SoleLogics.collatetruth(::typeof(⊕), (t1, t2)::NTuple{2,BooleanTruth})
+        return Base.xor(istop(t1), istop(t2)) ? TOP : BOT
+    end
+	check(φnew, I)
 end
 
 # ╔═╡ 7342f90f-ee76-4d44-8925-d8019fc3e7e7

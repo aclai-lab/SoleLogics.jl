@@ -186,10 +186,10 @@ fxs = ["→(→(q, p), ¬q)", "∧(∧(q, p), ¬q)"]
 
 # custom operators ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-TERNOP = SoleLogics.NamedOperator{:⇶}()
+TERNOP = SoleLogics.NamedConnective{:⇶}()
 SoleLogics.arity(::typeof(TERNOP)) = 3
 
-QUATERNOP = SoleLogics.NamedOperator{:⩰}()
+QUATERNOP = SoleLogics.NamedConnective{:⩰}()
 SoleLogics.arity(::typeof(QUATERNOP)) = 4
 
 @test_nowarn parseformula("⇶(p, q, r)", [TERNOP]; function_notation=true)
