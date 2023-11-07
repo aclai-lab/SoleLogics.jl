@@ -168,5 +168,4 @@ include("Full1DPointFrame.jl")
 include("Full2DFrame+IA2D.jl")
 include("Full2DFrame+RCC.jl")
 
-# TODO
-# include("Full2DPointFrame.jl")
+include("Full2DPointFrame.jl")

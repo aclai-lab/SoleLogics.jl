@@ -47,7 +47,7 @@ struct Point{N,T} <: GeometricalWorld
     Point(xyz::Vararg) = Point(xyz)
 end
 
-Base.show(io::IO, w::Point) = print(io, "($(join(w.xyz, ",")))")
+Base.show(io::IO, w::Point) = print(io, "❮$(join(w.xyz, ","))❯")
 
 Base.getindex(w::Point, args...) = Base.getindex(w.xyz, args...)
 

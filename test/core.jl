@@ -6,8 +6,6 @@
 using SoleLogics: Literal, dual, LeftmostConjunctiveForm, LeftmostDisjunctiveForm
 using SoleLogics: CNF, DNF
 
-# @testset "General" begin
-
 p1 = @test_nowarn Atom(1)
 p2 = @test_nowarn Atom(2)
 p100 = @test_nowarn Atom(100)

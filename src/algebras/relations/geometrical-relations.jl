@@ -26,13 +26,13 @@ istopological(r::GeometricalRelation) = false
 ############################################################################################
 
 # Point relations
-include("Point-relations.jl")
+include("Point.jl")
 
 # 1D Allen relations
-include("IA.jl")
+include("IntervalAlgebra.jl")
 
 # 2D Allen relations
-include("IA2D.jl")
+include("IntervalAlgebra2D.jl")
 
 # RCC relations
 include("RCC.jl")
