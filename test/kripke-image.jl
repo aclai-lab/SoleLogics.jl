@@ -1,3 +1,8 @@
+using SoleLogics
+import SoleLogics: AbstractKripkeStructure, frame, interpret
+import SoleLogics: Point, FullDimensionalFrame
+
+
 struct BWImageKripkeStructure <: AbstractKripkeStructure
 	image::Matrix{Float64}
 end

@@ -335,25 +335,46 @@ function parseformula(
                 else
                     error("Unexpected special symbol encountered: `$(tok)`.")
                 end
-
-            elseif tok isa Operator
+            elseif tok isa SyntaxLeaf
+                push!(postfix, tok)
+            elseif tok isa Connective
                 # If tok is an operator, something must be done until another operator
                 #  is placed at the top of the stack.
                 while !isempty(tokstack) &&
-                    tokstack[end] isa Operator && (
-                        precedence(tokstack[end]) < precedence(tok) ||
-                        (
-                            precedence(tokstack[end]) == precedence(tok) &&
-                            associativity(tokstack[end]) == :left
-                        )
+                    tokstack[end] isa Connective && (
+                        # precedence(tokstack[end]) > precedence(tok) && associativity(tok) == :left
+                        precedence(tokstack[end]) < precedence(tok) || (precedence(tokstack[end]) == precedence(tok) && associativity(tokstack[end]) == :left)
+                        # precedence(tokstack[end]) < precedence(tok) || (precedence(tokstack[end]) == precedence(tok) && associativity(tokstack[end]) == :right)
+                        # precedence(tokstack[end]) < precedence(tok) || (precedence(tokstack[end]) == precedence(tok) && associativity(tok) == :left)
+                        # precedence(tokstack[end]) < precedence(tok) || (precedence(tokstack[end]) == precedence(tok) && associativity(tok) == :right)
+                        # precedence(tokstack[end]) > precedence(tok) || (precedence(tokstack[end]) == precedence(tok) && associativity(tokstack[end]) == :left)
+                        # precedence(tokstack[end]) > precedence(tok) || (precedence(tokstack[end]) == precedence(tok) && associativity(tokstack[end]) == :right)
+                        # precedence(tokstack[end]) > precedence(tok) || (precedence(tokstack[end]) == precedence(tok) && associativity(tok) == :left)
+                        # precedence(tokstack[end]) > precedence(tok) || (precedence(tokstack[end]) == precedence(tok) && associativity(tok) == :right)
+
+                        # (precedence(tokstack[end]) <= precedence(tok) && associativity(tokstack[end]) == :left)
+                        # (precedence(tokstack[end]) <= precedence(tok) && associativity(tokstack[end]) == :right)
+                        # (precedence(tokstack[end]) <= precedence(tok) && associativity(tok) == :left)
+                        # (precedence(tokstack[end]) <= precedence(tok) && associativity(tok) == :right)
+                        # (precedence(tokstack[end]) >= precedence(tok) && associativity(tokstack[end]) == :left)
+                        # (precedence(tokstack[end]) >= precedence(tok) && associativity(tokstack[end]) == :right)
+                        # (precedence(tokstack[end]) >= precedence(tok) && associativity(tok) == :left)
+                        # (precedence(tokstack[end]) >= precedence(tok) && associativity(tok) == :right)
+
+                        # (precedence(tokstack[end]) < precedence(tok) && associativity(tokstack[end]) == :left)
+                        # (precedence(tokstack[end]) < precedence(tok) && associativity(tokstack[end]) == :right)
+                        # (precedence(tokstack[end]) < precedence(tok) && associativity(tok) == :left)
+                        # (precedence(tokstack[end]) < precedence(tok) && associativity(tok) == :right)
+                        # (precedence(tokstack[end]) > precedence(tok) && associativity(tokstack[end]) == :left)
+                        # (precedence(tokstack[end]) > precedence(tok) && associativity(tokstack[end]) == :right)
+                        # (precedence(tokstack[end]) > precedence(tok) && associativity(tok) == :left)
+                        # (precedence(tokstack[end]) > precedence(tok) && associativity(tok) == :right)
                     )
                     push!(postfix, pop!(tokstack))
                 end
                 # Now push the current operator onto the tokstack
                 push!(tokstack, tok)
 
-            elseif tok isa Atom
-                push!(postfix, tok)
             else
                 error("Parsing error! Unexpected token type encountered: `$(typeof(tok))`.")
             end

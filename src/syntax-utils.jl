@@ -110,8 +110,8 @@ struct LeftmostLinearForm{C<:Connective,SS<:AbstractSyntaxStructure} <: Abstract
         function _dig_and_retrieve(tree::SyntaxTree, c::SoleLogics.Connective)
             token(tree) != c ?
             push!(_children, tree) :    # Lexical scope
-            for c in children(tree)
-                _dig_and_retrieve(c, c)
+            for ch in children(tree)
+                _dig_and_retrieve(ch, c)
             end
         end
         _dig_and_retrieve(tree, c)

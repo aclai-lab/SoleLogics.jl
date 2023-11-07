@@ -1,8 +1,6 @@
 import SoleLogics: arity
 
-using SoleLogics: parsebaseformula
-
-@testset "Parsing" begin
+using SoleLogics: parsebaseformula, relation
 
 # testing utilities ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -255,7 +253,6 @@ _f = parseformula("{Gp ∧ ¬{G}q", [CurlyRelationalOperator(globalrel)])
 @test_nowarn parseformula("¬⟨Test,Relation⟩[Test,Relation]p",
     [BoxRelationalOperator(testrel), DiamondRelationalOperator(testrel)]
 )
-end
 
 # parsebaseformula ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

@@ -222,7 +222,7 @@ function syntaxstring(φ::Formula; kwargs...)
     syntaxstring(tree(φ); kwargs...)
 end
 
-"""$(doc_joinformulas)"""
+"""$(doc_composeformulas)"""
 function composeformulas(c::Connective, ::NTuple{N,F})::F where {N,F<:Formula}
     return error("Please, provide method " *
         "composeformulas(c::Connective, children::NTuple{N,$(F)}) where {N}.")

@@ -189,7 +189,7 @@ See also [`Connective`](@ref), [`parseformula`](@ref), [`precedence`](@ref),
 [`syntaxstring`](@ref).
 """
 
-doc_joinformulas = """
+doc_composeformulas = """
     composeformulas(c::Connective, φs::NTuple{N,F})::F where {N,F<:Formula}
 
 Return a new formula of type `F` by composing `N` formulas of the same type
