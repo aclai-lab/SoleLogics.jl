@@ -59,19 +59,27 @@ syntaxstring(c::NamedConnective; kwargs...) = string(name(c))
 
 function precedence(c::NamedConnective)
     op = SoleLogics.name(c)
-    if Base.isoperator(op)
-        Base.operator_precedence(op)
-    else
+    if !Base.isoperator(op)
         error("Please, provide method SoleLogics.precedence(::$(typeof(c))).")
+    else
+        # Using default Base.operator_precedence is risky. For example,
+        # Base.isoperator(:(¬)) is true, but Base.operator_precedence(:(¬)) is 0.
+        # See Base.operator_precedence documentation.
+        @assert Base.operator_precedence(op) > 0 "Invalid connective: " *
+            "Base.operator_precedence(Symbol($(op))) is $(Base.operator_precedence(op))."
+        Base.operator_precedence(op)
     end
 end
 
 function associativity(c::NamedConnective)
     op = SoleLogics.name(c)
-    if Base.isoperator(op)
-        Base.operator_associativity(op)
-    else
+    if !Base.isoperator(op)
         error("Please, provide method SoleLogics.associativity(::$(typeof(c))).")
+    else
+        # Base.isoperator(:(++)) is true, but Base.operator_precedence(:(++)) is :none
+        @assert Base.operator_associativity(op) in [:left, :right] "Invalid connective: " *
+            "Base.operator_associativity(Symbol($op)) is $(Base.operator_associativity(op))."
+        Base.operator_associativity(op)
     end
 end
 
@@ -90,6 +98,10 @@ const NEGATION = NamedConnective{:¬}()
 """$(doc_NEGATION)"""
 const ¬ = NEGATION
 arity(::typeof(¬)) = 1
+
+# ¬ is a risky symbol, since by default it's precedence is defaulted to 0 by julia.
+# Because of this, we override Base.operator_precedence.
+precedence(::typeof(¬)) = Base.operator_precedence(:∧)+1
 
 doc_CONJUNCTION = """
     const CONJUNCTION = NamedConnective{:∧}()

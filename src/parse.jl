@@ -341,7 +341,7 @@ function parseformula(
                 #  is placed at the top of the stack.
                 while !isempty(tokstack) &&
                     tokstack[end] isa Operator && (
-                        precedence(tokstack[end]) < precedence(tok) ||
+                        precedence(tokstack[end]) > precedence(tok) ||
                         (
                             precedence(tokstack[end]) == precedence(tok) &&
                             associativity(tokstack[end]) == :left
