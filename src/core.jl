@@ -223,13 +223,13 @@ function syntaxstring(φ::Formula; kwargs...)
 end
 
 """$(doc_joinformulas)"""
-function joinformulas(c::Connective, ::NTuple{N,F})::F where {N,F<:Formula}
+function composeformulas(c::Connective, ::NTuple{N,F})::F where {N,F<:Formula}
     return error("Please, provide method " *
-        "joinformulas(c::Connective, children::NTuple{N,$(F)}) where {N}.")
+        "composeformulas(c::Connective, children::NTuple{N,$(F)}) where {N}.")
 end
 
-function joinformulas(c::Connective, children::Vararg{F,N})::F where {N,F<:Formula}
-    return joinformulas(c, children)
+function composeformulas(c::Connective, children::Vararg{F,N})::F where {N,F<:Formula}
+    return composeformulas(c, children)
 end
 
 ############################################################################################
@@ -250,8 +250,8 @@ See also [`Formula`](@ref), [`AbstractLogic`](@ref), [`SyntaxTree`](@ref),
 """
 abstract type AbstractSyntaxStructure <: Formula end
 
-function joinformulas(op::Connective, children::NTuple{N,AbstractSyntaxStructure}) where {N}
-    return joinformulas(op, tree.(children))
+function composeformulas(c::Connective, children::NTuple{N,AbstractSyntaxStructure}) where {N}
+    return composeformulas(c, tree.(children))
 end
 
 ############################################################################################
@@ -355,8 +355,8 @@ leavestype(φ::SyntaxTree) = typeintersect(SyntaxLeaf, tokenstype(φ))
 connectivestype(φ::SyntaxTree) = typeintersect(Connective, tokenstype(φ))
 operatorstype(φ::SyntaxTree) = typeintersect(Operator, tokenstype(φ))
 
-function joinformulas(op::Connective, children::NTuple{N,SyntaxTree}) where {N}
-    return SyntaxBranch(op, children)
+function composeformulas(c::Connective, children::NTuple{N,SyntaxTree}) where {N}
+    return SyntaxBranch(c, children)
 end
 
 
@@ -384,10 +384,10 @@ function SyntaxTree(φ::SyntaxTree)
     return φ
 end
 function SyntaxTree(c::Connective, φs::NTuple{N,SyntaxTree}) where {N}
-    return joinformulas(c, φs)
+    return composeformulas(c, φs)
 end
 function SyntaxTree(c::Connective, φs::Vararg{SyntaxTree,N}) where {N}
-    return joinformulas(c, φs)
+    return composeformulas(c, φs)
 end
 
 ############################################################################################
@@ -561,8 +561,8 @@ end
 # Fallback
 Base.convert(::Type{Truth}, t::Truth) = t
 
-# Helper: joinformulas actually works for operators as well
-joinformulas(c::Truth, ::Tuple{}) = c
+# Helper: composeformulas actually works for operators as well
+composeformulas(c::Truth, ::Tuple{}) = c
 
 ############################################################################################
 #### Operator ##############################################################################
@@ -612,7 +612,7 @@ function (op::Operator)(children::NTuple{N,Formula}) where {N}
     # TODO figure out!!
     # _F <: Union{F,SyntaxTree} || (children = Base.promote(children...))
     _F <: SyntaxTree || (children = Base.promote(children...))
-    return joinformulas(op, children)
+    return composeformulas(op, children)
 end
 
 (c::Truth)(::Tuple{}) = c

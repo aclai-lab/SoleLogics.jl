@@ -1,19 +1,12 @@
-export global_diamond, global_box
+# core.jl
+export atom, Proposition, NamedOperator
 
-Base.@deprecate parsetree(s::String, args...; kwargs...) parseformula(s, args...; kwargs...)
-
-const global_diamond = globaldiamond
-const global_box = globalbox
-
-
-export Proposition, atom
+const NamedOperator = NamedConnective
 
 const Proposition = Atom
 Base.@deprecate atom(p::Proposition) value(p)
 
-
-op(::LeftmostLinearForm{C}) where {C} = C()
-
+# base-logic.jl
 export BOTTOM, Bottom, bottom, isbottom
 
 const BOTTOM = BOT
@@ -21,3 +14,15 @@ const Bottom = Bot
 
 Base.@deprecate bottom(a) bot(a)
 Base.@deprecate isbottom(a) isbot(a)
+
+# parse.jl
+Base.@deprecate parsetree(s::String, args...; kwargs...) parseformula(s, args...; kwargs...)
+
+# modal-logic.jl
+export global_diamond, global_box
+
+const global_diamond = globaldiamond
+const global_box = globalbox
+
+# syntax-utils.jl
+op(::LeftmostLinearForm{C}) where {C} = C()

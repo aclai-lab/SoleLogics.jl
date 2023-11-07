@@ -190,7 +190,7 @@ See also [`Connective`](@ref), [`parseformula`](@ref), [`precedence`](@ref),
 """
 
 doc_joinformulas = """
-    joinformulas(c::Connective, φs::NTuple{N,F})::F where {N,F<:Formula}
+    composeformulas(c::Connective, φs::NTuple{N,F})::F where {N,F<:Formula}
 
 Return a new formula of type `F` by composing `N` formulas of the same type
 via a connective `c`. This function allows one to use connectives for flexibly composing
@@ -214,7 +214,7 @@ SyntaxBranch: ◊(p → q) ∧ p ∧ ¬p
 
 # Implementation
 
-Upon `joinformulas` lies a flexible way of using connectives for composing
+Upon `composeformulas` lies a flexible way of using connectives for composing
 formulas and syntax tokens (e.g., atoms), given by methods like the following:
 
     function (c::Connective)(children::NTuple{N,Formula}) where {N}
@@ -223,7 +223,7 @@ formulas and syntax tokens (e.g., atoms), given by methods like the following:
 
 These allow composing formulas as in `∧(f, ¬p)`, and in order to access this composition
 with any newly defined subtype of `Formula`,
-a new method for `joinformulas` should be defined, together with
+a new method for `composeformulas` should be defined, together with
 promotion from/to other `Formula`s should be taken care of (see
 [here](https://docs.julialang.org/en/v1/manual/conversion-and-promotion/)
 and [here](https://github.com/JuliaLang/julia/blob/master/base/promotion.jl)).
@@ -255,7 +255,7 @@ thanks to the following two methods that were defined in SoleLogics:
     end
 
 !!! info
-    The idea behind `joinformulas` is to concatenate syntax tokens without applying
+    The idea behind `composeformulas` is to concatenate syntax tokens without applying
     simplifications/minimizations of any kind. Because of that, ∧(⊤,⊤) returns a
     `SyntaxBranch` whose root value is ∧, instead of returning just a Truth value ⊤.
 

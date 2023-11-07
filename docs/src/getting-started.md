@@ -104,7 +104,7 @@ Formula
     SoleLogics.jl offers the possibility to implement a custom [`Formula`](@ref) subtype. To see an in-depth example, please refer to section [Customization](@ref customization-section).
 
 ```@docs
-joinformulas
+composeformulas
 tokens(::Formula)
 SoleLogics.height(::SyntaxBranch)
 SoleLogics.tree(::Formula)

@@ -101,11 +101,11 @@ interp2             = TruthDict(1:4, BOT)
 @test trees_implication |> syntaxstring == (@synexpr pandq → porq)  |> syntaxstring
 
 @test pandq             |> syntaxstring ==
-    SL.joinformulas(CONJUNCTION, (p, q)) |> syntaxstring
+    SL.composeformulas(CONJUNCTION, (p, q)) |> syntaxstring
 @test porq              |> syntaxstring ==
-    SL.joinformulas(DISJUNCTION, (p, q)) |> syntaxstring
+    SL.composeformulas(DISJUNCTION, (p, q)) |> syntaxstring
 @test trees_implication |> syntaxstring ==
-    SL.joinformulas(IMPLICATION, (pandq, porq)) |> syntaxstring
+    SL.composeformulas(IMPLICATION, (pandq, porq)) |> syntaxstring
 
 # @test Base.operator_precedence(TOP)         == SL.MAX_PRECEDENCE
 # @test Base.operator_precedence(BOT)      == SL.MAX_PRECEDENCE

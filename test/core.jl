@@ -159,8 +159,8 @@ t2_int = @test_nowarn ¬(t1_int)
 @test unique(atoms(f_int ∨ (p1 ∨ p100))) == [p1, p100]
 @test all(isa.(atoms(f_int ∨ (p1 ∨ p100)), atomstype(logic(f_int))))
 
-f_conj_int = @test_throws AssertionError SoleLogics.joinformulas(CONJUNCTION, (f_int, f_int, f_int))
-f_conj_int = @test_nowarn SoleLogics.joinformulas(CONJUNCTION, (f_int, f_int))
+f_conj_int = @test_throws AssertionError SoleLogics.composeformulas(CONJUNCTION, (f_int, f_int, f_int))
+f_conj_int = @test_nowarn SoleLogics.composeformulas(CONJUNCTION, (f_int, f_int))
 f_conj_int = @test_nowarn CONJUNCTION(f_int, f_int, f_int, f_int)
 f_conj_int = @test_nowarn CONJUNCTION(f_int, f_int, f_int)
 @test_nowarn DISJUNCTION(f_int, f_int, f_conj_int)
@@ -318,15 +318,15 @@ dnf1 = @test_nowarn DNF([lfcf1, lfcf2])
 @test ∧(lfdf1, lfdf1, lfdf2) isa LeftmostConjunctiveForm
 @test ∨(lfdf1, lfdf1, lfdf2) isa LeftmostDisjunctiveForm
 
-@test_nowarn joinformulas(∧, (lfdf1, lfdf1, lfdf2))
-@test_nowarn joinformulas(∧, lfdf1, lfdf1, lfdf2)
-@test_nowarn joinformulas(∨, (lfdf1, lfdf1, lfdf2))
-@test_nowarn joinformulas(∨, lfdf1, lfdf1, lfdf2)
+@test_nowarn composeformulas(∧, (lfdf1, lfdf1, lfdf2))
+@test_nowarn composeformulas(∧, lfdf1, lfdf1, lfdf2)
+@test_nowarn composeformulas(∨, (lfdf1, lfdf1, lfdf2))
+@test_nowarn composeformulas(∨, lfdf1, lfdf1, lfdf2)
 
-@test joinformulas(∧, (lfdf1, lfdf1, lfdf2)) isa LeftmostConjunctiveForm
-@test joinformulas(∧, lfdf1, lfdf1, lfdf2) isa LeftmostConjunctiveForm
-@test joinformulas(∨, (lfdf1, lfdf1, lfdf2)) isa LeftmostDisjunctiveForm
-@test joinformulas(∨, lfdf1, lfdf1, lfdf2) isa LeftmostDisjunctiveForm
+@test composeformulas(∧, (lfdf1, lfdf1, lfdf2)) isa LeftmostConjunctiveForm
+@test composeformulas(∧, lfdf1, lfdf1, lfdf2) isa LeftmostConjunctiveForm
+@test composeformulas(∨, (lfdf1, lfdf1, lfdf2)) isa LeftmostDisjunctiveForm
+@test composeformulas(∨, lfdf1, lfdf1, lfdf2) isa LeftmostDisjunctiveForm
 
 @test_nowarn ∧(lfdf1, lfdf1, lfdf2)
 @test_nowarn ∨(lfdf1, lfdf1, lfdf2)

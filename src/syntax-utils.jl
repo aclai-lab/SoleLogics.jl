@@ -90,33 +90,33 @@ struct LeftmostLinearForm{C<:Connective,SS<:AbstractSyntaxStructure} <: Abstract
 
     function LeftmostLinearForm(
         tree::SyntaxTree,
-        conn::Union{<:SoleLogics.Connective,Nothing} = nothing
+        c::Union{<:SoleLogics.Connective,Nothing} = nothing
     )
-        # Check conn correctness; it should not be nothing (thus, auto inferred) if
+        # Check c correctness; it should not be nothing (thus, auto inferred) if
         # tree root contains something that is not a connective
-        if (!(token(tree) isa Connective) && !isnothing(conn))
+        if (!(token(tree) isa Connective) && !isnothing(c))
             error("Syntax tree cannot be converted to a LeftmostLinearForm:" *
                 "tree root is $(token(tree))")
         end
 
-        if isnothing(conn)
-            conn = token(tree)
+        if isnothing(c)
+            c = token(tree)
         end
 
-        # Get a vector of `SyntaxTree`s, having `conn` as common ancestor, then,
+        # Get a vector of `SyntaxTree`s, having `c` as common ancestor, then,
         # call LeftmostLinearForm constructor.
         _children = AbstractSyntaxStructure[]
 
-        function _dig_and_retrieve(tree::SyntaxTree, conn::SoleLogics.Connective)
-            token(tree) != conn ?
+        function _dig_and_retrieve(tree::SyntaxTree, c::SoleLogics.Connective)
+            token(tree) != c ?
             push!(_children, tree) :    # Lexical scope
             for c in children(tree)
-                _dig_and_retrieve(c, conn)
+                _dig_and_retrieve(c, c)
             end
         end
-        _dig_and_retrieve(tree, conn)
+        _dig_and_retrieve(tree, c)
 
-        LeftmostLinearForm(conn, _children)
+        LeftmostLinearForm(c, _children)
     end
 end
 
@@ -157,8 +157,8 @@ function syntaxstring(
 end
 
 function tree(lf::LeftmostLinearForm)
-    conn = connective(lf)
-    a = arity(conn)
+    c = connective(lf)
+    a = arity(c)
     cs = children(lf)
 
     st = begin
@@ -167,10 +167,10 @@ function tree(lf::LeftmostLinearForm)
             tree(first(cs))
         else
             function _tree(chs::Vector{<:SyntaxTree})
-                @assert (length(chs) != 0) "$(chs); $(lf); $(conn); $(a)."
+                @assert (length(chs) != 0) "$(chs); $(lf); $(c); $(a)."
                 return length(chs) == a ?
-                    SyntaxTree(conn, chs...) :
-                    SyntaxTree(conn, chs[1:(a-1)]..., _tree(chs[a:end])) # Left-most unwinding
+                    SyntaxTree(c, chs...) :
+                    SyntaxTree(c, chs[1:(a-1)]..., _tree(chs[a:end])) # Left-most unwinding
             end
             _tree(tree.(cs))
         end

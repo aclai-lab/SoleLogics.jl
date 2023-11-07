@@ -152,7 +152,7 @@ arity(::typeof(→)) = 2
 #     children = (CONJUNCTION(c1, c2, cs2[1:end-1]...), cs2[end])
 #     T = Base.promote_type((typeof.(children))...)
 #     T <: SyntaxTree || (children = Base.promote(children...))
-#     return joinformulas(CONJUNCTION, children)
+#     return composeformulas(CONJUNCTION, children)
 # end
 # function DISJUNCTION(
 #     c1::Formula,
@@ -165,7 +165,7 @@ arity(::typeof(→)) = 2
 #     children = (DISJUNCTION(c1, c2, cs2[1:end-1]...), cs2[end])
 #     T = Base.promote_type((typeof.(children))...)
 #     T <: SyntaxTree || (children = Base.promote(children...))
-#     return joinformulas(DISJUNCTION, children)
+#     return composeformulas(DISJUNCTION, children)
 # end
 # function IMPLICATION(
 #     c1::Formula,
@@ -177,7 +177,7 @@ arity(::typeof(→)) = 2
 #     children = (c1, IMPLICATION(c2, c3, cs...))
 #     T = Base.promote_type((typeof.(children))...)
 #     T <: SyntaxTree || (children = Base.promote(children...))
-#     return joinformulas(IMPLICATION, children)
+#     return composeformulas(IMPLICATION, children)
 # end
 
 iscommutative(::typeof(∧)) = true
