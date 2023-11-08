@@ -105,11 +105,7 @@ end
 
 """$(doc_precedence)"""
 function precedence(c::Connective)
-    if (Base.isoperator(Symbol(c)) && Base.operator_precedence(Symbol(c)) > 0)
-        return Base.operator_precedence(Symbol(c))
-    else
-        return error("Please, provide method precedence(c::$(typeof(c))).")
-    end
+    return error("Please, provide method precedence(c::$(typeof(c))).")
 end
 
 """$(doc_associativity)"""

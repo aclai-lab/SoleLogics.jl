@@ -110,8 +110,8 @@ struct LeftmostLinearForm{C<:Connective,SS<:AbstractSyntaxStructure} <: Abstract
         function _dig_and_retrieve(tree::SyntaxTree, c::SoleLogics.Connective)
             token(tree) != c ?
             push!(_children, tree) :    # Lexical scope
-            for ch in children(tree)
-                _dig_and_retrieve(ch, c)
+            for chs in children(tree)
+                _dig_and_retrieve(chs, c)
             end
         end
         _dig_and_retrieve(tree, c)
@@ -147,10 +147,10 @@ function syntaxstring(
     if function_notation
         syntaxstring(tree(lf); function_notation = function_notation, kwargs...)
     else
-        ch = children(lf)
+        chs = children(lf)
         children_ss = map(
             c->syntaxstring(c; kwargs...),
-            ch
+            chs
         )
         "(" * join(children_ss, ") $(syntaxstring(connective(lf); kwargs...)) (") * ")"
     end
@@ -159,20 +159,20 @@ end
 function tree(lf::LeftmostLinearForm)
     c = connective(lf)
     a = arity(c)
-    cs = children(lf)
+    chs = children(lf)
 
     st = begin
-        if length(cs) == 1
+        if length(chs) == 1
             # Only child
-            tree(first(cs))
+            tree(first(chs))
         else
-            function _tree(chs::Vector{<:SyntaxTree})
-                @assert (length(chs) != 0) "$(chs); $(lf); $(c); $(a)."
-                return length(chs) == a ?
-                    SyntaxTree(c, chs...) :
-                    SyntaxTree(c, chs[1:(a-1)]..., _tree(chs[a:end])) # Left-most unwinding
+            function _tree(_chs::Vector{<:SyntaxTree})
+                @assert (length(_chs) != 0) "$(_chs); $(lf); $(c); $(a)."
+                return length(_chs) == a ?
+                    SyntaxTree(c, _chs...) :
+                    SyntaxTree(c, _chs[1:(a-1)]..., _tree(_chs[a:end])) # Left-most unwinding
             end
-            _tree(tree.(cs))
+            _tree(tree.(chs))
         end
     end
 
@@ -442,7 +442,7 @@ function normalize(
     allow_atom_flipping = nothing,
     forced_negation_removal = nothing,
     remove_identities = nothing,
-    remove_functionals = nothing,
+    unify_toones = nothing,
     rotate_commutatives = nothing
 )
     if profile == :readability
@@ -451,7 +451,7 @@ function normalize(
         if isnothing(simplify_constants)         simplify_constants = true end
         if isnothing(allow_atom_flipping)        allow_atom_flipping = false end
         if isnothing(remove_identities)          remove_identities = true end
-        if isnothing(remove_functionals)         remove_functionals = true end
+        if isnothing(unify_toones)               unify_toones = true end
         if isnothing(rotate_commutatives)        rotate_commutatives = true end
         # TODO leave \to's instead of replacing them with \lor's...
     elseif profile == :modelchecking
@@ -460,7 +460,7 @@ function normalize(
         if isnothing(simplify_constants)         simplify_constants = true end
         if isnothing(allow_atom_flipping)        allow_atom_flipping = false end
         if isnothing(remove_identities)          remove_identities = true end
-        if isnothing(remove_functionals)         remove_functionals = true end
+        if isnothing(unify_toones)               unify_toones = true end
         if isnothing(rotate_commutatives)        rotate_commutatives = true end
     else
         error("Unknown normalization profile: $(repr(profile))")
@@ -474,7 +474,7 @@ function normalize(
         end
     end
 
-    # TODO we're currently assuming Boolean algebra!!! Very wrong.
+    # TODO we're currently assuming Boolean algebra!!! Very wrong assumption...
 
     _normalize = t->normalize(t;
         profile = profile,
@@ -483,30 +483,34 @@ function normalize(
         simplify_constants = simplify_constants,
         allow_atom_flipping = allow_atom_flipping,
         forced_negation_removal = forced_negation_removal,
+        remove_identities = remove_identities,
+        unify_toones = unify_toones,
         rotate_commutatives = rotate_commutatives
     )
 
     newt = t
 
-    # Remove modal operators based on the identity relation, or other functional relations
+    # Remove modal operators based on the identity relation
     newt = begin
-        tok, ch = token(newt), children(newt)
-        if remove_functionals && tok isa AbstractRelationalOperator &&
-            isfunctional(relation(tok)) && arity(tok) == 1
-            first(ch)
-        elseif remove_identities && tok isa AbstractRelationalOperator &&
+        tok, chs = token(newt), children(newt)
+        if remove_identities && tok isa AbstractRelationalOperator &&
             relation(tok) == identityrel && arity(tok) == 1
-            first(ch)
+            first(chs)
+        elseif unify_toones && tok isa AbstractRelationalOperator &&
+            istoone(relation(tok)) && arity(tok) == 1
+            diamond(relation(tok))(first(chs))
         else
             newt
         end
     end
 
+
+
     # Simplify
     newt = begin
-        tok, ch = token(newt), children(newt)
+        tok, chs = token(newt), children(newt)
         if (tok == ¬) && arity(tok) == 1
-            child = ch[1]
+            child = chs[1]
             chtok, grandchildren = token(child), children(child)
             if reduce_negations && (chtok == ¬) && arity(chtok) == 1
                 _normalize(grandchildren[1])
@@ -543,51 +547,52 @@ function normalize(
             elseif (reduce_negations || simplify_constants) && chtok == ⊥ && arity(chtok) == 1
                 ⊤
             elseif !forced_negation_removal
-                SyntaxTree(tok, _normalize.(ch))
+                SyntaxTree(tok, _normalize.(chs))
             else
                 error("Unknown chtok when removing negations: $(chtok) (type = $(typeof(chtok)))")
             end
         else
-            SyntaxTree(tok, _normalize.(ch))
+            SyntaxTree(tok, _normalize.(chs))
         end
     end
 
+    # DEBUG: old_newt = newt
     # Simplify constants
     newt = begin
-        tok, ch = token(newt), children(newt)
-        if simplify_constants && tok isa Operator
+        tok, chs = token(newt), children(newt)
+        if simplify_constants && tok isa Connective
             if (tok == ∨) && arity(tok) == 2 # TODO maybe use istop, isbot?
-                if     token(ch[1]) == ⊥  ch[2]          # ⊥ ∨ φ ≡ φ
-                elseif token(ch[2]) == ⊥  ch[1]          # φ ∨ ⊥ ≡ φ
-                elseif token(ch[1]) == ⊤  ⊤              # ⊤ ∨ φ ≡ ⊤
-                elseif token(ch[2]) == ⊤  ⊤              # φ ∨ ⊤ ≡ ⊤
+                if     token(chs[1]) == ⊥  chs[2]          # ⊥ ∨ φ ≡ φ
+                elseif token(chs[2]) == ⊥  chs[1]          # φ ∨ ⊥ ≡ φ
+                elseif token(chs[1]) == ⊤  ⊤              # ⊤ ∨ φ ≡ ⊤
+                elseif token(chs[2]) == ⊤  ⊤              # φ ∨ ⊤ ≡ ⊤
                 else                      newt
                 end
             elseif (tok == ∧) && arity(tok) == 2
-                if     token(ch[1]) == ⊥  ⊥              # ⊥ ∧ φ ≡ ⊥
-                elseif token(ch[2]) == ⊥  ⊥              # φ ∧ ⊥ ≡ ⊥
-                elseif token(ch[1]) == ⊤  ch[2]          # ⊤ ∧ φ ≡ φ
-                elseif token(ch[2]) == ⊤  ch[1]          # φ ∧ ⊤ ≡ φ
+                if     token(chs[1]) == ⊥  ⊥              # ⊥ ∧ φ ≡ ⊥
+                elseif token(chs[2]) == ⊥  ⊥              # φ ∧ ⊥ ≡ ⊥
+                elseif token(chs[1]) == ⊤  chs[2]          # ⊤ ∧ φ ≡ φ
+                elseif token(chs[2]) == ⊤  chs[1]          # φ ∧ ⊤ ≡ φ
                 else                      newt
                 end
             elseif (tok == →) && arity(tok) == 2
-                if     token(ch[1]) == ⊥  ⊤                   # ⊥ → φ ≡ ⊤
-                elseif token(ch[2]) == ⊥  _normalize(¬ch[1])  # φ → ⊥ ≡ ¬φ
-                elseif token(ch[1]) == ⊤  ch[2]               # ⊤ → φ ≡ φ
-                elseif token(ch[2]) == ⊤  ⊤                   # φ → ⊤ ≡ ⊤
-                else                      SyntaxTree(∨, _normalize(¬ch[1]), ch[2])
+                if     token(chs[1]) == ⊥  ⊤                   # ⊥ → φ ≡ ⊤
+                elseif token(chs[2]) == ⊥  _normalize(¬chs[1])  # φ → ⊥ ≡ ¬φ
+                elseif token(chs[1]) == ⊤  chs[2]               # ⊤ → φ ≡ φ
+                elseif token(chs[2]) == ⊤  ⊤                   # φ → ⊤ ≡ ⊤
+                else                      _normalize(∨(¬chs[1], chs[2]))
                 end
             elseif (tok == ¬) && arity(tok) == 1
-                if     token(ch[1]) == ⊤  ⊥
-                elseif token(ch[1]) == ⊥  ⊤
+                if     token(chs[1]) == ⊤  ⊥
+                elseif token(chs[1]) == ⊥  ⊤
                 else                      newt
                 end
             elseif SoleLogics.isbox(tok) && arity(tok) == 1
-                if     token(ch[1]) == ⊤  ⊤
+                if     token(chs[1]) == ⊤  ⊤
                 else                      newt
                 end
             elseif SoleLogics.isdiamond(tok) && arity(tok) == 1
-                if     token(ch[1]) == ⊥  ⊥
+                if     token(chs[1]) == ⊥  ⊥
                 else                      newt
                 end
             else
@@ -597,12 +602,14 @@ function normalize(
             newt
         end
     end
+    # DEBUG:
+    # "$(syntaxstring(old_newt)) => $(syntaxstring(newt))" |> println
 
     newt = begin
-        tok, ch = token(newt), children(newt)
-        if remove_boxes && tok isa Operator && SoleLogics.isbox(tok) && arity(tok) == 1
+        tok, chs = token(newt), children(newt)
+        if remove_boxes && tok isa Connective && SoleLogics.isbox(tok) && arity(tok) == 1
             # remove_boxes -> substitute every [X]φ with ¬⟨X⟩¬φ
-            child = ch[1]
+            child = chs[1]
             dual_op = dual(tok)
             ¬(dual_op(_normalize(¬child)))
             # TODO remove
@@ -624,16 +631,16 @@ function normalize(
     # Rotate commutatives
     if rotate_commutatives
         newt = begin
-            tok, ch = token(newt), children(newt)
+            tok, chs = token(newt), children(newt)
             if tok isa Connective && iscommutative(tok) && arity(tok) > 1
-                ch = children(LeftmostLinearForm(newt, tok))
-                ch = Vector(sort(collect(_normalize.(ch)), lt=_isless))
+                chs = children(LeftmostLinearForm(newt, tok))
+                chs = Vector(sort(collect(_normalize.(chs)), lt=_isless))
                 if tok in [∧,∨] # TODO create trait for this behavior: p ∧ p ∧ p ∧ q   -> p ∧ q
-                    ch = unique(ch)
+                    chs = unique(chs)
                 end
-                tree(LeftmostLinearForm(tok, ch))
+                tree(LeftmostLinearForm(tok, chs))
             else
-                SyntaxTree(tok, ch)
+                SyntaxTree(tok, chs)
             end
         end
     end
@@ -667,5 +674,5 @@ function isgrounded(t::SyntaxTree)::Bool
     # (println(token(t)); println(children(t)); true) &&
     return (token(t) isa SoleLogics.AbstractRelationalOperator && isgrounding(relation(token(t)))) ||
     # (token(t) in [◊,□]) ||
-    (token(t) isa Operator && all(c->isgrounded(c), children(t)))
+    (token(t) isa Connective && all(c->isgrounded(c), children(t)))
 end

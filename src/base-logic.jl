@@ -59,26 +59,22 @@ syntaxstring(c::NamedConnective; kwargs...) = string(name(c))
 
 function precedence(c::NamedConnective)
     op = SoleLogics.name(c)
-    if !Base.isoperator(op)
+    # Using default Base.operator_precedence is risky. For example,
+    # Base.isoperator(:(¬)) is true, but Base.operator_precedence(:(¬)) is 0.
+    # See Base.operator_precedence documentation.
+    if !Base.isoperator(op) || Base.operator_precedence(op) == 0
         error("Please, provide method SoleLogics.precedence(::$(typeof(c))).")
     else
-        # Using default Base.operator_precedence is risky. For example,
-        # Base.isoperator(:(¬)) is true, but Base.operator_precedence(:(¬)) is 0.
-        # See Base.operator_precedence documentation.
-        @assert Base.operator_precedence(op) > 0 "Invalid connective: " *
-            "Base.operator_precedence(Symbol($(op))) is $(Base.operator_precedence(op))."
         Base.operator_precedence(op)
     end
 end
 
 function associativity(c::NamedConnective)
     op = SoleLogics.name(c)
-    if !Base.isoperator(op)
+    # Base.isoperator(:(++)) is true, but Base.operator_precedence(:(++)) is :none
+    if !Base.isoperator(op) || !(Base.operator_associativity(op) in [:left, :right])
         error("Please, provide method SoleLogics.associativity(::$(typeof(c))).")
     else
-        # Base.isoperator(:(++)) is true, but Base.operator_precedence(:(++)) is :none
-        @assert Base.operator_associativity(op) in [:left, :right] "Invalid connective: " *
-            "Base.operator_associativity(Symbol($op)) is $(Base.operator_associativity(op))."
         Base.operator_associativity(op)
     end
 end

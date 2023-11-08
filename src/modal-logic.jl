@@ -181,9 +181,9 @@ If the relation is symmetric, please specify its converse relation `cr` with:
     hasconverse(::R) = true
     converse(::R) = cr
 
-If the relation is functional, please flag it with:
+If the relation is many-to-one or one-to-one, please flag it with:
 
-    isfunctional(::R) = true
+    istoone(::R) = true
 
 If the relation is reflexive or transitive, flag it with:
 
@@ -202,7 +202,7 @@ See also
 [`syntaxstring`](@ref),
 [`converse`](@ref),
 [`hasconverse`](@ref),
-[`isfunctional`](@ref),
+[`istoone`](@ref),
 [`IdentityRel`](@ref),
 [`GlobalRel`](@ref),
 [`accessibles`](@ref),
@@ -247,14 +247,14 @@ end
 
 
 """
-    isfunctional(r::AbstractRelation) = false
+    istoone(r::AbstractRelation) = false
 
-Return whether it is known that a relation is isfunctional.
+Return whether it is known that a relation is istoone.
 
 See also [`hasconverse`](@ref), [`converse`](@ref),
 [`issymmetric`](@ref), [`istransitive`](@ref), [`isgrounding`](@ref), [`AbstractRelation`](@ref).
 """
-isfunctional(r::AbstractRelation) = false
+istoone(r::AbstractRelation) = false
 
 """
     issymmetric(r::AbstractRelation) = hasconverse(r) ? converse(r) == r : false
@@ -282,7 +282,7 @@ isreflexive(::AbstractRelation) = false
 Return whether it is known that a relation is transitive.
 
 See also
-[`isfunctional`](@ref), [`issymmetric`](@ref), [`isgrounding`](@ref), [`AbstractRelation`](@ref).
+[`istoone`](@ref), [`issymmetric`](@ref), [`isgrounding`](@ref), [`AbstractRelation`](@ref).
 """
 istransitive(::AbstractRelation) = false
 
@@ -973,6 +973,16 @@ globalbox = box(globalrel)
 
 identitydiamond = diamond(identityrel)
 identitybox = box(identityrel)
+
+function diamondsandboxes()
+    return [diamond(), box()]
+end
+function diamondsandboxes(r::AbstractRelation)
+    return [diamond(r), box(r)]
+end
+function diamondsandboxes(rs::AbstractVector{<:AbstractRelation})
+    return Iterators.flatten([diamondsandboxes(r) for r in rs]) |> collect
+end
 
 # Well known operators
 Base.show(io::IO, c::Union{

@@ -27,6 +27,8 @@ const BASE_PARSABLE_OPERATORS = [
     BASE_PROPOSITIONAL_OPERATORS...,
     BASE_MODAL_OPERATORS...,
     BASE_MULTIMODAL_OPERATORS...,
+    ⊤,
+    ⊥
 ] |> unique
 
 """
@@ -114,7 +116,7 @@ end
 function parseformula(
     F::Type{<:SyntaxTree},
     expr::String,
-    additional_operators::Union{Nothing,Vector{<:Operator}} = nothing;
+    additional_operators::Union{Nothing,AbstractVector} = nothing;
     function_notation::Bool = false,
     atom_parser::Base.Callable = Atom{String},
     additional_whitespaces::Vector{Char} = Char[],
@@ -124,6 +126,9 @@ function parseformula(
 )::F
     additional_operators = (
         isnothing(additional_operators) ? Operator[] : additional_operators)
+    @assert all(x->x isa Operator, additional_operators) "Unexpected object(s) in" *
+        "additional_operators parameter:" *
+        " $(filter(x->!(x isa Operator), additional_operators))"
     operators = Vector{Operator}(
         unique([BASE_PARSABLE_OPERATORS..., additional_operators...]))
 
@@ -401,7 +406,7 @@ function parseformula(
         stack = SyntaxTree[]
         for tok in postfix
             # Stack collapses, composing a new part of the syntax tree
-            if tok isa Operator
+            if tok isa Connective
                 try
                     children = [pop!(stack) for _ in 1:arity(tok)]
                     push!(stack, SyntaxBranch(tok, Tuple(reverse(children))))
@@ -415,7 +420,7 @@ function parseformula(
                         rethrow(e)
                     end
                 end
-            elseif tok isa Atom
+            elseif tok isa SyntaxLeaf
                 push!(stack, tok)
             else
                 error("Parsing error! Unexpected token type encountered: `$(typeof(tok))`.")

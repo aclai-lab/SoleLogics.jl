@@ -4,6 +4,19 @@ using SoleLogics
 using Graphs
 using Random
 
+@test (normalize(parseformula("⟨=⟩p")) |> syntaxstring) == "p"
+@test (normalize(parseformula("⟨=⟩p"); remove_identities = false) |> syntaxstring) == "⟨=⟩p"
+@test (normalize(parseformula("[=]p")) |> syntaxstring) == "p"
+@test (normalize(parseformula("[=]p"); remove_identities = false, unify_toones = true) |> syntaxstring) == "⟨=⟩p"
+@test (normalize(parseformula("[=]p"); remove_identities = false, unify_toones = false) |> syntaxstring) == "⟨=⟩p"
+@test (normalize(parseformula("[=]p"); remove_identities = false, unify_toones = false) |> syntaxstring) == "[=]p"
+@test (normalize(parseformula("[=]p"); remove_identities = false, unify_toones = false, remove_boxes = true) |> syntaxstring) == "¬⟨=⟩¬p"
+
+@test (normalize(parseformula("⟨min⟩p", SoleLogics.diamondsandboxes(SoleLogics.PointRelations)), unify_toones = true) |> syntaxstring) == "⟨min⟩p"
+@test (normalize(parseformula("⟨min⟩p", SoleLogics.diamondsandboxes(SoleLogics.PointRelations)), unify_toones = false) |> syntaxstring) == "⟨min⟩p"
+@test (normalize(parseformula("[min]p", SoleLogics.diamondsandboxes(SoleLogics.PointRelations)), unify_toones = false) |> syntaxstring) == "[min]p"
+@test (normalize(parseformula("[min]p", SoleLogics.diamondsandboxes(SoleLogics.PointRelations)), unify_toones = true) |> syntaxstring) == "⟨min⟩p"
+
 @test (normalize(parseformula("◊((¬(□(q))) → ⊥)")) |> syntaxstring) == "◊□q"
 
 p = Atom("p")

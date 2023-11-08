@@ -96,8 +96,9 @@ A precedence value is a standard integer, and
 connectives with high precedence take precedence over connectives with lower precedences.
 This affects how formulas are shown (via `syntaxstring`) and parsed (via `parseformula`).
 
-By default, the value for a `NamedConnective` is derived from the `Base.operator_precedence`
-of its symbol (`name`).
+By default,
+the value for a `NamedConnective` is derived from the `Base.operator_precedence`
+of its symbol (`name`); there are some exceptions (e.g., ¬).
 Because of this, when dealing with a custom connective `⊙`,
 it will be the case that `parseformula("p ⊙ q ∧ r") == (@synexpr p ⊙ q ∧ r)`.
 

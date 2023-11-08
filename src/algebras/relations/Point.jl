@@ -27,8 +27,8 @@ istransitive(::_PredecessorRel) = true
 istransitive(::_GreaterRel) = true
 istransitive(::_LesserRel) = true
 
-isfunctional(::_MinRel) = true
-isfunctional(::_MaxRel) = true
+istoone(::_MinRel) = true
+istoone(::_MaxRel) = true
 isgrounding(::_MinRel) = true
 isgrounding(::_MaxRel) = true
 istransitive(::_MinRel) = true

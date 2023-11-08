@@ -192,29 +192,30 @@ function baseformula(
 
     ops = isnothing(additional_operators) ? SoleLogics.operators(t) : additional_operators
     ops = unique(ops)
+    conns = filter(o->o isa Connective, ops)
     # operators = unique([additional_operators..., ops...])
     # props = atoms(t)
 
     logic = begin
-        if issubset(ops, BASE_PROPOSITIONAL_OPERATORS)
+        if issubset(conns, BASE_PROPOSITIONAL_OPERATORS)
             propositionallogic(;
                 operators = (infer_logic ? BASE_PROPOSITIONAL_OPERATORS : ops),
                 kwargs...,
             )
-        elseif issubset(ops, BASE_MODAL_OPERATORS)
+        elseif issubset(conns, BASE_MODAL_OPERATORS)
             modallogic(;
                 operators = (infer_logic ? BASE_MODAL_OPERATORS : ops),
                 default_operators = BASE_MODAL_OPERATORS,
                 kwargs...,
             )
-        elseif issubset(ops, BASE_MULTIMODAL_OPERATORS)
+        elseif issubset(conns, BASE_MULTIMODAL_OPERATORS)
             modallogic(;
                 operators = (infer_logic ? BASE_MULTIMODAL_OPERATORS : ops),
                 default_operators = BASE_MULTIMODAL_OPERATORS,
                 kwargs...,
             )
         else
-            unknown_ops = setdiff(ops, BASE_PROPOSITIONAL_OPERATORS, BASE_MODAL_OPERATORS, BASE_MULTIMODAL_OPERATORS)
+            unknown_ops = setdiff(conns, BASE_PROPOSITIONAL_OPERATORS, BASE_MODAL_OPERATORS, BASE_MULTIMODAL_OPERATORS)
             error("Could not infer logic from object of type $(typeof(φ)): $(t). Unknown operators: $(unknown_ops).")
         end
     end

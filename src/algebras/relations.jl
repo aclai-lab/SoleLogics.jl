@@ -62,7 +62,7 @@ syntaxstring(::IdentityRel; kwargs...) = "="
 
 hasconverse(::IdentityRel) = true
 converse(::IdentityRel) = identityrel
-isfunctional(::IdentityRel) = true
+istoone(::IdentityRel) = true
 issymmetric(::IdentityRel) = true
 isreflexive(::IdentityRel) = true
 istransitive(::IdentityRel) = true
