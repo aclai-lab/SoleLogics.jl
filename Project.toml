@@ -19,6 +19,7 @@ StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
 ThreadSafeDicts = "4239201d-c60e-5e0a-9702-85d713665ba7"
 
 [compat]
+AbstractTrees = "0.4"
 DataStructures = "0.18"
 Dictionaries = "0.3"
 Graphs = "1.8"
@@ -28,7 +29,7 @@ PrettyTables = "2.2"
 Reexport = "1"
 Revise = "3"
 SoleBase = "0.11"
-StatsBase = "0.33"
+StatsBase = "0.34"
 ThreadSafeDicts = "0.1.0"
 julia = "1"
 
