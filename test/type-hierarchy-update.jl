@@ -6,40 +6,6 @@ const SL = SoleLogics # SL.name to reference unexported names
 # The following test set is intended to test the new type hierarchy update,
 # considering both trivial and complex assertions regarding various aspects of SoleLogics.
 
-@testset "TypeHierarchyUpdate" begin
-
-#=
-    Syntactical Type Hierarchy
-
-    Syntactical
-    ├── Formula
-    │   ├── AbstractSyntaxStructure
-    │   │   ├── SyntaxTree
-    │   │   │   ├── SyntaxLeaf
-    │   │   │   │   ├── Atom
-    │   │   │   │   └── Truth
-    │   │   │   │       ├── BooleanTruth
-    │   │   │   │       │   ├── Top
-    │   │   │   │       │   └── Bot
-    │   │   │   │       └── ...
-    │   │   │   └── SyntaxBranch
-    │   │   ├── LeftmostLinearForm
-    │   │   └── ...
-    │   ├── TruthTable
-    │   ├── AnchoredFormula
-    │   └── ...
-    └── Connective
-        ├── NamedConnective
-        ├── AbstractRelationalOperator
-        ├── DiamondRelationalOperator
-        ├── BoxRelationalOperator
-        └── ...
-
-    Also:
-    const Operator = Union{Connective,Truth}
-    const SyntaxToken = Union{Connective,SyntaxLeaf}
-=#
-
 # Declaration section
 
 p = Atom("p")
@@ -153,6 +119,3 @@ interp2             = TruthDict(1:4, BOT)
 @test_nowarn interp1[p] = TOP
 
 @test check(pandq, interp1) == true
-
-
-end

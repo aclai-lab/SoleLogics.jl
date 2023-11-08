@@ -67,9 +67,7 @@ struct LeftmostLinearForm{C<:Connective,SS<:AbstractSyntaxStructure} <: Abstract
         new{C,SS}(children)
     end
 
-    function LeftmostLinearForm{C}(
-        children::Vector,
-    ) where {C<:Connective}
+    function LeftmostLinearForm{C}(children::Vector) where {C<:Connective}
         SS = SoleBase._typejoin(typeof.(children)...)
         LeftmostLinearForm{C,SS}(children)
     end
@@ -118,10 +116,14 @@ struct LeftmostLinearForm{C<:Connective,SS<:AbstractSyntaxStructure} <: Abstract
 
         LeftmostLinearForm(c, _children)
     end
+
+    function LeftmostLinearForm{C}(tree::SyntaxTree) where {C<:Connective}
+        LeftmostLinearForm(tree, C()) # TODO avoid
+    end
 end
 
 children(lf::LeftmostLinearForm) = lf.children
-connective(::LeftmostLinearForm{C}) where {C} = C()
+connective(::LeftmostLinearForm{C}) where {C} = C() # TODO avoid
 
 operatortype(::LeftmostLinearForm{C}) where {C} = C
 childrentype(::LeftmostLinearForm{C,SS}) where {C,SS} = SS
@@ -138,11 +140,11 @@ end
 Base.getindex(lf::LeftmostLinearForm, idx::Integer) = Base.getindex(lf,[idx])
 
 function composeformulas(c::Connective, chs::NTuple{N,LeftmostLinearForm}) where {N}
-    @assert all(_c->_c == c, connective.(chs)) "Cannot compose LeftmostLinearForm's" *
-        " via $(c)" *
-        " with different connectives: $(filter(_c->_c != c, connective.(chs)))"
-    # TODO check
-    return LeftmostLinearForm(c, collect(Iterators.flatten(children.(chs))))
+    if all(_c->_c == c, connective.(chs)) # If operator is the same, collapse children
+        return LeftmostLinearForm(c, collect(Iterators.flatten(children.(chs))))
+    else
+        return LeftmostLinearForm(c, collect(chs))
+    end
 end
 
 # TODO: add parameter remove_redundant_parentheses
@@ -188,8 +190,28 @@ function tree(lf::LeftmostLinearForm)
 end
 
 function Base.show(io::IO, lf::LeftmostLinearForm{C,SS}) where {C,SS}
-    println(io, "LeftmostLinearForm{$(C),$(SS)} with $(nchildren(lf)) children")
-    println(io, "\t$(syntaxstring(lf))")
+    if lf isa CNF
+        print(io, "CNF with")
+        println(io, " $(nconjuncts(lf)) conjuncts:")
+        L = literaltype(lf)
+        L <: Literal || println(io, " $(nconjuncts(lf)) and literals of type $(L):")
+    elseif lf isa DNF
+        print(io, "DNF with")
+        println(io, " $(ndisjuncts(lf)) disjuncts:")
+        L = literaltype(lf)
+        L <: Literal || println(io, " $(ndisjuncts(lf)) and literals of type $(L):")
+    else
+        if lf isa LeftmostConjunctiveForm
+            print(io, "LeftmostConjunctiveForm with")
+        elseif lf isa LeftmostDisjunctiveForm
+            print(io, "LeftmostDisjunctiveForm with")
+        else
+            print(io, "LeftmostLinearForm with connective $(syntaxstring(connective(lf))) and")
+        end
+        println(io, " $(nchildren(lf)) $((SS == AbstractSyntaxStructure ? "" : "$(SS) "))children:")
+    end
+    # println(io, "\t$(join(syntaxstring.(children(lf)), " $(syntaxstring(connective(lf))) \n\t"))")
+    println(io, "\t$(join(syntaxstring.(children(lf)), "\n\t"))")
 end
 
 # TODO fix
@@ -259,6 +281,25 @@ const LeftmostDisjunctiveForm{SS<:AbstractSyntaxStructure} = LeftmostLinearForm{
 const CNF{SS<:AbstractSyntaxStructure} = LeftmostConjunctiveForm{LeftmostDisjunctiveForm{SS}}
 """$(doc_lmlf)"""
 const DNF{SS<:AbstractSyntaxStructure} = LeftmostDisjunctiveForm{LeftmostConjunctiveForm{SS}}
+
+# Helpers
+function CNF(conjuncts::AbstractVector{<:LeftmostDisjunctiveForm})
+    SS = Union{childrentype.(conjuncts)...}
+    return CNF{SS}(conjuncts)
+end
+function DNF(disjuncts::AbstractVector{<:LeftmostConjunctiveForm})
+    SS = Union{childrentype.(disjuncts)...}
+    return DNF{SS}(disjuncts)
+end
+CNF(conjuncts::NTuple{N,<:LeftmostDisjunctiveForm}) where {N} = CNF(collect(conjuncts))
+DNF(disjuncts::NTuple{N,<:LeftmostConjunctiveForm}) where {N} = DNF(collect(disjuncts))
+CNF(conjuncts::Vararg{LeftmostDisjunctiveForm}) = CNF(collect(conjuncts))
+DNF(disjuncts::Vararg{LeftmostConjunctiveForm}) = DNF(collect(disjuncts))
+CNF(conjunct::LeftmostDisjunctiveForm) = CNF([conjunct])
+DNF(disjunct::LeftmostConjunctiveForm) = DNF([disjunct])
+
+literaltype(::CNF{SS}) where {SS<:AbstractSyntaxStructure} = SS
+literaltype(::DNF{SS}) where {SS<:AbstractSyntaxStructure} = SS
 
 # # TODO maybe not needed?
 # Base.promote_rule(::Type{<:LeftmostConjunctiveForm}, ::Type{<:LeftmostConjunctiveForm}) = LeftmostConjunctiveForm

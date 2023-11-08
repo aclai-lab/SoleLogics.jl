@@ -112,15 +112,15 @@ end
 
 # Note that, since `c` might not be in the logic of the child formulas,
 #  the resulting formula may be of a different logic.
-function composeformulas(c::Connective, children::NTuple{N,AnchoredFormula}) where {N}
-    ls = unique(logic.(children)) # Uses Base.isequal
+function composeformulas(c::Connective, φs::NTuple{N,AnchoredFormula}) where {N}
+    ls = unique(logic.(φs)) # Uses Base.isequal
     @assert length(ls) == 1 "Cannot " *
                 "build formula by combination of formulas with different logics: $(ls)."
     l = first(ls)
     # "TODO expand logic's set of operators (c is not in it: $(typeof(c)) ∉ $(operatorstype(l)))."
     @assert typeof(c) <: operatorstype(l) "Cannot join $(N) formulas via operator $(c): " *
         "this operator does not belong to the logic. $(typeof(c)) <: $(operatorstype(l)) should hold!"
-    return AnchoredFormula(l, composeformulas(c, synstruct.(children)))
+    return AnchoredFormula(l, composeformulas(c, synstruct.(φs)))
 end
 
 # When constructing a new formula from a syntax tree, the logic is passed by reference.

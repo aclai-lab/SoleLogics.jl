@@ -17,6 +17,7 @@ test_suites = [
     ("Parse", ["parse.jl",]),
     ("Random", ["random.jl",]),
     ("Normalize", ["normalize.jl",]),
+    ("Syntax Utils", ["syntax-utils.jl",]),
 
     ("Formula Generation", ["formulas/generation.jl",]),
     ("Formulas I/O", ["formulas/input.jl",]),

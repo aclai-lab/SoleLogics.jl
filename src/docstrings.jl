@@ -215,7 +215,7 @@ SyntaxBranch: ◊(p → q) ∧ p ∧ ¬p
 Upon `composeformulas` lies a flexible way of using connectives for composing
 formulas and syntax tokens (e.g., atoms), given by methods like the following:
 
-    function (c::Connective)(children::NTuple{N,Formula}) where {N}
+    function (c::Connective)(φs::NTuple{N,Formula}) where {N}
         ...
     end
 

@@ -222,11 +222,12 @@ end
 """$(doc_composeformulas)"""
 function composeformulas(c::Connective, ::NTuple{N,F})::F where {N,F<:Formula}
     return error("Please, provide method " *
-        "composeformulas(c::Connective, children::NTuple{N,$(F)}) where {N}.")
+        "composeformulas(c::Connective, φs::NTuple{N,$(F)}) where {N}.")
 end
 
-function composeformulas(c::Connective, children::Vararg{F,N})::F where {N,F<:Formula}
-    return composeformulas(c, children)
+# Note: don't type the output as F
+function composeformulas(c::Connective, φs::Vararg{Formula,N}) where {N}
+    return composeformulas(c, φs)
 end
 
 ############################################################################################
@@ -247,8 +248,8 @@ See also [`Formula`](@ref), [`AbstractLogic`](@ref), [`SyntaxTree`](@ref),
 """
 abstract type AbstractSyntaxStructure <: Formula end
 
-function composeformulas(c::Connective, children::NTuple{N,AbstractSyntaxStructure}) where {N}
-    return composeformulas(c, tree.(children))
+function composeformulas(c::Connective, φs::NTuple{N,AbstractSyntaxStructure}) where {N}
+    return composeformulas(c, tree.(φs))
 end
 
 ############################################################################################
@@ -352,8 +353,8 @@ leavestype(φ::SyntaxTree) = typeintersect(SyntaxLeaf, tokenstype(φ))
 connectivestype(φ::SyntaxTree) = typeintersect(Connective, tokenstype(φ))
 operatorstype(φ::SyntaxTree) = typeintersect(Operator, tokenstype(φ))
 
-function composeformulas(c::Connective, children::NTuple{N,SyntaxTree}) where {N}
-    return SyntaxBranch(c, children)
+function composeformulas(c::Connective, φs::NTuple{N,SyntaxTree}) where {N}
+    return SyntaxBranch(c, φs)
 end
 
 
@@ -594,24 +595,24 @@ function (op::Operator)(o::Any)
     return error("Cannot apply operator $(op)::$(typeof(op)) to object $(o)::$(typeof(o))")
 end
 
-function (op::Operator)(children::Formula...)
-    return op(children)
+function (op::Operator)(φs::Formula...)
+    return op(φs)
 end
 
-# function (op::Operator)(children::NTuple{N, F}) where {N,F<:Formula}
-function (op::Operator)(children::NTuple{N,Formula}) where {N}
-    if arity(op) == 2 && length(children) > arity(op)
+# function (op::Operator)(φs::NTuple{N, F}) where {N,F<:Formula}
+function (op::Operator)(φs::NTuple{N,Formula}) where {N}
+    if arity(op) == 2 && length(φs) > arity(op)
         if associativity(op) == :right
-            children = (children[1], op(children[2:end]))
+            φs = (φs[1], op(φs[2:end]))
         else
-            children = (op(children[1:end-1]), children[end])
+            φs = (op(φs[1:end-1]), φs[end])
         end
     end
     AbstractSyntaxStructure
-    if AbstractSyntaxStructure <: typejoin(typeof.(children)...)
-        children = Base.promote(children...)
+    if AbstractSyntaxStructure <: typejoin(typeof.(φs)...)
+        φs = Base.promote(φs...)
     end
-    return composeformulas(op, children)
+    return composeformulas(op, φs)
 end
 
 (c::Truth)(::Tuple{}) = c
