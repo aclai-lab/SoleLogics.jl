@@ -46,6 +46,7 @@ export Top, TOP, ⊤
 export Bot, BOT, ⊥
 export BooleanTruth
 export istop, isbot
+export truthsupertype
 
 export NamedConnective, CONJUNCTION, NEGATION, DISJUNCTION, IMPLICATION
 export ∧, ¬, ∨, →
