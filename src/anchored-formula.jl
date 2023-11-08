@@ -291,13 +291,12 @@ end
 function randbaseformula(
     height::Integer,
     g::AbstractGrammar;
-    picker::Function=rand,
     kwargs...
 )::AnchoredFormula
     _alphabet = alphabet(g)
     _operators = operators(g)
     baseformula(
-        randformula(height, _alphabet, _operators; picker=picker, kwargs...);
+        randformula(height, _alphabet, _operators; kwargs...);
         alphabet = _alphabet,
         additional_operators = _operators
     )
@@ -307,12 +306,11 @@ function randbaseformula(
     height::Integer,
     alphabet,
     operators::AbstractVector{<:Operator};
-    picker::Function=rand,
     kwargs...
 )::AnchoredFormula
     alphabet = convert(AbstractAlphabet, alphabet)
     baseformula(
-        randformula(height, alphabet, operators; picker=picker, kwargs...);
+        randformula(height, alphabet, operators; kwargs...);
         alphabet = alphabet,
         additional_operators = operators,
     )
@@ -325,5 +323,5 @@ function randbaseformula(
     rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG,
     kwargs...
 )::AnchoredFormula
-    randbaseformula(height, alphabet(g), operator(g), args...; rng=rng, kwargs...)
+    randbaseformula(height, alphabet(g), operators(g), args...; rng=rng, kwargs...)
 end

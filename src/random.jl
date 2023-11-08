@@ -168,23 +168,23 @@ function StatsBase.sample(
     rng::AbstractRNG,
     height::Integer,
     g::AbstractGrammar,
-    weights::AbstractWeights,
+    opweights::Union{Nothing,AbstractWeights} = nothing,
     args...;
     kwargs...
 )
     randformula(
-        rng, height, alphabet(g), operators(g);
-        picker=StatsBase.sample, weights=weights, args..., kwargs...)
+        rng, height, alphabet(g), operators(g), args...;
+        # atompicker=(rng,dom)->StatsBase.sample(rng, dom, atomweights), kwargs...)
+        opweights = opweights, kwargs...)
 end
 
 function StatsBase.sample(
     height::Integer,
     g::AbstractGrammar,
-    weights::AbstractWeights,
     args...;
     kwargs...
 )
-    StatsBase.sample(Random.GLOBAL_RNG, height, g, weights, args...; kwargs...)
+    StatsBase.sample(Random.GLOBAL_RNG, height, g, args...; kwargs...)
 end
 
 #= ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ CompleteFlatGrammar ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ =#
@@ -218,10 +218,9 @@ Return a pseudo-randomic `SyntaxBranch`.
 
 # Keyword Arguments
 - `rng::Union{Intger,AbstractRNG} = Random.GLOBAL_RNG`: random number generator;
-- `picker::Function` = method used to pick a random element. For example, this could be
+- `atompicker::Function` = method used to pick a random element. For example, this could be
     Base.rand or StatsBase.sample.
-- `weights::AbstractWeights` = weights vector of StatsBase, needed if `picker` function is
-    StatsBase.sample.
+- `opweights::AbstractWeights` = weight vector over the set of operators (see `StatsBase`).
 
 # Examples
 
@@ -240,19 +239,31 @@ function randformula(
     alphabet,
     operators::AbstractVector{<:Operator};
     modaldepth::Integer = height,
-    picker::Function = rand,
-    opweights::Union{AbstractWeights,AbstractVector{<:Real},Nothing} = nothing
+    atompicker::Union{Function,AbstractWeights,AbstractVector{<:Real},Nothing} = sample,
+    opweights::Union{AbstractWeights,AbstractVector{<:Real},Nothing} = nothing,
 )::SyntaxTree
     alphabet = convert(AbstractAlphabet, alphabet)
 
-    @assert isnothing(opweights) ||
-        length(opweights) == length(operators) "Mismatching numbers of operators " *
-            "($(length(operators))) and opweights ($(length(opweights)))."
 
     if (isnothing(opweights))
         opweights = StatsBase.uweights(length(operators))
     elseif (opweights isa AbstractVector)
+        @assert length(opweights) == length(operators) "Mismatching numbers of operators " *
+                "($(length(operators))) and opweights ($(length(opweights)))."
         opweights = StatsBase.weights(opweights)
+    end
+
+    if (isnothing(atompicker))
+        atompicker = StatsBase.uweights(length(alphabet))
+    elseif (atompicker isa AbstractVector)
+        @assert length(atompicker) == length(alphabet) "Mismatching numbers of atoms " *
+                "($(length(alphabet))) and atompicker ($(length(atompicker)))."
+        atompicker = StatsBase.weights(atompicker)
+    end
+
+    if !(atompicker isa Function)
+        atomweights = atompicker
+        atompicker = (rng, dom)->StatsBase.sample(rng, dom, atomweights)
     end
 
     nonmodal_operators = findall(!ismodal, operators)
@@ -264,7 +275,7 @@ function randformula(
     )::SyntaxTree
         if height == 0
             # Sample atom from alphabet
-            return picker(rng, atoms(alphabet))
+            return atompicker(rng, atoms(alphabet))
         else
             # Sample operator and generate children (modal operators only if modaldepth > 0)
             ops, ops_w = begin
@@ -293,6 +304,17 @@ function randformula(
     return _randformula(rng, height, modaldepth)
 end
 
+function randformula(
+    rng::AbstractRNG,
+    height::Integer,
+    g::AbstractGrammar,
+    args...;
+    kwargs...
+)
+    initrng(rng)
+    randformula(rng, height, alphabet(g), operators(g), args...; kwargs...)
+end
+
 # Helper
 function randformula(
     height::Integer,
@@ -302,17 +324,6 @@ function randformula(
 )
     initrng(rng)
     randformula(rng, height, args...; kwargs...)
-end
-
-function randformula(
-    height::Integer,
-    g::AbstractGrammar,
-    args...;
-    rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG,
-    kwargs...
-)
-    initrng(rng)
-    randformula(rng, height, alphabet(g), operator(g), args...; kwargs...)
 end
 
 #= ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Kripke Structures ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ =#

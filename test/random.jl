@@ -1,7 +1,7 @@
 using StatsBase
 import SoleLogics: arity
 using SoleLogics: parsebaseformula
-
+using Random
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ random logic ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -58,8 +58,11 @@ end
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ random interfaces ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+using Random
+
 alph = ExplicitAlphabet(1:5)
-g = SoleLogics.CompleteFlatGrammar(alph, [∧,¬])
+ops = [∧,¬]
+g = SoleLogics.CompleteFlatGrammar(alph, ops)
 
 @test_nowarn Base.rand(4, g)
 @test_nowarn Base.rand(Random.MersenneTwister(1), 4, g)
@@ -68,3 +71,14 @@ g = SoleLogics.CompleteFlatGrammar(alph, [∧,¬])
 
 @test_nowarn StatsBase.sample(4, g)
 @test_nowarn StatsBase.sample(Random.MersenneTwister(1), 4, g)
+
+@test_nowarn randformula(4, g)
+@test_nowarn randformula(Random.MersenneTwister(1), 4, g)
+@test_nowarn randformula(4, alph, ops)
+@test_nowarn randformula(Random.MersenneTwister(1), 4, alph, ops; atompicker = 1:5)
+@test_throws AssertionError randformula(Random.MersenneTwister(1), 4, alph, ops; atompicker = 1:6)
+
+@test_nowarn StatsBase.sample(4, g, Weights([1,10]))
+@test_throws AssertionError StatsBase.sample(4, g, Weights([1,1,1,1,100]))
+@test_throws MethodError StatsBase.sample(4, g, [1,1,1,1,100])
+@test_throws MethodError StatsBase.sample(Random.MersenneTwister(1), 4, g, ws)
