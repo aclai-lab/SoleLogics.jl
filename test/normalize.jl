@@ -47,14 +47,14 @@ check(φ, K1, w0)
 N = 200
 for K in [K0, K1]
     for i in 1:N
-        ops = rand([SoleLogics.BASE_MODAL_OPERATORS, union(SoleLogics.BASE_MODAL_OPERATORS, [⊤, ⊥])])
-        φ = randformula(MersenneTwister(i), 3, alph_vector, ops)
-        nφ = normalize(φ)
+        _ops = rand([SoleLogics.BASE_MODAL_OPERATORS, union(SoleLogics.BASE_MODAL_OPERATORS, [⊤, ⊥])])
+        _φ = randformula(MersenneTwister(i), 3, alph_vector, _ops)
+        _nφ = normalize(_φ)
         # @show syntaxstring(φ)
         # @show syntaxstring(nφ)
-        @test [check(φ, K, w; perform_normalization = false) for w in worlds] ==
+        @test [check(_φ, K, w; perform_normalization = false) for w in worlds] ==
             # [check(nφ, K, w; perform_normalization = false) for w in worlds] ==
-            [check(φ, K, w; perform_normalization = true) for w in worlds]
+            [check(_φ, K, w; perform_normalization = true) for w in worlds]
     end
 end
 
