@@ -252,13 +252,20 @@ thanks to the following two methods that were defined in SoleLogics:
         return ∨(c1, ∨(c2, c3, cs...))
     end
 
-!!! info
-    The idea behind `composeformulas` is to concatenate syntax tokens without applying
-    simplifications/minimizations of any kind. Because of that, ∧(⊤,⊤) returns a
-    `SyntaxBranch` whose root value is ∧, instead of returning just a Truth value ⊤.
+!!! note
+To allow for the composition of `Formula`s of different types,
+promotion rules should be provided.
 
 See also [`Formula`](@ref), [`Connective`](@ref).
 """
+
+# TODO this piece of doc will be useful when we define simplify(φ), to explain
+#  the differences between the two
+# !!! info
+#     Note that `composeformulas`
+#     does not apply, simplifications/minimizations of any kind.
+# `composeformulas(∧, ⊤,⊤)` returns a
+# `SyntaxBranch` whose root value is ∧, instead of returning just ⊤.
 
 doc_tokopprop = """
     tokens(φ::Formula)::AbstractVector{<:SyntaxToken}

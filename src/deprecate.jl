@@ -6,6 +6,8 @@ const NamedOperator = NamedConnective
 const Proposition = Atom
 Base.@deprecate atom(p::Proposition) value(p)
 
+Base.@deprecate joinformulas(args...; kwargs...) composeformulas(args...; kwargs...)
+
 # base-logic.jl
 export BOTTOM, Bottom, bottom, isbottom
 

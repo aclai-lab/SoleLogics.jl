@@ -490,6 +490,8 @@ Base.convert(::Type{A}, a) where {A<:Atom} = A(a)
 Base.isequal(a::Atom, b::Atom) = Base.isequal(value(a), value(b)) # Needed to avoid infinite recursion
 Base.isequal(a::Atom, b) = Base.isequal(value(a), b)
 Base.isequal(a, b::Atom) = Base.isequal(a, value(b))
+Base.isequal(a::Atom, b::SyntaxTree) = (a == b) # Needed for resolving ambiguities
+Base.isequal(a::SyntaxTree, b::Atom) = (a == b) # Needed for resolving ambiguities
 Base.hash(a::Atom) = Base.hash(value(a))
 
 syntaxstring(a::Atom; kwargs...)::String = syntaxstring(value(a); kwargs...)
