@@ -82,7 +82,7 @@ by the Julia parser, `Base.operator_precedence`
 and `Base.operator_associativity` are used to define these behaviors, and
 you might want to avoid providing these methods at all.
 
-# Custom `Connective` implementation
+Here is an example of a custom implementation of the xor (⊻) boolean operator.
 ```jldoctest
 julia> const ⊻ = SoleLogics.NamedConnective{:⊻}()
 julia> SoleLogics.arity(::typeof(⊻)) = 2
@@ -518,7 +518,8 @@ Abstract type for syntax leaves representing values of a lattice algebra.
 In Boolean logic, the two [`BooleanTruth`](@ref) values [`Top`](@ref)
 and [`Bot`](@ref) are tused.
 
-# Custom `Truth` subtype implementation
+Here is an example about inventing a new Truth subtype, MyTruth, where a new value, α,
+is defined to be inbetween the canonical boolean top and bottom.
 ```jldoctest
 julia> abstract type MyTruth <: Truth end
 
