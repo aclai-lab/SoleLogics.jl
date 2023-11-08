@@ -155,6 +155,7 @@ PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
 Graphs = "86223c79-3864-5bf0-83f7-82e725a168b6"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
+Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 SoleLogics = "b002da8f-3cb3-4d91-bbe3-2953433912b5"
 
 [compat]
