@@ -126,8 +126,8 @@ function parseformula(
 )::F
     additional_operators = (
         isnothing(additional_operators) ? Operator[] : additional_operators)
-    @assert all(x->x isa Operator, additional_operators) "Unexpected object(s) in" *
-        "additional_operators parameter:" *
+    @assert all(x->x isa Operator, additional_operators) "Unexpected object(s) passed" *
+        " as additional operator:" *
         " $(filter(x->!(x isa Operator), additional_operators))"
     operators = Vector{Operator}(
         unique([BASE_PARSABLE_OPERATORS..., additional_operators...]))

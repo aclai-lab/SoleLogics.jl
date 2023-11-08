@@ -500,10 +500,18 @@ See also [`frame`](@ref), [`worldtype`](@ref),
 abstract type AbstractKripkeStructure <: AbstractInterpretation end
 
 function interpret(
+    φ::Truth,
+    i::AbstractKripkeStructure,
+    w::AbstractWorld,
+)::Truth
+    return φ
+end
+
+function interpret(
     φ::Atom,
     i::AbstractKripkeStructure,
     w::AbstractWorld,
-)::Formula
+)::SyntaxLeaf
     return error("Please, provide method interpret(::$(typeof(φ)), ::$(typeof(i)), ::$(typeof(w))).")
 end
 
@@ -725,6 +733,7 @@ false
 """
 ismodal(::Type{<:Connective})::Bool = false
 ismodal(c::Connective)::Bool = ismodal(typeof(c))
+ismodal(::Truth)::Bool = false
 
 """
     isbox(::Type{<:Connective})::Bool = false
@@ -746,9 +755,11 @@ true
 """
 isbox(::Type{<:Connective})::Bool = false
 isbox(c::Connective)::Bool = isbox(typeof(c))
+isbox(::Truth)::Bool = false
 
 isdiamond(C::Type{<:Connective})::Bool = ismodal(C) && !isbox(C)
 isdiamond(c::Connective)::Bool = isdiamond(typeof(c))
+isdiamond(::Truth)::Bool = false
 
 doc_DIAMOND = """
     const DIAMOND = NamedConnective{:◊}()

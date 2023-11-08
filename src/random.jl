@@ -197,7 +197,7 @@ doc_randformula = """
     randformula(
         height::Integer,
         alphabet,
-        operators::AbstractVector{<:Operator};
+        operators::AbstractVector;
         rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG
     )::SyntaxTree
 
@@ -213,7 +213,7 @@ Return a pseudo-randomic `SyntaxBranch`.
 # Arguments
 - `height::Integer`: height of the generated structure;
 - `alphabet::AbstractAlphabet`: collection from which atoms are chosen randomly;
-- `operators::AbstractVector{<:Operator}`: vector from which legal operators are chosen;
+- `operators::AbstractVector`: vector from which legal operators are chosen;
 - `g::AbstractGrammar`: alternative to passing alphabet and operators separately. (TODO explain?)
 
 # Keyword Arguments
@@ -237,13 +237,15 @@ function randformula(
     rng::AbstractRNG,
     height::Integer,
     alphabet,
-    operators::AbstractVector{<:Operator};
+    operators::AbstractVector;
     modaldepth::Integer = height,
     atompicker::Union{Function,AbstractWeights,AbstractVector{<:Real},Nothing} = sample,
     opweights::Union{AbstractWeights,AbstractVector{<:Real},Nothing} = nothing,
 )::SyntaxTree
     alphabet = convert(AbstractAlphabet, alphabet)
 
+    @assert all(x->x isa Operator, operators) "Unexpected object(s) passed as" *
+        " operator:" * " $(filter(x->!(x isa Operator), operators))"
 
     if (isnothing(opweights))
         opweights = StatsBase.uweights(length(operators))
@@ -291,7 +293,7 @@ function randformula(
             ch = Tuple([
                     _randformula(rng, height-1, modaldepth-(ismodal(op) ? 1 : 0))
                     for _ in 1:arity(op)])
-            return SyntaxBranch(op, ch)
+            return SyntaxTree(op, ch)
         end
     end
 
