@@ -82,7 +82,7 @@ by the Julia parser, `Base.operator_precedence`
 and `Base.operator_associativity` are used to define these behaviors, and
 you might want to avoid providing these methods at all.
 
-# Custom connective implementation
+# Custom `Connective` implementation
 ```jldoctest
 julia> const ⊻ = SoleLogics.NamedConnective{:⊻}()
 julia> SoleLogics.arity(::typeof(⊻)) = 2
@@ -135,9 +135,9 @@ additional [memoization](https://en.wikipedia.org/wiki/Memoization) structures,
 which can save computational time upon
 [model checking](https://en.wikipedia.org/wiki/Model_checking)).
 
-Any formula can be converted into its `SyntaxTree` representation via [`tree`](@ref);
-its [`height`](@ref) can be computed, and it can be queried for its syntax
-[`tokens`](@ref), [`atoms`](@ref), etc...
+Any formula can be converted into its [`SyntaxTree`](https://en.wikipedia.org/wiki/Abstract_syntax_tree)
+representation via [`tree`](@ref); its [`height`](@ref) can be computed,
+and it can be queried for its syntax [`tokens`](@ref), [`atoms`](@ref), etc...
 It can be parsed from its [`syntaxstring`](@ref) representation via [`parseformula`](@ref).
 
 See also [`tree`](@ref), [`AbstractSyntaxStructure`](@ref), [`SyntaxLeaf`](@ref).
@@ -245,10 +245,10 @@ end
     abstract type AbstractSyntaxStructure <: Formula end
 
 Abstract type for the purely-syntactic component of a logical formula (e.g.,
-no fancy memoization structure associated).
-The typical representation is the [`SyntaxTree`](@ref),
-however, different implementations can cover specific syntactic forms
-(e.g., conjuctive/disjuctive normal forms).
+no fancy memoization structure associated). The typical representation is the
+[`SyntaxTree`](@ref), however, different implementations can cover specific syntactic forms
+(e.g., [conjunctive](https://en.wikipedia.org/wiki/Conjunctive_normal_form) or
+[disjunctive](https://en.wikipedia.org/wiki/Disjunctive_normal_form) normal forms).
 
 See also [`Formula`](@ref), [`AbstractLogic`](@ref), [`SyntaxTree`](@ref),
 [`tree`](@ref).
@@ -463,7 +463,8 @@ a logical interpretation.
 Atoms are nullary tokens (i.e, they are at the leaves of a syntax tree);
 note that their atoms cannot be `Atom`s.
 
-See also [`AbstractInterpretation`](@ref), [`check`](@ref), [`SyntaxToken`](@ref).
+See also [`AbstractInterpretation`](@ref), [`atoms`](@ref), [`check`](@ref),
+[`SyntaxToken`](@ref).
 """
 struct Atom{V} <: SyntaxLeaf
     value::V
@@ -517,12 +518,29 @@ Abstract type for syntax leaves representing values of a lattice algebra.
 In Boolean logic, the two [`BooleanTruth`](@ref) values [`Top`](@ref)
 and [`Bot`](@ref) are tused.
 
-# Implementation
+# Custom `Truth` subtype implementation
+```jldoctest
+julia> abstract type MyTruth <: Truth end
 
-When implementing a custom `Truth` subtype, provide istop, isbot...
-TODO: write the interface to be implemented here, with an example.
+julia> struct MyTop <: MyTruth end
+julia> const MYTOP = MyTop()
+julia> const ⫪ = MYTOP # Note that ⊤ is already use to indicate BooleanTruth's top.
+julia> syntaxstring(::MyTop; kwargs...) = "⫪"
 
-See also [`Top`](@ref), [`Bot`](@ref), [`BooleanTruth`](@ref), [`arity`](@ref);
+julia> struct MyBot <: MyTruth end
+julia> const MYBOT = MyBot()
+julia> const ⫫ = MYBOT # Note that ⊥ is already use to indicate BooleanTruth's top.
+julia> syntaxstring(::MyBot; kwargs...) = "⫫"
+
+julia> struct MyAlpha <: MyTruth end
+julia> const MYALPHA = MyAlpha()
+julia> const α = MYALPHA
+julia> syntaxstring(::MyAlpha; kwargs...) = "α"
+
+julia> istop(t::MyTop) = true
+julia> isbot(t::MyBot) = true
+
+See also [`Top`](@ref), [`Bot`](@ref), [`BooleanTruth`](@ref).
 """
 abstract type Truth <: SyntaxLeaf end
 
@@ -554,6 +572,12 @@ isbot(t::Truth)::Bool = false
     truthsupertype(T::Type{<:Truth})::Type
 
 Return the supertype of a `Truth` type that includes all values of the same algebra.
+
+# Examples
+```jldoctest
+julia> truthsupertype(typeof(TOP))
+BooleanTruth
+```
 
 See also [`Truth`](@ref), [`TruthDict`](@ref).
 """
@@ -640,6 +664,26 @@ and has as many children as the `arity` of the token.
 
 This implementation is *arity-compliant*, in that, upon construction,
 the arity of the token is checked against the number of children provided.
+
+# Examples
+```jldoctest
+julia> p,q = Atom.([p, q])
+2-element Vector{Atom{String}}:
+ Atom{String}: p
+ Atom{String}: q
+julia> branch = SyntaxBranch(CONJUNCTION, p, q)
+SyntaxBranch{NamedConnective{:∧}}: p ∧ q
+julia> token(branch)
+∧
+julia> children(branch)
+(Atom{String}: p, Atom{String}: q)
+julia> ntokens(a) == nconnectives(a) + nleaves(a)
+true
+julia> arity(a)
+2
+julia> height(a)
+1
+```
 
 See also
 [`token`](@ref), [`children`](@ref),

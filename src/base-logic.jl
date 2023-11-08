@@ -231,10 +231,10 @@ const TOP = Top()
 """$(doc_TOP)"""
 const ⊤ = TOP
 
-syntaxstring(o::Top; kwargs...) = "⊤"
+syntaxstring(::Top; kwargs...) = "⊤"
 
 istop(t::Top) = true
-truthsupertype(T::Type{Top}) = BooleanTruth
+truthsupertype(::Type{Top}) = BooleanTruth
 
 doc_BOTTOM = """
     struct Bot <: Truth end
@@ -253,19 +253,15 @@ const BOT = Bot()
 """$(doc_BOTTOM)"""
 const ⊥ = BOT
 
-syntaxstring(o::Bot; kwargs...) = "⊥"
+syntaxstring(::Bot; kwargs...) = "⊥"
 
 isbot(t::Bot) = true
-truthsupertype(T::Type{Bot}) = BooleanTruth
+truthsupertype(::Type{Bot}) = BooleanTruth
 
 # NOTE: it could be useful to provide a macro to easily create
 # a new set of Truth types. In particular, a new subtree of types must be planted
 # as children of Truth, and new promotion rules are to be defined like below.
 Base.promote_rule(::Type{<:BooleanTruth}, ::Type{<:BooleanTruth}) = BooleanTruth
-
-# # Helpers but dangerous!! TODO remove
-# Base.convert(::Type{Bool}, ::Top) = true
-# Base.convert(::Type{Bool}, ::Bot) = false
 
 function Base.convert(::Type{BooleanTruth}, t::Bool)::BooleanTruth
     return (t ? TOP : BOT)
