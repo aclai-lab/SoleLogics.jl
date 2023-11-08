@@ -4,8 +4,8 @@
 ############################################################################################
 
 # Note keep separate to avoid ambiguity
-accessibles(fr::AbstractMultiModalFrame, ::AbstractWorldSet, r::GlobalRel) = accessibles(fr, r)
-accessibles(fr::AbstractMultiModalFrame, S::AbstractWorldSet, ::IdentityRel) = S # TODO try IterTools.imap(identity, S)
+accessibles(fr::AbstractMultiModalFrame, ::AbstractWorlds, r::GlobalRel) = accessibles(fr, r)
+accessibles(fr::AbstractMultiModalFrame, S::AbstractWorlds, ::IdentityRel) = S # TODO try IterTools.imap(identity, S)
 
 
 accessibles(fr::AbstractUniModalFrame, w::AbstractWorld,    ::IdentityRel) = [w]
@@ -19,7 +19,7 @@ accessibles(fr::AbstractUniModalFrame, ::GlobalRel) = allworlds(fr)
 #  improved implementations for special cases (e.g. ⟨L⟩ of a world set in interval algebra).
 function accessibles(
     fr::AbstractMultiModalFrame{W},
-    S::AbstractWorldSet,
+    S::AbstractWorlds,
     r::AbstractRelation,
 ) where {W<:AbstractWorld}
     IterTools.imap(W,

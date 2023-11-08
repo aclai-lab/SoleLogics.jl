@@ -393,6 +393,13 @@ end
 grammar(l::BaseLogic) = l.grammar
 algebra(l::BaseLogic) = l.algebra
 
+function Base.isequal(a::BaseLogic, b::BaseLogic)
+    return Base.isequal(grammar(a), grammar(b)) && Base.isequal(algebra(a), algebra(b))
+end
+
+Base.hash(a::BaseLogic) = Base.hash(algebra(a), Base.hash(grammar(a)))
+
+
 function Base.show(io::IO, l::BaseLogic{G,A}) where {G<:AbstractGrammar,A<:AbstractAlgebra}
     if G <: CompleteFlatGrammar
         print(io, "BaseLogic with:\n\t- operators = [$(join(syntaxstring.(operators(l)), ", "))];\n\t- alphabet: $(alphabet(l));\n\t- algebra: $(algebra(l)).")

@@ -75,7 +75,7 @@ export truthtype, worldtype
 
 export AbstractWorld
 
-export AbstractWorldSet, WorldSet
+export AbstractWorlds, Worlds
 
 export Interval, Interval2D, OneWorld
 

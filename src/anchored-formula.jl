@@ -115,7 +115,7 @@ end
 function composeformulas(c::Connective, φs::NTuple{N,AnchoredFormula}) where {N}
     ls = unique(logic.(φs)) # Uses Base.isequal
     @assert length(ls) == 1 "Cannot " *
-                "build formula by combination of formulas with different logics: $(ls)."
+                "compose an anchored formula from formulas anchored to different logics: $(ls)."
     l = first(ls)
     # "TODO expand logic's set of operators (c is not in it: $(typeof(c)) ∉ $(operatorstype(l)))."
     @assert typeof(c) <: operatorstype(l) "Cannot join $(N) formulas via operator $(c): " *

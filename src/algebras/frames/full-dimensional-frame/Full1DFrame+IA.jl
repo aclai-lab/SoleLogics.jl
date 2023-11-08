@@ -32,13 +32,13 @@ _accessibles(fr::Full1DFrame, w::Interval{Int}, ::_IA_I) = Iterators.flatten((
 ))
 
 # More efficient implementations for edge cases (Later)
-accessibles(fr::Full1DFrame, S::AbstractWorldSet{W}, ::_IA_L) where {W<:Interval} =
+accessibles(fr::Full1DFrame, S::AbstractWorlds{W}, ::_IA_L) where {W<:Interval} =
     accessibles(fr, nth(S, argmin(map((w)->w.y, S)))::W, IA_L)
-accessibles(fr::Full1DFrame, S::AbstractWorldSet{Interval}, ::_IA_Li) =
+accessibles(fr::Full1DFrame, S::AbstractVector{Interval}, ::_IA_Li) =
     accessibles(fr, nth(S, argmax(map((w)->w.x, S))), IA_Li)
 
 # More efficient implementations for edge cases (After)
-accessibles(fr::Full1DFrame, S::AbstractWorldSet{Interval}, ::_IA_A) =
+accessibles(fr::Full1DFrame, S::AbstractVector{Interval}, ::_IA_A) =
     IterTools.imap(Interval,
         Iterators.flatten(
             IterTools.imap((y)->zip(Iterators.repeated(y), y+1:X(fr)+1),
@@ -46,7 +46,7 @@ accessibles(fr::Full1DFrame, S::AbstractWorldSet{Interval}, ::_IA_A) =
             )
         )
     )
-accessibles(fr::Full1DFrame, S::AbstractWorldSet{Interval}, ::_IA_Ai) =
+accessibles(fr::Full1DFrame, S::AbstractVector{Interval}, ::_IA_Ai) =
     IterTools.imap(Interval,
         Iterators.flatten(
             IterTools.imap((x)->zip(1:x-1, Iterators.repeated(x)),

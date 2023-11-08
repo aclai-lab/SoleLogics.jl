@@ -15,7 +15,7 @@ _accessibles(fr::Full2DFrame, w::Interval2D, r::RectangleRelation) =
 
 # TODO write More efficient implementations for edge cases
 # Example for _IA2D_URelations:
-# accessibles(fr::Full2DFrame, S::AbstractWorldSet{Interval2D}, r::_IA2D_URelations) = begin
+# accessibles(fr::Full2DFrame, S::AbstractVector{Interval2D}, r::_IA2D_URelations) = begin
 #   IterTools.imap(Interval2D,
 #       Iterators.flatten(
 #           Iterators.product((accessibles(FullDimensionalFrame(X(fr)), w, r.x) for w in S), accessibles(FullDimensionalFrame(Y(fr)), S, r))

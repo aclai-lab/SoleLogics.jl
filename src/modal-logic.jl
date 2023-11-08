@@ -103,13 +103,13 @@ See also [`AbstractMultiModalFrame`](@ref), [`AbstractFrame`](@ref).
 abstract type AbstractUniModalFrame{W<:AbstractWorld} <: AbstractFrame{W} end
 
 """
-    accessibles(fr::AbstractUniModalFrame{W}, w::W)::Vector{W} where {W<:AbstractWorld}
+    accessibles(fr::AbstractUniModalFrame{W}, w::W)::Worlds{W} where {W<:AbstractWorld}
 
 Return the worlds in frame `fr` that are accessible from world `w`.
 
 See also [`AbstractWorld`](@ref), [`AbstractUniModalFrame`](@ref).
 """
-function accessibles(fr::AbstractUniModalFrame{W}, w::W)::Vector{W} where {W<:AbstractWorld}
+function accessibles(fr::AbstractUniModalFrame{W}, w::W)::Worlds{W} where {W<:AbstractWorld}
     return error("Please, provide method accessibles(fr::$(typeof(f)), w::$(typeof(w)))::Vector{$(W)}.")
 end
 
@@ -135,7 +135,7 @@ struct ExplicitCrispUniModalFrame{
     W<:AbstractWorld,
     G<:Graphs.SimpleGraphs.AbstractSimpleGraph,
 } <: AbstractUniModalFrame{W}
-    worlds::Vector{W}
+    worlds::Worlds{W}
     graph::G
 end
 accessibles(fr::ExplicitCrispUniModalFrame, w::AbstractWorld) = fr.worlds[neighbors(fr.graph, findfirst(==(w), fr.worlds))]
@@ -405,7 +405,7 @@ a custom `accessibles` method by providing these three methods:
     end
 
 In general, it should be true that
-`collect(accessibles(fr, w, r)) isa AbstractVector{W}`.
+`collect(accessibles(fr, w, r)) isa AbstractWorlds{W}`.
 
 See also [`AbstractWorld`](@ref),
 [`AbstractRelation`](@ref), [`AbstractMultiModalFrame`](@ref).
@@ -469,7 +469,7 @@ end
 # struct AdjMatCrispMultiModalFrame{
 #     W<:AbstractWorld
 # } <: AbstractMultiModalFrame{W}
-#     worlds::Vector{W}
+#     worlds::Worlds{W}
 #     adjacents::Vector{W,Dict{R,Vector{W,3}}}
 # end
 # accessibles(fr::AdjMatMultiModalFrame) = ...
@@ -537,7 +537,7 @@ nworlds(i::AbstractKripkeStructure) = nworlds(frame(i))
         φ::SyntaxTree,
         i::AbstractKripkeStructure,
         w::Union{Nothing,<:AbstractWorld} = nothing;
-        use_memo::Union{Nothing,AbstractDict{<:Formula,<:WorldSet}} = nothing,
+        use_memo::Union{Nothing,AbstractDict{<:Formula,<:Vector{<:AbstractWorld}}} = nothing,
         perform_normalization::Bool = true,
         memo_max_height::Union{Nothing,Int} = nothing,
     )::Bool
@@ -591,7 +591,7 @@ function check(
     φ::SyntaxTree,
     i::AbstractKripkeStructure,
     w::Union{Nothing,<:AbstractWorld} = nothing; # TODO remove defaulting
-    use_memo::Union{Nothing,AbstractDict{<:Formula,<:WorldSet}} = nothing,
+    use_memo::Union{Nothing,AbstractDict{<:Formula,<:Vector{<:AbstractWorld}}} = nothing,
     perform_normalization::Bool = true,
     memo_max_height::Union{Nothing,Int} = nothing,
 )::Bool
@@ -615,7 +615,7 @@ function check(
 
     memo_structure = begin
         if isnothing(use_memo)
-            ThreadSafeDict{SyntaxTree,WorldSet{W}}()
+            ThreadSafeDict{SyntaxTree,Worlds{W}}()
         else
             use_memo
         end
@@ -651,7 +651,7 @@ function check(
                         error("Unexpected token encountered in check: $(typeof(tok))")
                     end
                 end
-                setformula(memo_structure, ψ, Vector{W}(worldset))
+                setformula(memo_structure, ψ, Worlds{W}(worldset))
             end
             # @show syntaxstring(ψ), readformula(memo_structure, ψ)
         end
@@ -1018,8 +1018,8 @@ const BaseMultiModalOperators = Union{typeof.(BASE_MULTIMODAL_OPERATORS)...}
     collateworlds(
         fr::AbstractFrame{W},
         op::Operator,
-        t::NTuple{N,WorldSetType},
-    )::AbstractWorldSet{<:W} where {N,W<:AbstractWorld,WorldSetType<:AbstractWorldSet}
+        t::NTuple{N,WS},
+    )::AbstractVector{<:W} where {N,W<:AbstractWorld,WS<:AbstractWorlds}
 
 For a given crisp frame (`truthtype == Bool`),
 return the set of worlds where a composed formula op(φ1, ..., φN) is true, given the `N`
@@ -1031,30 +1031,30 @@ See also [`check`](@ref), [`iscrisp`](@ref),
 function collateworlds(
     fr::AbstractFrame{W},
     op::Operator,
-    t::NTuple{N,<:AbstractWorldSet},
-)::AbstractWorldSet{<:W} where {N,W<:AbstractWorld}
+    t::NTuple{N,<:AbstractWorlds},
+)::AbstractVector{<:W} where {N,W<:AbstractWorld}
     if arity(op) != length(t)
         return error("Cannot collate $(length(t)) truth values for " *
                      "operator $(typeof(op)) with arity $(arity(op))).")
     else
         return error("Please, provide method collateworlds(::$(typeof(fr)), " *
-                     "::$(typeof(op)), ::NTuple{$(arity(op)), $(AbstractWorldSet{W})}).")
+                     "::$(typeof(op)), ::NTuple{$(arity(op)), $(AbstractWorlds{W})}).")
     end
 end
 
 # I know, these exceed 92 characters. But they look nicer like this!! :D
-collateworlds(fr::AbstractFrame{W}, ::typeof(⊤), ::NTuple{0,<:AbstractWorldSet}) where {W<:AbstractWorld} = allworlds(fr)
-collateworlds(::AbstractFrame{W}, ::typeof(⊥), ::NTuple{0,<:AbstractWorldSet}) where {W<:AbstractWorld} = W[]
+collateworlds(fr::AbstractFrame{W}, ::typeof(⊤), ::NTuple{0,<:AbstractWorlds}) where {W<:AbstractWorld} = allworlds(fr)
+collateworlds(::AbstractFrame{W}, ::typeof(⊥), ::NTuple{0,<:AbstractWorlds}) where {W<:AbstractWorld} = W[]
 
-collateworlds(fr::AbstractFrame{W}, ::typeof(¬), (ws,)::NTuple{1,<:AbstractWorldSet}) where {W<:AbstractWorld} = setdiff(allworlds(fr), ws)
-collateworlds(::AbstractFrame{W}, ::typeof(∧), (ws1, ws2)::NTuple{2,<:AbstractWorldSet}) where {W<:AbstractWorld} = intersect(ws1, ws2)
-collateworlds(::AbstractFrame{W}, ::typeof(∨), (ws1, ws2)::NTuple{2,<:AbstractWorldSet}) where {W<:AbstractWorld} = union(ws1, ws2)
-collateworlds(fr::AbstractFrame{W}, ::typeof(→), (ws1, ws2)::NTuple{2,<:AbstractWorldSet}) where {W<:AbstractWorld} = union(setdiff(allworlds(fr), ws1), ws2)
+collateworlds(fr::AbstractFrame{W}, ::typeof(¬), (ws,)::NTuple{1,<:AbstractWorlds}) where {W<:AbstractWorld} = setdiff(allworlds(fr), ws)
+collateworlds(::AbstractFrame{W}, ::typeof(∧), (ws1, ws2)::NTuple{2,<:AbstractWorlds}) where {W<:AbstractWorld} = intersect(ws1, ws2)
+collateworlds(::AbstractFrame{W}, ::typeof(∨), (ws1, ws2)::NTuple{2,<:AbstractWorlds}) where {W<:AbstractWorld} = union(ws1, ws2)
+collateworlds(fr::AbstractFrame{W}, ::typeof(→), (ws1, ws2)::NTuple{2,<:AbstractWorlds}) where {W<:AbstractWorld} = union(setdiff(allworlds(fr), ws1), ws2)
 
 function collateworlds(
     fr::AbstractFrame{W},
     op::typeof(◊),
-    (ws,)::NTuple{1,<:AbstractWorldSet},
+    (ws,)::NTuple{1,<:AbstractWorlds},
 ) where {W<:AbstractWorld}
     filter(w1->intersects(ws, accessibles(fr, w1)), collect(allworlds(fr)))
 end
@@ -1062,7 +1062,7 @@ end
 function collateworlds(
     fr::AbstractFrame{W},
     op::typeof(□),
-    (ws,)::NTuple{1,<:AbstractWorldSet},
+    (ws,)::NTuple{1,<:AbstractWorlds},
 ) where {W<:AbstractWorld}
     filter(w1->issubset(accessibles(fr, w1), ws), collect(allworlds(fr)))
 end
@@ -1071,7 +1071,7 @@ end
 function collateworlds(
     fr::AbstractFrame{W},
     op::DiamondRelationalOperator,
-    (ws,)::NTuple{1,<:AbstractWorldSet},
+    (ws,)::NTuple{1,<:AbstractWorlds},
 ) where {W<:AbstractWorld}
     r = relation(op)
     if r == globalrel
@@ -1095,7 +1095,7 @@ end
 function collateworlds(
     fr::AbstractFrame{W},
     op::BoxRelationalOperator,
-    (ws,)::NTuple{1,<:AbstractWorldSet},
+    (ws,)::NTuple{1,<:AbstractWorlds},
 ) where {W<:AbstractWorld}
     r = relation(op)
     if r == globalrel

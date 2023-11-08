@@ -57,27 +57,21 @@ goeswithdim(::Type{OneWorld}, ::Val{0}) = true
 
 ############################################################################################
 
-# World enumerators generate array/set-like structures
+worlds_doc = """
+    const AbstractWorlds{W} = AbstractVector{W} where {W<:AbstractWorld}
+    const Worlds{W} = Vector{W} where {W<:AbstractWorld}
+
+Useful aliases for dealing with worlds sets/arrays.
+
+See also [`accessibles`](@ref), [`AbstractWorld`](@ref).
 """
-    const AbstractWorldSet{W} = Union{AbstractVector{W},AbstractSet{W}} where {W<:AbstractWorld}
-    const WorldSet{W} = Vector{W} where {W<:AbstractWorld}
 
-Useful aliases.
+"""$(worlds_doc)"""
+const AbstractWorlds{W} = AbstractVector{W} where {W<:AbstractWorld}
 
-See also [`WorldSet`](@ref), [`AbstractWorld`](@ref).
-"""
-const AbstractWorldSet{W} = Union{AbstractVector{W},AbstractSet{W}} where {W<:AbstractWorld}
-
-"""
-    const AbstractWorldSet{W} = Union{AbstractVector{W},AbstractSet{W}} where {W<:AbstractWorld}
-    const WorldSet{W} = Vector{W} where {W<:AbstractWorld}
-
-Useful aliases.
-
-See also [`AbstractWorldSet`](@ref), [`AbstractWorld`](@ref).
-"""
-const WorldSet{W} = Vector{W} where {W<:AbstractWorld}
-WorldSet{W}(S::WorldSet{W}) where {W<:AbstractWorld} = S
+"""$(worlds_doc)"""
+const Worlds{W} = Vector{W} where {W<:AbstractWorld}
+# Worlds{W}(S::Worlds{W}) where {W<:AbstractWorld} = S
 
 # For convenience, each world type can be instantiated with a tuple of values, one for each field.
 (W::Type{<:AbstractWorld})(args::Tuple) = W(args...)
