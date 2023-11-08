@@ -604,10 +604,10 @@ function (op::Operator)(children::NTuple{N,Formula}) where {N}
             children = (op(children[1:end-1]), children[end])
         end
     end
-    _F = Base.promote_type((typeof.(children))...)
-    # TODO figure out!!
-    # _F <: Union{F,SyntaxTree} || (children = Base.promote(children...))
-    _F <: SyntaxTree || (children = Base.promote(children...))
+    AbstractSyntaxStructure
+    if AbstractSyntaxStructure <: typejoin(typeof.(children)...)
+        children = Base.promote(children...)
+    end
     return composeformulas(op, children)
 end
 

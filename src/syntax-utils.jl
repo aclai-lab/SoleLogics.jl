@@ -137,6 +137,14 @@ function Base.getindex(
 end
 Base.getindex(lf::LeftmostLinearForm, idx::Integer) = Base.getindex(lf,[idx])
 
+function composeformulas(c::Connective, chs::NTuple{N,LeftmostLinearForm}) where {N}
+    @assert all(_c->_c == c, connective.(chs)) "Cannot compose LeftmostLinearForm's" *
+        " via $(c)" *
+        " with different connectives: $(filter(_c->_c != c, connective.(chs)))"
+    # TODO check
+    return LeftmostLinearForm(c, collect(Iterators.flatten(children.(chs))))
+end
+
 # TODO: add parameter remove_redundant_parentheses
 # TODO: add parameter parenthesize_atoms
 function syntaxstring(
@@ -251,6 +259,11 @@ const LeftmostDisjunctiveForm{SS<:AbstractSyntaxStructure} = LeftmostLinearForm{
 const CNF{SS<:AbstractSyntaxStructure} = LeftmostConjunctiveForm{LeftmostDisjunctiveForm{SS}}
 """$(doc_lmlf)"""
 const DNF{SS<:AbstractSyntaxStructure} = LeftmostDisjunctiveForm{LeftmostConjunctiveForm{SS}}
+
+# # TODO maybe not needed?
+# Base.promote_rule(::Type{<:LeftmostConjunctiveForm}, ::Type{<:LeftmostConjunctiveForm}) = LeftmostConjunctiveForm
+# Base.promote_rule(::Type{<:LeftmostDisjunctiveForm}, ::Type{<:LeftmostDisjunctiveForm}) = LeftmostDisjunctiveForm
+# Base.promote_rule(::Type{<:LeftmostConjunctiveForm}, ::Type{<:LeftmostDisjunctiveForm}) = SyntaxTree
 
 conjuncts(m::Union{LeftmostConjunctiveForm,CNF}) = children(m)
 nconjuncts(m::Union{LeftmostConjunctiveForm,CNF}) = nchildren(m)

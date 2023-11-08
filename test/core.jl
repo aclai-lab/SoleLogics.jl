@@ -344,7 +344,8 @@ dnf1 = @test_nowarn DNF([lfcf1, lfcf2])
 @test dnf1 ∨ lfdf1 isa DNF
 
 
-
+LeftmostConjunctiveForm(parseformula.(["¬p", "q", "¬r"])) ∧ LeftmostConjunctiveForm(parseformula.(["¬p", "q", "¬r"])) isa LeftmostConjunctiveForm
+LeftmostDisjunctiveForm(parseformula.(["¬p", "q", "¬r"])) ∨ LeftmostDisjunctiveForm(parseformula.(["¬p", "q", "¬r"])) isa LeftmostDisjunctiveForm
 
 @test_nowarn SoleLogics.collatetruth(CONJUNCTION, (⊤, ⊤))
 @test_nowarn SoleLogics.collatetruth(TOP, ())
