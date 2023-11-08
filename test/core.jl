@@ -56,6 +56,8 @@ alphabet_mixed = AlphabetOfAny{Union{String,Number}}()
 
 @test_nowarn convert(SyntaxTree, p1)
 @test_nowarn SyntaxTree(p1)
+@test_nowarn SyntaxTree(p1, ())
+@test_nowarn SyntaxTree(p100, ())
 @test_throws MethodError SyntaxBranch(p1)
 @test_throws MethodError SyntaxBranch(p1, ())
 @test_throws MethodError SyntaxBranch(p100, ())
@@ -67,6 +69,8 @@ t100_int = p100
 
 @test p1 in t1_int
 
+@test_nowarn SyntaxTree(¬, (p1,))
+@test_nowarn SyntaxTree(¬, p1)
 @test_nowarn SyntaxBranch(¬, (p1,))
 @test_nowarn SyntaxBranch(¬, p1)
 @test_nowarn SyntaxBranch(¬, t1_int)

@@ -432,7 +432,7 @@ function formulas(
                 if !isnothing(nformulas) && nformulas == _nformulas + length(cur_formulas)
                     break
                 end
-                push!(cur_formulas, SyntaxBranch(op, Tuple(children)))
+                push!(cur_formulas, SyntaxTree(op, Tuple(children)))
             end
             if !isnothing(nformulas) && nformulas == _nformulas + length(cur_formulas)
                 break

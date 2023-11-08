@@ -409,7 +409,7 @@ function parseformula(
             if tok isa Connective
                 try
                     children = [pop!(stack) for _ in 1:arity(tok)]
-                    push!(stack, SyntaxBranch(tok, Tuple(reverse(children))))
+                    push!(stack, SyntaxTree(tok, Tuple(reverse(children))))
                 catch e
                     if e isa ArgumentError
                         error("Parsing failed. " *
@@ -459,15 +459,15 @@ function parseformula(
     # note that here, differently from the _postfixbuild case, operators associativity is
     # already covered by the function notation parenthesization.
     function _prefixbuild(prefix::Vector{<:STACK_TOKEN_TYPE})
-        stack = Vector{Union{SyntaxBranch,STACK_TOKEN_TYPE}}()
+        stack = Vector{Union{SyntaxTree,STACK_TOKEN_TYPE}}()
 
         for tok in reverse(prefix)
-            if tok isa Symbol || tok isa Atom
+            if tok isa Symbol || tok isa SyntaxLeaf
                 push!(stack, tok)
-            elseif tok isa Operator
-                if (arity(tok) == 1 && stack[end] isa AbstractSyntaxStructure)
+            elseif tok isa Connective
+                if (arity(tok) == 1 && stack[end] isa SyntaxTree)
                     # If operator arity is 1, then what follows could be a single AST
-                    newtok = SyntaxBranch(tok, stack[end])
+                    newtok = SyntaxTree(tok, stack[end])
                     pop!(stack)
                     push!(stack, newtok)
                 elseif (length(stack) >= (1 + 2*arity(tok)))
@@ -492,8 +492,7 @@ function parseformula(
                     # else an error has to be thrown
 
                     children =
-                        [popped[s] for s in 2:length(popped) if popped[s] isa
-                            AbstractSyntaxStructure]
+                        [popped[s] for s in 2:length(popped) if popped[s] isa SyntaxTree]
                     delims =
                         [s for s in 3:(length(popped)-2) if popped[s] == arg_delim]
 
@@ -501,7 +500,7 @@ function parseformula(
                         popped[end] == closing_parenthesis &&
                         length(children) == arity(tok) &&
                         length(delims) == arity(tok) - 1)
-                        push!(stack, SyntaxBranch(tok, Tuple(children)))
+                        push!(stack, SyntaxTree(tok, Tuple(children)))
                     else
                         error("Malformed expression `$(syntaxstring(tok))` followed by `" *
                         "$(popped)`.")
