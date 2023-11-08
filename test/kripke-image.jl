@@ -39,3 +39,6 @@ ops = [SoleLogics.diamond.(Point2DRelations)..., SoleLogics.box.(Point2DRelation
 @test eltype([collect(accessibles(BWImageKripkeStructure(rand(1:10,10,10)), Point(9,8), R)) for R in SoleLogics.Point2DRelations]) <: Array{<:Point}
 @test eltype([collect(accessibles(BWImageKripkeStructure(rand(1:10,10,10)), Point(8,9), R)) for R in SoleLogics.Point2DRelations]) <: Array{<:Point}
 @test eltype([collect(accessibles(BWImageKripkeStructure(rand(1:10,10,10)), Point(8,8), R)) for R in SoleLogics.Point2DRelations]) <: Array{<:Point}
+
+
+filter(!isspace, syntaxstring(parseformula("¬p∧q∧(¬s∧¬z)"); function_notation = true))
