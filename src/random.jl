@@ -36,16 +36,6 @@ function Base.rand(alphabet::AbstractAlphabet, args...; kwargs...)
     Base.rand(Random.GLOBAL_RNG, alphabet, args...; kwargs...)
 end
 
-# TODO maybe remove this because Base.rand(rng, [p,q,r,s]) should already work.
-# function Base.rand(
-#     rng::AbstractRNG,
-#     atoms::AbstractVector{<:Atom},
-#     args...;
-#     kwargs...
-# )
-#     # EMPTY - This could be the fallback of the following dispatch
-# end
-
 function Base.rand(
     rng::AbstractRNG,
     alphabet::AbstractAlphabet,
