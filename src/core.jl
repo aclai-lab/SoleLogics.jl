@@ -16,6 +16,7 @@
     │   │   ├── LeftmostLinearForm
     │   │   └── ...
     │   ├── TruthTable
+    │   ├── AnchoredFormula
     │   └── ...
     └── Connective
         ├── NamedConnective

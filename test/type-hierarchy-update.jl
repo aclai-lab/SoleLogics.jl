@@ -26,6 +26,7 @@ const SL = SoleLogics # SL.name to reference unexported names
     │   │   ├── LeftmostLinearForm
     │   │   └── ...
     │   ├── TruthTable
+    │   ├── AnchoredFormula
     │   └── ...
     └── Connective
         ├── NamedConnective
