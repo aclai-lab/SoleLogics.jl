@@ -62,7 +62,7 @@ end
 
 Abstract type for [logical connectives](https://en.wikipedia.org/wiki/Logical_connective),
 that are used to express non-atomic statements;
-for example, CONJUNCTION, DISJUNCTION and IMPLICATION (stylized as ∧, ∨ and →).
+for example, CONJUNCTION, DISJUNCTION, NEGATION and IMPLICATION (stylized as ∧, ∨, ¬ and →).
 
 # Implementation
 
@@ -81,6 +81,13 @@ If the custom connective is a `NamedConnective` and renders as something conside
 by the Julia parser, `Base.operator_precedence`
 and `Base.operator_associativity` are used to define these behaviors, and
 you might want to avoid providing these methods at all.
+
+# Custom connective implementation
+```jldoctest
+julia> const ⊻ = SoleLogics.NamedConnective{:⊻}()
+julia> SoleLogics.arity(::typeof(⊻)) = 2
+julia> SoleLogics.iscommutative(::typeof(⊻)) = true
+```
 
 See also [`arity`](@ref),
 [`SyntaxBranch`](@ref), [`associativity`](@ref), [`precedence`](@ref),
