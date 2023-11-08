@@ -66,11 +66,13 @@ include("propositional-logic.jl")
 
 export accessibles
 export ismodal, modallogic
-export DiamondRelationalOperator, BoxRelationalOperator
+
 export DIAMOND, BOX, ◊, □
+export AbstractRelationalOperator, DiamondRelationalOperator, BoxRelationalOperator
+export diamond, box
+export globaldiamond, globalbox
 
 export KripkeStructure
-export AbstractRelationalOperator, DiamondRelationalOperator, BoxRelationalOperator
 export truthtype, worldtype
 
 export AbstractWorld
@@ -78,8 +80,6 @@ export AbstractWorld
 export AbstractWorlds, Worlds
 
 export Interval, Interval2D, OneWorld
-
-export globaldiamond, globalbox
 
 include("modal-logic.jl")
 

@@ -558,8 +558,6 @@ function normalize(
         end
     end
 
-
-
     # Simplify
     newt = begin
         tok, chs = token(newt), children(newt)
