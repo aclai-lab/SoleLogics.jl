@@ -353,11 +353,12 @@ function noperators(φ::SyntaxTree)::Integer
 end
 
 function Base.isequal(a::SyntaxTree, b::SyntaxTree)
-    return (
-        (arity(a) == 0 && arity(b) == 0 && a == b) ||
-        (Base.isequal(token(a), token(b)) &&
+    if arity(a) == 0 && arity(b) == 0
+        return a == b
+    else
+        return (Base.isequal(token(a), token(b)) &&
                 all(((c1,c2),)->Base.isequal(c1, c2), zip(children(a), children(b))))
-    )
+    end
 end
 
 Base.hash(φ::SyntaxTree) = Base.hash(token(φ), Base.hash(children(φ)))
@@ -614,7 +615,7 @@ function truthsupertype(T::Type{<:Truth})
 end
 
 function Base.isless(t1::Truth, t2::Truth)
-    if t1 == t2
+    if Base.isequal(t1, t2)
         return false
     else
         return error("Please, provide method Base.isless(::$(typeof(t1)), ::$(typeof(t2))).")
