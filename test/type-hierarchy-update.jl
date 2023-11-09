@@ -6,7 +6,9 @@ const SL = SoleLogics # SL.name to reference unexported names
 # The following test set is intended to test the new type hierarchy update,
 # considering both trivial and complex assertions regarding various aspects of SoleLogics.
 
-# Declaration section
+############################################################################################
+#### Declaration section ###################################################################
+############################################################################################
 
 p = Atom("p")
 q = Atom("q")
@@ -25,7 +27,9 @@ trees_implication   = SyntaxTree(IMPLICATION, (pandq, porq))
 interp1             = TruthDict([p => TOP, q => TOP])
 interp2             = TruthDict(1:4, BOT)
 
-# Test section
+############################################################################################
+#### Test section ##########################################################################
+############################################################################################
 
 @test Formula           <: Syntactical
 @test AbstractSyntaxStructure   <: Formula
@@ -77,6 +81,22 @@ interp2             = TruthDict(1:4, BOT)
 @test parseformula("p → q ∧ r") == (@synexpr p → q ∧ r)
 @test parseformula("p → (q → r)") == (@synexpr p → (q → r))
 @test parseformula("p → (q ∧ r)") == (@synexpr p → (q ∧ r))
+
+@test istop(@synexpr ⊤)
+@test @synexpr ⊤ == TOP
+@test isbot(@synexpr ⊥)
+@test @synexpr ⊥ == ⊥
+@test @synexpr ⊤ ∧ ⊥ == SyntaxBranch(∧, ⊤, ⊥)
+@test @synexpr ⊤ ∧ ⊥ == parseformula("⊤ ∧ ⊥")
+@test @synexpr ¬⊤ == SyntaxBranch(¬, ⊤)
+@test @synexpr ¬⊤ == parseformula("¬⊤")
+
+@test all(t -> t isa BooleanTruth, truths(@synexpr ¬⊤ → ⊥ ∨ ⊤))
+
+@test normalize(@synexpr ¬⊤ → ⊥) == ⊤
+@test normalize(@synexpr ¬⊥ → ⊥) == ⊥
+@test normalize(@synexpr ⊤ ∧ ¬ ⊤) == ⊥
+@test normalize(@synexpr ⊤∧¬⊤) == ⊥
 
 @test syntaxstring((@synexpr □(□(□(p))) ∧ q)) == syntaxstring(parseformula("□□□p ∧ q"))
 @test syntaxstring((@synexpr □(p) ∧ q)) == syntaxstring(parseformula("□p ∧ q"))

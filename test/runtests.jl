@@ -32,6 +32,8 @@ test_suites = [
     ("Kripke image", ["kripke-image.jl",]),
 
     ("Pluto Demo", ["$(dirname(dirname(pathof(SoleLogics))))/pluto-demo.jl", ]),
+
+    ("Type Hierarchy Update", ["type-hierarchy-update.jl"]),
 ]
 
 @testset "SoleLogics.jl" begin
