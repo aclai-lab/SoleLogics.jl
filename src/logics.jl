@@ -14,7 +14,7 @@ An alphabet (or *propositional alphabet*) is a set of atoms
 
 # Examples
 
-```jldoctest
+```julia-repl
 julia> Atom(1) in ExplicitAlphabet(Atom.(1:10))
 true
 

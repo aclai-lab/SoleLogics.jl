@@ -603,7 +603,7 @@ isbot(t::Truth)::Bool = false
 Return the supertype of a `Truth` type that includes all values of the same algebra.
 
 # Examples
-```jldoctest
+```julia-repl
 julia> truthsupertype(typeof(TOP))
 BooleanTruth
 ```
@@ -654,7 +654,7 @@ An `Operator` can be used to compose syntax tokens (e.g., atoms),
 syntax trees and/or formulas.
 
 # Examples
-```jldoctest
+```julia-repl
     ¬(Atom(1)) ∨ Atom(1) ∧ ⊤
     ∧(⊤,⊤)
     ⊤()
@@ -704,7 +704,7 @@ This implementation is *arity-compliant*, in that, upon construction,
 the arity of the token is checked against the number of children provided.
 
 # Examples
-```jldoctest
+```julia-repl
 julia> p,q = Atom.([p, q])
 2-element Vector{Atom{String}}:
  Atom{String}: p
@@ -907,7 +907,7 @@ end
 Return the truth value for a formula on a logical interpretation (or model).
 
 # Examples
-```jldoctest
+```julia-repl
 julia> @atoms p q
 2-element Vector{Atom{String}}:
  p
@@ -967,7 +967,7 @@ This process is referred to as (finite)
 algorithms for it, typically depending on the complexity of the logic.
 
 # Examples
-```jldoctest
+```julia-repl
 julia> @atoms String p q
 2-element Vector{Atom{String}}:
  Atom{String}("p")
