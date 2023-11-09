@@ -24,7 +24,7 @@ The following `kwargs` are currently supported:
    wrapped in parentheses.
 
 # Examples
-```jldoctest
+```julia-repl
 julia> syntaxstring(parseformula("p∧q∧r∧s∧t"))
 "p ∧ q ∧ r ∧ s ∧ t"
 
@@ -106,7 +106,7 @@ It is possible to assign a specific precedence to a connective type `C` by provi
 `Base.operator_precedence(::C)`.
 
 # Examples
-```jldoctest
+```julia-repl
 julia> precedence(∧) == Base.operator_precedence(:∧)
 true
 
@@ -132,7 +132,7 @@ doc_iscommutative = """
 Return whether a connective is known to be commutative.
 
 # Examples
-```jldoctest
+```julia-repl
 julia> iscommutative(∧)
 true
 
@@ -169,7 +169,7 @@ Because of this, when dealing with a custom connective `⊙`,
 it will be the case that `parseformula("p ⊙ q ∧ r") == (@synexpr p ⊙ q ∧ r)`.
 
 # Examples
-```jldoctest
+```julia-repl
 julia> associativity(∧)
 :left
 
@@ -195,7 +195,7 @@ via a connective `c`. This function allows one to use connectives for flexibly c
 formulas (see *Implementation* section).
 
 # Examples
-```jldoctest
+```julia-repl
 julia> f = parseformula("◊(p→q)");
 
 julia> p = Atom("p");

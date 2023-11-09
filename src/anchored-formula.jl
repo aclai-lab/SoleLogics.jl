@@ -22,7 +22,7 @@ Additionally, the following keyword arguments may be specified:
 See the examples.
 
 # Examples
-```jldoctest
+```julia-repl
 julia> f = parsebaseformula("◊(p→q)");
 
 julia> f2 = f(parseformula("p"));
