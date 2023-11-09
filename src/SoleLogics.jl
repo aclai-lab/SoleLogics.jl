@@ -68,7 +68,7 @@ export accessibles
 export ismodal, modallogic
 
 export DIAMOND, BOX, ◊, □
-export AbstractRelationalOperator, DiamondRelationalOperator, BoxRelationalOperator
+export DiamondRelationalOperator, BoxRelationalOperator
 export diamond, box
 export globaldiamond, globalbox
 

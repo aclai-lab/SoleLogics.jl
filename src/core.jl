@@ -9,20 +9,22 @@
     │   │   │   │   ├── Atom
     │   │   │   │   └── Truth
     │   │   │   │       ├── BooleanTruth
-    │   │   │   │       │   ├── Top
-    │   │   │   │       │   └── Bot
+    │   │   │   │       │   ├── Top (⊤)
+    │   │   │   │       │   └── Bot (⊥)
     │   │   │   │       └── ...
-    │   │   │   └── SyntaxBranch
-    │   │   ├── LeftmostLinearForm
+    │   │   │   └── SyntaxBranch (e.g., p ∧ q)
+    │   │   ├── LeftmostLinearForm (e.g., conjunctions, disjunctions, DNFs, CNFs)
+    │   │   ├── Literal (e.g., p, ¬p)
     │   │   └── ...
     │   ├── TruthTable
     │   ├── AnchoredFormula
     │   └── ...
     └── Connective
-        ├── NamedConnective
+        ├── NamedConnective (e.g., ∧, ∨, →, ¬, □, ◊)
         ├── AbstractRelationalOperator
-        ├── DiamondRelationalOperator
-        ├── BoxRelationalOperator
+        │   ├── DiamondRelationalOperator (e.g., ⟨G⟩)
+        │   ├── BoxRelationalOperator (e.g., [G])
+        │   └── ...
         └── ...
 
     Also:
@@ -82,11 +84,16 @@ by the Julia parser, `Base.operator_precedence`
 and `Base.operator_associativity` are used to define these behaviors, and
 you might want to avoid providing these methods at all.
 
-Here is an example of a custom implementation of the xor (⊻) boolean operator.
-```jldoctest
-julia> const ⊻ = SoleLogics.NamedConnective{:⊻}()
-julia> SoleLogics.arity(::typeof(⊻)) = 2
-julia> SoleLogics.iscommutative(::typeof(⊻)) = true
+The semantics of a *propositional* connective can be specified via `collatetruth` (see example below);
+in principle, the definition can rely on the partial order between truth values
+(specified via `Base.isless`).
+
+Here is an example of a custom implementation of the xor (⊻) Boolean operator.
+```julia
+const ⊻ = SoleLogics.NamedConnective{:⊻}()
+SoleLogics.arity(::typeof(⊻)) = 2
+SoleLogics.iscommutative(::typeof(⊻)) = true
+collatetruth(::typeof(⊻), (t1, t2)::NTuple{N,T where T<:BooleanTruth}) where {N} = (count(istop, (t1, t2)) == 1)
 ```
 
 See also [`arity`](@ref),
@@ -135,7 +142,7 @@ additional [memoization](https://en.wikipedia.org/wiki/Memoization) structures,
 which can save computational time upon
 [model checking](https://en.wikipedia.org/wiki/Model_checking)).
 
-Any formula can be converted into its [`SyntaxTree`](https://en.wikipedia.org/wiki/Abstract_syntax_tree)
+Any formula can be converted into its [`SyntaxTree`](@ref)
 representation via [`tree`](@ref); its [`height`](@ref) can be computed,
 and it can be queried for its syntax [`tokens`](@ref), [`atoms`](@ref), etc...
 It can be parsed from its [`syntaxstring`](@ref) representation via [`parseformula`](@ref).
@@ -268,8 +275,12 @@ import AbstractTrees: children
 """
     abstract type SyntaxTree <: AbstractSyntaxStructure end
 
-Abstract type for syntax leaves (see `SyntaxLeaf`, such as `Truth` values and `Atom`s),
+Abstract type for
+[syntax trees](https://en.wikipedia.org/wiki/Abstract_syntax_tree); that is,
+syntax leaves (see `SyntaxLeaf`, such as `Truth` values and `Atom`s),
 and their composition via `Connective`s (i.e., `SyntaxBranch`).
+
+Note that `SyntaxTree`s adhere to the `AbstractTrees` interface.
 
 See also [`SyntaxLeaf`](@ref), [`SyntaxBranch`](@ref),
 [`AbstractSyntaxStructure`](@ref), [`Formula`](@ref).
@@ -514,34 +525,50 @@ syntaxstring(value; kwargs...) = string(value)
 """
     abstract type Truth <: SyntaxLeaf end
 
-Abstract type for syntax leaves representing values of a lattice algebra.
+Abstract type for syntax leaves representing values of a
+[lattice algebra](https://en.m.wikipedia.org/wiki/Lattice_(order)).
 In Boolean logic, the two [`BooleanTruth`](@ref) values [`Top`](@ref)
-and [`Bot`](@ref) are tused.
-
-Here is an example about inventing a new Truth subtype, MyTruth, where a new value, α,
-is defined to be inbetween the canonical boolean top and bottom.
-```jldoctest
-julia> abstract type MyTruth <: Truth end
-
-julia> struct MyTop <: MyTruth end
-julia> const MYTOP = MyTop()
-julia> const ⫪ = MYTOP # Note that ⊤ is already use to indicate BooleanTruth's top.
-julia> syntaxstring(::MyTop; kwargs...) = "⫪"
-
-julia> struct MyBot <: MyTruth end
-julia> const MYBOT = MyBot()
-julia> const ⫫ = MYBOT # Note that ⊥ is already use to indicate BooleanTruth's top.
-julia> syntaxstring(::MyBot; kwargs...) = "⫫"
-
-julia> struct MyAlpha <: MyTruth end
-julia> const MYALPHA = MyAlpha()
-julia> const α = MYALPHA
-julia> syntaxstring(::MyAlpha; kwargs...) = "α"
-
-julia> istop(t::MyTop) = true
-julia> isbot(t::MyBot) = true
+and [`Bot`](@ref) are used.
 
 See also [`Top`](@ref), [`Bot`](@ref), [`BooleanTruth`](@ref).
+
+# Implementation
+A [three-valued algebra](https://en.m.wikipedia.org/wiki/Three-valued_logic),
+that is, an algebra with three truth values
+(top, bottom and *unknown*),
+can be based on the following `Truth` value definitions:
+
+```julia
+import Base: isless
+
+abstract type ThreeVTruth <: Truth end
+
+struct ThreeTop <: ThreeVTruth end
+const ⫪ = ThreeTop() # Note that ⊤ is already use to indicate BooleanTruth's top.
+syntaxstring(::ThreeTop; kwargs...) = "⫪"
+
+struct ThreeBot <: ThreeVTruth end
+const ⫫ = ThreeBot() # Note that ⊥ is already use to indicate BooleanTruth's top.
+syntaxstring(::ThreeBot; kwargs...) = "⫫"
+
+struct ThreeUnknown <: ThreeVTruth end
+const υ = ThreeUnknown()
+syntaxstring(::ThreeUnknown; kwargs...) = "υ"
+
+istop(t::ThreeTop) = true
+isbot(t::ThreeBot) = true
+
+Base.isless(::ThreeBot, ::ThreeTop) = true
+Base.isless(::ThreeBot, ::ThreeUnknown) = true
+Base.isless(::ThreeUnknown, ::ThreeTop) = true
+Base.isless(::ThreeTop, ::ThreeBot) = false
+Base.isless(::ThreeUnknown, ::ThreeBot) = false
+Base.isless(::ThreeTop, ::ThreeUnknown) = false
+```
+
+Note that `Base.isless` is used to define the (partial) order between `Truth` values.
+
+See also [`Connective`](@ref), [`BooleanTruth`](@ref).
 """
 abstract type Truth <: SyntaxLeaf end
 
@@ -586,6 +613,15 @@ function truthsupertype(T::Type{<:Truth})
     return T
 end
 
+function Base.isless(t1::Truth, t2::Truth)
+    if t1 == t2
+        return false
+    else
+        return error("Please, provide method Base.isless(::$(typeof(t1)), ::$(typeof(t2))).")
+    end
+end
+
+# Helper: some types can be specified to be converted to Truth types
 function Base.convert(::Type{Truth}, t)::Truth
     return error("Cannot interpret value $t of type ($(typeof(t))) as Truth.")
 end
@@ -672,16 +708,22 @@ julia> p,q = Atom.([p, q])
 2-element Vector{Atom{String}}:
  Atom{String}: p
  Atom{String}: q
+
 julia> branch = SyntaxBranch(CONJUNCTION, p, q)
 SyntaxBranch{NamedConnective{:∧}}: p ∧ q
+
 julia> token(branch)
 ∧
-julia> children(branch)
-(Atom{String}: p, Atom{String}: q)
+
+julia> syntaxstring.(children(branch))
+(p, q)
+
 julia> ntokens(a) == nconnectives(a) + nleaves(a)
 true
+
 julia> arity(a)
 2
+
 julia> height(a)
 1
 ```

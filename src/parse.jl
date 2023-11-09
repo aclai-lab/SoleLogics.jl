@@ -20,7 +20,7 @@ const DEFAULT_ARG_DELIM           = "," # TODO use these in `syntaxstring` as we
     const BASE_PARSABLE_OPERATORS = $(repr(BASE_PARSABLE_OPERATORS))
 
 Vector of (standard) operators that are automatically taken care of when parsing.
-Those are $(join(SoleLogics.BASE_PARSABLE_OPERATORS, ", ", " and ")).
+These are $(join(SoleLogics.BASE_PARSABLE_OPERATORS, ", ", " and ")).
 
 See also [`parseformula`](@ref).
 """

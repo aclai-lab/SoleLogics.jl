@@ -1,3 +1,5 @@
+import Base: isless
+
 """
     collatetruth(
         c::Connective,
@@ -244,11 +246,13 @@ dual(c::typeof(⊤))   = typeof(⊥)
 hasdual(::typeof(⊥)) = true
 dual(c::typeof(⊥))   = typeof(⊤)
 
+Base.isless(::Bot, ::Top) = true
+Base.isless(::Top, ::Bot) = false
 
 """
     struct BooleanAlgebra <: AbstractAlgebra{Bool} end
 
-A [boolean algebra](https://en.wikipedia.org/wiki/Boolean_algebra), defined on the values
+A [Boolean algebra](https://en.wikipedia.org/wiki/Boolean_algebra), defined on the values
 Top (representing `true`) and Bot (for bottom, representing `false`).
 For this algebra, the basic operators negation,
 conjunction and disjunction (stylized as ¬, ∧, ∨) can be defined as the complement, minimum
@@ -263,22 +267,15 @@ domain(::BooleanAlgebra) = [TOP, BOT]
 top(::BooleanAlgebra) = TOP
 bot(::BooleanAlgebra) = BOT
 
-
-function collatetruth(
-    c::Connective,
-    ch::NTuple{N,T where T<:BooleanTruth}
-)::BooleanTruth where {N}
-    _collatetruth(c, istop.(ch)) == true ? TOP : BOT
-end
-
 # Standard semantics for NOT, AND, OR, IMPLIES
-_collatetruth(::typeof(¬), (ts,)::NTuple{1,Bool}) = (!ts)
-_collatetruth(::typeof(∧), (t1, t2)::NTuple{2,Bool}) = min(t1, t2)
-_collatetruth(::typeof(∨), (t1, t2)::NTuple{2,Bool}) = max(t1, t2)
+collatetruth(::typeof(¬), (ts,)::Tuple{Bot}) = TOP
+collatetruth(::typeof(¬), (ts,)::Tuple{Top}) = BOT
+collatetruth(::typeof(∧), (t1, t2)::NTuple{N,T where T<:BooleanTruth}) where {N} = min(t1, t2)
+collatetruth(::typeof(∨), (t1, t2)::NTuple{N,T where T<:BooleanTruth}) where {N} = max(t1, t2)
 
-# The IMPLIES operator, →, falls back to ¬
-function _collatetruth(::typeof(→), (t1, t2)::NTuple{2,Bool})
-    return _collatetruth(∨, (_collatetruth(¬, (t1,)), t2))
+# The IMPLIES operator, →, falls back to using ¬ and ∨
+function collatetruth(::typeof(→), (t1, t2)::NTuple{2,BooleanTruth})
+    return collatetruth(∨, (collatetruth(¬, (t1,)), t2))
 end
 
 ############################################################################################

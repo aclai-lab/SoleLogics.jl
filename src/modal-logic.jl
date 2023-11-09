@@ -967,23 +967,25 @@ dual(op::BoxRelationalOperator)     = DiamondRelationalOperator{relationtype(op)
 ############################################################################################
 
 """
-    function diamond() DIAMOND end
-    function diamond(r::AbstractRelation) DiamondRelationalOperator(r) end
+    diamond() = DIAMOND
+    diamond(r::AbstractRelation) = DiamondRelationalOperator(r)
 
-Return the relation `r` interpreted as existential, or the modal operator diamond (◊).
+Return either the diamond modal operator from unimodal logic (i.e., ◊), or a
+a diamond relational operator from a multi-modal logic, wrapping the relation `r`.
 
-See also [`DiamondRleationaOperator`](@ref), [`DIAMOND`](@ref).
+See also [`DiamondRleationaOperator`](@ref), [`diamond`](@ref), [`DIAMOND`](@ref).
 """
 function diamond() DIAMOND end
 function diamond(r::AbstractRelation) DiamondRelationalOperator(r) end
 
 """
-    function box() BOX end
-    function box(r::AbstractRelation) BoxRelationalOperator(r) end
+    box() = BOX
+    box(r::AbstractRelation) = BoxRelationalOperator(r)
 
-Return the relation `r` interpreted as universal, or the modal operator box (□).
+Return either the box modal operator from unimodal logic (i.e., □), or a
+a box relational operator from a multi-modal logic, wrapping the relation `r`.
 
-See also [`BoxRelationalOperator`](@ref), [`BOX`](@ref).
+See also [`BoxRelationalOperator`](@ref), [`box`](@ref), [`BOX`](@ref).
 """
 function box() BOX end
 function box(r::AbstractRelation) BoxRelationalOperator(r) end

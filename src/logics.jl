@@ -251,18 +251,11 @@ function Base.in(φ::Formula, g::AbstractGrammar)::Bool
     return Base.in(tree(φ), g)
 end
 
-# TODO are these correct? <- by @mauro-milella I think one Operator dispatch is correct.
+# TODO actually differentiate Connective's and SyntaxLeaves, and define+use leaves(g)
 # Note: when using this file's syntax tokens, these methods suffice:
 Base.in(a::Atom, g::AbstractGrammar) = Base.in(a, alphabet(g))
-Base.in(op::Operator, g::AbstractGrammar) = (op <: operatorstype(g))
-
-#= TODO remove this code if previous two Base.in dispatches are correct.
-Base.in(t::Truth, g::AbstractGrammar) = (op <: operatorstype(g))
-function Base.in(tok::Connective, g::AbstractGrammar)
-    return (op <: operatorstype(g))
-    # return error("Please, provide method Base.in(::$(typeof(tok)), ::$(typeof(g))).")
-end
-=#
+Base.in(op::Truth, g::AbstractGrammar) = (op <: operatorstype(g))
+Base.in(op::Connective, g::AbstractGrammar) = (op <: operatorstype(g))
 
 """
     formulas(

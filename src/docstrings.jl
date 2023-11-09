@@ -203,7 +203,7 @@ julia> p = Atom("p");
 julia> ∧(f, p)  # Easy way to compose a formula
 SyntaxBranch: ◊(p → q) ∧ p
 
-julia> f ∧ ¬p   # Leverage infix notation
+julia> f ∧ ¬p   # Leverage infix notation ;) (see https://stackoverflow.com/a/60321302/5646732)
 SyntaxBranch: ◊(p → q) ∧ ¬p
 
 julia> ∧(f, p, ¬p) # Shortcut for ∧(f, ∧(p, ¬p))
@@ -315,7 +315,7 @@ doc_dual = """
     dual(op::SyntaxToken)
 
 Return the `dual` of an `Operator`.
-Given an operator `op` of arity `n`, the dual `dop` is such that, on a boolean algebra,
+Given an operator `op` of arity `n`, the dual `dop` is such that, on a Boolean algebra,
 `op(ch_1, ..., ch_n)` ≡ `¬dop(¬ch_1, ..., ¬ch_n)`.
 
 Duality can be used to perform syntactic simplifications on formulas.
