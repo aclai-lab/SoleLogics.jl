@@ -14,15 +14,11 @@ include("utils.jl")
 
 export iscrisp, isfinite, isnullary, isunary, isbinary
 
-export Syntactical,
+export Syntactical, Connective,
     Formula, AbstractSyntaxStructure, SyntaxTree, SyntaxLeaf,
     Atom, Truth, SyntaxBranch
 
 export Operator, SyntaxToken
-
-export Top, TOP, ⊤
-export Bot, BOT, ⊥
-export BooleanTruth
 
 export syntaxstring
 
@@ -31,7 +27,6 @@ export arity, valuetype, tokentype, tokenstype,
         associativity, precedence
 export value, token, children, formulas
 export tree
-export istop, isbot
 
 export tokens, ntokens, atoms, natoms, truths, ntruths, leaves, nleaves,
         connectives, nconnectives, operators, noperators, height
@@ -47,9 +42,14 @@ export domain, top, bot, grammar, algebra, logic
 
 include("logics.jl")
 
-export Connective
-export NamedConnective, ∧, ¬, ∨, →
-export CONJUNCTION, NEGATION, DISJUNCTION, IMPLICATION
+export Top, TOP, ⊤
+export Bot, BOT, ⊥
+export BooleanTruth
+export istop, isbot
+export truthsupertype
+
+export NamedConnective, CONJUNCTION, NEGATION, DISJUNCTION, IMPLICATION
+export ∧, ¬, ∨, →
 
 export BooleanAlgebra
 
@@ -66,11 +66,13 @@ include("propositional-logic.jl")
 
 export accessibles
 export ismodal, modallogic
-export DiamondRelationalOperator, BoxRelationalOperator
+
 export DIAMOND, BOX, ◊, □
+export DiamondRelationalOperator, BoxRelationalOperator
+export diamond, box
+export globaldiamond, globalbox
 
 export KripkeStructure
-export AbstractRelationalOperator, DiamondRelationalOperator, BoxRelationalOperator
 export truthtype, worldtype
 
 export AbstractWorld
@@ -78,8 +80,6 @@ export AbstractWorld
 export AbstractWorlds, Worlds
 
 export Interval, Interval2D, OneWorld
-
-export globaldiamond, globalbox
 
 include("modal-logic.jl")
 

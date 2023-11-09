@@ -32,7 +32,7 @@ using SoleLogics
 ```julia
 julia> φ1 = parseformula("¬p∧q∧(¬s∧¬z)");
 
-julia> φ1 isa SyntaxBranch
+julia> φ1 isa SyntaxTree
 true
 
 julia> syntaxstring(φ1)
@@ -40,7 +40,7 @@ julia> syntaxstring(φ1)
 
 julia> φ2 = ⊥ ∨ Atom("t") → φ1;
 
-julia> φ2 isa SyntaxBranch
+julia> φ2 isa SyntaxTree
 true
 
 julia> syntaxstring(φ2)

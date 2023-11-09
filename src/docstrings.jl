@@ -32,7 +32,7 @@ julia> syntaxstring(parseformula("p∧q∧r∧s∧t"), function_notation=true)
 "∧(∧(∧(∧(p, q), r), s), t)"
 
 julia> syntaxstring(parseformula("p∧q∧r∧s∧t"), remove_redundant_parentheses=false)
-"((((p) ∧ (q)) ∧ (r)) ∧ (s)) ∧ (t)""
+"((((p) ∧ (q)) ∧ (r)) ∧ (s)) ∧ (t)"
 
 julia> syntaxstring(parseformula("p∧q∧r∧s∧t"), remove_redundant_parentheses=true, parenthesize_atoms=true)
 "(p) ∧ (q) ∧ (r) ∧ (s) ∧ (t)"
@@ -203,7 +203,7 @@ julia> p = Atom("p");
 julia> ∧(f, p)  # Easy way to compose a formula
 SyntaxBranch: ◊(p → q) ∧ p
 
-julia> f ∧ ¬p   # Leverage infix notation ;) See https://stackoverflow.com/a/60321302/5646732
+julia> f ∧ ¬p   # Leverage infix notation ;) (see https://stackoverflow.com/a/60321302/5646732)
 SyntaxBranch: ◊(p → q) ∧ ¬p
 
 julia> ∧(f, p, ¬p) # Shortcut for ∧(f, ∧(p, ¬p))
@@ -315,7 +315,7 @@ doc_dual = """
     dual(op::SyntaxToken)
 
 Return the `dual` of an `Operator`.
-Given an operator `op` of arity `n`, the dual `dop` is such that, on a boolean algebra,
+Given an operator `op` of arity `n`, the dual `dop` is such that, on a Boolean algebra,
 `op(ch_1, ..., ch_n)` ≡ `¬dop(¬ch_1, ..., ¬ch_n)`.
 
 Duality can be used to perform syntactic simplifications on formulas.
@@ -327,12 +327,12 @@ semantics (`◊`/`□`), and `Atom`s.
 
 When providing a `dual` for an operator of type `O`, please also provide:
 
-hasdual(::O) = true
+    hasdual(::O) = true
 
 The dual of an `Atom` (that is, the atom with inverted semantics)
 is defined as:
 
-dual(p::Atom{V}) where {V} = Atom(dual(value(p)))
+    dual(p::Atom{V}) where {V} = Atom(dual(value(p)))
 
 As such, `hasdual(::V)` and `dual(::V)` should be defined when wrapping objects of type `A`.
 

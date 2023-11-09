@@ -202,6 +202,8 @@ SoleLogics.arity(::typeof(QUATERNOP)) = 4
 
 # custom relations ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+using SoleLogics: AbstractRelationalOperator
+
 struct _TestRel <: AbstractRelation end;
 testrel  = _TestRel();
 SoleLogics.arity(::_TestRel) = 2

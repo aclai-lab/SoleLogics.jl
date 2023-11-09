@@ -1,3 +1,5 @@
+import Base: isless
+
 """
     collatetruth(
         c::Connective,
@@ -147,47 +149,6 @@ const IMPLICATION = NamedConnective{:→}()
 const → = IMPLICATION
 arity(::typeof(→)) = 2
 
-# TODO remove
-# # Helpers that allow the conjuction/disjuction/implication of more than two tokens/formulas.
-# function CONJUNCTION(
-#     c1::Formula,
-#     c2::Formula,
-#     c3::Formula,
-#     cs::Formula...
-# )
-#     @assert associativity(CONJUNCTION) == :left
-#     cs2 = [c3, cs...]
-#     children = (CONJUNCTION(c1, c2, cs2[1:end-1]...), cs2[end])
-#     T = Base.promote_type((typeof.(children))...)
-#     T <: SyntaxTree || (children = Base.promote(children...))
-#     return composeformulas(CONJUNCTION, children)
-# end
-# function DISJUNCTION(
-#     c1::Formula,
-#     c2::Formula,
-#     c3::Formula,
-#     cs::Formula...
-# )
-#     @assert associativity(DISJUNCTION) == :left
-#     cs2 = [c3, cs...]
-#     children = (DISJUNCTION(c1, c2, cs2[1:end-1]...), cs2[end])
-#     T = Base.promote_type((typeof.(children))...)
-#     T <: SyntaxTree || (children = Base.promote(children...))
-#     return composeformulas(DISJUNCTION, children)
-# end
-# function IMPLICATION(
-#     c1::Formula,
-#     c2::Formula,
-#     c3::Formula,
-#     cs::Formula...
-# )
-#     @assert associativity(IMPLICATION) == :right
-#     children = (c1, IMPLICATION(c2, c3, cs...))
-#     T = Base.promote_type((typeof.(children))...)
-#     T <: SyntaxTree || (children = Base.promote(children...))
-#     return composeformulas(IMPLICATION, children)
-# end
-
 iscommutative(::typeof(∧)) = true
 iscommutative(::typeof(∨)) = true
 
@@ -231,10 +192,10 @@ const TOP = Top()
 """$(doc_TOP)"""
 const ⊤ = TOP
 
-syntaxstring(o::Top; kwargs...) = "⊤"
+syntaxstring(::Top; kwargs...) = "⊤"
 
 istop(t::Top) = true
-truthsupertype(T::Type{Top}) = BooleanTruth
+truthsupertype(::Type{Top}) = BooleanTruth
 
 doc_BOTTOM = """
     struct Bot <: Truth end
@@ -253,19 +214,15 @@ const BOT = Bot()
 """$(doc_BOTTOM)"""
 const ⊥ = BOT
 
-syntaxstring(o::Bot; kwargs...) = "⊥"
+syntaxstring(::Bot; kwargs...) = "⊥"
 
 isbot(t::Bot) = true
-truthsupertype(T::Type{Bot}) = BooleanTruth
+truthsupertype(::Type{Bot}) = BooleanTruth
 
 # NOTE: it could be useful to provide a macro to easily create
 # a new set of Truth types. In particular, a new subtree of types must be planted
 # as children of Truth, and new promotion rules are to be defined like below.
 Base.promote_rule(::Type{<:BooleanTruth}, ::Type{<:BooleanTruth}) = BooleanTruth
-
-# # Helpers but dangerous!! TODO remove
-# Base.convert(::Type{Bool}, ::Top) = true
-# Base.convert(::Type{Bool}, ::Bot) = false
 
 function Base.convert(::Type{BooleanTruth}, t::Bool)::BooleanTruth
     return (t ? TOP : BOT)
@@ -289,11 +246,13 @@ dual(c::typeof(⊤))   = typeof(⊥)
 hasdual(::typeof(⊥)) = true
 dual(c::typeof(⊥))   = typeof(⊤)
 
+Base.isless(::Bot, ::Top) = true
+Base.isless(::Top, ::Bot) = false
 
 """
     struct BooleanAlgebra <: AbstractAlgebra{Bool} end
 
-A [boolean algebra](https://en.wikipedia.org/wiki/Boolean_algebra), defined on the values
+A [Boolean algebra](https://en.wikipedia.org/wiki/Boolean_algebra), defined on the values
 Top (representing `true`) and Bot (for bottom, representing `false`).
 For this algebra, the basic operators negation,
 conjunction and disjunction (stylized as ¬, ∧, ∨) can be defined as the complement, minimum
@@ -308,22 +267,15 @@ domain(::BooleanAlgebra) = [TOP, BOT]
 top(::BooleanAlgebra) = TOP
 bot(::BooleanAlgebra) = BOT
 
-
-function collatetruth(
-    c::Connective,
-    ch::NTuple{N,T where T<:BooleanTruth}
-)::BooleanTruth where {N}
-    _collatetruth(c, istop.(ch)) == true ? TOP : BOT
-end
-
 # Standard semantics for NOT, AND, OR, IMPLIES
-_collatetruth(::typeof(¬), (ts,)::NTuple{1,Bool}) = (!ts)
-_collatetruth(::typeof(∧), (t1, t2)::NTuple{2,Bool}) = min(t1, t2)
-_collatetruth(::typeof(∨), (t1, t2)::NTuple{2,Bool}) = max(t1, t2)
+collatetruth(::typeof(¬), (ts,)::Tuple{Bot}) = TOP
+collatetruth(::typeof(¬), (ts,)::Tuple{Top}) = BOT
+collatetruth(::typeof(∧), (t1, t2)::NTuple{N,T where T<:BooleanTruth}) where {N} = min(t1, t2)
+collatetruth(::typeof(∨), (t1, t2)::NTuple{N,T where T<:BooleanTruth}) where {N} = max(t1, t2)
 
-# The IMPLIES operator, →, falls back to ¬
-function _collatetruth(::typeof(→), (t1, t2)::NTuple{2,Bool})
-    return _collatetruth(∨, (_collatetruth(¬, (t1,)), t2))
+# The IMPLIES operator, →, falls back to using ¬ and ∨
+function collatetruth(::typeof(→), (t1, t2)::NTuple{2,BooleanTruth})
+    return collatetruth(∨, (collatetruth(¬, (t1,)), t2))
 end
 
 ############################################################################################

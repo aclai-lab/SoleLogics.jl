@@ -2,7 +2,11 @@ const BASE_PROPOSITIONAL_OPERATORS = BASE_OPERATORS
 const BasePropositionalOperators = Union{typeof.(BASE_PROPOSITIONAL_OPERATORS)...}
 
 # A propositional logic based on the base propositional operators
-const BasePropositionalLogic = AbstractLogic{G,A} where {ALP,G<:AbstractGrammar{ALP,<:BasePropositionalOperators},A<:AbstractAlgebra}
+const BasePropositionalLogic = AbstractLogic{G,A} where {
+        ALP,
+        G<:AbstractGrammar{ALP,<:BasePropositionalOperators},
+        A<:AbstractAlgebra
+    }
 
 """
     propositionallogic(;
@@ -96,7 +100,7 @@ function interpret(φ::SyntaxBranch, i::AbstractAssignment, args...; kwargs...):
 end
 
 ############################################################################################
-#################################### IMPLEMENTATIONS #######################################
+#### Implementations #######################################################################
 ############################################################################################
 
 """
@@ -197,7 +201,6 @@ struct TruthDict{D<:AbstractDict} <: AbstractAssignment
     end
 
     # Empty dict
-
     function TruthDict{D}() where {A<:Atom,T<:Truth,D<:AbstractDict{A,T}}
         return TruthDict{D}(D())
     end
@@ -248,8 +251,8 @@ function Base.show(
         println(io, "TruthDict with values:")
         _hpretty_table(
             io,
-            i.truth |> keys,  # Iterators.flatten([i.truth |> keys]),
-            i.truth |> values # Iterators.flatten([i.truth |> values])
+            i.truth |> keys,
+            i.truth |> values
         )
     end
 end
@@ -261,7 +264,6 @@ end
     Base.firstindex, Base.lastindex,
     Base.keys, Base.values,
 )
-
 
 ############################################################################################
 

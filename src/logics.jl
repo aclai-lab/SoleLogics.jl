@@ -10,8 +10,7 @@ import Base: eltype, in, getindex, isiterable, iterate, IteratorSize, length, is
 
 Abstract type for representing an alphabet of atoms with values of type `V`.
 An alphabet (or *propositional alphabet*) is a set of atoms
-(assumed to be
-[countable](https://en.wikipedia.org/wiki/Countable_set)).
+(assumed to be [countable](https://en.wikipedia.org/wiki/Countable_set)).
 
 # Examples
 
@@ -252,14 +251,11 @@ function Base.in(φ::Formula, g::AbstractGrammar)::Bool
     return Base.in(tree(φ), g)
 end
 
-# TODO are these correct?
+# TODO actually differentiate Connective's and SyntaxLeaves, and define+use leaves(g)
 # Note: when using this file's syntax tokens, these methods suffice:
-Base.in(p::Atom, g::AbstractGrammar) = Base.in(p, alphabet(g))
+Base.in(a::Atom, g::AbstractGrammar) = Base.in(a, alphabet(g))
 Base.in(op::Truth, g::AbstractGrammar) = (op <: operatorstype(g))
-function Base.in(tok::Connective, g::AbstractGrammar)
-    return (op <: operatorstype(g))
-    # return error("Please, provide method Base.in(::$(typeof(tok)), ::$(typeof(g))).")
-end
+Base.in(op::Connective, g::AbstractGrammar) = (op <: operatorstype(g))
 
 """
     formulas(

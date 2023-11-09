@@ -42,7 +42,14 @@ atomize(x::Expr) = Meta.isexpr(x, [:(=), :kw]) ?
 Return an expression after automatically instantiating undefined [`Atom`](@ref)s.
 
 !!! info
-Every identified atom is of type `Atom{String}`.
+All atoms are parsed as `Atom{String}` objects.
+
+!!! warning
+The Julia parser can parse some (infix) `NamedConnective`s such as ∧, →, but
+has a few limitations, including:
+- inexact precedence and associativity for some (unary) operators (e.g., TODO @Mauro provide example);
+- inability to parse most multi-character, custom made `Connective`s (e.g., ⟨=⟩, [G]);
+For a more flexible parsing, consider using `parseformula`.
 
 # Examples
 ```julia-repl
@@ -55,6 +62,9 @@ julia> @synexpr st = p ∧ q → r
 julia> typeof(st)
 SyntaxBranch{SoleLogics.NamedConnective{:→}}
 ```
+
+See also [`parseformula`](@ref), [`Atom`](@ref), [`Connective`](@ref),
+[`precedence`](@ref), [`associativity`](@ref).
 """
 macro synexpr(expression)
     quote

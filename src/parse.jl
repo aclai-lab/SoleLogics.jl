@@ -20,6 +20,7 @@ const DEFAULT_ARG_DELIM           = "," # TODO use these in `syntaxstring` as we
     const BASE_PARSABLE_OPERATORS = $(repr(BASE_PARSABLE_OPERATORS))
 
 Vector of (standard) operators that are automatically taken care of when parsing.
+These are $(join(SoleLogics.BASE_PARSABLE_OPERATORS, ", ", " and ")).
 
 See also [`parseformula`](@ref).
 """
@@ -40,7 +41,8 @@ When `F` is not specified, it defaults to `SyntaxTree`.
 
 By default, this function is only able to parse operators in
 [`SoleLogics.BASE_PARSABLE_OPERATORS`](@ref) (e.g.,
-$(join(repr.(BASE_PARSABLE_OPERATORS[1:min(4, length(BASE_PARSABLE_OPERATORS))]), ", ")));
+$(join(repr.(
+    BASE_PARSABLE_OPERATORS[1:min(4, length(BASE_PARSABLE_OPERATORS))]), ", ", " and ")));
 additional, non-standard operators may be provided as a vector `additional_operators`,
 and their `syntaxstring`'s will be used for parsing them.
 Note that, in case of clashing `syntaxstring`'s,
@@ -97,7 +99,7 @@ that is, if `φ::F` then the following should hold, for at least some `args`,
 and for every `kwargs` allowing correct parsing:
 `φ == parseformula(F, syntaxstring(φ, args...; kwargs...), args...; kwargs...)`.
 
-See also [`SyntaxTree`](@ref), [`syntaxstring`](@ref).
+See also [`SyntaxTree`](@ref), [`BASE_PARSABLE_OPERATORS`](@ref), [`syntaxstring`](@ref).
 """
 function parseformula(F::Type{<:Formula}, expr::String, args...; kwargs...)
     return error("Please, provide method parseformula(::Type{$(F)}, expr::String, ::$(typeof(args))...; ::$(typeof(kwargs))...).")
@@ -105,13 +107,14 @@ end
 
 parseformula(expr::String, args...; kwargs...) = parseformula(SyntaxTree, expr, args...; kwargs...)
 
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Utils ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
+# This is just an utility function used later
 function strip_whitespaces(expr::String; additional_whitespaces::Vector{Char} = Char[])
     return strip(x -> isspace(x) || x in additional_whitespaces, expr)
 end
 
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ SyntaxTree ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+############################################################################################
+#### parseformula ##########################################################################
+############################################################################################
 
 function parseformula(
     F::Type{<:SyntaxTree},

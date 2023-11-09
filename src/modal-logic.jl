@@ -12,7 +12,7 @@ formulas is relativized to *worlds*, that is, nodes of a graph.
 
 # Implementing
 
-When implementing a new world type, the logical semanticsu
+When implementing a new world type, the logical semantics
 should be defined via `accessibles` methods; refer to the help for `accessibles`.
 
 See also [`AbstractKripkeStructure`](@ref), [`AbstractFrame`](@ref).
@@ -150,7 +150,7 @@ function Base.show(io::IO, fr::ExplicitCrispUniModalFrame)
 end
 
 ############################################################################################
-#################################### Multi-modal logic #####################################
+#### Multi-modal logic #####################################################################
 ############################################################################################
 
 """
@@ -329,8 +329,7 @@ accessibles(fr::AbstractMultiModalFrame, w::AbstractWorld,    ::IdentityRel) = [
         r::AbstractRelation
     ) where {W<:AbstractWorld}
 
-Return the worlds in frame `fr` that are accessible from world `w`
-via relation `r`.
+Return the worlds in frame `fr` that are accessible from world `w` via relation `r`.
 
 # Examples
 ```julia-repl
@@ -355,8 +354,8 @@ true
 
 Since `accessibles` always returns an iterator of worlds of the same type `W`,
 the current implementation of `accessibles` for multi-modal frames delegates the enumeration
-to a lower level `_accessibles` function, which returns an iterator of parameter tuples that are,
-then, fed to the world constructor the using IterTools generators, as in:
+to a lower level `_accessibles` function, which returns an iterator of parameter tuples
+that are, then, fed to the world constructor the using IterTools generators, as in:
 
     function accessibles(
         fr::AbstractMultiModalFrame{W},
@@ -875,7 +874,7 @@ const BaseModalLogic = AbstractLogic{G,A} where {ALP,G<:AbstractGrammar{ALP,<:Ba
     abstract type AbstractRelationalOperator{R<:AbstractRelation} <: Connective end
 
 Abstract type for relational logical operators. A relational operator
-allows for semantic quantification across relational structures (e.g., Krikpe structures).
+allows for semantic quantification across relational structures (e.g., Kripke structures).
 It has arity equal to the arity of its underlying relation minus one.
 
 See, for example [temporal modal logic](https://en.wikipedia.org/wiki/Temporal_logic).
@@ -968,13 +967,25 @@ dual(op::BoxRelationalOperator)     = DiamondRelationalOperator{relationtype(op)
 ############################################################################################
 
 """
-TODO document
+    diamond() = DIAMOND
+    diamond(r::AbstractRelation) = DiamondRelationalOperator(r)
+
+Return either the diamond modal operator from unimodal logic (i.e., ◊), or a
+a diamond relational operator from a multi-modal logic, wrapping the relation `r`.
+
+See also [`DiamondRleationaOperator`](@ref), [`diamond`](@ref), [`DIAMOND`](@ref).
 """
 function diamond() DIAMOND end
 function diamond(r::AbstractRelation) DiamondRelationalOperator(r) end
 
 """
-TODO document
+    box() = BOX
+    box(r::AbstractRelation) = BoxRelationalOperator(r)
+
+Return either the box modal operator from unimodal logic (i.e., □), or a
+a box relational operator from a multi-modal logic, wrapping the relation `r`.
+
+See also [`BoxRelationalOperator`](@ref), [`box`](@ref), [`BOX`](@ref).
 """
 function box() BOX end
 function box(r::AbstractRelation) BoxRelationalOperator(r) end
