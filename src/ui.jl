@@ -47,8 +47,9 @@ All atoms are parsed as `Atom{String}` objects.
 !!! warning
 The Julia parser can parse some (infix) `NamedConnective`s such as ∧, →, but
 has a few limitations, including:
-- inexact precedence and associativity for some (unary) operators (e.g., logical not,
-    in fact Base.operator_precedence(:¬) is 0 by default);
+- inexact precedence and associativity for some operators (e.g.,
+    in fact, as of Julia 1.9, despite `(@synexpr ¬ p ∧ q) == @synexpr ¬(p) ∧ q`,
+    Base.operator_precedence(:(¬)) < Base.operator_precedence(:(∧)));
 - inability to parse most multi-character, custom made `Connective`s (e.g., ⟨=⟩, [G]);
 For a more flexible parsing, consider using `parseformula`.
 
