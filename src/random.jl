@@ -30,7 +30,7 @@ in order to limit the (otherwise infinite) sampling domain.
 
 See also
 [`isfinite`](@ref),
-[`AbstractAlphabet'](@ref).
+[`AbstractAlphabet`](@ref).
 """
 function Base.rand(alphabet::AbstractAlphabet, args...; kwargs...)
     Base.rand(Random.GLOBAL_RNG, alphabet, args...; kwargs...)
@@ -152,7 +152,7 @@ This method for must be implemented, and additional keyword arguments should be 
 in order to limit the (otherwise infinite) sampling domain.
 
 See also
-[`AbstractAlphabet'](@ref).
+[`AbstractAlphabet`](@ref).
 """
 function StatsBase.sample(
     rng::AbstractRNG,

@@ -19,26 +19,26 @@ If we consider a reference interval `(x,y)`, we can graphically represent the 6
 base relations by providing an example of a world `(z,t)` that is accessible via each
 of them:
 
-RELATION    ABBR.     x                   y                     PROPERTY                  
-                      |-------------------|                                               
-                      .                   .                                               
-                      .                   z        t            y = z                     
-After       (A)       .                   |--------|                                      
-                      .                   .                                               
-                      .                   .   z         t       y < z                     
-Later       (L)       .                   .   |---------|                                 
-                      .                   .                                               
-                      z     t             .                     x = z, t < y              
-Begins      (B)       |-----|             .                                               
-                      .                   .                                               
-                      .             z     t                     y = t, x < z              
-Ends        (E)       .             |-----|                                               
-                      .                   .                                               
-                      .   z        t      .                     x < z, t < y              
-During      (D)       .   |--------|      .                                               
-                      .                   .                                               
-                      .           z       .    t                x < z < y < t             
-Overlaps    (O)       .           |------------|                                          
+RELATION    ABBR.     x                   y                     PROPERTY
+                      |-------------------|
+                      .                   .
+                      .                   z        t            y = z
+After       (A)       .                   |--------|
+                      .                   .
+                      .                   .   z         t       y < z
+Later       (L)       .                   .   |---------|
+                      .                   .
+                      z     t             .                     x = z, t < y
+Begins      (B)       |-----|             .
+                      .                   .
+                      .             z     t                     y = t, x < z
+Ends        (E)       .             |-----|
+                      .                   .
+                      .   z        t      .                     x < z, t < y
+During      (D)       .   |--------|      .
+                      .                   .
+                      .           z       .    t                x < z < y < t
+Overlaps    (O)       .           |------------|
 
 Coarser relations can be defined by union of these 12 relations.
 
@@ -217,7 +217,7 @@ syntaxstring(::_IA_I; kwargs...)          = "I"
 Vector of the 12 interval relations from Allen's interval algebra.
 
 See also
-[`IA7Relations`](@ref), [`IA3Relations`](@ref), 
+[`IA7Relations`](@ref), [`IA3Relations`](@ref),
 [`IntervalRelation`](@ref), [`GeometricalRelation`](@ref).
 """
 const IARelations = [IA_A,  IA_L,  IA_B,  IA_E,  IA_D,  IA_O,
@@ -231,7 +231,7 @@ IARelation = Union{typeof.(IARelations)...}
 Vector of 7 interval relations from a coarser version of Allen's interval algebra.
 
 See also
-[`IARelations`](@ref), [`IA3Relations`](@ref), 
+[`IARelations`](@ref), [`IA3Relations`](@ref),
 [`IntervalRelation`](@ref), [`GeometricalRelation`](@ref).
 """
 const IA7Relations = [IA_AorO,   IA_L,  IA_DorBorE,
@@ -244,7 +244,7 @@ IA7Relation = Union{typeof.(IA7Relations)...}
 Vector of 3 interval relations from a coarser version of Allen's interval algebra.
 
 See also
-[`IARelations`](@ref), [`IA7Relations`](@ref), 
+[`IARelations`](@ref), [`IA7Relations`](@ref),
 [`IntervalRelation`](@ref), [`GeometricalRelation`](@ref).
 """
 const IA3Relations = [IA_I, IA_L, IA_Li]
@@ -253,4 +253,3 @@ IA3Relation = Union{typeof.(IA3Relations)...}
 # 13 Interval Algebra extended with universal
 const IARelations_extended = [globalrel, IARelations...]
 IARelation_extended = Union{typeof.(IARelations_extended)...}
-

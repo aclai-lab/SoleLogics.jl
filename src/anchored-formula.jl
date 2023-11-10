@@ -100,6 +100,7 @@ struct AnchoredFormula{L<:AbstractLogic} <: Formula
 end
 
 _logic(f::AnchoredFormula) = f._logic
+"""TODO: docstring"""
 logic(f::AnchoredFormula) = f._logic[]
 synstruct(f::AnchoredFormula) = f.synstruct
 tree(f::AnchoredFormula) = tree(f.synstruct)
