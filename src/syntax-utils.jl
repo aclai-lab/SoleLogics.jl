@@ -316,6 +316,16 @@ ndisjuncts(m::Union{LeftmostDisjunctiveForm,DNF}) = nchildren(m)
 # disjuncts(m::CNF) = map(d->disjuncts(d), conjuncts(m))
 # ndisjuncts(m::CNF) = map(d->ndisjuncts(d), conjuncts(m))
 
+function joinformulas(
+    op::AbstractOperator,
+    tojoin::Vararg{LeftmostConjunctiveForm,N}
+) where {N}
+    @assert iscommutative(op) "Cannot join $(length(tojoin)) LeftmostConjunctiveForm's" *
+        " by means of $(op) because the operator is not commutative"
+
+    return LeftmostConjunctiveForm(op,reduce(vcat,children.(tojoin)))
+end
+
 ############################################################################################
 
 subtrees(tree::SyntaxTree) = [Iterators.flatten(_subtrees.(children(tree)))...]
