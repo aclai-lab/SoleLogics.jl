@@ -139,11 +139,12 @@ function Base.getindex(
 end
 Base.getindex(lf::LeftmostLinearForm, idx::Integer) = Base.getindex(lf,[idx])
 
-function composeformulas(c::Connective, chs::NTuple{N,LeftmostLinearForm}) where {N}
-    if all(_c->_c == c, connective.(chs)) # If operator is the same, collapse children
-        return LeftmostLinearForm(c, collect(Iterators.flatten(children.(chs))))
+function composeformulas(c::Connective, φs::NTuple{N,LeftmostLinearForm}) where {N}
+    if all(_c->_c == c, connective.(φs)) # If operator is the same, collapse children
+        return LeftmostLinearForm(c, collect(Iterators.flatten(children.(φs))))
+        # return LeftmostLinearForm(c, reduce(vcat,children.(φs)))
     else
-        return LeftmostLinearForm(c, collect(chs))
+        return LeftmostLinearForm(c, collect(φs))
     end
 end
 
@@ -176,11 +177,11 @@ function tree(lf::LeftmostLinearForm)
             # Only child
             tree(first(chs))
         else
-            function _tree(_chs::Vector{<:SyntaxTree})
-                @assert (length(_chs) != 0) "$(_chs); $(lf); $(c); $(a)."
-                return length(_chs) == a ?
-                    SyntaxTree(c, _chs...) :
-                    SyntaxTree(c, _chs[1:(a-1)]..., _tree(_chs[a:end])) # Left-most unwinding
+            function _tree(φs::Vector{<:SyntaxTree})
+                @assert (length(φs) != 0) "$(φs); $(lf); $(c); $(a)."
+                return length(φs) == a ?
+                    SyntaxTree(c, φs...) :
+                    SyntaxTree(c, φs[1:(a-1)]..., _tree(φs[a:end])) # Left-most unwinding
             end
             _tree(tree.(chs))
         end
@@ -315,16 +316,6 @@ ndisjuncts(m::Union{LeftmostDisjunctiveForm,DNF}) = nchildren(m)
 # nconjuncts(m::DNF) = map(d->nconjuncts(d), disjuncts(m))
 # disjuncts(m::CNF) = map(d->disjuncts(d), conjuncts(m))
 # ndisjuncts(m::CNF) = map(d->ndisjuncts(d), conjuncts(m))
-
-function joinformulas(
-    op::AbstractOperator,
-    tojoin::Vararg{LeftmostConjunctiveForm,N}
-) where {N}
-    @assert iscommutative(op) "Cannot join $(length(tojoin)) LeftmostConjunctiveForm's" *
-        " by means of $(op) because the operator is not commutative"
-
-    return LeftmostConjunctiveForm(op,reduce(vcat,children.(tojoin)))
-end
 
 ############################################################################################
 
