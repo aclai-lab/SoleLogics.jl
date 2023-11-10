@@ -73,14 +73,14 @@ end
 φ3 = parseformula("¬(1 ∧ 2)"; atom_parser = (x -> Atom(parse(Int64, x))))
 
 # ╔═╡ 9da1c680-84a2-400e-a474-8a5c967bd445
-@bind height PlutoUI.Slider(1:10; default = 3)
+@bind treeheight PlutoUI.Slider(1:10; default = 3)
 
 # ╔═╡ a1ebd2cb-4677-4839-88c0-f3c57b08a1ab
 begin
-	println("Producing formula of height $height...")
+	println("Producing formula of height $treeheight...")
 
 	# Create a random formula
-	φ4 = randformula(Random.MersenneTwister(107), height, [p,q], SoleLogics.BASE_PROPOSITIONAL_OPERATORS)
+	φ4 = randformula(Random.MersenneTwister(107), treeheight, [p,q], SoleLogics.BASE_PROPOSITIONAL_OPERATORS)
 
 	φ4 |> syntaxstring |> println
 
