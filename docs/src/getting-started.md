@@ -15,11 +15,4 @@ In SoleLogics, an Atom is a wrapper for any value (accessible via the `value` me
 TODO
 arity
 
-```@docs
-Atom
-Truth
-Connective
-SyntaxBranch
-```
-
 Let's review these concepts with a simple example.

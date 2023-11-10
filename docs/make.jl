@@ -3,6 +3,10 @@ using Documenter
 
 DocMeta.setdocmeta!(SoleLogics, :DocTestSetup, :(using SoleLogics); recursive = true)
 
+Documenter.HTMLWriter.HTML(
+    size_threshold = 400000,
+)
+
 makedocs(;
     modules = [SoleLogics],
     authors = "Mauro Milella, Giovanni Pagliarini, Eduard I. Stan",
