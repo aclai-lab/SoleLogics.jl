@@ -4,7 +4,7 @@ using Documenter
 DocMeta.setdocmeta!(SoleLogics, :DocTestSetup, :(using SoleLogics); recursive = true)
 
 Documenter.HTMLWriter.HTML(
-    size_threshold = 400000,
+    size_threshold = 4000000,
 )
 
 makedocs(;
