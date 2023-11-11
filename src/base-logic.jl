@@ -25,7 +25,7 @@ function collatetruth(
 end
 
 # With generic formulas, it composes formula
-function collatetruth(c::Connective, ts::NTuple{N,T}) where {N,T<:Formula}
+function collatetruth(c::Connective, ts::NTuple{N,T where T<:Formula}) where {N}
     c(ts)
 end
 
@@ -277,6 +277,16 @@ collatetruth(::typeof(∨), (t1, t2)::NTuple{N,T where T<:BooleanTruth}) where {
 function collatetruth(::typeof(→), (t1, t2)::NTuple{2,BooleanTruth})
     return collatetruth(∨, (collatetruth(¬, (t1,)), t2))
 end
+
+# Incomplete information
+collatetruth(::typeof(∧), (t1, t2)::Tuple{Top,Formula}) = t2
+collatetruth(::typeof(∧), (t1, t2)::Tuple{Bot,Formula}) = t1
+collatetruth(::typeof(∧), (t1, t2)::Tuple{Formula,Top}) = t1
+collatetruth(::typeof(∧), (t1, t2)::Tuple{Formula,Bot}) = t2
+collatetruth(::typeof(∨), (t1, t2)::Tuple{Bot,Formula}) = t2
+collatetruth(::typeof(∨), (t1, t2)::Tuple{Top,Formula}) = t1
+collatetruth(::typeof(∨), (t1, t2)::Tuple{Formula,Bot}) = t1
+collatetruth(::typeof(∨), (t1, t2)::Tuple{Formula,Top}) = t2
 
 ############################################################################################
 

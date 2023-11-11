@@ -30,38 +30,47 @@ valuetype(s::AbstractInterpretationSet) = valuetype(typeof(s))
 truthtype(::Type{S}) where {M,S<:AbstractInterpretationSet{M}} = truthtype(M)
 truthtype(s::AbstractInterpretationSet) = truthtype(typeof(s))
 
+function getinstance(s::AbstractInterpretationSet, i_instance::Integer)
+    return LogicalInstance(s, i_instance)
+end
+
 """
-TODO explain. In general, one may not be able to extract a single logical instance from a
-set, thus we represent it as a tuple of dataset + instance id (i_instance).
+Object representing the i-th interpretation of an interpretation set.
+
+In general, one may not be able to extract a single logical instance from a
+set; thus, this representation, holding the interpretation set + instance id (i_instance),
+can come handi in defining `check` and `interpret` methods for newly defined interpretation
+set structures.
 """
-struct LogicalInstance{
-    M<:AbstractInterpretation,
-    S<:AbstractInterpretationSet{M}
-} <: AbstractInterpretation
+struct LogicalInstance{S<:AbstractInterpretationSet} <: AbstractInterpretation
 
     s::S
     i_instance::Int64
 
-    function LogicalInstance{M,S}(
+    # function LogicalInstance{M,S}(
+    #     s::S,
+    #     i_instance::Integer
+    # ) where {M<:AbstractInterpretation,S<:AbstractInterpretationSet{M}}
+    #     new{M,S}(s, i_instance)
+    # end
+
+    function LogicalInstance{S}(
         s::S,
         i_instance::Integer
-    ) where {M<:AbstractInterpretation,S<:AbstractInterpretationSet{M}}
-        new{M,S}(s, i_instance)
+    ) where {S<:AbstractInterpretationSet}
+        new{S}(s, i_instance)
     end
 
     function LogicalInstance(
         s::AbstractInterpretationSet,
         i_instance::Integer
     )
-        LogicalInstance{interpretationtype(s),typeof(s)}(s, i_instance)
+        # LogicalInstance{interpretationtype(s),typeof(s)}(s, i_instance)
+        LogicalInstance{typeof(s)}(s, i_instance)
     end
 end
 
 splat(i::LogicalInstance) = (i.s, i.i_instance)
-
-function getinstance(s::AbstractInterpretationSet, i_instance::Integer)
-    return LogicalInstance(s, i_instance)
-end
 
 """
     check(
