@@ -1,20 +1,17 @@
 import Base: isless
 
 """
-    collatetruth(
-        c::Connective,
-        ts::NTuple{N,T},
-    )::T where {N,T<:Truth}
+    collatetruth(c::Connective, ts::NTuple{N,T where T<:Truth})::Truth where {N}
 
-Return the truth value for a composed formula c(φ1, ..., φN), given the `N`
-truth values for its immediate sub-formulas.
+Return the truth value for a composed formula `c(t1, ..., tN)`, given the `N`
+with t1, ..., tN being `Truth` values.
 
-See also [`AbstractAlgebra`](@ref) [`Connective`](@ref), [`Truth`](@ref).
+See also [`simplify`](@ref), [`Connective`](@ref), [`Truth`](@ref).
 """
 function collatetruth(
     c::Connective,
-    ts::NTuple{N,T},
-)::T where {N,T<:Truth}
+    ts::NTuple{N,T where T<:Truth},
+)::Truth where {N}
     if arity(c) != length(ts)
         return error("Cannot collate $(length(ts)) truth values for " *
                      "connective $(typeof(c)) with arity $(arity(c))).")
@@ -24,13 +21,37 @@ function collatetruth(
     end
 end
 
-# With generic formulas, it composes formula
-function collatetruth(c::Connective, ts::NTuple{N,T where T<:Formula}) where {N}
-    c(ts)
-end
-
 # Helper (so that collatetruth work for all operators)
 collatetruth(t::Truth, ::Tuple{}) = t
+
+
+# With generic formulas, it composes formula
+"""
+    simplify(c::Connective, ts::NTuple{N,F where F<:Formula})::Truth where {N}
+
+Return a formula with the same semantics of a composed formula `c(φ1, ..., φN)`,
+given the `N`
+immediate sub-formulas.
+
+See also [`collatetruth`](@ref), [`Connective`](@ref), [`Formula`](@ref).
+"""
+function simplify(c::Connective, φs::NTuple{N,T where T<:Formula}) where {N}
+    c(φs)
+end
+
+function simplify(c::Connective, φs::NTuple{N,T where T<:Truth}) where {N}
+    collatetruth(c, φs)
+end
+
+# Incomplete information
+simplify(::typeof(∧), (t1, t2)::Tuple{Top,Formula}) = t2
+simplify(::typeof(∧), (t1, t2)::Tuple{Bot,Formula}) = t1
+simplify(::typeof(∧), (t1, t2)::Tuple{Formula,Top}) = t1
+simplify(::typeof(∧), (t1, t2)::Tuple{Formula,Bot}) = t2
+simplify(::typeof(∨), (t1, t2)::Tuple{Bot,Formula}) = t2
+simplify(::typeof(∨), (t1, t2)::Tuple{Top,Formula}) = t1
+simplify(::typeof(∨), (t1, t2)::Tuple{Formula,Bot}) = t1
+simplify(::typeof(∨), (t1, t2)::Tuple{Formula,Top}) = t2
 
 ############################################################################################
 ##################################### BASE CONNECTIVES #####################################
@@ -277,16 +298,6 @@ collatetruth(::typeof(∨), (t1, t2)::NTuple{N,T where T<:BooleanTruth}) where {
 function collatetruth(::typeof(→), (t1, t2)::NTuple{2,BooleanTruth})
     return collatetruth(∨, (collatetruth(¬, (t1,)), t2))
 end
-
-# Incomplete information
-collatetruth(::typeof(∧), (t1, t2)::Tuple{Top,Formula}) = t2
-collatetruth(::typeof(∧), (t1, t2)::Tuple{Bot,Formula}) = t1
-collatetruth(::typeof(∧), (t1, t2)::Tuple{Formula,Top}) = t1
-collatetruth(::typeof(∧), (t1, t2)::Tuple{Formula,Bot}) = t2
-collatetruth(::typeof(∨), (t1, t2)::Tuple{Bot,Formula}) = t2
-collatetruth(::typeof(∨), (t1, t2)::Tuple{Top,Formula}) = t1
-collatetruth(::typeof(∨), (t1, t2)::Tuple{Formula,Bot}) = t1
-collatetruth(::typeof(∨), (t1, t2)::Tuple{Formula,Top}) = t2
 
 ############################################################################################
 

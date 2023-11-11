@@ -95,17 +95,18 @@ SoleLogics.arity(::typeof(⊻)) = 2
 SoleLogics.iscommutative(::typeof(⊻)) = true
 collatetruth(::typeof(⊻), (t1, t2)::NTuple{N,T where T<:BooleanTruth}) where {N} = (count(istop, (t1, t2)) == 1)
 ```
-
 Note that `collatetruth` must be defined at least for some truth value types `T` via methods
 accepting an `NTuple{arity,T}` as a second argument.
+
 To make the operator work with incomplete interpretations (e.g., when the `Truth` value
-for an atom is not known), simplification rules for `NTuple{arity,T where T<:Formula}`'s should be provided.
+for an atom is not known), simplification rules for `NTuple{arity,T where T<:Formula}`'s
+should be provided via simplify methods.
 For example, these rules suffice for simplifying xors between `Top/`Bot`'s, and other formulas:
 ```julia
-collatetruth(::typeof(⊻), (t1, t2)::Tuple{Top,Formula}) = ¬t2
-collatetruth(::typeof(⊻), (t1, t2)::Tuple{Bot,Formula}) = t2
-collatetruth(::typeof(⊻), (t1, t2)::Tuple{Formula,Top}) = ¬t1
-collatetruth(::typeof(⊻), (t1, t2)::Tuple{Formula,Bot}) = t1
+simplify(::typeof(⊻), (t1, t2)::Tuple{Top,Formula}) = ¬t2
+simplify(::typeof(⊻), (t1, t2)::Tuple{Bot,Formula}) = t2
+simplify(::typeof(⊻), (t1, t2)::Tuple{Formula,Top}) = ¬t1
+simplify(::typeof(⊻), (t1, t2)::Tuple{Formula,Bot}) = t1
 ```
 
 Beware of dispatch ambiguities!

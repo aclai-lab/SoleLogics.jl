@@ -94,7 +94,7 @@ function interpret(a::Atom, i::AbstractAssignment, args...; kwargs...)::SyntaxLe
 end
 
 function interpret(φ::SyntaxBranch, i::AbstractAssignment, args...; kwargs...)::Formula
-    return collatetruth(token(φ), Tuple(
+    return simplify(token(φ), Tuple(
         [interpret(ch, i, args...; kwargs...) for ch in children(φ)]
     ))
 end
