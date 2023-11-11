@@ -23,17 +23,17 @@ See the examples.
 
 # Examples
 ```julia-repl
-julia> f = parsebaseformula("◊(p→q)");
+julia> φ = parsebaseformula("◊(p→q)");
 
-julia> f2 = f(parseformula("p"));
+julia> f2 = φ(parseformula("p"));
 
-julia> syntaxstring(f)
+julia> syntaxstring(φ)
 "◊(→(p, q))"
 
 julia> syntaxstring(f2)
 "p"
 
-julia> @assert logic(f) == logic(f2)
+julia> @assert logic(φ) == logic(f2)
 
 julia> @assert ◊ in operators(logic(f2))
 
@@ -99,15 +99,31 @@ struct AnchoredFormula{L<:AbstractLogic} <: Formula
     end
 end
 
-_logic(f::AnchoredFormula) = f._logic
-logic(f::AnchoredFormula) = f._logic[]
-synstruct(f::AnchoredFormula) = f.synstruct
-tree(f::AnchoredFormula) = tree(f.synstruct)
+_logic(φ::AnchoredFormula) = φ._logic
 
-function Base.show(io::IO, f::AnchoredFormula)
-    println(io, "AnchoredFormula: $(syntaxstring(f))")
+"""
+    logic(φ::AnchoredFormula)::AbstractLogic
+
+Return the logic of an anchored formula
+
+See [`AnchoredFormula`](@ref).
+"""
+logic(φ::AnchoredFormula) = φ._logic[]
+
+"""
+    logic(φ::AnchoredFormula)::AbstractSyntaxStructure
+
+Return the syntactic component of an anchored formula.
+
+See [`AnchoredFormula`](@ref).
+"""
+synstruct(φ::AnchoredFormula) = φ.synstruct
+tree(φ::AnchoredFormula) = tree(φ.synstruct)
+
+function Base.show(io::IO, φ::AnchoredFormula)
+    println(io, "AnchoredFormula: $(syntaxstring(φ))")
     print(io, "Anchored to logic: ")
-    Base.show(io, logic(f))
+    Base.show(io, logic(φ))
 end
 
 # Note that, since `c` might not be in the logic of the child formulas,
@@ -124,7 +140,7 @@ function composeformulas(c::Connective, φs::NTuple{N,AnchoredFormula}) where {N
 end
 
 # When constructing a new formula from a syntax tree, the logic is passed by reference.
-(f::AnchoredFormula)(t::AbstractSyntaxStructure, args...) = AnchoredFormula(_logic(f), t, args...)
+(φ::AnchoredFormula)(t::AbstractSyntaxStructure, args...) = AnchoredFormula(_logic(φ), t, args...)
 
 # A logic can be used to instantiate `AnchoredFormula`s out of syntax trees.
 (l::AbstractLogic)(t::AbstractSyntaxStructure, args...) = AnchoredFormula(Base.RefValue(l), t; args...)
@@ -136,17 +152,17 @@ function Base._promote(x::AnchoredFormula, y::AbstractSyntaxStructure)
 end
 Base._promote(x::AbstractSyntaxStructure, y::AnchoredFormula) = reverse(Base._promote(y, x))
 
-iscrisp(f::AnchoredFormula) = iscrisp(logic(f))
-grammar(f::AnchoredFormula) = grammar(logic(f))
-algebra(f::AnchoredFormula) = algebra(logic(f))
+iscrisp(φ::AnchoredFormula) = iscrisp(logic(φ))
+grammar(φ::AnchoredFormula) = grammar(logic(φ))
+algebra(φ::AnchoredFormula) = algebra(logic(φ))
 
-syntaxstring(f::AnchoredFormula; kwargs...) = syntaxstring(f.synstruct; kwargs...)
+syntaxstring(φ::AnchoredFormula; kwargs...) = syntaxstring(φ.synstruct; kwargs...)
 
 ############################################################################################
 
 
-subformulas(f::AnchoredFormula; kwargs...) = f.(subformulas(tree(f); kwargs...))
-normalize(f::AnchoredFormula; kwargs...) = f(normalize(tree(f); kwargs...))
+subformulas(φ::AnchoredFormula; kwargs...) = φ.(subformulas(tree(φ); kwargs...))
+normalize(φ::AnchoredFormula; kwargs...) = φ(normalize(tree(φ); kwargs...))
 
 """
     function baseformula(

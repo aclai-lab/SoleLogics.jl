@@ -373,7 +373,7 @@ end
 Basic logical operators.
 
 See also [`NEGATION`](@ref),
-[`CONJUCTION`](@ref),
+[`CONJUNCTION`](@ref),
 [`DISJUNCTION`](@ref),
 [`IMPLICATION`](@ref),
 [`Connective`](@ref).

@@ -527,6 +527,13 @@ function interpret(
     return error("Please, provide method interpret(::$(typeof(φ)), ::$(typeof(i)), ::$(typeof(w))).")
 end
 
+"""
+    frame(i::AbstractKripkeStructure)::AbstractFrame
+
+Return the frame of a Kripke structure.
+
+See also [`AbstractFrame`](@ref), [`AbstractKripkeStructure`](@ref).
+"""
 function frame(i::AbstractKripkeStructure)::AbstractFrame
     return error("Please, provide method frame(i::$(typeof(i))).")
 end

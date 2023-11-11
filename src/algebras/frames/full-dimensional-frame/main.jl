@@ -63,7 +63,7 @@ See also
 [`Interval`](@ref),
 [`Interval2D`](@ref),
 [`IntervalRelation`](@ref),
-[`IntervalRelation2D`](@ref),
+[`RectangleRelation`](@ref),
 [`accessibles`](@ref),
 [`AbstractDimensionalFrame`](@ref), [`AbstractMultiModalFrame`](@ref).
 """
