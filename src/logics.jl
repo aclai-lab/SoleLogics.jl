@@ -68,7 +68,13 @@ An alphabet of `valuetype` `V` can be used for instantiating atoms of valuetype 
 (::AbstractAlphabet{V})(a) where {V} = Atom{V}(a)
 
 # Default behavior
-"""TODO: docstring"""
+"""
+    Base.isfinite(a::AbstractAlphabet)
+
+Return `true` if the alphabet is finite, `false` otherwise.
+
+See [`AbstractAlphabet`](@ref).
+"""
 Base.isfinite(::Type{<:AbstractAlphabet}) = true
 Base.isfinite(a::AbstractAlphabet) = Base.isfinite(typeof(a))
 
@@ -220,7 +226,6 @@ See also [`alphabet`](@ref),
 abstract type AbstractGrammar{V<:AbstractAlphabet,O<:Operator} end
 
 operatorstype(::AbstractGrammar{V,O}) where {V,O} = O
-"""TODO: docstring"""
 alphabettype(::AbstractGrammar{V,O}) where {V,O} = V
 
 """

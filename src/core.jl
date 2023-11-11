@@ -364,19 +364,12 @@ end
 Base.hash(φ::SyntaxTree) = Base.hash(token(φ), Base.hash(children(φ)))
 
 # Helpers
-"""TODO: docstring"""
 tokentype(φ::SyntaxTree) = typeof(token(φ))
-"""TODO: docstring"""
 tokenstype(φ::SyntaxTree) = Union{tokentype(φ),tokenstype.(children(φ))...}
-"""TODO: docstring"""
 atomstype(φ::SyntaxTree) = typeintersect(Atom, tokenstype(φ))
-"""TODO: docstring"""
 truthstype(φ::SyntaxTree) = typeintersect(Truth, tokenstype(φ))
-"""TODO: docstring"""
 leavestype(φ::SyntaxTree) = typeintersect(SyntaxLeaf, tokenstype(φ))
-"""TODO: docstring"""
 connectivestype(φ::SyntaxTree) = typeintersect(Connective, tokenstype(φ))
-"""TODO: docstring"""
 operatorstype(φ::SyntaxTree) = typeintersect(Operator, tokenstype(φ))
 
 function composeformulas(c::Connective, φs::NTuple{N,SyntaxTree}) where {N}
@@ -509,7 +502,6 @@ value(p::Atom) = p.value
 dual(p::Atom) = Atom(dual(value(p)))
 dual(value) = error("Please, provide method SoleLogics.dual(::$(typeof(value))).") # TODO explain why?
 
-"""TODO: docstring"""
 valuetype(::Atom{V}) where {V} = V
 valuetype(::Type{Atom{V}}) where {V} = V
 
