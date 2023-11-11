@@ -13,7 +13,7 @@ identified by an index i_instance::Integer.
 These structures are especially useful when performing
 [model checking](https://en.wikipedia.org/wiki/Model_checking).
 
-See also [`valuetype`](@ref), [`truthtype`](@ref),
+See also[`truthtype`](@ref),
 [`InterpretationVector`](@ref).
 """
 abstract type AbstractInterpretationSet{M<:AbstractInterpretation} <: AbstractDataset end

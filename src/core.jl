@@ -742,9 +742,9 @@ See also
 [`arity`](@ref),
 [`Connective`](@ref),
 [`height`](@ref),
-[`atoms`](@ref), [`natoms`](@ref), [`atomstype`](@ref),
-[`operators`](@ref), [`noperators`](@ref), [`operatorstype`](@ref),
-[`tokens`](@ref), [`ntokens`](@ref), [`tokenstype`](@ref),
+[`atoms`](@ref), [`natoms`](@ref),
+[`operators`](@ref), [`noperators`](@ref),
+[`tokens`](@ref), [`ntokens`](@ref),
 """
 struct SyntaxBranch{T<:Connective} <: SyntaxTree
 
