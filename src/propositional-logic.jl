@@ -147,10 +147,10 @@ true
 ```
 
 !!! note
-If prompted for the value of an unknown atom, this throws an error.
-If boolean, integer, or float values are specified, they are converted to
-`Truth` values.
-If the structure is initialized as empty, `BooleanTruth` values are assumed.
+    If prompted for the value of an unknown atom, this throws an error.
+    If boolean, integer, or float values are specified, they are converted to
+    `Truth` values.
+    If the structure is initialized as empty, `BooleanTruth` values are assumed.
 
 See also
 [`DefaultedTruthDict`](@ref),

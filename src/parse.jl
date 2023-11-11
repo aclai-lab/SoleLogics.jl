@@ -93,11 +93,11 @@ julia> syntaxstring(parseformula("¬1→0"; atom_parser = (x -> Atom{Float64}(pa
 ```
 
 !!! note
-For any `Formula` type `F`, this
-function should be the inverse of [`syntaxstring`](@ref);
-that is, if `φ::F` then the following should hold, for at least some `args`,
-and for every `kwargs` allowing correct parsing:
-`φ == parseformula(F, syntaxstring(φ, args...; kwargs...), args...; kwargs...)`.
+    For any `Formula` type `F`, this
+    function should be the inverse of [`syntaxstring`](@ref);
+    that is, if `φ::F` then the following should hold, for at least some `args`,
+    and for every `kwargs` allowing correct parsing:
+    `φ == parseformula(F, syntaxstring(φ, args...; kwargs...), args...; kwargs...)`.
 
 See also [`SyntaxTree`](@ref), [`BASE_PARSABLE_OPERATORS`](@ref), [`syntaxstring`](@ref).
 """

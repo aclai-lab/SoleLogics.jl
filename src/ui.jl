@@ -50,7 +50,7 @@ has a few limitations, including:
 - inexact precedence and associativity for some operators (e.g.,
     in fact, as of Julia 1.9, despite `(@synexpr ¬ p ∧ q) == @synexpr ¬(p) ∧ q`,
     Base.operator_precedence(:(¬)) < Base.operator_precedence(:(∧)));
-- inability to parse most multi-character, custom made `Connective`s (e.g., ⟨=⟩, [G]);
+- inability to parse most multi-character, custom-made `Connective`s (e.g., ⟨=⟩, [G]);
 For a more flexible parsing, consider using `parseformula`.
 
 # Examples

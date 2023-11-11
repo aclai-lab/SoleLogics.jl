@@ -873,8 +873,8 @@ end
 """
     abstract type AbstractInterpretation end
 
-Abstract type for representing a logical
-[interpretation](https://en.wikipedia.org/wiki/Interpretation_(logic)).
+Abstract type for representing a [logical
+interpretation](https://en.wikipedia.org/wiki/Interpretation_(logic)).
 In the case of
 [propositional logic](https://simple.wikipedia.org/wiki/Propositional_logic),
 is essentially a map *atom → truth value*.

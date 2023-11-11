@@ -14,7 +14,7 @@ These structures are especially useful when performing
 [model checking](https://en.wikipedia.org/wiki/Model_checking).
 
 See also [`valuetype`](@ref), [`truthtype`](@ref),
-[`InterpretationSet`](@ref).
+[`InterpretationVector`](@ref).
 """
 abstract type AbstractInterpretationSet{M<:AbstractInterpretation} <: AbstractDataset end
 
@@ -120,7 +120,7 @@ end
 ############################################################################################
 
 """
-    struct InterpretationSet{M<:AbstractInterpretation} <: AbstractInterpretationSet{M}
+    struct InterpretationVector{M<:AbstractInterpretation} <: AbstractInterpretationSet{M}
         instances::Vector{M}
     end
 
@@ -128,12 +128,12 @@ A dataset of interpretations instantiated as a vector.
 
 [`AbstractInterpretationSet`](@ref).
 """
-struct InterpretationSet{M<:AbstractInterpretation} <: AbstractInterpretationSet{M}
+struct InterpretationVector{M<:AbstractInterpretation} <: AbstractInterpretationSet{M}
     instances::Vector{M}
 end
 
-Base.getindex(s::InterpretationSet, i_instance::Integer) = Base.getindex(s.instances, i_instance)
-getinstance(s::InterpretationSet, i_instance::Integer) = Base.getindex(s, i_instance)
+Base.getindex(s::InterpretationVector, i_instance::Integer) = Base.getindex(s.instances, i_instance)
+getinstance(s::InterpretationVector, i_instance::Integer) = Base.getindex(s, i_instance)
 
 ############################################################################################
 

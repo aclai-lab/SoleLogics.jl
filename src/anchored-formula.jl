@@ -228,7 +228,7 @@ end
 
 """
     parsebaseformula(
-        expression::String,
+        expr::String,
         additional_operators::Union{Nothing,Vector{<:Operator}} = nothing;
         operators::Union{Nothing,Vector{<:Operator}},
         grammar::Union{Nothing,AbstractGrammar} = nothing,
@@ -236,7 +236,7 @@ end
         kwargs...
     )::AnchoredFormula
 
-Return a `AnchoredFormula` which is the result of parsing `expression`
+Return a `AnchoredFormula` which is the result of parsing an expression
 via the [Shunting yard](https://en.wikipedia.org/wiki/Shunting_yard_algorithm) algorithm.
 By default, this function is only able to parse operators in
 `SoleLogics.BASE_PARSABLE_OPERATORS`; additional operators may be provided as
@@ -252,7 +252,7 @@ parsebaseformula(expr::String, args...; kwargs...) = parseformula(AnchoredFormul
 
 function parseformula(
     ::Type{AnchoredFormula},
-    expression::String,
+    expr::String,
     additional_operators::Union{Nothing,Vector{<:Operator}} = nothing;
     # TODO add alphabet parameter add custom parser for atoms
     # alphabet::Union{Nothing,Vector,AbstractAlphabet} = nothing,
@@ -263,7 +263,7 @@ function parseformula(
     additional_operators =
         (isnothing(additional_operators) ? Operator[] : additional_operators)
 
-    t = parseformula(SyntaxTree, expression, additional_operators; kwargs...)
+    t = parseformula(SyntaxTree, expr, additional_operators; kwargs...)
     baseformula(t;
         # additional_operators = unique(Operator[operators..., SoleLogics.operators(t)...]),
         additional_operators = length(additional_operators) == 0 ? nothing :
@@ -277,11 +277,11 @@ end
 
 function parseformula(
     ::Type{AnchoredFormula},
-    expression::String,
+    expr::String,
     logic::AbstractLogic;
     kwargs...,
 )
-    AnchoredFormula(logic, parseformula(SyntaxTree, expression, operators(logic); kwargs...))
+    AnchoredFormula(logic, parseformula(SyntaxTree, expr, operators(logic); kwargs...))
 end
 
 
