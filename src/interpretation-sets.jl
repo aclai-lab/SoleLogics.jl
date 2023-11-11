@@ -174,7 +174,7 @@ end
 #     return error("Please, provide method relations(::$(typeof(X))).")
 # end
 
-
+"""TODO: docstring"""
 function frame(X::AbstractInterpretationSet, i_instance::Integer)
     return frame(getinstance(X, i_instance))
 end

@@ -11,7 +11,7 @@ Abstract type for dimensional frames. Given a `N`-dimensional array of size (X, 
 the corresponding dimensional frame is a graph where each vertex is an
 `N`-hyperrectangle (e.g., an Interval/Interval2D) in the space (1:X, 1:Y, 1:Z, ...).
 
-See also 
+See also
 [`Interval`](@ref),
 [`Interval2D`](@ref),
 [`IntervalRelation`](@ref),
@@ -58,19 +58,18 @@ julia> collect(accessibles(SoleLogics.FullDimensionalFrame(5,5), Interval2D((2,3
 
 ```
 
-See also 
+See also
 [`OneWorld`](@ref),
 [`Interval`](@ref),
 [`Interval2D`](@ref),
 [`IntervalRelation`](@ref),
-[`IntervalRelation2D`](@ref),
 [`accessibles`](@ref),
 [`AbstractDimensionalFrame`](@ref), [`AbstractMultiModalFrame`](@ref).
 """
 struct FullDimensionalFrame{N,W<:AbstractWorld} <: AbstractDimensionalFrame{N,W}
-    
+
     channelsize::NTuple{N,Int}
-    
+
     function FullDimensionalFrame{N,W}(channelsize::NTuple{N,Int}) where
             {N,W<:AbstractWorld}
         new{N,W}(channelsize)
@@ -79,7 +78,7 @@ struct FullDimensionalFrame{N,W<:AbstractWorld} <: AbstractDimensionalFrame{N,W}
             {N,W<:AbstractWorld}
         FullDimensionalFrame{N,W}(channelsize)
     end
-    
+
     function FullDimensionalFrame(channelsize::Tuple{})
         W = OneWorld
         FullDimensionalFrame{0,W}(channelsize)

@@ -921,7 +921,7 @@ function associativity(op::AbstractRelationalOperator)
     end
 end
 
-"""
+const archetypmodal_relops_docstring = """
     struct DiamondRelationalOperator{R<:AbstractRelation} <: AbstractRelationalOperator{R} end
     struct BoxRelationalOperator{R<:AbstractRelation} <: AbstractRelationalOperator{R} end
 
@@ -949,9 +949,12 @@ See also
 [`syntaxstring`](@ref), [`dual`](@ref),
 [`AbstractKripkeStructure`](@ref), [`AbstractFrame`](@ref).
 """
+
+"""$(archetypmodal_relops_docstring)"""
 struct DiamondRelationalOperator{R<:AbstractRelation} <: AbstractRelationalOperator{R} end
 (DiamondRelationalOperator)(r::AbstractRelation) = DiamondRelationalOperator{typeof(r)}()
 
+"""$(archetypmodal_relops_docstring)"""
 struct BoxRelationalOperator{R<:AbstractRelation} <: AbstractRelationalOperator{R} end
 (BoxRelationalOperator)(r::AbstractRelation) = BoxRelationalOperator{typeof(r)}()
 
@@ -978,7 +981,7 @@ dual(op::BoxRelationalOperator)     = DiamondRelationalOperator{relationtype(op)
 Return either the diamond modal operator from unimodal logic (i.e., ◊), or a
 a diamond relational operator from a multi-modal logic, wrapping the relation `r`.
 
-See also [`DiamondRleationaOperator`](@ref), [`diamond`](@ref), [`DIAMOND`](@ref).
+See also [`DiamondRelationalOperator`](@ref), [`diamond`](@ref), [`DIAMOND`](@ref).
 """
 function diamond() DIAMOND end
 function diamond(r::AbstractRelation) DiamondRelationalOperator(r) end
