@@ -43,16 +43,6 @@ function simplify(c::Connective, φs::NTuple{N,T where T<:Truth}) where {N}
     collatetruth(c, φs)
 end
 
-# Incomplete information
-simplify(::typeof(∧), (t1, t2)::Tuple{Top,Formula}) = t2
-simplify(::typeof(∧), (t1, t2)::Tuple{Bot,Formula}) = t1
-simplify(::typeof(∧), (t1, t2)::Tuple{Formula,Top}) = t1
-simplify(::typeof(∧), (t1, t2)::Tuple{Formula,Bot}) = t2
-simplify(::typeof(∨), (t1, t2)::Tuple{Bot,Formula}) = t2
-simplify(::typeof(∨), (t1, t2)::Tuple{Top,Formula}) = t1
-simplify(::typeof(∨), (t1, t2)::Tuple{Formula,Bot}) = t1
-simplify(::typeof(∨), (t1, t2)::Tuple{Formula,Top}) = t2
-
 ############################################################################################
 ##################################### BASE CONNECTIVES #####################################
 ############################################################################################
@@ -288,11 +278,31 @@ domain(::BooleanAlgebra) = [TOP, BOT]
 top(::BooleanAlgebra) = TOP
 bot(::BooleanAlgebra) = BOT
 
+############################################################################################
+
 # Standard semantics for NOT, AND, OR, IMPLIES
 collatetruth(::typeof(¬), (ts,)::Tuple{Bot}) = TOP
 collatetruth(::typeof(¬), (ts,)::Tuple{Top}) = BOT
 collatetruth(::typeof(∧), (t1, t2)::NTuple{N,T where T<:BooleanTruth}) where {N} = min(t1, t2)
 collatetruth(::typeof(∨), (t1, t2)::NTuple{N,T where T<:BooleanTruth}) where {N} = max(t1, t2)
+
+# Incomplete information
+simplify(::typeof(∧), (t1, t2)::Tuple{Top,Top}) = TOP
+simplify(::typeof(∧), (t1, t2)::Tuple{Top,Bot}) = BOT
+simplify(::typeof(∧), (t1, t2)::Tuple{Bot,Top}) = BOT
+simplify(::typeof(∧), (t1, t2)::Tuple{Bot,Bot}) = BOT
+simplify(::typeof(∧), (t1, t2)::Tuple{Top,Formula}) = t2
+simplify(::typeof(∧), (t1, t2)::Tuple{Bot,Formula}) = t1
+simplify(::typeof(∧), (t1, t2)::Tuple{Formula,Top}) = t1
+simplify(::typeof(∧), (t1, t2)::Tuple{Formula,Bot}) = t2
+simplify(::typeof(∨), (t1, t2)::Tuple{Top,Top}) = TOP
+simplify(::typeof(∨), (t1, t2)::Tuple{Top,Bot}) = TOP
+simplify(::typeof(∨), (t1, t2)::Tuple{Bot,Top}) = TOP
+simplify(::typeof(∨), (t1, t2)::Tuple{Bot,Bot}) = BOT
+simplify(::typeof(∨), (t1, t2)::Tuple{Bot,Formula}) = t2
+simplify(::typeof(∨), (t1, t2)::Tuple{Top,Formula}) = t1
+simplify(::typeof(∨), (t1, t2)::Tuple{Formula,Bot}) = t1
+simplify(::typeof(∨), (t1, t2)::Tuple{Formula,Top}) = t2
 
 # The IMPLIES operator, →, falls back to using ¬ and ∨
 function collatetruth(::typeof(→), (t1, t2)::NTuple{2,BooleanTruth})
