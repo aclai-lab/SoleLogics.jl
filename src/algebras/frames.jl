@@ -64,7 +64,7 @@ julia> syntaxstring(SoleLogics.tocenterrel)
 ```
 
 See also
-[`IdentityRel`](@ref),
+[`identityrel`](@ref),
 [`centralworld`](@ref),
 [`AbstractRelation`](@ref),
 [`AbstractWorld`](@ref),
