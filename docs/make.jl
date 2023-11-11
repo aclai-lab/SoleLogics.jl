@@ -6,7 +6,7 @@ DocMeta.setdocmeta!(SoleLogics, :DocTestSetup, :(using SoleLogics); recursive = 
 makedocs(;
     modules = [SoleLogics],
     authors = "Mauro Milella, Giovanni Pagliarini, Eduard I. Stan",
-    repo=GitHub("aclai-lab", "SoleLogics.jl"),
+    repo=Documenter.Remotes.GitHub("aclai-lab", "SoleLogics.jl"),
     sitename = "SoleLogics.jl",
     format = Documenter.HTML(;
         size_threshold = 4000000,
