@@ -17,20 +17,14 @@ makedocs(;
     pages = [
         "Home" => "index.md",
         "Getting started" => "getting-started.md",
-<<<<<<< HEAD
         "Introduction to Logics and Propositional Logic" => "base-logic.md",
         "Modal Logic" => "modal-logic.md",
-        "Work in progress" => "wip.md"
-        "Utilities" => "utilities.md"
+        "Work in progress" => "wip.md",
+        "Utilities" => "utilities.md",
+        "Hands On" => "hands-on.md"
     ],
     # NOTE: warning
     warnonly = :true,
-=======
-        "Propositional logic" => "propositional-logic.md",
-        "Modal logic" => "modal-logic.md",
-        "Full reference" => "autodocs.md",
-    ]
->>>>>>> a54907305d6ea7b34e699f2bf94729918be4fd59
 )
 
 @info "`makedocs` has finished running. "
