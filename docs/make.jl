@@ -17,7 +17,7 @@ makedocs(;
     pages = [
         "Home" => "index.md",
         "Getting started" => "getting-started.md",
-        "Logics" => "logics.md",
+        "Introduction to Logics and BooleanLogic" => "logics.md",
         "Full reference" => "autodocs.md"
     ],
     # NOTE: warning
