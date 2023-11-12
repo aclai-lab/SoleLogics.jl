@@ -10,7 +10,7 @@ See also [`simplify`](@ref), [`Connective`](@ref), [`Truth`](@ref).
 """
 function collatetruth(
     c::Connective,
-    ts::NTuple{N,T where T<:Truth},
+    ts::NTuple{N,T where T<:Truth}
 )::Truth where {N}
     if arity(c) != length(ts)
         return error("Cannot collate $(length(ts)) truth values for " *

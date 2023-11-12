@@ -3,7 +3,7 @@ CurrentModule = SoleLogics
 ```
 
 ```@contents
-Pages = ["logics.md"]
+Pages = ["base-logic.md"]
 ```
 
 # [Introduction](@id introduction)
@@ -20,6 +20,7 @@ Recalling the type hierarchy presented in [man-core](@ref), it is enriched with 
     - [`BooleanTruth`](@ref) (new)
         - [`Top`] (⊤)
         - [`Bot`] (⊥)
+---
 
 - [`Connective`](@ref)
     - [`NamedConnective`](@ref) (new)
@@ -32,16 +33,20 @@ Recalling the type hierarchy presented in [man-core](@ref), it is enriched with 
     - [`AbstractRelationalOperator`](@ref) (new)
         - [`DiamondRelationalOperator`](@ref)
         - [`BoxRelationalOperator`](@ref)
+---
 
 - [`AbstractAlphabet{V}`](@ref) (new)
     - [`ExplicitAlphabet{V}`](@ref)
     - [`AlphabetOfAny{V}`](@ref)
+---
 
 - [`AbstractGrammar{V<:AbstractAlphabet,O<:Operator}`](@ref) (new)
     - [`CompleteFlatGrammar{V<:AbstractAlphabet,O<:Operator}`](@ref)
+---
 
 - [`AbstractAlgebra{T<:Truth}`](@ref) (new)
     - [`BooleanAlgebra`](@ref)
+---
 
 - [`AbstractLogic{G<:AbstractGrammar,V<:AbstractAlgebra}`](@ref) (new)
     - [`BaseLogic{G<:AbstractGrammar,A<:AbstractAlgebra}`]
@@ -94,7 +99,7 @@ algebra(l::AbstractLogic{G,V}) where {G,V}
 # [More about Connectives](@id more-about-connectives)
 ```@docs
 NamedConnective{Symbol}
-function collatetruth(c::Connective, ts::NTuple{N,T where T<:Truth}) where {N}
+collatetruth(c::Connective, ts::NTuple{N,T where T<:Truth}) where {N}
 simplify(c::Connective, ts::NTuple{N,F where F<:Formula}) where {N}
 ```
 
@@ -108,9 +113,9 @@ IMPLICATION
 ```
 
 ```@docs
-BooleanTruth <: Truth
-Top <: BooleanTruth
-Bot <: BooleanTruth
+BooleanTruth
+Top
+Bot
 ```
 
 Boolean logic [`Operator`](@ref)s are regrouped in a single collection.
@@ -122,6 +127,3 @@ BASE_OPERATORS
 BooleanAlgebra
 BaseLogic{G<:AbstractGrammar,A<:AbstractAlgebra}
 ```
-
-# [Modal Logic](@id modal-logic)
-#TODO: modal-logic.jl

@@ -23,6 +23,7 @@ Please, feel free to use the following tree structures to orient yourself in the
                     - [`Atom`](@ref) (e.g., p, q)
                     - [`Truth`](@ref) (e.g., ⊤, ⊥)
                 - [`SyntaxBranch`](@ref) (e.g., p ∧ q)
+        - ... (more on Formula subtypes in the next chapters)
     - [`Connective`](@ref) (e.g., ∧, ∨, ¬, →)
 
 Also, [`Operator`](@ref) (that is, union of [`Connective`](@ref) and [`Truth`](@ref)) and [`SyntaxToken`](@ref) (that is, union of [`Atom`](@ref) and [`Connective`](@ref)).  
