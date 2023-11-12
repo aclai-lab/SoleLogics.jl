@@ -52,7 +52,7 @@ By default, an alphabet is considered finite:
     Base.in(p::Atom, a::AbstractAlphabet) = Base.isfinite(a) ? Base.in(p, atoms(a)) : error(...)
 
 See also [`AbstractGrammar`](@ref), [`AlphabetOfAny`](@ref), [`Atom`](@ref),
-[`ExplicitAlphabet`](@ref), [`atomstype`](@ref),  [`valuetype`](@ref).
+[`ExplicitAlphabet`](@ref).
 """
 abstract type AbstractAlphabet{V} end
 
@@ -68,7 +68,13 @@ An alphabet of `valuetype` `V` can be used for instantiating atoms of valuetype 
 (::AbstractAlphabet{V})(a) where {V} = Atom{V}(a)
 
 # Default behavior
-"""TODO: docstring"""
+"""
+    Base.isfinite(a::AbstractAlphabet)
+
+Return `true` if the alphabet is finite, `false` otherwise.
+
+See [`AbstractAlphabet`](@ref).
+"""
 Base.isfinite(::Type{<:AbstractAlphabet}) = true
 Base.isfinite(a::AbstractAlphabet) = Base.isfinite(typeof(a))
 
@@ -77,7 +83,7 @@ Base.isfinite(a::AbstractAlphabet) = Base.isfinite(typeof(a))
 
 List the atoms of a *finite* alphabet.
 
-See also [`AbstractAlphabet`](@ref), [`Base.isfinite`](@ref).
+See also [`AbstractAlphabet`](@ref).
 """
 function atoms(a::AbstractAlphabet)::AbstractVector{atomstype(a)}
     if Base.isfinite(a)
@@ -215,14 +221,11 @@ that consists of all the (singleton) child types of `O`.
 V context-free grammar is a simple structure for defining formulas inductively.
 
 See also [`alphabet`](@ref),
-[`atomstype`](@ref), [`tokenstype`](@ref),
-[`operatorstype`](@ref), [`alphabettype`](@ref),
 [`AbstractAlphabet`](@ref), [`Operator`](@ref).
 """
 abstract type AbstractGrammar{V<:AbstractAlphabet,O<:Operator} end
 
 operatorstype(::AbstractGrammar{V,O}) where {V,O} = O
-"""TODO: docstring"""
 alphabettype(::AbstractGrammar{V,O}) where {V,O} = V
 
 """

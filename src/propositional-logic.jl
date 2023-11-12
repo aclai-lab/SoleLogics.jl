@@ -94,7 +94,7 @@ function interpret(a::Atom, i::AbstractAssignment, args...; kwargs...)::SyntaxLe
 end
 
 function interpret(φ::SyntaxBranch, i::AbstractAssignment, args...; kwargs...)::Formula
-    return collatetruth(token(φ), Tuple(
+    return simplify(token(φ), Tuple(
         [interpret(ch, i, args...; kwargs...) for ch in children(φ)]
     ))
 end
@@ -147,10 +147,10 @@ true
 ```
 
 !!! note
-If prompted for the value of an unknown atom, this throws an error.
-If boolean, integer, or float values are specified, they are converted to
-`Truth` values.
-If the structure is initialized as empty, `BooleanTruth` values are assumed.
+    If prompted for the value of an unknown atom, this throws an error.
+    If boolean, integer, or float values are specified, they are converted to
+    `Truth` values.
+    If the structure is initialized as empty, `BooleanTruth` values are assumed.
 
 See also
 [`DefaultedTruthDict`](@ref),

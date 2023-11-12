@@ -90,11 +90,32 @@ in principle, the definition can rely on the partial order between truth values
 
 Here is an example of a custom implementation of the xor (⊻) Boolean operator.
 ```julia
+import SoleLogics: arity, iscommutative, collatetruth
 const ⊻ = SoleLogics.NamedConnective{:⊻}()
 SoleLogics.arity(::typeof(⊻)) = 2
 SoleLogics.iscommutative(::typeof(⊻)) = true
-collatetruth(::typeof(⊻), (t1, t2)::NTuple{N,T where T<:BooleanTruth}) where {N} = (count(istop, (t1, t2)) == 1)
+SoleLogics.collatetruth(::typeof(⊻), (t1, t2)::NTuple{N,T where T<:BooleanTruth}) where {N} = (count(istop, (t1, t2)) == 1)
 ```
+Note that `collatetruth` must be defined at least for some truth value types `T` via methods
+accepting an `NTuple{arity,T}` as a second argument.
+
+To make the operator work with incomplete interpretations (e.g., when the `Truth` value
+for an atom is not known), simplification rules for `NTuple{arity,T where T<:Formula}`'s
+should be provided via methods for `simplify`.
+For example, these rules suffice for simplifying xors between `Top/`Bot`'s, and other formulas:
+```julia
+import SoleLogics: simplify
+simplify(::typeof(⊻), (t1, t2)::Tuple{Top,Top}) = Bot
+simplify(::typeof(⊻), (t1, t2)::Tuple{Top,Bot}) = Top
+simplify(::typeof(⊻), (t1, t2)::Tuple{Bot,Top}) = Top
+simplify(::typeof(⊻), (t1, t2)::Tuple{Bot,Bot}) = Bot
+simplify(::typeof(⊻), (t1, t2)::Tuple{Top,Formula}) = ¬t2
+simplify(::typeof(⊻), (t1, t2)::Tuple{Bot,Formula}) = t2
+simplify(::typeof(⊻), (t1, t2)::Tuple{Formula,Top}) = ¬t1
+simplify(::typeof(⊻), (t1, t2)::Tuple{Formula,Bot}) = t1
+```
+
+Beware of dispatch ambiguities!
 
 See also [`arity`](@ref),
 [`SyntaxBranch`](@ref), [`associativity`](@ref), [`precedence`](@ref),
@@ -364,19 +385,12 @@ end
 Base.hash(φ::SyntaxTree) = Base.hash(token(φ), Base.hash(children(φ)))
 
 # Helpers
-"""TODO: docstring"""
 tokentype(φ::SyntaxTree) = typeof(token(φ))
-"""TODO: docstring"""
 tokenstype(φ::SyntaxTree) = Union{tokentype(φ),tokenstype.(children(φ))...}
-"""TODO: docstring"""
 atomstype(φ::SyntaxTree) = typeintersect(Atom, tokenstype(φ))
-"""TODO: docstring"""
 truthstype(φ::SyntaxTree) = typeintersect(Truth, tokenstype(φ))
-"""TODO: docstring"""
 leavestype(φ::SyntaxTree) = typeintersect(SyntaxLeaf, tokenstype(φ))
-"""TODO: docstring"""
 connectivestype(φ::SyntaxTree) = typeintersect(Connective, tokenstype(φ))
-"""TODO: docstring"""
 operatorstype(φ::SyntaxTree) = typeintersect(Operator, tokenstype(φ))
 
 function composeformulas(c::Connective, φs::NTuple{N,SyntaxTree}) where {N}
@@ -509,7 +523,6 @@ value(p::Atom) = p.value
 dual(p::Atom) = Atom(dual(value(p)))
 dual(value) = error("Please, provide method SoleLogics.dual(::$(typeof(value))).") # TODO explain why?
 
-"""TODO: docstring"""
 valuetype(::Atom{V}) where {V} = V
 valuetype(::Type{Atom{V}}) where {V} = V
 
@@ -742,9 +755,9 @@ See also
 [`arity`](@ref),
 [`Connective`](@ref),
 [`height`](@ref),
-[`atoms`](@ref), [`natoms`](@ref), [`atomstype`](@ref),
-[`operators`](@ref), [`noperators`](@ref), [`operatorstype`](@ref),
-[`tokens`](@ref), [`ntokens`](@ref), [`tokenstype`](@ref),
+[`atoms`](@ref), [`natoms`](@ref),
+[`operators`](@ref), [`noperators`](@ref),
+[`tokens`](@ref), [`ntokens`](@ref),
 """
 struct SyntaxBranch{T<:Connective} <: SyntaxTree
 
@@ -881,8 +894,8 @@ end
 """
     abstract type AbstractInterpretation end
 
-Abstract type for representing a logical
-[interpretation](https://en.wikipedia.org/wiki/Interpretation_(logic)).
+Abstract type for representing a [logical
+interpretation](https://en.wikipedia.org/wiki/Interpretation_(logic)).
 In the case of
 [propositional logic](https://simple.wikipedia.org/wiki/Propositional_logic),
 is essentially a map *atom → truth value*.
@@ -955,7 +968,7 @@ function interpret(
     return error("Please, provide method " *
                  "interpret(φ::SyntaxBranch, i::$(typeof(i)), " *
                  "args...::$(typeof(args)); " *
-                 "kwargs...::$(typeof(kwargs))::$(truthtype(i)).")
+                 "kwargs...::$(typeof(kwargs))).")
 end
 
 interpret(t::Truth, i::AbstractInterpretation, args...; kwargs...) = t

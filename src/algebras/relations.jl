@@ -44,7 +44,7 @@ IdentityRel()
 ```
 
 See also
-[`GlobalRel`](@ref),
+[`globalrel`](@ref),
 [`AbstractRelation`](@ref),
 [`AbstractWorld`](@ref),
 [`AbstractFrame`](@ref).
@@ -87,7 +87,7 @@ GlobalRel()
 ```
 
 See also
-[`IdentityRel`](@ref),
+[`identityrel`](@ref),
 [`AbstractRelation`](@ref),
 [`AbstractWorld`](@ref),
 [`AbstractFrame`](@ref).

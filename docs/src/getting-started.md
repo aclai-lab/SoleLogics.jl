@@ -14,21 +14,21 @@ The semantic part deals with defining which rules must be applied when interpret
 
 Please, feel free to use the following tree structures to orient yourself in the reading of this section. More pieces will be added to this type-hierarchy tree in the following sections.
 
-[`Syntactical`](@ref)\
-    ├── [`Formula`](@ref)\
-    │   ├── [`AbstractSyntaxStructure`](@ref)\
-    │   │   ├── [`SyntaxTree`](@ref)\
-    │   │   │   ├── [`SyntaxLeaf`](@ref)\
-    │   │   │   │   ├── [`Atom`](@ref)\
-    │   │   │   │   └── [`Truth`](@ref)\
-    │   │   │   │       └── ...\
-    │   │   │   └── [`SyntaxBranch`](@ref)\
-    │   │   └── ...\
-    │   └── ...\
-    └── [`Connective`](@ref)\
-        ├── [`NamedConnective`](@ref) (e.g., ∧, ∨, →, ¬, □, ◊)\
-        └── ...\
+## Syntax and Semantics tree type hierarchies
+- [`Syntactical`](@ref)
+    - [`Formula`](@ref)
+        - [`AbstractSyntaxStructure`](@ref)
+            - [`SyntaxTree`](@ref)
+                - [`SyntaxLeaf`](@ref)
+                    - [`Atom`](@ref) (e.g., p, q)
+                    - [`Truth`](@ref) (e.g., ⊤, ⊥)
+                - [`SyntaxBranch`](@ref) (e.g., p ∧ q)
+    - [`Connective`](@ref) (e.g., ∧, ∨, ¬, →)
 
+Also, [`Operator`](@ref) (that is, union of [`Connective`](@ref) and [`Truth`](@ref)) and [`SyntaxToken`](@ref) (that is, union of [`Atom`](@ref) and [`Connective`](@ref)).  
+
+- [`AbstractInterpretation`](@ref) (e.g., p is ⊤, equivalent to p is true in boolean logic)
+        
 ## [Syntax Basics](@id syntactical-base-definitions)
 
 ```@docs

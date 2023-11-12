@@ -253,8 +253,8 @@ thanks to the following two methods that were defined in SoleLogics:
     end
 
 !!! note
-To allow for the composition of `Formula`s of different types,
-promotion rules should be provided.
+    To allow for the composition of `Formula`s of different types,
+    promotion rules should be provided.
 
 See also [`Formula`](@ref), [`Connective`](@ref).
 """
@@ -312,16 +312,19 @@ See also [`Formula`](@ref), [`SyntaxToken`](@ref).
 """
 
 doc_dual = """
-    dual(op::SyntaxToken)
+    dual(tok::SyntaxToken)
 
-Return the `dual` of an `Operator`.
-Given an operator `op` of arity `n`, the dual `dop` is such that, on a Boolean algebra,
-`op(ch_1, ..., ch_n)` ≡ `¬dop(¬ch_1, ..., ¬ch_n)`.
+Return the `dual` of a syntax token.
+
+If `tok` is an `Operator` of arity `n`, the dual `dtok` is such that, on a Boolean algebra,
+`tok(ch_1, ..., ch_n)` ≡ `¬dtok(¬ch_1, ..., ¬ch_n)`.
 
 Duality can be used to perform syntactic simplifications on formulas.
-For example, since `∧` and `∨` are `dual`s, `¬(¬p ∧ ¬q)` can be simplified to `(p ∧ q)`.
-Duality also applies to `Truth` values (`⊤`/`⊥`), with existential/universal
-semantics (`◊`/`□`), and `Atom`s.
+For example, since `∧` and `∨` are `dual`s, `¬(¬p ∧ ¬q)` can be simplified to `(p ∧ q)`
+(De Morgan's law).
+Duality also applies to operators
+with existential/universal semantics (`◊`/`□`),
+to `Truth` values (`⊤`/`⊥`), and to `Atom`s.
 
 # Implementation
 
