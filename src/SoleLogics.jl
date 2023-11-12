@@ -30,6 +30,7 @@ export tree
 
 export tokens, ntokens, atoms, natoms, truths, ntruths, leaves, nleaves,
         connectives, nconnectives, operators, noperators, height
+export composeformulas
 
 export interpret, check
 

@@ -6,8 +6,13 @@ CurrentModule = SoleLogics
 Pages = ["logics.md"]
 ```
 
-# [Propositional Logic](@id propositional-logic)
+# [Anticipation](@id anticipation)
+TODO: update hierarchy type here, adding definitions the reader is going to learn.
 
-```@docs
-Atom
-```
+# [Propositional Logic](@id propositional-logic)
+TODO: logics.jl
+TODO: base-logic.jl
+TODO: propositional-logic.jl
+
+# [Modal Logic](@id modal-logic)
+#TODO: modal-logic.jl

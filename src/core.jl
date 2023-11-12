@@ -26,7 +26,7 @@
         │   ├── BoxRelationalOperator (e.g., [G])
         │   └── ...
         └── ...
-
+¬ \
     Also:
     const Operator = Union{Connective,Truth}
     const SyntaxToken = Union{Connective,SyntaxLeaf}
@@ -77,7 +77,7 @@ When implementing a new type `C` for a *commutative* connective with arity highe
 please provide a method `iscommutative(::C)`. This can speed up model checking operations.
 
 When implementing a custom binary connective, one can override the default `precedence` and
-`associativity` (see https://docs.julialang.org/en/v1/manual/mathematical-operations/#Operator-Precedence-and-Associativity).
+`associativity` (see [here](https://docs.julialang.org/en/v1/manual/mathematical-operations/#Operator-Precedence-and-Associativity).
 If the custom connective is a `NamedConnective` and renders as something considered as a
 `math symbol` (for example, `⊙`, see https://stackoverflow.com/a/60321302/5646732),
 by the Julia parser, `Base.operator_precedence`

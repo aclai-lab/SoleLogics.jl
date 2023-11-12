@@ -75,7 +75,8 @@ See also [`SyntaxLeaf`](@ref), [`Operator`](@ref), [`parseformula`](@ref).
 
 doc_arity = """
     arity(tok::Connective)::Integer
-    arity(φ::SyntaxLeaf)::Integer # TODO extend to SyntaxTree SyntaxBranch
+    arity(φ::SyntaxTree)::Integer
+    arity(φ::SyntaxLeaf)::Integer
 
 Return the `arity` of a `Connective` or an `SyntaxLeaf`. The `arity` is an integer
 representing the number of allowed children in a `SyntaxBranch`. `Connective`s with `arity`
