@@ -30,6 +30,7 @@ valuetype(s::AbstractInterpretationSet) = valuetype(typeof(s))
 truthtype(::Type{S}) where {M,S<:AbstractInterpretationSet{M}} = truthtype(M)
 truthtype(s::AbstractInterpretationSet) = truthtype(typeof(s))
 
+# Fallback
 function getinstance(s::AbstractInterpretationSet, i_instance::Integer)
     return LogicalInstance(s, i_instance)
 end
@@ -71,6 +72,8 @@ struct LogicalInstance{S<:AbstractInterpretationSet} <: AbstractInterpretation
 end
 
 splat(i::LogicalInstance) = (i.s, i.i_instance)
+
+truthtype(i::LogicalInstance) = truthtype(i.s)
 
 """
     check(

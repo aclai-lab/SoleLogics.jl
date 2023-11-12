@@ -334,7 +334,7 @@ _subtrees(tree::SyntaxTree) = [tree, Iterators.flatten(_subtrees.(children(tree)
     )::SyntaxTree
 
 Return a subtree of syntax tree, by following these options:
- - `criterion`: function used to calculate the probability of stopping at a random node;
+ - `criterion`: function used to compute the probability of stopping at a random node;
  - `returnnode`: true if only the subtree is to be returned;
  - `transformnode`: function that will be applied to the chosen subtree.
 
@@ -358,7 +358,7 @@ function treewalk(
         c_father = criterion(token(st)) ? 1 : 0
 
         @assert [c_chsub..., c_father] isa AbstractVector{<:Integer} "Not all values " *
-        "calculated as criterion are integers, double check the passed function used for " *
+        "computed as criterion are integers, double check the passed function used for " *
         "calculating these; values: $([c_chsub..., c_father])"
 
         w_nodes = [c_chsub..., c_father]/sum([c_chsub..., c_father])

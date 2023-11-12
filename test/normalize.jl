@@ -19,6 +19,11 @@ using Random
 
 @test (normalize(parseformula("◊((¬(□(q))) → ⊥)")) |> syntaxstring) == "◊□q"
 
+@test SoleLogics.simplify(parseformula("⊥ → ⊥)")) == ⊤
+@test SoleLogics.simplify(parseformula("⊥ ∨ ⊥)")) == ⊥
+@test SoleLogics.simplify(parseformula("⊤ ∨ ⊥)")) == ⊤
+@test SoleLogics.simplify(parseformula("⊥ ∧ ⊥)")) == ⊥
+
 p = Atom("p")
 q = Atom("q")
 r = Atom("r")
