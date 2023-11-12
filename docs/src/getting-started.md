@@ -26,9 +26,15 @@ Please, feel free to use the following tree structures to orient yourself in the
         - ... (more on Formula subtypes in the next chapters)
     - [`Connective`](@ref) (e.g., ∧, ∨, ¬, →)
 
-Also, [`Operator`](@ref) (that is, union of [`Connective`](@ref) and [`Truth`](@ref)) and [`SyntaxToken`](@ref) (that is, union of [`Atom`](@ref) and [`Connective`](@ref)).  
+---
 
 - [`AbstractInterpretation`](@ref) (e.g., p is ⊤, equivalent to p is true in boolean logic)
+
+---
+
+Also, two union types are defined:
+- [`Operator`](@ref), that is, `Union{Connective,Truth}`, 
+- [`SyntaxToken`](@ref), that is, `Union{Atom,Connective}`.  
         
 ## [Syntax Basics](@id syntactical-base-definitions)
 

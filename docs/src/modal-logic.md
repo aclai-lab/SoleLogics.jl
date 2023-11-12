@@ -5,7 +5,7 @@ CurrentModule = SoleLogics
 ```@contents
 Pages = ["modal-logic.md"]
 ```
-# [Introduction](@modal-logic-introduction)
+# [Introduction](@id modal-logic-introduction)
 At the end of this chapter, you are going to understand what modal logic is, and why it is so important from a computational standpoint of view, with respect to propositional logic and first order logic. For those of you who want to fully immerse in the topic, we recommend reading the thesis [Foundations of Modal Symbolic Learning](https://eduardstan.github.io/assets/pdf/publications/theses/phd_thesis2023.pdf), by Stan Ionel Eduard. 
 
 Recalling the type hierarchy presented in [man-core](@ref), it is here enriched with the following new types and structures.
