@@ -231,6 +231,7 @@ function syntaxstring(r::AbstractRelation; kwargs...)::String
 end
 
 doc_conv_rel = """
+    hasconverse(r::AbstractRelation)::Bool
     converse(r::AbstractRelation)::AbstractRelation
 
 If the relation `hasconverse`,
@@ -417,7 +418,7 @@ See also [`AbstractWorld`](@ref),
 function accessibles(
     fr::AbstractMultiModalFrame{W},
     w::W,
-    r::AbstractRelation,
+    r::AbstractRelation
 ) where {W<:AbstractWorld}
     IterTools.imap(W, _accessibles(fr, w, r))
 end
@@ -604,7 +605,7 @@ function check(
     w::Union{Nothing,<:AbstractWorld} = nothing; # TODO remove defaulting
     use_memo::Union{Nothing,AbstractDict{<:Formula,<:Vector{<:AbstractWorld}}} = nothing,
     perform_normalization::Bool = true,
-    memo_max_height::Union{Nothing,Int} = nothing,
+    memo_max_height::Union{Nothing,Int} = nothing
 )::Bool
     W = worldtype(i)
 
@@ -861,7 +862,7 @@ function modallogic(;
     operators::Union{Nothing,Vector{<:Connective}} = nothing,
     grammar::Union{Nothing,AbstractGrammar} = nothing,
     algebra::Union{Nothing,AbstractAlgebra} = nothing,
-    default_operators = BASE_MODAL_OPERATORS,
+    default_operators = BASE_MODAL_OPERATORS
 )
     if !isnothing(operators) && length(setdiff(operators, BASE_PROPOSITIONAL_OPERATORS)) == 0
         @warn "Instantiating modal logic (via `modallogic`) with solely " *
@@ -1057,7 +1058,7 @@ See also [`check`](@ref), [`iscrisp`](@ref),
 function collateworlds(
     fr::AbstractFrame{W},
     op::Operator,
-    t::NTuple{N,<:AbstractWorlds},
+    t::NTuple{N,<:AbstractWorlds}
 )::AbstractVector{<:W} where {N,W<:AbstractWorld}
     if arity(op) != length(t)
         return error("Cannot collate $(length(t)) truth values for " *

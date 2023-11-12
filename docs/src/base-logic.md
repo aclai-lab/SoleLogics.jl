@@ -6,14 +6,14 @@ CurrentModule = SoleLogics
 Pages = ["base-logic.md"]
 ```
 
-# [Introduction](@id introduction)
+# [Introduction](@id base-logic-introduction)
 At the end of this chapter, you are going to understand how [`Atom`](@ref)s and [`Truth`](@ref) values are organized in alphabets, and how grammars are defined. 
 
 You will also get an in-depth view of how boolean truth values and boolean [`Connective`](@ref)'s are defined from both a syntax and a syntactical standpoint of view.
 
 The end of this chapter is dedicated to modal logic, which is one of the most hot topics covered by SoleLogics.
 
-Recalling the type hierarchy presented in [man-core](@ref), it is enriched with the following new types.
+Recalling the type hierarchy presented in [man-core](@ref), it is here enriched with the following new types and structures.
 
 
 - [`Truth`](@ref)
@@ -30,9 +30,6 @@ Recalling the type hierarchy presented in [man-core](@ref), it is enriched with 
         - [`IMPLICATION`](@ref)
         - [`DIAMOND`](@ref)
         - [`BOX`](@ref)
-    - [`AbstractRelationalOperator`](@ref) (new)
-        - [`DiamondRelationalOperator`](@ref)
-        - [`BoxRelationalOperator`](@ref)
 ---
 
 - [`AbstractAlphabet{V}`](@ref) (new)
