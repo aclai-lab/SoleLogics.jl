@@ -548,14 +548,14 @@ syntaxstring(value; kwargs...) = string(value)
     abstract type Truth <: SyntaxLeaf end
 
 Abstract type for syntax leaves representing values of a
-[lattice algebra](https://en.m.wikipedia.org/wiki/Lattice_(order)).
+[lattice algebra](https://en.wikipedia.org/wiki/Lattice_(order)).
 In Boolean logic, the two [`BooleanTruth`](@ref) values [`Top`](@ref)
 and [`Bot`](@ref) are used.
 
 See also [`Top`](@ref), [`Bot`](@ref), [`BooleanTruth`](@ref).
 
 # Implementation
-A [three-valued algebra](https://en.m.wikipedia.org/wiki/Three-valued_logic),
+A [three-valued algebra](https://en.wikipedia.org/wiki/Three-valued_logic),
 that is, an algebra with three truth values
 (top, bottom and *unknown*),
 can be based on the following `Truth` value definitions:

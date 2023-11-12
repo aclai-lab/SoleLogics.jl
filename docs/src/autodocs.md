@@ -2,9 +2,10 @@
 CurrentModule = SoleLogics
 ```
 
-# Full reference for SoleLogics.jl
+# Full Reference
 
-Auto documentation for [SoleLogics.jl](https://github.com/aclai-lab/SoleLogics.jl).
+```@index
+```
 
 ```@autodocs
 Modules = [SoleLogics]
