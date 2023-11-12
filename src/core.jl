@@ -21,9 +21,9 @@
     │   └── ...
     └── Connective
         ├── NamedConnective (e.g., ∧, ∨, →, ¬, □, ◊)
-        ├── AbstractRelationalOperator
-        │   ├── DiamondRelationalOperator (e.g., ⟨G⟩)
-        │   ├── BoxRelationalOperator (e.g., [G])
+        ├── AbstractRelationalConnective
+        │   ├── DiamondRelationalConnective (e.g., ⟨G⟩)
+        │   ├── BoxRelationalConnective (e.g., [G])
         │   └── ...
         └── ...
 ¬ \

@@ -109,15 +109,15 @@ DISJUNCTION
 IMPLICATION
 ```
 
+Boolean logic [`Connective`](@ref)s are regrouped in a single collection.
+```@docs
+BASE_CONNECTIVES
+```
+
 ```@docs
 BooleanTruth
 Top
 Bot
-```
-
-Boolean logic [`Operator`](@ref)s are regrouped in a single collection.
-```@docs
-BASE_OPERATORS
 ```
 
 ```@docs

@@ -174,7 +174,7 @@ normalize(φ::AnchoredFormula; kwargs...) = φ(normalize(tree(φ); kwargs...))
 
 Attempt at instantiating a `AnchoredFormula` from a syntax token/formula,
 by inferring the logic it belongs to. If `infer_logic` is true, then
-a canonical logic (e.g., propositional logic with all the `BASE_PROPOSITIONAL_OPERATORS`) is
+a canonical logic (e.g., propositional logic with all the `BASE_PROPOSITIONAL_CONNECTIVES`) is
 inferred; if it's false, then a logic with exactly the operators appearing in the syntax tree,
 plus the `additional_operators` is instantiated.
 
@@ -188,7 +188,7 @@ julia> unique(operators(logic(SoleLogics.baseformula(t))))
  ◊
  →
 
-julia> unique(operators(logic(SoleLogics.baseformula(t; additional_operators = SoleLogics.BASE_MODAL_OPERATORS))))
+julia> unique(operators(logic(SoleLogics.baseformula(t; additional_operators = SoleLogics.BASE_MODAL_CONNECTIVES))))
 8-element Vector{Union{SoleLogics.BottomOperator, SoleLogics.NamedConnective{:¬}, SoleLogics.NamedConnective{:∧}, SoleLogics.NamedConnective{:∨}, SoleLogics.NamedConnective{:→}, SoleLogics.NamedConnective{:◊}, SoleLogics.NamedConnective{:□}, SoleLogics.TopOperator}}:
  ¬
  ∧
@@ -213,25 +213,25 @@ function baseformula(
     # props = atoms(t)
 
     logic = begin
-        if issubset(conns, BASE_PROPOSITIONAL_OPERATORS)
+        if issubset(conns, BASE_PROPOSITIONAL_CONNECTIVES)
             propositionallogic(;
-                operators = (infer_logic ? BASE_PROPOSITIONAL_OPERATORS : ops),
+                operators = (infer_logic ? BASE_PROPOSITIONAL_CONNECTIVES : ops),
                 kwargs...,
             )
-        elseif issubset(conns, BASE_MODAL_OPERATORS)
+        elseif issubset(conns, BASE_MODAL_CONNECTIVES)
             modallogic(;
-                operators = (infer_logic ? BASE_MODAL_OPERATORS : ops),
-                default_operators = BASE_MODAL_OPERATORS,
+                operators = (infer_logic ? BASE_MODAL_CONNECTIVES : ops),
+                default_operators = BASE_MODAL_CONNECTIVES,
                 kwargs...,
             )
-        elseif issubset(conns, BASE_MULTIMODAL_OPERATORS)
+        elseif issubset(conns, BASE_MULTIMODAL_CONNECTIVES)
             modallogic(;
-                operators = (infer_logic ? BASE_MULTIMODAL_OPERATORS : ops),
-                default_operators = BASE_MULTIMODAL_OPERATORS,
+                operators = (infer_logic ? BASE_MULTIMODAL_CONNECTIVES : ops),
+                default_operators = BASE_MULTIMODAL_CONNECTIVES,
                 kwargs...,
             )
         else
-            unknown_ops = setdiff(conns, BASE_PROPOSITIONAL_OPERATORS, BASE_MODAL_OPERATORS, BASE_MULTIMODAL_OPERATORS)
+            unknown_ops = setdiff(conns, BASE_PROPOSITIONAL_CONNECTIVES, BASE_MODAL_CONNECTIVES, BASE_MULTIMODAL_CONNECTIVES)
             error("Could not infer logic from object of type $(typeof(φ)): $(t). Unknown operators: $(unknown_ops).")
         end
     end

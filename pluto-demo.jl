@@ -80,7 +80,7 @@ begin
 	println("Producing formula of height $treeheight...")
 
 	# Create a random formula
-	φ4 = randformula(Random.MersenneTwister(107), treeheight, [p,q], SoleLogics.BASE_PROPOSITIONAL_OPERATORS)
+	φ4 = randformula(Random.MersenneTwister(107), treeheight, [p,q], SoleLogics.BASE_PROPOSITIONAL_CONNECTIVES)
 
 	φ4 |> syntaxstring |> println
 
@@ -123,7 +123,7 @@ md"""
 
 # ╔═╡ b7b0094f-cfae-43ef-a8dc-4a3150e33339
 # Generate a random MODAL formula
-φmodal = randformula(Random.MersenneTwister(14), 3, [p,q], SoleLogics.BASE_MODAL_OPERATORS)
+φmodal = randformula(Random.MersenneTwister(14), 3, [p,q], SoleLogics.BASE_MODAL_CONNECTIVES)
 
 # ╔═╡ 66f9221f-294d-46d3-9ea7-a68a78216bb6
 

@@ -25,7 +25,7 @@ r = Atom("r")
 
 alph_vector = [p,q,r]
 
-φ = randformula(MersenneTwister(1), 4, alph_vector, SoleLogics.BASE_MODAL_OPERATORS)
+φ = randformula(MersenneTwister(1), 4, alph_vector, SoleLogics.BASE_MODAL_CONNECTIVES)
 
 @test issubset(atoms(φ), alph_vector)
 
@@ -47,7 +47,7 @@ check(φ, K1, w0)
 N = 200
 for K in [K0, K1]
     for i in 1:N
-        _ops = rand([SoleLogics.BASE_MODAL_OPERATORS, union(SoleLogics.BASE_MODAL_OPERATORS, [⊤, ⊥])])
+        _ops = rand([SoleLogics.BASE_MODAL_CONNECTIVES, union(SoleLogics.BASE_MODAL_CONNECTIVES, [⊤, ⊥])])
         _φ = randformula(MersenneTwister(i), 3, alph_vector, _ops)
         _nφ = normalize(_φ)
         # @show syntaxstring(φ)

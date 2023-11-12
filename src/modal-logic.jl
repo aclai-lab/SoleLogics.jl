@@ -565,7 +565,7 @@ julia> @atoms String p q
  Atom{String}("p")
  Atom{String}("q")
 
-julia> fmodal = randformula(Random.MersenneTwister(14), 3, [p,q], SoleLogics.BASE_MODAL_OPERATORS)
+julia> fmodal = randformula(Random.MersenneTwister(14), 3, [p,q], SoleLogics.BASE_MODAL_CONNECTIVES)
 ¬□(p ∨ q)
 
 # A special graph, called Kripke Frame, is created.
@@ -821,8 +821,8 @@ dual(::typeof(BOX))     = DIAMOND
 
 ############################################################################################
 
-const BASE_MODAL_OPERATORS = [BASE_PROPOSITIONAL_OPERATORS..., ◊, □]
-const BaseModalOperators = Union{typeof.(BASE_MODAL_OPERATORS)...}
+const BASE_MODAL_CONNECTIVES = [BASE_PROPOSITIONAL_CONNECTIVES..., ◊, □]
+const BaseModalConnectives = Union{typeof.(BASE_MODAL_CONNECTIVES)...}
 
 """
     modallogic(;
@@ -862,9 +862,9 @@ function modallogic(;
     operators::Union{Nothing,Vector{<:Connective}} = nothing,
     grammar::Union{Nothing,AbstractGrammar} = nothing,
     algebra::Union{Nothing,AbstractAlgebra} = nothing,
-    default_operators = BASE_MODAL_OPERATORS
+    default_operators = BASE_MODAL_CONNECTIVES
 )
-    if !isnothing(operators) && length(setdiff(operators, BASE_PROPOSITIONAL_OPERATORS)) == 0
+    if !isnothing(operators) && length(setdiff(operators, BASE_PROPOSITIONAL_CONNECTIVES)) == 0
         @warn "Instantiating modal logic (via `modallogic`) with solely " *
             "propositional operators ($(operators)). Consider using propositionallogic instead."
     end
@@ -879,12 +879,12 @@ function modallogic(;
 end
 
 # A modal logic based on the base modal operators
-const BaseModalLogic = AbstractLogic{G,A} where {ALP,G<:AbstractGrammar{ALP,<:BaseModalOperators},A<:AbstractAlgebra}
+const BaseModalLogic = AbstractLogic{G,A} where {ALP,G<:AbstractGrammar{ALP,<:BaseModalConnectives},A<:AbstractAlgebra}
 
 ############################################################################################
 
 """
-    abstract type AbstractRelationalOperator{R<:AbstractRelation} <: Connective end
+    abstract type AbstractRelationalConnective{R<:AbstractRelation} <: Connective end
 
 Abstract type for relational logical operators. A relational operator
 allows for semantic quantification across relational structures (e.g., Kripke structures).
@@ -892,14 +892,14 @@ It has arity equal to the arity of its underlying relation minus one.
 
 See, for example [temporal modal logic](https://en.wikipedia.org/wiki/Temporal_logic).
 
-See also [`DiamondRelationalOperator`](@ref), [`BoxRelationalOperator`](@ref),
+See also [`DiamondRelationalConnective`](@ref), [`BoxRelationalConnective`](@ref),
 [`AbstractKripkeStructure`](@ref), [`AbstractFrame`](@ref).
 """
-abstract type AbstractRelationalOperator{R<:AbstractRelation} <: Connective end
+abstract type AbstractRelationalConnective{R<:AbstractRelation} <: Connective end
 
 doc_op_rel = """
-    relationtype(::AbstractRelationalOperator{R}) where {R<:AbstractRelation} = R
-    relation(op::AbstractRelationalOperator) = relationtype(op)()
+    relationtype(::AbstractRelationalConnective{R}) where {R<:AbstractRelation} = R
+    relation(op::AbstractRelationalConnective) = relationtype(op)()
 
 Return the underlying relation (and relation type) of the relational operator.
 
@@ -907,13 +907,13 @@ See also [`AbstractFrame`](@ref).
 """
 
 """$(doc_op_rel)"""
-relationtype(::AbstractRelationalOperator{R}) where {R<:AbstractRelation} = R
+relationtype(::AbstractRelationalConnective{R}) where {R<:AbstractRelation} = R
 """$(doc_op_rel)"""
-relation(op::AbstractRelationalOperator) = relationtype(op)()
+relation(op::AbstractRelationalConnective) = relationtype(op)()
 
-arity(op::AbstractRelationalOperator) = arity(relation(op))-1
+arity(op::AbstractRelationalConnective) = arity(relation(op))-1
 
-function precedence(op::AbstractRelationalOperator)
+function precedence(op::AbstractRelationalConnective)
     if isunary(op)
         precedence(NEGATION)
     else
@@ -921,7 +921,7 @@ function precedence(op::AbstractRelationalOperator)
     end
 end
 
-function associativity(op::AbstractRelationalOperator)
+function associativity(op::AbstractRelationalConnective)
     if isunary(op)
         associativity(NEGATION)
     else
@@ -930,81 +930,81 @@ function associativity(op::AbstractRelationalOperator)
 end
 
 const archetypmodal_relops_docstring = """
-    struct DiamondRelationalOperator{R<:AbstractRelation} <: AbstractRelationalOperator{R} end
-    struct BoxRelationalOperator{R<:AbstractRelation} <: AbstractRelationalOperator{R} end
+    struct DiamondRelationalConnective{R<:AbstractRelation} <: AbstractRelationalConnective{R} end
+    struct BoxRelationalConnective{R<:AbstractRelation} <: AbstractRelationalConnective{R} end
 
 Singleton types for relational operators, typically interpreted as the modal existential
 and universal quantifier, respectively.
 
 Both operators can be easily instantiated with relation instances,
-such as `DiamondRelationalOperator(rel)`, which is a shortcut for
-`DiamondRelationalOperator{typeof(rel)}()`.
+such as `DiamondRelationalConnective(rel)`, which is a shortcut for
+`DiamondRelationalConnective{typeof(rel)}()`.
 
 # Examples
 ```julia-repl
-julia> syntaxstring(DiamondRelationalOperator(IA_A))
+julia> syntaxstring(DiamondRelationalConnective(IA_A))
 "⟨A⟩"
 
-julia> syntaxstring(BoxRelationalOperator(IA_A))
+julia> syntaxstring(BoxRelationalConnective(IA_A))
 "[A]"
 
-julia> @assert DiamondRelationalOperator(IA_A) == SoleLogics.dual(BoxRelationalOperator(IA_A))
+julia> @assert DiamondRelationalConnective(IA_A) == SoleLogics.dual(BoxRelationalConnective(IA_A))
 
 ```
 
 See also
-[`DiamondRelationalOperator`](@ref), [`BoxRelationalOperator`](@ref),
+[`DiamondRelationalConnective`](@ref), [`BoxRelationalConnective`](@ref),
 [`syntaxstring`](@ref), [`dual`](@ref),
 [`AbstractKripkeStructure`](@ref), [`AbstractFrame`](@ref).
 """
 
 """$(archetypmodal_relops_docstring)"""
-struct DiamondRelationalOperator{R<:AbstractRelation} <: AbstractRelationalOperator{R} end
-(DiamondRelationalOperator)(r::AbstractRelation) = DiamondRelationalOperator{typeof(r)}()
+struct DiamondRelationalConnective{R<:AbstractRelation} <: AbstractRelationalConnective{R} end
+(DiamondRelationalConnective)(r::AbstractRelation) = DiamondRelationalConnective{typeof(r)}()
 
 """$(archetypmodal_relops_docstring)"""
-struct BoxRelationalOperator{R<:AbstractRelation} <: AbstractRelationalOperator{R} end
-(BoxRelationalOperator)(r::AbstractRelation) = BoxRelationalOperator{typeof(r)}()
+struct BoxRelationalConnective{R<:AbstractRelation} <: AbstractRelationalConnective{R} end
+(BoxRelationalConnective)(r::AbstractRelation) = BoxRelationalConnective{typeof(r)}()
 
-ismodal(::Type{<:DiamondRelationalOperator}) = true
-ismodal(::Type{<:BoxRelationalOperator}) = true
+ismodal(::Type{<:DiamondRelationalConnective}) = true
+ismodal(::Type{<:BoxRelationalConnective}) = true
 
-isbox(::Type{<:DiamondRelationalOperator}) = false
-isbox(::Type{<:BoxRelationalOperator}) = true
+isbox(::Type{<:DiamondRelationalConnective}) = false
+isbox(::Type{<:BoxRelationalConnective}) = true
 
-syntaxstring(op::DiamondRelationalOperator; kwargs...) = "⟨$(syntaxstring(relation(op); kwargs...))⟩"
-syntaxstring(op::BoxRelationalOperator; kwargs...)     = "[$(syntaxstring(relation(op); kwargs...))]"
+syntaxstring(op::DiamondRelationalConnective; kwargs...) = "⟨$(syntaxstring(relation(op); kwargs...))⟩"
+syntaxstring(op::BoxRelationalConnective; kwargs...)     = "[$(syntaxstring(relation(op); kwargs...))]"
 
-hasdual(::DiamondRelationalOperator) = true
-dual(op::DiamondRelationalOperator) = BoxRelationalOperator{relationtype(op)}()
-hasdual(::BoxRelationalOperator) = true
-dual(op::BoxRelationalOperator)     = DiamondRelationalOperator{relationtype(op)}()
+hasdual(::DiamondRelationalConnective) = true
+dual(op::DiamondRelationalConnective) = BoxRelationalConnective{relationtype(op)}()
+hasdual(::BoxRelationalConnective) = true
+dual(op::BoxRelationalConnective)     = DiamondRelationalConnective{relationtype(op)}()
 
 ############################################################################################
 
 """
     diamond() = DIAMOND
-    diamond(r::AbstractRelation) = DiamondRelationalOperator(r)
+    diamond(r::AbstractRelation) = DiamondRelationalConnective(r)
 
 Return either the diamond modal operator from unimodal logic (i.e., ◊), or a
 a diamond relational operator from a multi-modal logic, wrapping the relation `r`.
 
-See also [`DiamondRelationalOperator`](@ref), [`diamond`](@ref), [`DIAMOND`](@ref).
+See also [`DiamondRelationalConnective`](@ref), [`diamond`](@ref), [`DIAMOND`](@ref).
 """
 function diamond() DIAMOND end
-function diamond(r::AbstractRelation) DiamondRelationalOperator(r) end
+function diamond(r::AbstractRelation) DiamondRelationalConnective(r) end
 
 """
     box() = BOX
-    box(r::AbstractRelation) = BoxRelationalOperator(r)
+    box(r::AbstractRelation) = BoxRelationalConnective(r)
 
 Return either the box modal operator from unimodal logic (i.e., □), or a
 a box relational operator from a multi-modal logic, wrapping the relation `r`.
 
-See also [`BoxRelationalOperator`](@ref), [`box`](@ref), [`BOX`](@ref).
+See also [`BoxRelationalConnective`](@ref), [`box`](@ref), [`BOX`](@ref).
 """
 function box() BOX end
-function box(r::AbstractRelation) BoxRelationalOperator(r) end
+function box(r::AbstractRelation) BoxRelationalConnective(r) end
 
 globaldiamond = diamond(globalrel)
 globalbox = box(globalrel)
@@ -1030,13 +1030,13 @@ Base.show(io::IO, c::Union{
     typeof(identitybox)
 }) = print(io, "$(syntaxstring(c))")
 
-const BASE_MULTIMODAL_OPERATORS = [BASE_PROPOSITIONAL_OPERATORS...,
+const BASE_MULTIMODAL_CONNECTIVES = [BASE_PROPOSITIONAL_CONNECTIVES...,
     globaldiamond,
     globalbox,
     diamond(identityrel),
     box(identityrel),
 ]
-const BaseMultiModalOperators = Union{typeof.(BASE_MULTIMODAL_OPERATORS)...}
+const BaseMultiModalConnectives = Union{typeof.(BASE_MULTIMODAL_CONNECTIVES)...}
 
 ############################################################################################
 
@@ -1097,7 +1097,7 @@ end
 # TODO: use AbstractMultiModalFrame
 function collateworlds(
     fr::AbstractFrame{W},
-    op::DiamondRelationalOperator,
+    op::DiamondRelationalConnective,
     (ws,)::NTuple{1,<:AbstractWorlds},
 ) where {W<:AbstractWorld}
     r = relation(op)
@@ -1121,7 +1121,7 @@ end
 # TODO: use AbstractMultiModalFrame
 function collateworlds(
     fr::AbstractFrame{W},
-    op::BoxRelationalOperator,
+    op::BoxRelationalConnective,
     (ws,)::NTuple{1,<:AbstractWorlds},
 ) where {W<:AbstractWorld}
     r = relation(op)

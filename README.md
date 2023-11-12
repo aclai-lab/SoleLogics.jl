@@ -57,18 +57,18 @@ julia> height = 2
 julia> alphabet = Atom.(["p", "q"])
 
 # Propositional case 
-julia> SoleLogics.BASE_PROPOSITIONAL_OPERATORS
+julia> SoleLogics.BASE_PROPOSITIONAL_CONNECTIVES
 6-element Vector{SoleLogics.Connective}:
  ¬
  ∧
  ∨
  →
 
-julia> randformula(Random.MersenneTwister(507), height, alphabet, SoleLogics.BASE_PROPOSITIONAL_OPERATORS)
+julia> randformula(Random.MersenneTwister(507), height, alphabet, SoleLogics.BASE_PROPOSITIONAL_CONNECTIVES)
 SyntaxBranch: ¬(q → p)
 
 # Modal case
-julia> SoleLogics.BASE_MODAL_OPERATORS
+julia> SoleLogics.BASE_MODAL_CONNECTIVES
 8-element Vector{SoleLogics.Connective}:
  ¬
  ∧
@@ -77,7 +77,7 @@ julia> SoleLogics.BASE_MODAL_OPERATORS
  ◊
  □
 
-julia> randformula(Random.MersenneTwister(14), height, alphabet, SoleLogics.BASE_MODAL_OPERATORS)
+julia> randformula(Random.MersenneTwister(14), height, alphabet, SoleLogics.BASE_MODAL_CONNECTIVES)
 SyntaxBranch: ¬□p
 ```
 

@@ -548,10 +548,10 @@ function normalize(
     # Remove modal operators based on the identity relation
     newt = begin
         tok, chs = token(newt), children(newt)
-        if remove_identities && tok isa AbstractRelationalOperator &&
+        if remove_identities && tok isa AbstractRelationalConnective &&
             relation(tok) == identityrel && arity(tok) == 1
             first(chs)
-        elseif unify_toones && tok isa AbstractRelationalOperator &&
+        elseif unify_toones && tok isa AbstractRelationalConnective &&
             istoone(relation(tok)) && arity(tok) == 1
             diamond(relation(tok))(first(chs))
         else
@@ -581,9 +581,9 @@ function normalize(
                 else
                     ¬(_normalize(child))
                 end
-            # elseif reduce_negations && chtok isa SoleLogics.AbstractRelationalOperator && arity(chtok) == 1
+            # elseif reduce_negations && chtok isa SoleLogics.AbstractRelationalConnective && arity(chtok) == 1
             #     dual_op = dual(chtok)
-            #     if remove_boxes && dual_op isa SoleLogics.BoxRelationalOperator
+            #     if remove_boxes && dual_op isa SoleLogics.BoxRelationalConnective
             #         ¬(_normalize(child))
             #     else
             #         dual_op(_normalize(¬(grandchildren[1])))
@@ -725,7 +725,7 @@ See also
 isgrounded(f::Formula) = isgrounded(tree(f))
 function isgrounded(t::SyntaxTree)::Bool
     # (println(token(t)); println(children(t)); true) &&
-    return (token(t) isa SoleLogics.AbstractRelationalOperator && isgrounding(relation(token(t)))) ||
+    return (token(t) isa SoleLogics.AbstractRelationalConnective && isgrounding(relation(token(t)))) ||
     # (token(t) in [◊,□]) ||
     (token(t) isa Connective && all(c->isgrounded(c), children(t)))
 end

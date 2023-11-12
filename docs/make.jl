@@ -19,7 +19,8 @@ makedocs(;
         "Getting started" => "getting-started.md",
         "Introduction to Logics and Propositional Logic" => "base-logic.md",
         "Modal Logic" => "modal-logic.md",
-        "Full reference" => "autodocs.md"
+        "Work in progress" => "wip.md"
+        "Utilities" => "utilities.md"
     ],
     # NOTE: warning
     warnonly = :true,

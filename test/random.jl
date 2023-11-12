@@ -27,7 +27,7 @@ SoleLogics.arity(::typeof(QUATERNOP)) = 4
 
 _alphabet = ExplicitAlphabet(["p", "q", "r", "s"])
 _operators = [NEGATION, CONJUNCTION, IMPLICATION,
-    DiamondRelationalOperator(globalrel), BoxRelationalOperator(globalrel)]
+    DiamondRelationalConnective(globalrel), BoxRelationalConnective(globalrel)]
 w = [5,1,1,1,1,1,1]
 
 @test all([begin

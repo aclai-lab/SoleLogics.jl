@@ -82,7 +82,7 @@ t1n_int = @test_nowarn SyntaxBranch(¬, (t1_int,))
 t2_int = @test_nowarn SyntaxBranch(∧, (t1_int, t1_int))
 @test tokenstype(SyntaxBranch(∧, (t2_int, t1n_int))) == Union{typeof(∧),tokenstype(t1n_int)}
 
-grammar_int = SoleLogics.CompleteFlatGrammar(alphabet_int, SoleLogics.BASE_OPERATORS)
+grammar_int = SoleLogics.CompleteFlatGrammar(alphabet_int, SoleLogics.BASE_CONNECTIVES)
 
 @test Atom(1) in grammar_int
 @test ! (Atom(11) in grammar_int)

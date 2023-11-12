@@ -1,18 +1,18 @@
-const BASE_PROPOSITIONAL_OPERATORS = BASE_OPERATORS
-const BasePropositionalOperators = Union{typeof.(BASE_PROPOSITIONAL_OPERATORS)...}
+const BASE_PROPOSITIONAL_CONNECTIVES = BASE_CONNECTIVES
+const BasePropositionalConnectives = Union{typeof.(BASE_PROPOSITIONAL_CONNECTIVES)...}
 
 # A propositional logic based on the base propositional operators
 const BasePropositionalLogic = AbstractLogic{G,A} where {
         ALP,
-        G<:AbstractGrammar{ALP,<:BasePropositionalOperators},
+        G<:AbstractGrammar{ALP,<:BasePropositionalConnectives},
         A<:AbstractAlgebra
     }
 
 """
     propositionallogic(;
         alphabet = AlphabetOfAny{String}(),
-        operators = $(BASE_PROPOSITIONAL_OPERATORS),
-        grammar = CompleteFlatGrammar(AlphabetOfAny{String}(), $(BASE_PROPOSITIONAL_OPERATORS)),
+        operators = $(BASE_PROPOSITIONAL_CONNECTIVES),
+        grammar = CompleteFlatGrammar(AlphabetOfAny{String}(), $(BASE_PROPOSITIONAL_CONNECTIVES)),
         algebra = BooleanAlgebra(),
     )
 
@@ -47,7 +47,7 @@ function propositionallogic(;
         operators = operators,
         grammar = grammar,
         algebra = algebra;
-        default_operators = BASE_PROPOSITIONAL_OPERATORS,
+        default_operators = BASE_PROPOSITIONAL_CONNECTIVES,
         logictypename = "propositional logic",
     )
 end

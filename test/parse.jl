@@ -42,13 +42,13 @@ end
     opening_parenthesis="A", closing_parenthesis="B")
 
 @test operatorstype(
-        logic(parsebaseformula("¬p∧q∧(¬s∧¬z)", [BOX]))) <: SoleLogics.BaseModalOperators
+        logic(parsebaseformula("¬p∧q∧(¬s∧¬z)", [BOX]))) <: SoleLogics.BaseModalConnectives
 @test !(operatorstype(
-    logic(parsebaseformula("¬p∧q∧(¬s∧¬z)", [BOX]))) <: SoleLogics.BasePropositionalOperators)
+    logic(parsebaseformula("¬p∧q∧(¬s∧¬z)", [BOX]))) <: SoleLogics.BasePropositionalConnectives)
 @test !(operatorstype(logic(
-    parsebaseformula("¬p∧q∧(¬s∧¬z)", modallogic()))) <: SoleLogics.BasePropositionalOperators)
+    parsebaseformula("¬p∧q∧(¬s∧¬z)", modallogic()))) <: SoleLogics.BasePropositionalConnectives)
 @test (@test_nowarn operatorstype(
-    logic(parsebaseformula("¬p∧q∧(¬s∧¬z)"))) <: SoleLogics.BasePropositionalOperators)
+    logic(parsebaseformula("¬p∧q∧(¬s∧¬z)"))) <: SoleLogics.BasePropositionalConnectives)
 
 @test_nowarn parseformula("¬p∧q→(¬s∧¬z)")
 
@@ -202,30 +202,30 @@ SoleLogics.arity(::typeof(QUATERNOP)) = 4
 
 # custom relations ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-using SoleLogics: AbstractRelationalOperator
+using SoleLogics: AbstractRelationalConnective
 
 struct _TestRel <: AbstractRelation end;
 testrel  = _TestRel();
 SoleLogics.arity(::_TestRel) = 2
 SoleLogics.syntaxstring(::_TestRel; kwargs...) = "Test,Relation"
 
-# If AbstractRelationalOperator interface changes, just redefine the following:
-struct SoleRelationalOperator{R<:AbstractRelation} <: AbstractRelationalOperator{R} end
+# If AbstractRelationalConnective interface changes, just redefine the following:
+struct SoleRelationalOperator{R<:AbstractRelation} <: AbstractRelationalConnective{R} end
 (SoleRelationalOperator)(r::AbstractRelation) = SoleRelationalOperator{typeof(r)}()
 SoleLogics.syntaxstring(op::SoleRelationalOperator; kwargs...) =
     "🌅$(syntaxstring(relation(op);  kwargs...))🌄"
 
-struct PipeRelationalOperator{R<:AbstractRelation} <: AbstractRelationalOperator{R} end
+struct PipeRelationalOperator{R<:AbstractRelation} <: AbstractRelationalConnective{R} end
 (PipeRelationalOperator)(r::AbstractRelation) = PipeRelationalOperator{typeof(r)}()
 SoleLogics.syntaxstring(op::PipeRelationalOperator; kwargs...) =
     "|$(syntaxstring(relation(op);  kwargs...))|"
 
-struct CurlyRelationalOperator{R<:AbstractRelation} <: AbstractRelationalOperator{R} end
+struct CurlyRelationalOperator{R<:AbstractRelation} <: AbstractRelationalConnective{R} end
 (CurlyRelationalOperator)(r::AbstractRelation) = CurlyRelationalOperator{typeof(r)}()
 SoleLogics.syntaxstring(op::CurlyRelationalOperator; kwargs...) =
     "{$(syntaxstring(relation(op);  kwargs...))}"
 
-struct MyCustomRelationalOperator{R<:AbstractRelation} <: AbstractRelationalOperator{R} end
+struct MyCustomRelationalOperator{R<:AbstractRelation} <: AbstractRelationalConnective{R} end
 (MyCustomRelationalOperator)(r::AbstractRelation) = MyCustomRelationalOperator{typeof(r)}()
 SoleLogics.syntaxstring(op::MyCustomRelationalOperator; kwargs...) =
     "LEFT CUSTOM PARENTHESIS $(syntaxstring(relation(op);  kwargs...)) RIGHT CUSTOM PARENTHESIS"
@@ -256,7 +256,7 @@ _f = parseformula("{Gp ∧ ¬{G}q", [CurlyRelationalOperator(globalrel)])
 @test syntaxstring(token(children(_f)[1])) == "{Gp"
 
 @test_nowarn parseformula("¬⟨Test,Relation⟩[Test,Relation]p",
-    [BoxRelationalOperator(testrel), DiamondRelationalOperator(testrel)]
+    [BoxRelationalConnective(testrel), DiamondRelationalConnective(testrel)]
 )
 
 # parsebaseformula ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

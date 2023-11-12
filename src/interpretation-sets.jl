@@ -197,8 +197,8 @@ nworlds(X::AbstractInterpretationSet, i_instance::Integer) = nworlds(frame(X, i_
 function check(
     φ::SyntaxBranch{
         Union{
-            DiamondRelationalOperator{typeof(tocenterrel)},
-            BoxRelationalOperator{typeof(tocenterrel)},
+            DiamondRelationalConnective{typeof(tocenterrel)},
+            BoxRelationalConnective{typeof(tocenterrel)},
         }
     },
     i::AbstractInterpretation;
@@ -210,8 +210,8 @@ end
 function check(
     φ::SyntaxBranch{
         Union{
-            DiamondRelationalOperator{typeof(globalrel)},
-            BoxRelationalOperator{typeof(globalrel)},
+            DiamondRelationalConnective{typeof(globalrel)},
+            BoxRelationalConnective{typeof(globalrel)},
         }
     },
     i::AbstractInterpretation;
@@ -224,8 +224,8 @@ end
 # function check(
 #     φ::SyntaxBranch{
 #         Union{
-#             DiamondRelationalOperator{R},
-#             BoxRelationalOperator{R},
+#             DiamondRelationalConnective{R},
+#             BoxRelationalConnective{R},
 #         }
 #     },
 #     i::AbstractInterpretation;

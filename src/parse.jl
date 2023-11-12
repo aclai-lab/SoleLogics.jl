@@ -25,9 +25,9 @@ These are $(join(SoleLogics.BASE_PARSABLE_OPERATORS, ", ", " and ")).
 See also [`parseformula`](@ref).
 """
 const BASE_PARSABLE_OPERATORS = [
-    BASE_PROPOSITIONAL_OPERATORS...,
-    BASE_MODAL_OPERATORS...,
-    BASE_MULTIMODAL_OPERATORS...,
+    BASE_PROPOSITIONAL_CONNECTIVES...,
+    BASE_MODAL_CONNECTIVES...,
+    BASE_MULTIMODAL_CONNECTIVES...,
     ⊤,
     ⊥
 ] |> unique
