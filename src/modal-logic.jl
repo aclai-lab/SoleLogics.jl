@@ -572,7 +572,7 @@ julia> fmodal = randformula(Random.MersenneTwister(14), 3, [p,q], SoleLogics.BAS
 # Nodes are called worlds, and the edges are relations between worlds.
 julia> worlds = SoleLogics.World.(1:5) # 5 worlds are created, numerated from 1 to 5
 
-julia> edges = Edge.([ (1, 2), (1, 3), (2, 4), (3, 4), (3, 5)])
+julia> edges = Edge.([(1,2), (1,3), (2,4), (3,4), (3,5)])
 
 julia> kframe = SoleLogics.ExplicitCrispUniModalFrame(worlds, Graphs.SimpleDiGraph(edges))
 

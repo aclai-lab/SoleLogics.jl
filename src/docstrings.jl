@@ -51,7 +51,7 @@ See also [`parseformula`](@ref),
 
 In the case of a syntax tree, `syntaxstring` is a recursive function that calls
 itself on the syntax children of each node. For a correct functioning, the `syntaxstring`
-must be defined (including `kwargs...`) for every newly defined
+must be defined (including the `kwargs...` part!) for every newly defined
 `SyntaxToken` (e.g., `SyntaxLeaf`s, that is, `Atom`s and `Truth` values, and `Operator`s),
 in a way that it produces a
 *unique* string representation, since `Base.hash` and `Base.isequal`, at least for

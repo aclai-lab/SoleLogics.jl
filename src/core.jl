@@ -26,7 +26,7 @@
         │   ├── BoxRelationalConnective (e.g., [G])
         │   └── ...
         └── ...
-¬ \
+
     Also:
     const Operator = Union{Connective,Truth}
     const SyntaxToken = Union{Connective,SyntaxLeaf}
@@ -864,7 +864,8 @@ function syntaxstring(
         return tokstr
     elseif arity(tok) == 2 && !function_notation
         # Infix notation for binary operators
-        "$(_binary_infix_syntaxstring(tok, children(φ)[1])) "*
+
+        "$(_binary_infix_syntaxstring(tok, children(φ)[1])) " *
         "$tokstr $(_binary_infix_syntaxstring(tok, children(φ)[2]))"
     else
         # Infix notation with arity != 2, or function notation
