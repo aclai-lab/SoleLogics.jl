@@ -410,7 +410,7 @@ See also [`NEGATION`](@ref),
 [`Connective`](@ref).
 """
 const BASE_CONNECTIVES = [¬, ∧, ∨, →]
-const BaseOperators = Union{typeof.(BASE_CONNECTIVES)...}
+const BaseConnectives = Union{typeof.(BASE_CONNECTIVES)...}
 
 const BASE_ALPHABET = AlphabetOfAny{String}()
 
