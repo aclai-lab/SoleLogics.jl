@@ -751,7 +751,7 @@ ismodal(::Truth)::Bool = false
     isbox(::Type{<:Connective})::Bool = false
     isbox(c::Connective)::Bool = isbox(typeof(c))
 
-Return whether it is known that an `Connective` is a box (i.e., universal) operator.
+Return whether it is known that an `Connective` is a box (i.e., universal) connective.
 
 # Examples
 ```julia-repl
@@ -779,7 +779,7 @@ doc_DIAMOND = """
     ismodal(::NamedConnective{:◊}) = true
     arity(::typeof(◊)) = 1
 
-Logical diamond operator, typically interpreted as the modal existential quantifier.
+Logical diamond connective, typically interpreted as the modal existential quantifier.
 See [here](https://en.wikipedia.org/wiki/Modal_operator).
 
 See also [`BOX`](@ref), [`NamedConnective`](@ref), [`Connective`](@ref).
@@ -799,7 +799,7 @@ doc_BOX = """
     const □ = BOX
     arity(::typeof(□)) = 1
 
-Logical box operator, typically interpreted as the modal universal quantifier.
+Logical box connective, typically interpreted as the modal universal quantifier.
 See [here](https://en.wikipedia.org/wiki/Modal_operator).
 
 See also [`DIAMOND`](@ref), [`NamedConnective`](@ref), [`Connective`](@ref).
@@ -878,7 +878,7 @@ function modallogic(;
     )
 end
 
-# A modal logic based on the base modal operators
+# A modal logic based on the base modal connectives
 const BaseModalLogic = AbstractLogic{G,A} where {ALP,G<:AbstractGrammar{ALP,<:BaseModalConnectives},A<:AbstractAlgebra}
 
 ############################################################################################
@@ -886,7 +886,7 @@ const BaseModalLogic = AbstractLogic{G,A} where {ALP,G<:AbstractGrammar{ALP,<:Ba
 """
     abstract type AbstractRelationalConnective{R<:AbstractRelation} <: Connective end
 
-Abstract type for relational logical operators. A relational operator
+Abstract type for relational logical connectives. A relational connective
 allows for semantic quantification across relational structures (e.g., Kripke structures).
 It has arity equal to the arity of its underlying relation minus one.
 
@@ -901,7 +901,7 @@ doc_op_rel = """
     relationtype(::AbstractRelationalConnective{R}) where {R<:AbstractRelation} = R
     relation(op::AbstractRelationalConnective) = relationtype(op)()
 
-Return the underlying relation (and relation type) of the relational operator.
+Return the underlying relation (and relation type) of the relational connective.
 
 See also [`AbstractFrame`](@ref).
 """
@@ -933,10 +933,10 @@ const archetypmodal_relops_docstring = """
     struct DiamondRelationalConnective{R<:AbstractRelation} <: AbstractRelationalConnective{R} end
     struct BoxRelationalConnective{R<:AbstractRelation} <: AbstractRelationalConnective{R} end
 
-Singleton types for relational operators, typically interpreted as the modal existential
+Singleton types for relational connectives, typically interpreted as the modal existential
 and universal quantifier, respectively.
 
-Both operators can be easily instantiated with relation instances,
+Both connectives can be easily instantiated with relation instances,
 such as `DiamondRelationalConnective(rel)`, which is a shortcut for
 `DiamondRelationalConnective{typeof(rel)}()`.
 
@@ -986,8 +986,8 @@ dual(op::BoxRelationalConnective)     = DiamondRelationalConnective{relationtype
     diamond() = DIAMOND
     diamond(r::AbstractRelation) = DiamondRelationalConnective(r)
 
-Return either the diamond modal operator from unimodal logic (i.e., ◊), or a
-a diamond relational operator from a multi-modal logic, wrapping the relation `r`.
+Return either the diamond modal connective from unimodal logic (i.e., ◊), or a
+a diamond relational connective from a multi-modal logic, wrapping the relation `r`.
 
 See also [`DiamondRelationalConnective`](@ref), [`diamond`](@ref), [`DIAMOND`](@ref).
 """
@@ -998,8 +998,8 @@ function diamond(r::AbstractRelation) DiamondRelationalConnective(r) end
     box() = BOX
     box(r::AbstractRelation) = BoxRelationalConnective(r)
 
-Return either the box modal operator from unimodal logic (i.e., □), or a
-a box relational operator from a multi-modal logic, wrapping the relation `r`.
+Return either the box modal connective from unimodal logic (i.e., □), or a
+a box relational connective from a multi-modal logic, wrapping the relation `r`.
 
 See also [`BoxRelationalConnective`](@ref), [`box`](@ref), [`BOX`](@ref).
 """
@@ -1022,7 +1022,7 @@ function diamondsandboxes(rs::AbstractVector{<:AbstractRelation})
     return Iterators.flatten([diamondsandboxes(r) for r in rs]) |> collect
 end
 
-# Well known operators
+# Well known connectives
 Base.show(io::IO, c::Union{
     typeof(globaldiamond),
     typeof(globalbox),

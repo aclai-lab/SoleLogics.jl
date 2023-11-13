@@ -55,7 +55,7 @@ must be defined (including `kwargs...`) for every newly defined
 `SyntaxToken` (e.g., `SyntaxLeaf`s, that is, `Atom`s and `Truth` values, and `Operator`s),
 in a way that it produces a
 *unique* string representation, since `Base.hash` and `Base.isequal`, at least for
-`SyntaxBranch`s, rely on it.
+`SyntaxTree`s, rely on it.
 
 In particular, for the case of `Atom`s, the function calls itself on the wrapped value:
 
@@ -74,12 +74,11 @@ See also [`SyntaxLeaf`](@ref), [`Operator`](@ref), [`parseformula`](@ref).
 """
 
 doc_arity = """
-    arity(tok::Connective)::Integer
     arity(φ::SyntaxTree)::Integer
-    arity(φ::SyntaxLeaf)::Integer
+    arity(tok::Connective)::Integer
 
-Return the `arity` of a `Connective` or an `SyntaxLeaf`. The `arity` is an integer
-representing the number of allowed children in a `SyntaxBranch`. `Connective`s with `arity`
+Return the `arity` of a `Connective` or a `SyntaxTree`. The `arity` is an integer
+representing the number of allowed children for a node in a tree. `Connective`s with `arity`
 equal to 0, 1 or 2 are called `nullary`, `unary` and `binary`, respectively.
 `SyntaxLeaf`s (`Atom`s and `Truth` values) are always nullary.
 
