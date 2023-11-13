@@ -210,49 +210,49 @@ SoleLogics.arity(::_TestRel) = 2
 SoleLogics.syntaxstring(::_TestRel; kwargs...) = "Test,Relation"
 
 # If AbstractRelationalConnective interface changes, just redefine the following:
-struct SoleRelationalOperator{R<:AbstractRelation} <: AbstractRelationalConnective{R} end
-(SoleRelationalOperator)(r::AbstractRelation) = SoleRelationalOperator{typeof(r)}()
-SoleLogics.syntaxstring(op::SoleRelationalOperator; kwargs...) =
+struct SoleRelationalConnective{R<:AbstractRelation} <: AbstractRelationalConnective{R} end
+(SoleRelationalConnective)(r::AbstractRelation) = SoleRelationalConnective{typeof(r)}()
+SoleLogics.syntaxstring(op::SoleRelationalConnective; kwargs...) =
     "🌅$(syntaxstring(relation(op);  kwargs...))🌄"
 
-struct PipeRelationalOperator{R<:AbstractRelation} <: AbstractRelationalConnective{R} end
-(PipeRelationalOperator)(r::AbstractRelation) = PipeRelationalOperator{typeof(r)}()
-SoleLogics.syntaxstring(op::PipeRelationalOperator; kwargs...) =
+struct PipeRelationalConnective{R<:AbstractRelation} <: AbstractRelationalConnective{R} end
+(PipeRelationalConnective)(r::AbstractRelation) = PipeRelationalConnective{typeof(r)}()
+SoleLogics.syntaxstring(op::PipeRelationalConnective; kwargs...) =
     "|$(syntaxstring(relation(op);  kwargs...))|"
 
-struct CurlyRelationalOperator{R<:AbstractRelation} <: AbstractRelationalConnective{R} end
-(CurlyRelationalOperator)(r::AbstractRelation) = CurlyRelationalOperator{typeof(r)}()
-SoleLogics.syntaxstring(op::CurlyRelationalOperator; kwargs...) =
+struct CurlyRelationalConnective{R<:AbstractRelation} <: AbstractRelationalConnective{R} end
+(CurlyRelationalConnective)(r::AbstractRelation) = CurlyRelationalConnective{typeof(r)}()
+SoleLogics.syntaxstring(op::CurlyRelationalConnective; kwargs...) =
     "{$(syntaxstring(relation(op);  kwargs...))}"
 
-struct MyCustomRelationalOperator{R<:AbstractRelation} <: AbstractRelationalConnective{R} end
-(MyCustomRelationalOperator)(r::AbstractRelation) = MyCustomRelationalOperator{typeof(r)}()
-SoleLogics.syntaxstring(op::MyCustomRelationalOperator; kwargs...) =
+struct MyCustomRelationalConnective{R<:AbstractRelation} <: AbstractRelationalConnective{R} end
+(MyCustomRelationalConnective)(r::AbstractRelation) = MyCustomRelationalConnective{typeof(r)}()
+SoleLogics.syntaxstring(op::MyCustomRelationalConnective; kwargs...) =
     "LEFT CUSTOM PARENTHESIS $(syntaxstring(relation(op);  kwargs...)) RIGHT CUSTOM PARENTHESIS"
 f = parseformula("LEFT CUSTOM PARENTHESIS G RIGHT CUSTOM PARENTHESIS p ∧ ¬" *
-    "LEFT CUSTOM PARENTHESIS G RIGHT CUSTOM PARENTHESIS q", [MyCustomRelationalOperator(globalrel)])
+    "LEFT CUSTOM PARENTHESIS G RIGHT CUSTOM PARENTHESIS q", [MyCustomRelationalConnective(globalrel)])
 
-@test_nowarn parseformula("🌅G🌄p ∧ ¬🌅G🌄q", [SoleRelationalOperator(globalrel)])
-@test_nowarn parseformula("∧(🌅G🌄p,¬🌅G🌄q)", [SoleRelationalOperator(globalrel)];
+@test_nowarn parseformula("🌅G🌄p ∧ ¬🌅G🌄q", [SoleRelationalConnective(globalrel)])
+@test_nowarn parseformula("∧(🌅G🌄p,¬🌅G🌄q)", [SoleRelationalConnective(globalrel)];
     function_notation = true)
-@test_nowarn parseformula("∧[🌅G🌄p DELIM ¬🌅G🌄q)", [SoleRelationalOperator(globalrel)];
+@test_nowarn parseformula("∧[🌅G🌄p DELIM ¬🌅G🌄q)", [SoleRelationalConnective(globalrel)];
     function_notation = true, opening_parenthesis = "[", arg_delim = "DELIM")
 
-@test_nowarn parseformula("|G|p   ∧ ¬|G|q", [PipeRelationalOperator(globalrel)])
-@test_nowarn parseformula("∧(|G|p,  ¬|G|q)", [PipeRelationalOperator(globalrel)];
+@test_nowarn parseformula("|G|p   ∧ ¬|G|q", [PipeRelationalConnective(globalrel)])
+@test_nowarn parseformula("∧(|G|p,  ¬|G|q)", [PipeRelationalConnective(globalrel)];
     function_notation = true)
 
-@test_nowarn parseformula("{G}p   ∧  ¬{G}q", [CurlyRelationalOperator(globalrel)])
-@test_nowarn parseformula("∧({G}p   ,¬{G}q)", [CurlyRelationalOperator(globalrel)];
+@test_nowarn parseformula("{G}p   ∧  ¬{G}q", [CurlyRelationalConnective(globalrel)])
+@test_nowarn parseformula("∧({G}p   ,¬{G}q)", [CurlyRelationalConnective(globalrel)];
     function_notation = true)
 
-_f = parseformula("|G|p ∧ ¬{G}q", [CurlyRelationalOperator(globalrel)])
-@test syntaxstring(token(children(_f)[1])) == "|G|p" # PipeRelationalOperator not specified
-_f = parseformula("∧(|G|p,¬{G}q)", [CurlyRelationalOperator(globalrel)];
+_f = parseformula("|G|p ∧ ¬{G}q", [CurlyRelationalConnective(globalrel)])
+@test syntaxstring(token(children(_f)[1])) == "|G|p" # PipeRelationalConnective not specified
+_f = parseformula("∧(|G|p,¬{G}q)", [CurlyRelationalConnective(globalrel)];
     function_notation = true)
 @test syntaxstring(token(children(_f)[1])) == "|G|p"
 
-_f = parseformula("{Gp ∧ ¬{G}q", [CurlyRelationalOperator(globalrel)])
+_f = parseformula("{Gp ∧ ¬{G}q", [CurlyRelationalConnective(globalrel)])
 @test syntaxstring(token(children(_f)[1])) == "{Gp"
 
 @test_nowarn parseformula("¬⟨Test,Relation⟩[Test,Relation]p",
