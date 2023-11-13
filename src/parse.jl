@@ -17,14 +17,14 @@ const DEFAULT_CLOSING_PARENTHESIS = ")" # TODO use these in `syntaxstring` as we
 const DEFAULT_ARG_DELIM           = "," # TODO use these in `syntaxstring` as well, and add the same arguments (with same name).
 
 """
-    const BASE_PARSABLE_OPERATORS = $(repr(BASE_PARSABLE_OPERATORS))
+    const BASE_PARSABLE_CONNECTIVES = $(repr(BASE_PARSABLE_CONNECTIVES))
 
 Vector of (standard) operators that are automatically taken care of when parsing.
-These are $(join(SoleLogics.BASE_PARSABLE_OPERATORS, ", ", " and ")).
+These are $(join(SoleLogics.BASE_PARSABLE_CONNECTIVES, ", ", " and ")).
 
 See also [`parseformula`](@ref).
 """
-const BASE_PARSABLE_OPERATORS = [
+const BASE_PARSABLE_CONNECTIVES = [
     BASE_PROPOSITIONAL_CONNECTIVES...,
     BASE_MODAL_CONNECTIVES...,
     BASE_MULTIMODAL_CONNECTIVES...,
@@ -40,12 +40,12 @@ Parse a formula of type `F` from a string expression (its [`syntaxstring`](@ref)
 When `F` is not specified, it defaults to `SyntaxTree`.
 
 By default, this function is only able to parse operators in
-[`SoleLogics.BASE_PARSABLE_OPERATORS`](@ref) (e.g.,
+[`SoleLogics.BASE_PARSABLE_CONNECTIVES`](@ref) (e.g.,
 $(join(repr.(
-    BASE_PARSABLE_OPERATORS[1:min(4, length(BASE_PARSABLE_OPERATORS))]), ", ", " and ")));
+    BASE_PARSABLE_CONNECTIVES[1:min(4, length(BASE_PARSABLE_CONNECTIVES))]), ", ", " and ")));
 additional, non-standard operators may be provided as a vector `additional_operators`,
-and their `syntaxstring`'s will be used for parsing them.
-Note that, in case of clashing `syntaxstring`'s,
+and their `syntaxstring`s will be used for parsing them.
+Note that, in case of clashing `syntaxstring`s,
 the provided additional operators will override the standard ones.
 
 When parsing `SyntaxTree`s,
@@ -99,7 +99,7 @@ julia> syntaxstring(parseformula("¬1→0"; atom_parser = (x -> Atom{Float64}(pa
     and for every `kwargs` allowing correct parsing:
     `φ == parseformula(F, syntaxstring(φ, args...; kwargs...), args...; kwargs...)`.
 
-See also [`SyntaxTree`](@ref), [`BASE_PARSABLE_OPERATORS`](@ref), [`syntaxstring`](@ref).
+See also [`SyntaxTree`](@ref), [`BASE_PARSABLE_CONNECTIVES`](@ref), [`syntaxstring`](@ref).
 """
 function parseformula(F::Type{<:Formula}, expr::String, args...; kwargs...)
     return error("Please, provide method parseformula(::Type{$(F)}, expr::String, ::$(typeof(args))...; ::$(typeof(kwargs))...).")
@@ -133,7 +133,7 @@ function parseformula(
         " as additional operator:" *
         " $(filter(x->!(x isa Operator), additional_operators))"
     operators = Vector{Operator}(
-        unique([BASE_PARSABLE_OPERATORS..., additional_operators...]))
+        unique([BASE_PARSABLE_CONNECTIVES..., additional_operators...]))
 
     # TODO: expand special sequences to special *sequences* (strings of characters)
     # TODO: check that no special sequence is a substring of another one.

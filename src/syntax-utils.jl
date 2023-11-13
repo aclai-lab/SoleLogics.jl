@@ -545,7 +545,7 @@ function normalize(
 
     newt = t
 
-    # Remove modal operators based on the identity relation
+    # Remove modal connectives based on the identity relation
     newt = begin
         tok, chs = token(newt), children(newt)
         if remove_identities && tok isa AbstractRelationalConnective &&

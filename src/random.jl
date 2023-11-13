@@ -268,7 +268,7 @@ function randformula(
             # Sample atom from alphabet
             return atompicker(rng, atoms(alphabet))
         else
-            # Sample operator and generate children (modal operators only if modaldepth > 0)
+            # Sample operator and generate children (modal connectives only if modaldepth > 0)
             ops, ops_w = begin
                 if modaldepth > 0
                     operators, opweights

@@ -14,9 +14,9 @@ struct _MaxRel        <: PointRelation end; const MaxRel         = _MaxRel();   
 struct _SuccessorRel   <: PointRelation end; const SuccessorRel   = _SuccessorRel();   # Successor
 """Relation leading to the *predecessor* `Point` (i.e., the *previous* in the linear order)."""
 struct _PredecessorRel <: PointRelation end; const PredecessorRel = _PredecessorRel(); # Predecessor
-"""Relation leading to the *greater* `Point`'s in the linear order."""
+"""Relation leading to the *greater* `Point`s in the linear order."""
 struct _GreaterRel     <: PointRelation end; const GreaterRel     = _GreaterRel();     # Greater
-"""Relation leading to the *lesser* `Point`'s in the linear order."""
+"""Relation leading to the *lesser* `Point`s in the linear order."""
 struct _LesserRel      <: PointRelation end; const LesserRel      = _LesserRel();      # Lesser
 
 

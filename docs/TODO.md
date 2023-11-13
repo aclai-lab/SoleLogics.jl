@@ -19,7 +19,7 @@
 #     Random formulas generation is provided by the following methods:
 #     - randformula (which returns a SyntaxBranch);
 #     - randbaseformula (which returns a SyntaxBranch anchored to a Logic, thus, a AnchoredFormula).
-#     Both allow customizing the generation process by setting an alphabet (that is, which propositional letters are in play), an operators vector, the maximum height of the SyntaxBranch and the maximum modal depth (that is, the maximum number of modal operators, if any, in each SyntaxBranch path).
+#     Both allow customizing the generation process by setting an alphabet (that is, which propositional letters are in play), an operators vector, the maximum height of the SyntaxBranch and the maximum modal depth (that is, the maximum number of modal connectives, if any, in each SyntaxBranch path).
 #     Notes for Giovanni; 
 #     1) many important definitions are introduced here: is this the correct place to explain them or it's better to just link the documentation? 
 #     2) I'm still working on putting a modal_depth parameter in both randbaseformula and randformula 

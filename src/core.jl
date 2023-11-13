@@ -100,9 +100,9 @@ Note that `collatetruth` must be defined at least for some truth value types `T`
 accepting an `NTuple{arity,T}` as a second argument.
 
 To make the operator work with incomplete interpretations (e.g., when the `Truth` value
-for an atom is not known), simplification rules for `NTuple{arity,T where T<:Formula}`'s
+for an atom is not known), simplification rules for `NTuple{arity,T where T<:Formula}`s
 should be provided via methods for `simplify`.
-For example, these rules suffice for simplifying xors between `Top/`Bot`'s, and other formulas:
+For example, these rules suffice for simplifying xors between `Top/`Bot`s, and other formulas:
 ```julia
 import SoleLogics: simplify
 simplify(::typeof(⊻), (t1, t2)::Tuple{Top,Top}) = Bot
@@ -301,7 +301,8 @@ Abstract type for
 syntax leaves (see `SyntaxLeaf`, such as `Truth` values and `Atom`s),
 and their composition via `Connective`s (i.e., `SyntaxBranch`).
 
-Note that `SyntaxTree`s adhere to the `AbstractTrees` interface.
+Note that `SyntaxTree`s are *ranked trees*,
+and (should) adhere to the `AbstractTrees` interface.
 
 See also [`SyntaxLeaf`](@ref), [`SyntaxBranch`](@ref),
 [`AbstractSyntaxStructure`](@ref), [`Formula`](@ref).
