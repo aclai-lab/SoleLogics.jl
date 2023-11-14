@@ -16,16 +16,15 @@ Please, feel free to use the following tree structures to orient yourself in the
 
 ## Syntax and Semantics tree type hierarchies
 - [`Syntactical`](@ref)
+    - [`Connective`](@ref)                      (e.g., ∧, ∨, ¬, →)
     - [`Formula`](@ref)
         - [`AbstractSyntaxStructure`](@ref)
-            - [`SyntaxTree`](@ref) (e.g., ¬p ∧ q → s)
+            - [`SyntaxTree`](@ref)              (e.g., ¬p ∧ q → s)
                 - [`SyntaxLeaf`](@ref)
-                    - [`Atom`](@ref) (e.g., p, q)
-                    - [`Truth`](@ref) (e.g., ⊤, ⊥)
-                - [`SyntaxBranch`](@ref) (e.g., p ∧ q)
-        - ... (more on Formula subtypes in the next chapters)
-    - [`Connective`](@ref) (e.g., ∧, ∨, ¬, →)
-
+                    - [`Atom`](@ref)            (e.g., p, q)
+                    - [`Literal`](@ref)         (an [`Atom`](@ref) p, or its negation ¬p)
+                    - [`Truth`](@ref)           (e.g., ⊤, ⊥)
+                - [`SyntaxBranch`](@ref)        (e.g., p ∧ q)
 ---
 
 - [`AbstractInterpretation`](@ref) (e.g., p is ⊤, equivalent to p is true in boolean logic)
@@ -89,6 +88,7 @@ dual(t::SyntaxToken)
 Base.in(tok::SyntaxToken, φ::SyntaxTree)
 
 Atom
+Literal{T<:SyntaxToken}
 ```
 
 ```@docs

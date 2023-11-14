@@ -6,9 +6,9 @@ doc_lmlf = """
         children::Vector{<:SS}
     end
 
-A syntax structure representing the `foldl` of a set of other syntax structure of type `SS`
-by means of a connective `C`. This structure enables a structured instantiation of
-formulas in conjuctive/disjunctive forms, and
+A syntax structure representing the [`foldl`](https://en.wikipedia.org/wiki/Fold_(higher-order_function))
+of a set of other syntax structure of type `SS` by means of a connective `C`.
+This structure enables a structured instantiation of formulas in conjuctive/disjunctive forms, and
 conjuctive normal form (CNF) or disjunctive normal form (DNF), defined as:
 
     const LeftmostConjunctiveForm{SS<:AbstractSyntaxStructure} = LeftmostLinearForm{typeof(∧),SS}
@@ -222,6 +222,88 @@ Base.promote_rule(::Type{LF}, ::Type{SS}) where {LF<:LeftmostLinearForm,SS<:Abst
 
 ############################################################################################
 
+# TODO actually:
+# const CNF{SS<:AbstractSyntaxStructure} = Union{LeftmostLinearForm{typeof(∧),LeftmostLinearForm{typeof(∨),SS}},LeftmostLinearForm{typeof(∨),SS}}
+# const DNF{SS<:AbstractSyntaxStructure} = Union{LeftmostLinearForm{typeof(∨),LeftmostLinearForm{typeof(∧),SS}},LeftmostLinearForm{typeof(∧),SS}}
+
+"""
+    LeftmostConjunctiveForm{SS<:AbstractSyntaxStructure} = LeftmostLinearForm{typeof(∧),SS}
+
+Specific instantiation of a [`LeftmostLinearForm`](@ref), where [`Connective`](@ref)s are
+all [`CONJUNCTION`](@ref)s.
+
+See also [`AbstractSyntaxStructure`](@ref), [`Connective`](@ref), [`LeftmostLinearForm`](@ref),
+[`CONJUNCTION`](@ref).
+"""
+const LeftmostConjunctiveForm{SS<:AbstractSyntaxStructure} = LeftmostLinearForm{typeof(∧),SS}
+
+"""
+    LeftmostDisjunctiveForm{SS<:AbstractSyntaxStructure} = LeftmostLinearForm{typeof(∨),SS}
+
+Specific instantiation of a [`LeftmostLinearForm`](@ref), where [`Connective`](@ref)s are
+all [`DISJUNCTION`](@ref)s.
+
+See also [`AbstractSyntaxStructure`](@ref), [`Connective`](@ref),
+[`LeftmostLinearForm`](@ref), [`DISJUNCTION`](@ref).
+"""
+const LeftmostDisjunctiveForm{SS<:AbstractSyntaxStructure} = LeftmostLinearForm{typeof(∨),SS}
+
+"""
+    CNF{SS<:AbstractSyntaxStructure} = LeftmostConjunctiveForm{LeftmostDisjunctiveForm{SS}}
+
+Conjunctive Normal Form of an [`AbstractSyntaxStructure`](@ref).
+
+See also [`AbstractSyntaxStructure`](@ref), [`LeftmostConjunctiveForm`](@ref),
+[`LeftmostDisjunctiveForm`](@ref), [`CONJUNCTION`](@ref), [`DISJUNCTION`](@ref).
+"""
+const CNF{SS<:AbstractSyntaxStructure} = LeftmostConjunctiveForm{LeftmostDisjunctiveForm{SS}}
+
+"""
+    DNF{SS<:AbstractSyntaxStructure} = LeftmostConjunctiveForm{LeftmostConjunctiveForm{SS}}
+
+Disjunctive Normal Form of an [`AbstractSyntaxStructure`](@ref).
+
+See also [`AbstractSyntaxStructure`](@ref), [`LeftmostConjunctiveForm`](@ref),
+[`LeftmostDisjunctiveForm`](@ref), [`CONJUNCTION`](@ref), [`DISJUNCTION`](@ref).
+"""
+const DNF{SS<:AbstractSyntaxStructure} = LeftmostDisjunctiveForm{LeftmostConjunctiveForm{SS}}
+
+# Helpers
+function CNF(conjuncts::AbstractVector{<:LeftmostDisjunctiveForm})
+    SS = Union{childrentype.(conjuncts)...}
+    return CNF{SS}(conjuncts)
+end
+function DNF(disjuncts::AbstractVector{<:LeftmostConjunctiveForm})
+    SS = Union{childrentype.(disjuncts)...}
+    return DNF{SS}(disjuncts)
+end
+CNF(conjuncts::NTuple{N,<:LeftmostDisjunctiveForm}) where {N} = CNF(collect(conjuncts))
+DNF(disjuncts::NTuple{N,<:LeftmostConjunctiveForm}) where {N} = DNF(collect(disjuncts))
+CNF(conjuncts::Vararg{LeftmostDisjunctiveForm}) = CNF(collect(conjuncts))
+DNF(disjuncts::Vararg{LeftmostConjunctiveForm}) = DNF(collect(disjuncts))
+CNF(conjunct::LeftmostDisjunctiveForm) = CNF([conjunct])
+DNF(disjunct::LeftmostConjunctiveForm) = DNF([disjunct])
+
+literaltype(::CNF{SS}) where {SS<:AbstractSyntaxStructure} = SS
+literaltype(::DNF{SS}) where {SS<:AbstractSyntaxStructure} = SS
+
+# # TODO maybe not needed?
+# Base.promote_rule(::Type{<:LeftmostConjunctiveForm}, ::Type{<:LeftmostConjunctiveForm}) = LeftmostConjunctiveForm
+# Base.promote_rule(::Type{<:LeftmostDisjunctiveForm}, ::Type{<:LeftmostDisjunctiveForm}) = LeftmostDisjunctiveForm
+# Base.promote_rule(::Type{<:LeftmostConjunctiveForm}, ::Type{<:LeftmostDisjunctiveForm}) = SyntaxTree
+
+conjuncts(m::Union{LeftmostConjunctiveForm,CNF}) = children(m)
+nconjuncts(m::Union{LeftmostConjunctiveForm,CNF}) = nchildren(m)
+disjuncts(m::Union{LeftmostDisjunctiveForm,DNF}) = children(m)
+ndisjuncts(m::Union{LeftmostDisjunctiveForm,DNF}) = nchildren(m)
+
+# conjuncts(m::DNF) = map(d->conjuncts(d), disjuncts(m))
+# nconjuncts(m::DNF) = map(d->nconjuncts(d), disjuncts(m))
+# disjuncts(m::CNF) = map(d->disjuncts(d), conjuncts(m))
+# ndisjuncts(m::CNF) = map(d->ndisjuncts(d), conjuncts(m))
+
+############################################################################################
+
 """
     struct Literal{T<:SyntaxToken} <: AbstractSyntaxStructure
         ispos::Bool
@@ -269,59 +351,11 @@ end
 
 ############################################################################################
 
-# TODO actually:
-# const CNF{SS<:AbstractSyntaxStructure} = Union{LeftmostLinearForm{typeof(∧),LeftmostLinearForm{typeof(∨),SS}},LeftmostLinearForm{typeof(∨),SS}}
-# const DNF{SS<:AbstractSyntaxStructure} = Union{LeftmostLinearForm{typeof(∨),LeftmostLinearForm{typeof(∧),SS}},LeftmostLinearForm{typeof(∧),SS}}
-
-"""$(doc_lmlf)"""
-const LeftmostConjunctiveForm{SS<:AbstractSyntaxStructure} = LeftmostLinearForm{typeof(∧),SS}
-"""$(doc_lmlf)"""
-const LeftmostDisjunctiveForm{SS<:AbstractSyntaxStructure} = LeftmostLinearForm{typeof(∨),SS}
-
-"""$(doc_lmlf)"""
-const CNF{SS<:AbstractSyntaxStructure} = LeftmostConjunctiveForm{LeftmostDisjunctiveForm{SS}}
-"""$(doc_lmlf)"""
-const DNF{SS<:AbstractSyntaxStructure} = LeftmostDisjunctiveForm{LeftmostConjunctiveForm{SS}}
-
-# Helpers
-function CNF(conjuncts::AbstractVector{<:LeftmostDisjunctiveForm})
-    SS = Union{childrentype.(conjuncts)...}
-    return CNF{SS}(conjuncts)
-end
-function DNF(disjuncts::AbstractVector{<:LeftmostConjunctiveForm})
-    SS = Union{childrentype.(disjuncts)...}
-    return DNF{SS}(disjuncts)
-end
-CNF(conjuncts::NTuple{N,<:LeftmostDisjunctiveForm}) where {N} = CNF(collect(conjuncts))
-DNF(disjuncts::NTuple{N,<:LeftmostConjunctiveForm}) where {N} = DNF(collect(disjuncts))
-CNF(conjuncts::Vararg{LeftmostDisjunctiveForm}) = CNF(collect(conjuncts))
-DNF(disjuncts::Vararg{LeftmostConjunctiveForm}) = DNF(collect(disjuncts))
-CNF(conjunct::LeftmostDisjunctiveForm) = CNF([conjunct])
-DNF(disjunct::LeftmostConjunctiveForm) = DNF([disjunct])
-
-literaltype(::CNF{SS}) where {SS<:AbstractSyntaxStructure} = SS
-literaltype(::DNF{SS}) where {SS<:AbstractSyntaxStructure} = SS
-
-# # TODO maybe not needed?
-# Base.promote_rule(::Type{<:LeftmostConjunctiveForm}, ::Type{<:LeftmostConjunctiveForm}) = LeftmostConjunctiveForm
-# Base.promote_rule(::Type{<:LeftmostDisjunctiveForm}, ::Type{<:LeftmostDisjunctiveForm}) = LeftmostDisjunctiveForm
-# Base.promote_rule(::Type{<:LeftmostConjunctiveForm}, ::Type{<:LeftmostDisjunctiveForm}) = SyntaxTree
-
-conjuncts(m::Union{LeftmostConjunctiveForm,CNF}) = children(m)
-nconjuncts(m::Union{LeftmostConjunctiveForm,CNF}) = nchildren(m)
-disjuncts(m::Union{LeftmostDisjunctiveForm,DNF}) = children(m)
-ndisjuncts(m::Union{LeftmostDisjunctiveForm,DNF}) = nchildren(m)
-
-# conjuncts(m::DNF) = map(d->conjuncts(d), disjuncts(m))
-# nconjuncts(m::DNF) = map(d->nconjuncts(d), disjuncts(m))
-# disjuncts(m::CNF) = map(d->disjuncts(d), conjuncts(m))
-# ndisjuncts(m::CNF) = map(d->ndisjuncts(d), conjuncts(m))
-
-############################################################################################
-
 subtrees(tree::SyntaxTree) = [Iterators.flatten(_subtrees.(children(tree)))...]
 _subtrees(tree::SyntaxTree) = [tree, Iterators.flatten(_subtrees.(children(tree)))...]
 
+# TODO: explain better
+# TODO: is this available in AbstractTrees?
 """
     treewalk(
         st::SyntaxTree,
@@ -330,16 +364,13 @@ _subtrees(tree::SyntaxTree) = [tree, Iterators.flatten(_subtrees.(children(tree)
         criterion::Function = ntokens,
         toleaf::Bool = true,
         returnnode::Bool = false,
-        transformnode::Function = nothing,
+        transformnode::Function = nothing
     )::SyntaxTree
 
 Return a subtree of syntax tree, by following these options:
  - `criterion`: function used to compute the probability of stopping at a random node;
  - `returnnode`: true if only the subtree is to be returned;
  - `transformnode`: function that will be applied to the chosen subtree.
-
-TODO explain better
-TODO is this available in AbstractTrees?
 """
 function treewalk(
     st::SyntaxTree,
@@ -447,7 +478,7 @@ end
         f::Formula;
         remove_boxes = true,
         reduce_negations = true,
-        allow_atom_flipping = true,
+        allow_atom_flipping = true
     )
 
 Return a modified version of a given formula, that has the same semantics
