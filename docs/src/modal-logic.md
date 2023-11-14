@@ -13,31 +13,31 @@ Recalling the type hierarchy presented in [man-core](@ref), it is here enriched 
 - [`Connective`](@ref)
     - [`NamedConnective`](@ref)
         - ...
-        - [`DIAMOND`](@ref) (new)
-        - [`BOX`](@ref) (new)
-    - [`AbstractRelationalConnective`](@ref) (new)
+        - [`DIAMOND`](@ref) **(new)**
+        - [`BOX`](@ref) **(new)**
+    - [`AbstractRelationalConnective`](@ref) **(new)**
         - [`DiamondRelationalConnective`](@ref)
         - [`BoxRelationalConnective`](@ref)
 ---
 
-- [`AbstractWorld`](@ref) (new)
+- [`AbstractWorld`](@ref) **(new)**
     - [`World{T}`](@ref)
 
 ---
 
-- [`AbstractFrame{W<:AbstractWorld}`](@ref) (new)
+- [`AbstractFrame{W<:AbstractWorld}`](@ref) **(new)**
     - [`AbstractUniModalFrame{W<:AbstractWorld}`](@ref)
     - [`AbstractMultiModalFrame{W<:AbstractWorld}`](@ref)
     - [`WrapperMultiModalFrame{W<:AbstractWorld, D<:AbstractDict{<:AbstractRelation,<:AbstractUniModalFrame{W}}}`]
 
 ---
 
-- [`AbstractRelation`](@ref) (new)
+- [`AbstractRelation`](@ref) **(new)**
 
 ---
 
 - [`AbstractInterpretation`](@ref)
-    - [`AbstractKripkeStructure`](@ref) (new)
+    - [`AbstractKripkeStructure`](@ref) **(new)**
         - [`KripkeStructure{FR<:AbstractFrame, MAS<:AbstractDict}`](@ref)
 
 # [Pills of Modal Logic](@id modal-logic-pills)
