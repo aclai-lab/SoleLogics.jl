@@ -36,6 +36,11 @@ function getinstance(s::AbstractInterpretationSet, i_instance::Integer)
 end
 
 """
+    struct LogicalInstance{S<:AbstractInterpretationSet}
+        s::S
+        i_instance::Int64
+    end
+
 Object representing the i-th interpretation of an interpretation set.
 
 In general, one may not be able to extract a single logical instance from a
