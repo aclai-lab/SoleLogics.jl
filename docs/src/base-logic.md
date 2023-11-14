@@ -7,46 +7,56 @@ Pages = ["base-logic.md"]
 ```
 
 # [Introduction](@id base-logic-introduction)
-At the end of this chapter, you are going to understand how [`Atom`](@ref)s and [`Truth`](@ref) values are organized in alphabets, and how grammars are defined. 
+At the end of this chapter, you are going to understand how [`Atom`](@ref)s and [`Truth`](@ref) values are organized in *alphabets*, and how *grammars* are defined. 
 
-You will also get an in-depth view of how boolean truth values and boolean [`Connective`](@ref)'s are defined from both a syntax and a syntactical standpoint of view.
+You will also get an in-depth view of how boolean [`Truth`](@ref) values and boolean [`Connective`](@ref)'s are defined from both a syntax and a syntactical standpoint of view.
 
-The end of this chapter is dedicated to modal logic, which is one of the most hot topics covered by SoleLogics.
+Finally, you will get a clearer idea about how to represent and manipulate *interpretations* and their outcomes.
 
 Recalling the type hierarchy presented in [man-core](@ref), it is here enriched with the following new types and structures.
 
 
 - [`Truth`](@ref)
-    - [`BooleanTruth`](@ref) (new)
+    - [`BooleanTruth`](@ref) **(new)**
         - [`Top`] (⊤)
         - [`Bot`] (⊥)
 ---
 
 - [`Connective`](@ref)
-    - [`NamedConnective`](@ref) (new)
+    - [`NamedConnective`](@ref) **(new)**
         - [`NEGATION`](@ref)
         - [`CONJUNCTION`](@ref) 
         - [`DISJUNCTION`](@ref)
         - [`IMPLICATION`](@ref)
-        - [`DIAMOND`](@ref)
-        - [`BOX`](@ref)
 ---
 
-- [`AbstractAlphabet{V}`](@ref) (new)
+- [`AbstractAlphabet{V}`](@ref) **(new)**
     - [`ExplicitAlphabet{V}`](@ref)
     - [`AlphabetOfAny{V}`](@ref)
 ---
 
-- [`AbstractGrammar{V<:AbstractAlphabet,O<:Operator}`](@ref) (new)
+- [`AbstractGrammar{V<:AbstractAlphabet,O<:Operator}`](@ref) **(new)**
     - [`CompleteFlatGrammar{V<:AbstractAlphabet,O<:Operator}`](@ref)
 ---
 
-- [`AbstractAlgebra{T<:Truth}`](@ref) (new)
+- [`AbstractAlgebra{T<:Truth}`](@ref) **(new)**
     - [`BooleanAlgebra`](@ref)
 ---
 
-- [`AbstractLogic{G<:AbstractGrammar,V<:AbstractAlgebra}`](@ref) (new)
-    - [`BaseLogic{G<:AbstractGrammar,A<:AbstractAlgebra}`]
+- [`AbstractLogic{G<:AbstractGrammar,V<:AbstractAlgebra}`](@ref) **(new)**
+    - [`BaseLogic{G<:AbstractGrammar,A<:AbstractAlgebra}`](@ref)
+---
+
+- [`AbstractInterpretation`](@ref)
+    - [`AbstractAssignment`](@ref) **(new)**
+        - [`TruthDict{D<:AbstractDict{A where A<:Atom,T where T<:Truth}}`](@ref)
+        - [`DefaultedTruthDict{D<:AbstractDict{A where A<:Atom,T where T<:Truth}, T<:Truth}`](@ref)
+    - [`AbstractInterpretationSet{M<:AbstractInterpretation}`](@ref) **(see [SoleBase.jl](https://github.com/aclai-lab/SoleBase.jl))**
+        - [`InterpretationVector{M<:AbstractInterpretation}`](@ref)
+    - [`LogicalInstance{S<:AbstractInterpretationSet}`](@ref) 
+
+- [`TruthTable{A,T<:Truth}`](@ref) **(new)**
+- [`LogicalInstance{S<:AbstractInterpretationSet}`](@ref) **(new)**
 
 # [Alphabet](@id alphabets)
 ```@docs
@@ -100,7 +110,7 @@ collatetruth(c::Connective, ts::NTuple{N,T where T<:Truth}) where {N}
 simplify(c::Connective, ts::NTuple{N,F where F<:Formula}) where {N}
 ```
 
-## [Boolean logic](@id boolean-algebra)
+## [Propositional boolean logic](@id boolean-algebra)
 
 ```@docs
 NEGATION
@@ -123,4 +133,37 @@ Bot
 ```@docs
 BooleanAlgebra
 BaseLogic{G<:AbstractGrammar,A<:AbstractAlgebra}
+```
+
+A method is provided to simply access a propositional logic.
+
+```@docs
+    propositionallogic(; alphabet = AlphabetOfAny{String}(), operators = $(BASE_PROPOSITIONAL_CONNECTIVES), grammar = CompleteFlatGrammar(AlphabetOfAny{String}(), $(BASE_PROPOSITIONAL_CONNECTIVES)), algebra = BooleanAlgebra())
+```
+
+# Interpretations
+
+Interpretations are nothing but dictionaries working with [`Truth`](@ref) values, or other types that can be ultimately converted to [`Truth`](@ref).
+
+```@docs
+AbstractAssignment
+Base.haskey(i::AbstractAssignment, ::Atom)
+TruthDict{D<:AbstractDict{A where A<:Atom,T where T<:Truth}}
+DefaultedTruthDict{D<:AbstractDict{A where A<:Atom,T where T<:Truth}, T<:Truth}
+```
+
+To associate interpretations with their assignment, we can simply build a [truth table](https://en.wikipedia.org/wiki/Truth_table).
+```@docs
+TruthTable{A,T<:Truth}
+```
+
+```
+AbstractInterpretationSet{M<:AbstractInterpretation}
+
+LogicalInstance{S<:AbstractInterpretationSet}
+
+check(φ::Formula, s::AbstractInterpretationSet, i_instance::Integer, args...; kwargs...)
+check(φ::Formula, s::AbstractInterpretationSet, args...; kwargs...)
+
+InterpretationVector{M<:AbstractInterpretation}
 ```

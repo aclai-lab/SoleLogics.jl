@@ -13,7 +13,7 @@ const BasePropositionalLogic = AbstractLogic{G,A} where {
         alphabet = AlphabetOfAny{String}(),
         operators = $(BASE_PROPOSITIONAL_CONNECTIVES),
         grammar = CompleteFlatGrammar(AlphabetOfAny{String}(), $(BASE_PROPOSITIONAL_CONNECTIVES)),
-        algebra = BooleanAlgebra(),
+        algebra = BooleanAlgebra()
     )
 
 Instantiate a [propositional logic](https://simple.wikipedia.org/wiki/Propositional_logic)
@@ -40,7 +40,7 @@ function propositionallogic(;
     alphabet::Union{Nothing,Vector,AbstractAlphabet} = nothing,
     operators::Union{Nothing,Vector{<:Operator}} = nothing,
     grammar::Union{Nothing,AbstractGrammar} = nothing,
-    algebra::Union{Nothing,AbstractAlgebra} = nothing,
+    algebra::Union{Nothing,AbstractAlgebra} = nothing
 )
     _baselogic(
         alphabet = alphabet,

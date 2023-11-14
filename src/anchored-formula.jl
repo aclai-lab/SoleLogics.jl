@@ -160,7 +160,6 @@ syntaxstring(φ::AnchoredFormula; kwargs...) = syntaxstring(φ.synstruct; kwargs
 
 ############################################################################################
 
-
 subformulas(φ::AnchoredFormula; kwargs...) = φ.(subformulas(tree(φ); kwargs...))
 normalize(φ::AnchoredFormula; kwargs...) = φ(normalize(tree(φ); kwargs...))
 
@@ -240,8 +239,6 @@ end
 
 ############################################################################################
 
-
-
 """
     parsebaseformula(
         expr::String,
@@ -299,8 +296,6 @@ function parseformula(
 )
     AnchoredFormula(logic, parseformula(SyntaxTree, expr, operators(logic); kwargs...))
 end
-
-
 
 """$(doc_randformula)"""
 function randbaseformula(
