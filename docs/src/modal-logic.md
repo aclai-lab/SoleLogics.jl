@@ -12,7 +12,6 @@ Recalling the type hierarchy presented in [man-core](@ref), it is here enriched 
 
 - [`Connective`](@ref)
     - [`NamedConnective`](@ref)
-        - ...
         - [`DIAMOND`](@ref) **(new)**
         - [`BOX`](@ref) **(new)**
     - [`AbstractRelationalConnective`](@ref) **(new)**
@@ -28,7 +27,7 @@ Recalling the type hierarchy presented in [man-core](@ref), it is here enriched 
 - [`AbstractFrame{W<:AbstractWorld}`](@ref) **(new)**
     - [`AbstractUniModalFrame{W<:AbstractWorld}`](@ref)
     - [`AbstractMultiModalFrame{W<:AbstractWorld}`](@ref)
-    - [`WrapperMultiModalFrame{W<:AbstractWorld, D<:AbstractDict{<:AbstractRelation,<:AbstractUniModalFrame{W}}}`]
+    - [`WrapperMultiModalFrame{W<:AbstractWorld, D<:AbstractDict{<:AbstractRelation,<:AbstractUniModalFrame{W}}}`](@ref)
 
 ---
 

@@ -20,7 +20,6 @@ makedocs(;
         "Introduction to Logics and Propositional Logic" => "base-logic.md",
         "Modal Logic" => "modal-logic.md",
         "More on Formulas" => "more-on-formulas.md",
-        "Utilities" => "utilities.md",
         "Hands On" => "hands-on.md"
     ],
     # NOTE: warning
