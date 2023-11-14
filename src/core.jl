@@ -301,8 +301,9 @@ Abstract type for
 syntax leaves (see `SyntaxLeaf`, such as `Truth` values and `Atom`s),
 and their composition via `Connective`s (i.e., `SyntaxBranch`).
 
-Note that `SyntaxTree`s are *ranked trees*,
-and (should) adhere to the `AbstractTrees` interface.
+!!! note
+    Note that `SyntaxTree`s are *ranked trees*,
+    and (should) adhere to the `AbstractTrees` interface.
 
 See also [`SyntaxLeaf`](@ref), [`SyntaxBranch`](@ref),
 [`AbstractSyntaxStructure`](@ref), [`Formula`](@ref).
@@ -806,10 +807,10 @@ struct SyntaxBranch{T<:Connective} <: SyntaxTree
 
 end
 
-"""$(doc_syntaxtree_children)"""
+"""$(doc_syntaxbranch_children)"""
 children(φ::SyntaxBranch) = φ.children
 
-"""$(doc_syntaxtree_token)"""
+"""$(doc_syntaxbranch_token)"""
 token(φ::SyntaxBranch) = φ.token
 
 function syntaxstring(

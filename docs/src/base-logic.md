@@ -28,8 +28,6 @@ Recalling the type hierarchy presented in [man-core](@ref), it is here enriched 
         - [`CONJUNCTION`](@ref) 
         - [`DISJUNCTION`](@ref)
         - [`IMPLICATION`](@ref)
-        - [`DIAMOND`](@ref)
-        - [`BOX`](@ref)
 ---
 
 - [`AbstractAlphabet{V}`](@ref) (new)

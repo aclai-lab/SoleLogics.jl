@@ -303,6 +303,22 @@ Getter for the token wrapped in a `SyntaxTree`.
 See also [`SyntaxBranch`](@ref), [`SyntaxTree`](@ref).
 """
 
+doc_syntaxbranch_children = """
+    children(φ::SyntaxBranch)
+
+Getter for `φ` children.
+
+See also [`SyntaxBranch`](@ref), [`SyntaxTree`](@ref).
+"""
+
+doc_syntaxbranch_token = """
+    token(φ::SyntaxBranch)::SyntaxToken
+
+Getter for the token wrapped in a `SyntaxBranch`.
+
+See also [`SyntaxBranch`](@ref), [`SyntaxTree`](@ref).
+"""
+
 doc_formula_basein = """
     Base.in(tok::SyntaxToken, φ::Formula)::Bool
 
