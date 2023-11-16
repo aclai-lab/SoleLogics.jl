@@ -6,10 +6,8 @@ CurrentModule = SoleLogics
 Pages = ["more-on-formulas.md"]
 ```
 
-# [More on Formulas and Interpretations](@id more-on-formulas-section)
-In this chapter, you are initially going to learn more about [`Formula`](@ref) subtypes. As you will see, for example, specializing how a [`SyntaxTree`](@ref) is represented depending on your needs can lead to great benefits, considering both computational and memory load.
-
-Later, you are going to see how [`Interpretation`]
+# [More on Formulas](@id more-on-formulas-section)
+In this chapter, you are going to learn more about [`Formula`](@ref) representations that are alternative to syntax trees. As you will see, for example, specifying how a [`SyntaxTree`](@ref) is represented depending on your needs can lead to great benefits, considering both computational and memory load.
 
 Recalling the type hierarchy presented in [man-core](@ref), it is here enriched with the following new types and structures.
 

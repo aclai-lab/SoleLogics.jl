@@ -36,7 +36,6 @@ The package is developed by the [ACLAI Lab](https://aclai.unife.it/en/) @ Univer
 Thanks to Jakob Peters ([PAndQ.jl](https://github.com/jakobjpeters/PAndQ.jl/)) for the interesting discussions and ideas.
 
 ## More on Sole
-- [SoleBase.jl](https://github.com/aclai-lab/SoleBase.jl)
 - [SoleData.jl](https://github.com/aclai-lab/SoleData.jl)
 - [SoleFeatures.jl](https://github.com/aclai-lab/SoleFeatures.jl) 
 - [SoleModels.jl](https://github.com/aclai-lab/SoleModels.jl)
