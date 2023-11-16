@@ -43,7 +43,7 @@ Thanks to Jakob Peters ([PAndQ.jl](https://github.com/jakobjpeters/PAndQ.jl/)) f
 - [SolePostHoc.jl](https://github.com/aclai-lab/SolePostHoc.jl)
 
 ## [Complete Exports Map](@id complete-exports-map)
-Here is a (almost) complete map of SoleLogics available exports. Feels overwhelming? Don't worry, if you are not practical with this package this is useful to just know what definitions does exists and guessing at a glance how types are relationed with each other.
+Here is a (almost) complete map of SoleLogics available exports. Feels overwhelming? Don't worry, if you are not practical with SoleLogics, this is useful to just know what definitions does exist and guess at a glance how types are related.
 
 - [`Syntactical`](@ref)
     - [`Connective`](@ref)        
