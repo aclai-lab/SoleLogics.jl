@@ -19,7 +19,7 @@ Recalling the type hierarchy presented in [man-core](@ref), it is here enriched 
         - [`LeftmostLinearForm{C<:Connective,SS<:AbstractSyntaxStructure}`](@ref) **(new)**
 ---
 
-# Linear Forms
+## Linear Forms
 ```@docs
 LeftmostLinearForm{C<:Connective,SS<:AbstractSyntaxStructure}
 
@@ -40,15 +40,15 @@ baseformula(φ::Formula; infer_logic = true, additional_operators::Union{Nothing
 parsebaseformula(expr::String, additional_operators::Union{Nothing,Vector{<:Operator}} = nothing; operators::Union{Nothing,Vector{<:Operator}}, grammar::Union{Nothing,AbstractGrammar} = nothing, algebra::Union{Nothing,AbstractAlgebra} = nothing, kwargs...)
 ```
 
-# Random generation
+## Random generation
 
 TODO: complete this section
 
-# Parsing
+## Parsing
 
 TODO: complete this section
 
-# Utilities
+## Utilities
 
 ```@docs
 treewalk(st::SyntaxTree, args...; rng::AbstractRNG = Random.GLOBAL_RNG, criterion::Function = ntokens, toleaf::Bool = true, returnnode::Bool = false, transformnode::Function = nothing)
