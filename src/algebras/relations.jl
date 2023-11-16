@@ -113,6 +113,33 @@ isgrounding(::GlobalRel) = true
 ############################################################################################
 
 """
+A binary relation via which a world *is accessed* by every other world within the frame.
+That is, the binary relation that leads to a world.
+
+See also
+[`identityrel`](@ref),
+[`AbstractRelation`](@ref),
+[`AbstractWorld`](@ref),
+[`AbstractFrame`](@ref).
+[`AbstractKripkeStructure`](@ref),
+"""
+struct AtWorldRelation{W<:AbstractWorld} <: AbstractRelation
+    w::W
+end;
+
+arity(::AtWorldRelation) = 2
+
+syntaxstring(r::AtWorldRelation; kwargs...) = "@($(syntaxstring(r.w)))"
+
+hasconverse(::AtWorldRelation) = false
+issymmetric(::AtWorldRelation) = false
+isreflexive(::AtWorldRelation) = false
+istransitive(::AtWorldRelation) = true
+isgrounding(::AtWorldRelation) = true
+
+############################################################################################
+
+"""
     struct NamedRelation{T} <: AbstractRelation
         name::T
     end
