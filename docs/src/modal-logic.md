@@ -52,27 +52,22 @@ Very often real-world applications give rise to non-static sets of data (e.g., t
 
 Pre-processing non-static data means *denaturing it*: we want to deal with this kind of data *natively*, avoiding losing valuable information about its structure. Because of this, we require a logic which is more expressive than propositional one. This is where modal logic comes in.
 
-Imagine the following scenario: you have a speech audio sample of $9$ seconds and you want to check whether some facts are true or false on it. 
-From an abstract point of view, the sample is a single entity on which some propositional assignments are true.
-
-We might, for example, establish whether the propositional letter $p$ is true or no on the sample, where $p$ is the fact *the audio is loud*. The latter fact is referred to the sample in its entirety: by looking at it *as a whole* we can compute whether $p$ is true or no. Let's say that $p$ is true. We can easily schematize the situation by just drawing a node containing $p$, where the node is the entire audio.
+Imagine the following scenario: you have a speech audio sample of $9$ seconds and you want to establish whether the propositional letter $p$ is true or no on the sample. Let's say that $p$ is the fact *the audio is loud*. The latter is referred to the sample in its entirety: by looking at it *as a whole* we can compute whether $p$ is true or no. Let's say that $p$ is true. We can easily schematize the situation by just drawing a graph with a single node containing $p$, where the node is the entire audio.
 
 ![A single node, where p is true](./assets/p_world.png)
 
-This little world can be coded roughly as follows.
+This single node above is what we call world, and it is exactly a propositional model. We can represent it as follows.
 
 ```julia
-world = SoleLogics.World(1) # this is just an abstract reference to a 9s audio sample
 p = Atom("p") # "the audio is loud"
+world = SoleLogics.World(1) # this is just an abstract reference to a 9s audio sample
 
 # ... calculations here ...
 
 valuation = Dict([world => TruthDict(p => true)]) # after some calculations, we establish "p" is true in "world"
 ```
 
-Here's the challenge. Try to express the following fact using just propositional logic: *the audio contains at least two pauses of three seconds that are interspersed with each other by three or more seconds of loud speaking*. After a few tries you should be convinced that this is not possible, because through propositional logic we are not able to *quantify over relations **inside** the sample*. What we can do instead, is considering the audio as a sorted list of sub-samples (or, more generally, a temporal series). Each sub-sample is what we defined world in [Pills of Modal Logic](@ref modal-logic-pills). 
-
-Let's see how to deal more granularly with the original audio sample, without denaturing it. We want to establish whether the long statement in the previous paragraph is true or no. Here is what we need to define.
+Now here's a challenge. Try to express the following fact using just propositional logic: *the audio contains at least two pauses of three seconds that are interspersed with each other by three or more seconds of loud speaking*. After a few tries you should be convinced that this is not possible, because through propositional logic we are not able to *quantify over relations **inside** the sample*. What we can do instead, is upgrade propositional logic to modal logic. We have to deal in a more granular manner with the original audio sample, and we don't want to denature it. Here is what we need:
 
 * an [`Atom`](@ref) $p$, representing the fact *the audio is loud*;
 * an [`Atom`](@ref) $q$, repressening the fact *the audio is silence*;
@@ -83,7 +78,7 @@ The situation is simply schematized as follows
 
 ![A Kripke Model, representing a time serie](./assets/time_serie.png)
 
-where each world identifies $3$ seconds of audio, and we consider a relation between two worlds only if they represent adjacent parts of the audio. And now, the coding counterpart: let's create the Kripke structure represented in the example.
+where each world identifies $3$ seconds of audio, and we consider a relation between two worlds only if they represent adjacent parts of the audio. At this point, let's create the Kripke structure in the example using SoleLogics.jl.
 
 ```julia
 p = Atom("p") # "the audio is loud"
@@ -91,7 +86,7 @@ q = Atom("q") # "the audio is silence"
 
 # Worlds representing 3-second-pieces of the original audio
 worlds = [SoleLogics.World(1), SoleLogics.World(2), SoleLogics.World(3)]
-edges = Edge.([(1,2), (1,3)])
+edges = Edge.([(1,2), (1,3), (2,3)])
 kripkeframe = SoleLogics.ExplicitCrispUniModalFrame(worlds, Graphs.SimpleDiGraph(edges))
 
 valuation = Dict([worlds[1] => TruthDict([p => false, q => true]), worlds[2] => TruthDict([p => true, q => false]), worlds[3] => TruthDict([p => false, q => true])])
@@ -102,20 +97,25 @@ In the Kripke structure above, the second world (the only one where $p$ is true)
 
 $$K,w_1 \models \lozenge p$$
 
-where $K$ is a Kripke structure, $w$ is a specific world in the Kripke structure, and $\lozenge p$ means *look at the world accessibles from w, and check whether p is true or false here*.
+where $K$ is a Kripke structure, $w_1$ is a specific world in the Kripke structure (the one on the left, in the image), and $\lozenge p$ means *look at the world accessibles from $w_1$ and check whether p is true or false on those neighbors*.
 
 Now we are ready to resume the long statement of a few paragraphs ago, the one we could not express using only propositional logic. We can translate it using modal logic! The formula we are looking for is 
 
 $$q \wedge \lozenge p \wedge \lozenge \lozenge q$$ 
 
-which has to be read *check whether this sub-sample of audio is silence, and the sub-sample after this is loud, and the sub-sample after the latter is silence again*.
+which has to be read *check whether this sub-sample of audio is silence, and the sub-sample after this is loud, and the sub-sample after the latter is silence again*. Let's see if this formula is true on the Kripke model above, starting from $w_1$.
+
+```julia
+# ... continuing code above ...
+
+phi = ∧(q, ∧(◊(p),◊(◊(q)))) # \wedge+TAB can also be written as CONJUNCTION, while \lozenge+TAB is called DIAMOND and is a modal operator
+
+check(phi, kripkestructure, worlds[1]) # prints true
+```
 
 By reading the following sections, you will better grasp how [`World`](@ref)s are defined, as well as relations ([`AbstractRelation`](@ref)), how those two concepts are bound togheter in [`AbstractFrame`](@ref)s and [`KripkeStructure`](@ref)s. You will also understand how to access one world from another by using (or implementing) [`Connective`](@ref)s such as [`◊`](@ref) (or [`DIAMOND`](@ref)) and the [`accessibles`](@ref) method.
 
-- Practical use cases examples (..., ..., ...)
-
-- First order logic comparison
-
+TODO: reprint images, indicating worlds label
 
 ## [Worlds and Frames](@id modal-logic-worlds-and-frames)
 
