@@ -42,11 +42,17 @@ parsebaseformula(expr::String, additional_operators::Union{Nothing,Vector{<:Oper
 
 ## Random generation
 
-TODO: complete this section
+```@docs
+Base.rand(alphabet::AbstractAlphabet, args...; kwargs...)
+```
 
 ## Parsing
 
-TODO: complete this section
+```@docs
+BASE_PARSABLE_CONNECTIVES
+
+parseformula(F::Type{<:SyntaxTree}, expr::String, additional_operators::Union{Nothing,AbstractVector} = nothing; function_notation::Bool = false, atom_parser::Base.Callable = Atom{String}, additional_whitespaces::Vector{Char} = Char[], opening_parenthesis::String = DEFAULT_OPENING_PARENTHESIS, closing_parenthesis::String = DEFAULT_CLOSING_PARENTHESIS, arg_delim::String = DEFAULT_ARG_DELIM)
+```
 
 ## Utilities
 

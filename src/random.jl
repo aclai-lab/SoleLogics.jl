@@ -13,13 +13,30 @@ import StatsBase: sample
 # rand(connectives, atom leaves array, true/false (use truth values as leaf or not. If true, default to boolean))
 # sample(..., probability distribution)
 
-"""
+doc_rand = """
     Base.rand(
-        [rng::AbstractRNG = Random.GLOBAL_RNG, ]
-        alphabet,
+        [rng::AbstractRNG = Random.GLOBAL_RNG,]
+        alphabet::AbstractAlphabet,
         args...;
         kwargs...
     )::Atom
+
+    Base.rand(
+        [rng::AbstractRNG = Random.GLOBAL_RNG,]
+        height::Integer,
+        g::CompleteFlatGrammar,
+        args...
+    )
+
+    Base.rand(
+        height::Integer,
+        connectives::Union{AbstractVector{<:Operator},AbstractVector{<:Connective}},
+        atoms::Union{AbstractVector{<:Atom},AbstractAlphabet},
+        truthvalues::Union{Nothing,AbstractVector{<:Truth},AbstractAlgebra} = nothing,
+        args...;
+        rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG,
+        kwargs...
+    )
 
 Randomly sample an atom from an `alphabet`, according to a uniform distribution.
 
@@ -31,6 +48,8 @@ in order to limit the (otherwise infinite) sampling domain.
 See also
 [`AbstractAlphabet`](@ref).
 """
+
+"""$(doc_rand)"""
 function Base.rand(alphabet::AbstractAlphabet, args...; kwargs...)
     Base.rand(Random.GLOBAL_RNG, alphabet, args...; kwargs...)
 end
@@ -51,6 +70,7 @@ end
 
 
 # For the case of a CompleteFlatGrammar, the alphabet and the operators suffice.
+"""$(doc_rand)"""
 function Base.rand(
     height::Integer,
     g::CompleteFlatGrammar,
@@ -69,6 +89,7 @@ function Base.rand(
     randformula(rng, height, alphabet(g), operators(g), args...; kwargs...)
 end
 
+"""$(doc_rand)"""
 function Base.rand(
     height::Integer,    # By Mauro - to generate a random formula, height has to be known
     connectives::Union{AbstractVector{<:Operator},AbstractVector{<:Connective}},

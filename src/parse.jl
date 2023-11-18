@@ -32,9 +32,23 @@ const BASE_PARSABLE_CONNECTIVES = [
     ⊥
 ] |> unique
 
-"""
+doc_parseformula = """
     parseformula(expr::String, additional_operators = nothing; kwargs...)
+
+    parseformula(
+        F::Type{<:SyntaxTree},
+        expr::String,
+        additional_operators::Union{Nothing,AbstractVector} = nothing;
+        function_notation::Bool = false,
+        atom_parser::Base.Callable = Atom{String},
+        additional_whitespaces::Vector{Char} = Char[],
+        opening_parenthesis::String = DEFAULT_OPENING_PARENTHESIS,
+        closing_parenthesis::String = DEFAULT_CLOSING_PARENTHESIS,
+        arg_delim::String = DEFAULT_ARG_DELIM
+    )::F
+
     parseformula(F::Type{<:Formula}, expr::String, additional_operators = nothing; kwargs...)
+    parseformula(F::Type{<:SyntaxTree}, expr::String, logic::AbstractLogic; kwargs...)
 
 Parse a formula of type `F` from a string expression (its [`syntaxstring`](@ref)).
 When `F` is not specified, it defaults to `SyntaxTree`.
@@ -101,6 +115,8 @@ julia> syntaxstring(parseformula("¬1→0"; atom_parser = (x -> Atom{Float64}(pa
 
 See also [`SyntaxTree`](@ref), [`BASE_PARSABLE_CONNECTIVES`](@ref), [`syntaxstring`](@ref).
 """
+
+"""$(doc_parseformula)"""
 function parseformula(F::Type{<:Formula}, expr::String, args...; kwargs...)
     return error("Please, provide method parseformula(::Type{$(F)}, expr::String, ::$(typeof(args))...; ::$(typeof(kwargs))...).")
 end
@@ -116,6 +132,7 @@ end
 #### parseformula ##########################################################################
 ############################################################################################
 
+"""$(doc_parseformula)"""
 function parseformula(
     F::Type{<:SyntaxTree},
     expr::String,
@@ -125,7 +142,7 @@ function parseformula(
     additional_whitespaces::Vector{Char} = Char[],
     opening_parenthesis::String = DEFAULT_OPENING_PARENTHESIS,
     closing_parenthesis::String = DEFAULT_CLOSING_PARENTHESIS,
-    arg_delim::String = DEFAULT_ARG_DELIM,
+    arg_delim::String = DEFAULT_ARG_DELIM
 )::F
     additional_operators = (
         isnothing(additional_operators) ? Operator[] : additional_operators)
@@ -513,7 +530,7 @@ function parseformula(
     return (function_notation ? _fxbuild() : _infixbuild())
 end
 
-# Helper
+"""$(doc_parseformula)"""
 function parseformula(
     F::Type{<:SyntaxTree},
     expr::String,
@@ -523,7 +540,7 @@ function parseformula(
     parseformula(F, expr, operators(g); kwargs...)
 end
 
-# Helper
+"""$(doc_parseformula)"""
 function parseformula(
     F::Type{<:SyntaxTree},
     expr::String,
