@@ -41,6 +41,12 @@ Also, two union types are defined:
 Syntactical
 ```
 
+To print out a generic [`Syntactical`](@ref) element, we must define how it is converted into a string. To do this, we can implement a custom [`syntaxstring`](@ref).
+
+```@docs
+syntaxstring(s::Syntactical; kwargs...)
+```
+
 ```@docs
 Connective
 ```

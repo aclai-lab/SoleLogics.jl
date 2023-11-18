@@ -156,7 +156,7 @@ function StatsBase.sample(
     StatsBase.sample(rng, grammar(l), weights, args...; kwargs...)
 end
 
-"""
+doc_sample = """
     StatsBase.sample(
         [rng::AbstractRNG = Random.GLOBAL_RNG, ]
         g::AbstractGrammar,
@@ -164,6 +164,8 @@ end
         args...;
         kwargs...
     )::Formula
+
+    StatsBase.sample(height::Integer, g::AbstractGrammar, args...; kwargs...)
 
 Randomly sample a logic formula of given `height` from a grammar `g`.
 
@@ -174,6 +176,8 @@ in order to limit the (otherwise infinite) sampling domain.
 See also
 [`AbstractAlphabet`](@ref).
 """
+
+"""$(doc_sample)"""
 function StatsBase.sample(
     rng::AbstractRNG,
     height::Integer,
@@ -188,6 +192,7 @@ function StatsBase.sample(
         opweights = opweights, kwargs...)
 end
 
+"""$(doc_sample)"""
 function StatsBase.sample(
     height::Integer,
     g::AbstractGrammar,
