@@ -44,6 +44,9 @@ parsebaseformula(expr::String, additional_operators::Union{Nothing,Vector{<:Oper
 
 ```@docs
 Base.rand(alphabet::AbstractAlphabet, args...; kwargs...)
+StatsBase.sample(alphabet::AbstractAlphabet, weights::AbstractWeights, args...; kwargs...)
+
+randformula(height::Integer, alphabet, operators::AbstractVector; rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG)
 ```
 
 ## Parsing

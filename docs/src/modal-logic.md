@@ -93,11 +93,11 @@ valuation = Dict([worlds[1] => TruthDict([p => false, q => true]), worlds[2] => 
 
 kripkestructure = KripkeStructure(kripkeframe, valuation)
 ```
-In the Kripke structure above, the second world (the only one where $p$ is true) is accessible from the first world (the one on the left, where $q$ is true). Moreover, in the second world, $p$ is true. In modal logic terms, this is expressed by the notation
+In the Kripke structure above, the central world $w_2$ (the only one where $p$ is true) is accessible from the leftmost world $w_1$ (where $q$ is true). In modal logic terms, this is expressed by the notation
 
 $$K,w_1 \models \lozenge p$$
 
-where $K$ is a Kripke structure, $w_1$ is a specific world in the Kripke structure (the one on the left, in the image), and $\lozenge p$ means *look at the world accessibles from $w_1$ and check whether p is true or false on those neighbors*.
+where $K$ is a Kripke structure, $w_1$ is the leftmost world in the image, and $\lozenge p$ means *look at the world accessibles from $w_1$ and check whether p is true or false on those neighbors*.
 
 Now we are ready to resume the long statement of a few paragraphs ago, the one we could not express using only propositional logic. We can translate it using modal logic! The formula we are looking for is 
 
@@ -114,8 +114,6 @@ check(phi, kripkestructure, worlds[1]) # prints true
 ```
 
 By reading the following sections, you will better grasp how [`World`](@ref)s are defined, as well as relations ([`AbstractRelation`](@ref)), how those two concepts are bound togheter in [`AbstractFrame`](@ref)s and [`KripkeStructure`](@ref)s. You will also understand how to access one world from another by using (or implementing) [`Connective`](@ref)s such as [`◊`](@ref) (or [`DIAMOND`](@ref)) and the [`accessibles`](@ref) method.
-
-TODO: reprint images, indicating worlds label
 
 ## [Worlds and Frames](@id modal-logic-worlds-and-frames)
 
