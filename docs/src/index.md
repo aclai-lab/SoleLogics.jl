@@ -42,17 +42,17 @@ Thanks to Jakob Peters ([PAndQ.jl](https://github.com/jakobjpeters/PAndQ.jl/)) f
 - [SoleModels.jl](https://github.com/aclai-lab/SoleModels.jl)
 - [SolePostHoc.jl](https://github.com/aclai-lab/SolePostHoc.jl)
 
-## [Complete Exports Map](@id complete-exports-map)
-Here is a (almost) complete map of SoleLogics available exports. Feels overwhelming? Don't worry, if you are not practical with SoleLogics, this is useful to just know what definitions does exist and guess at a glance how types are related.
+## [Complete Types Hierarchy Map](@id complete-exports-map)
+Here is a (almost) complete map of SoleLogics available abstract types and structures. Feels overwhelming? Don't worry, if you are not practical with SoleLogics, this is useful to just know what definitions does exist and guess at a glance how types are related to each other.
 
 - [`Syntactical`](@ref)
-    - [`Connective`](@ref)        
+    - [`Connective`](@ref)
         - [`NEGATION`](@ref)
-        - [`CONJUNCTION`](@ref) 
+        - [`CONJUNCTION`](@ref)
         - [`DISJUNCTION`](@ref)
-        - [`IMPLICATION`](@ref)    
+        - [`IMPLICATION`](@ref)
         - [`DIAMOND`](@ref)
-        - [`BOX`](@ref)   
+        - [`BOX`](@ref)
     - [`AbstractRelationalConnective`](@ref)
         - [`DiamondRelationalConnective`](@ref)
         - [`BoxRelationalConnective`](@ref)         
