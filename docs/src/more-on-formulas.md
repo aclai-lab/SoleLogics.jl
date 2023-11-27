@@ -40,7 +40,7 @@ baseformula(φ::Formula; infer_logic = true, additional_operators::Union{Nothing
 parsebaseformula(expr::String, additional_operators::Union{Nothing,Vector{<:Operator}} = nothing; operators::Union{Nothing,Vector{<:Operator}}, grammar::Union{Nothing,AbstractGrammar} = nothing, algebra::Union{Nothing,AbstractAlgebra} = nothing, kwargs...)
 ```
 
-## Random generation
+## Random sampling and generation
 
 ```@docs
 Base.rand(alphabet::AbstractAlphabet, args...; kwargs...)
