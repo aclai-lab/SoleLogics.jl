@@ -5,10 +5,10 @@ abstract type PointRelation <: GeometricalRelation end
 arity(::PointRelation) = 2
 
 """Relation leading to the *minimum* `Point` (i.e., the *least* in the linear order)."""
-struct _MinRel        <: PointRelation end; const MinRel         = _MinRel();         # Minimum
+struct _MinRel         <: PointRelation end; const MinRel         = _MinRel();         # Minimum
 
 """Relation leading to the *maximum* `Point` (i.e., the *greatest* in the linear order)."""
-struct _MaxRel        <: PointRelation end; const MaxRel         = _MaxRel();         # Maximum
+struct _MaxRel         <: PointRelation end; const MaxRel         = _MaxRel();         # Maximum
 
 """Relation leading to the *successor* `Point` (i.e., the *next* in the linear order)."""
 struct _SuccessorRel   <: PointRelation end; const SuccessorRel   = _SuccessorRel();   # Successor

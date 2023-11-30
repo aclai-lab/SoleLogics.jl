@@ -137,10 +137,10 @@ allworlds(fr::Full2DFrame)      = intervals2D_in(1, X(fr)+1, 1, Y(fr)+1)
 allworlds(fr::Full2DPointFrame) = points_in(1, X(fr), 1, Y(fr))
 
 nworlds(fr::Full0DFrame)      = 1
-nworlds(fr::Full1DFrame)      = X(fr)
-nworlds(fr::Full1DPointFrame) = div(X(fr)*(X(fr)+1), 2)
-nworlds(fr::Full2DFrame)      = X(fr)*Y(fr)
-nworlds(fr::Full2DPointFrame) = div(X(fr)*(X(fr)+1), 2) * div(Y(fr)*(Y(fr)+1), 2)
+nworlds(fr::Full1DFrame)      = div(X(fr)*(X(fr)+1), 2)
+nworlds(fr::Full1DPointFrame) = X(fr)
+nworlds(fr::Full2DFrame)      = div(X(fr)*(X(fr)+1), 2) * div(Y(fr)*(Y(fr)+1), 2)
+nworlds(fr::Full2DPointFrame) = X(fr)*Y(fr)
 
 ############################################################################################
 

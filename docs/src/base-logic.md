@@ -18,8 +18,8 @@ Recalling the type hierarchy presented in [man-core](@ref), it is here enriched 
 
 - [`Truth`](@ref)
     - [`BooleanTruth`](@ref) **(new)**
-        - [`Top`] (⊤)
-        - [`Bot`] (⊥)
+        - [`Top`](@ref) (⊤)
+        - [`Bot`](@ref) (⊥)
 ---
 
 - [`Connective`](@ref)
@@ -58,7 +58,7 @@ Recalling the type hierarchy presented in [man-core](@ref), it is here enriched 
 - [`TruthTable{A,T<:Truth}`](@ref) **(new)**
 - [`LogicalInstance{S<:AbstractInterpretationSet}`](@ref) **(new)**
 
-# [Alphabet](@id alphabets)
+## [Alphabet](@id alphabets)
 ```@docs
 AbstractAlphabet{V}
 Base.isfinite(::Type{<:AbstractAlphabet})
@@ -71,7 +71,7 @@ ExplicitAlphabet{V}
 AlphabetOfAny{V}
 ```
 
-# [Grammar](@id grammars)
+## [Grammar](@id grammars)
 ```@docs
 AbstractGrammar{V<:AbstractAlphabet,O<:Operator} 
 alphabet(g::AbstractGrammar{V} where {V})
@@ -85,7 +85,7 @@ leaves(g::AbstractGrammar)
 formulas(g::CompleteFlatGrammar{V,O} where {V,O}; maxdepth::Integer, nformulas::Union{Nothing,Integer} = nothing)
 ```
 
-# [Algebra](@id algebra)
+## [Algebra](@id algebra)
 
 ```@docs
 AbstractAlgebra{T<:Truth}
@@ -96,14 +96,14 @@ bot(a::AbstractAlgebra)
 iscrisp(a::AbstractAlgebra)
 ```
 
-# [Logic](@id logic)
+## [Logic](@id logic)
 ```@docs
 AbstractLogic{G<:AbstractGrammar,V<:AbstractAlgebra}
 grammar(l::AbstractLogic{G}) where {G<:AbstractGrammar}
 algebra(l::AbstractLogic{G,V}) where {G,V}
 ```
 
-# [More about Connectives](@id more-about-connectives)
+## [More about Connectives](@id more-about-connectives)
 ```@docs
 NamedConnective{Symbol}
 collatetruth(c::Connective, ts::NTuple{N,T where T<:Truth}) where {N}

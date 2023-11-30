@@ -111,7 +111,7 @@ See [`AnchoredFormula`](@ref).
 logic(φ::AnchoredFormula) = φ._logic[]
 
 """
-    logic(φ::AnchoredFormula)::AbstractSyntaxStructure
+    synstruct(φ::AnchoredFormula)::AbstractSyntaxStructure
 
 Return the syntactic component of an anchored formula.
 
@@ -168,7 +168,7 @@ normalize(φ::AnchoredFormula; kwargs...) = φ(normalize(tree(φ); kwargs...))
         φ::Formula;
         infer_logic = true,
         additional_operators::Union{Nothing,Vector{<:Operator}} = nothing,
-        kwargs...,
+        kwargs...
     )
 
 Attempt at instantiating a `AnchoredFormula` from a syntax token/formula,

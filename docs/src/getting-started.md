@@ -16,16 +16,15 @@ Please, feel free to use the following tree structures to orient yourself in the
 
 ## Syntax and Semantics tree type hierarchies
 - [`Syntactical`](@ref)
+    - [`Connective`](@ref)                      (e.g., ∧, ∨, ¬, →)
     - [`Formula`](@ref)
         - [`AbstractSyntaxStructure`](@ref)
-            - [`SyntaxTree`](@ref) (e.g., ¬p ∧ q → s)
+            - [`SyntaxTree`](@ref)              (e.g., ¬p ∧ q → s)
                 - [`SyntaxLeaf`](@ref)
-                    - [`Atom`](@ref) (e.g., p, q)
-                    - [`Truth`](@ref) (e.g., ⊤, ⊥)
-                - [`SyntaxBranch`](@ref) (e.g., p ∧ q)
-        - ... (more on Formula subtypes in the next chapters)
-    - [`Connective`](@ref) (e.g., ∧, ∨, ¬, →)
-
+                    - [`Atom`](@ref)            (e.g., p, q)
+                    - [`Literal`](@ref)         (an [`Atom`](@ref) p, or its negation ¬p)
+                    - [`Truth`](@ref)           (e.g., ⊤, ⊥)
+                - [`SyntaxBranch`](@ref)        (e.g., p ∧ q)
 ---
 
 - [`AbstractInterpretation`](@ref) (e.g., p is ⊤, equivalent to p is true in boolean logic)
@@ -42,6 +41,12 @@ Also, two union types are defined:
 Syntactical
 ```
 
+To print out a generic [`Syntactical`](@ref) element, we must define how it is converted into a string. To do this, we can implement a custom [`syntaxstring`](@ref).
+
+```@docs
+syntaxstring(s::Syntactical; kwargs...)
+```
+
 ```@docs
 Connective
 ```
@@ -51,7 +56,7 @@ If the definition above overwhelms you, don't worry: it will be clearer later. F
 Later, we will see some interesting example about how to equip these symbols with semantics, that is, what rules should be applied when interpreting connectives in a generic [`Formula`](@ref). We will also understand how to define our own custom connectives.
 
 ```@docs
-arity
+arity(φ::SyntaxTree)
 ```
 
 The vast majority of data structures involved in encoding a logical formula, are children of the [`Formula`](@ref) abstract type. When such data structures purely represents tree-shaped data structures (or single nodes in them), then they are also children of the [`AbstractSyntaxStructure`](@ref) abstract type.
@@ -68,7 +73,7 @@ height(φ::Formula)
 tokens(φ::Formula)
 ```
 
-Now, let us see how to simply merge togheter [`Syntactical`](@ref) elements.
+Now, let us see how to *compose* syntax elements, to express more complex concepts.
 
 ```@docs
 composeformulas(c::Connective, φs::NTuple{N,F}) where {N,F<:Formula}
@@ -89,6 +94,7 @@ dual(t::SyntaxToken)
 Base.in(tok::SyntaxToken, φ::SyntaxTree)
 
 Atom
+Literal{T<:SyntaxToken}
 ```
 
 ```@docs

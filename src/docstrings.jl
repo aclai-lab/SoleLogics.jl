@@ -281,7 +281,7 @@ doc_tokopprop = """
     nconnectives(φ::Formula)::Integer
     noperators(φ::Formula)::Integer
 
-Return the list/number of (non-unique) `SyntaxToken`s, `Atoms`s, etc...
+Return the list/number of (non-unique) `SyntaxToken`s, `Atom`s, etc...
 appearing in a formula.
 
 See also [`Formula`](@ref), [`SyntaxToken`](@ref).
