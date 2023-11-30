@@ -48,7 +48,7 @@ include("algebras/worlds.jl")
     abstract type AbstractFrame{W<:AbstractWorld} end
 
 Abstract type for an accessibility graph (Kripke frame), that gives the topology to
-[Kripke structures](https://en.wikipedia.org/wiki/Kripke_structure_(model_checking))'s).
+[Kripke structures](https://en.wikipedia.org/wiki/Kripke_structure_(model_checking)).
 A frame can be queried for its set of vertices (also called *worlds*,
 see [`allworlds`](@ref)), and it can be browsed via its accessibility
 relation(s) (see [`accessibles`](@ref)). Refer to [`FullDimensionalFrame`](@ref) as an
@@ -698,7 +698,7 @@ end
     end
 
 Type for representing
-[Kripke structures](https://en.wikipedia.org/wiki/Kripke_structure_(model_checking))'s).
+[Kripke structures](https://en.wikipedia.org/wiki/Kripke_structure_(model_checking)).
 explicitly; it wraps a `frame`, and an abstract dictionary that assigns an interpretation to
 each world.
 """

@@ -19,17 +19,17 @@ conjuctive normal form (CNF) or disjunctive normal form (DNF), defined as:
 
 # Examples
 ```julia-repl
-julia> LeftmostLinearForm(→, parseformula.(["p", "q", "r"]))
-LeftmostLinearForm{SoleLogics.NamedConnective{:→},Atom{String}} TODO recheck these
-    (p) → (q) → (r)
+julia> LeftmostLinearForm(→, parseformula.(["p", "q", "r"])) |> syntaxstring
+LeftmostLinearForm{SoleLogics.NamedConnective{:→},Atom{String}}
+    "(p) → (q) → (r)"
 
-julia> LeftmostConjunctiveForm(parseformula.(["¬p", "q", "¬r"]))
+julia> LeftmostConjunctiveForm(parseformula.(["¬p", "q", "¬r"])) |> syntaxstring
 LeftmostLinearForm{SoleLogics.NamedConnective{:∧},SyntaxTree}
-    (¬(p)) ∧ (q) ∧ (¬(r))
+    "(¬p) ∧ (q) ∧ (¬r)"
 
-julia> LeftmostDisjunctiveForm{Literal}([Literal(false, Atom("p")), Literal(true, Atom("q")), Literal(false, Atom("r"))])
+julia> LeftmostDisjunctiveForm{Literal}([Literal(false, Atom("p")), Literal(true, Atom("q")), Literal(false, Atom("r"))]) |> syntaxstring
 LeftmostLinearForm{SoleLogics.NamedConnective{:∨},Literal}
-    (¬(p)) ∨ (q) ∨ (¬(r))
+    "(¬p) ∨ (q) ∨ (¬r)"
 
 julia> LeftmostDisjunctiveForm([LeftmostConjunctiveForm(parseformula.(["¬p", "q", "¬r"]))]) isa SoleLogics.DNF
 true

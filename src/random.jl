@@ -13,13 +13,30 @@ import StatsBase: sample
 # rand(connectives, atom leaves array, true/false (use truth values as leaf or not. If true, default to boolean))
 # sample(..., probability distribution)
 
-"""
+doc_rand = """
     Base.rand(
-        [rng::AbstractRNG = Random.GLOBAL_RNG, ]
-        alphabet,
+        [rng::AbstractRNG = Random.GLOBAL_RNG,]
+        alphabet::AbstractAlphabet,
         args...;
         kwargs...
     )::Atom
+
+    Base.rand(
+        [rng::AbstractRNG = Random.GLOBAL_RNG,]
+        height::Integer,
+        g::CompleteFlatGrammar,
+        args...
+    )
+
+    Base.rand(
+        height::Integer,
+        connectives::Union{AbstractVector{<:Operator},AbstractVector{<:Connective}},
+        atoms::Union{AbstractVector{<:Atom},AbstractAlphabet},
+        truthvalues::Union{Nothing,AbstractVector{<:Truth},AbstractAlgebra} = nothing,
+        args...;
+        rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG,
+        kwargs...
+    )
 
 Randomly sample an atom from an `alphabet`, according to a uniform distribution.
 
@@ -31,6 +48,8 @@ in order to limit the (otherwise infinite) sampling domain.
 See also
 [`AbstractAlphabet`](@ref).
 """
+
+"""$(doc_rand)"""
 function Base.rand(alphabet::AbstractAlphabet, args...; kwargs...)
     Base.rand(Random.GLOBAL_RNG, alphabet, args...; kwargs...)
 end
@@ -51,6 +70,7 @@ end
 
 
 # For the case of a CompleteFlatGrammar, the alphabet and the operators suffice.
+"""$(doc_rand)"""
 function Base.rand(
     height::Integer,
     g::CompleteFlatGrammar,
@@ -69,6 +89,7 @@ function Base.rand(
     randformula(rng, height, alphabet(g), operators(g), args...; kwargs...)
 end
 
+"""$(doc_rand)"""
 function Base.rand(
     height::Integer,    # By Mauro - to generate a random formula, height has to be known
     connectives::Union{AbstractVector{<:Operator},AbstractVector{<:Connective}},
@@ -96,6 +117,40 @@ function Base.rand(
 
     randformula(height, ops, atoms, args...; rng=rng, kwargs...)
 end
+
+doc_sample = """
+    function StatsBase.sample(
+        [rng::AbstractRNG = Random.GLOBAL_RNG,]
+        alphabet::AbstractAlphabet,
+        weights::AbstractWeights,
+        args...;
+        kwargs...
+    )
+
+    function StatsBase.sample(
+        rng::AbstractRNG,
+        l::AbstractLogic,
+        weights::AbstractWeights,
+        args...;
+        kwargs...
+    )
+
+    StatsBase.sample(
+        [rng::AbstractRNG = Random.GLOBAL_RNG,]
+        height::Integer,
+        g::AbstractGrammar,
+        [opweights::Union{Nothing,AbstractWeights} = nothing,]
+        args...;
+        kwargs...
+    )::Formula
+
+Randomly sample an [`Atom`](@ref) from an `alphabet`, or a logic formula of given `height`
+from a grammar `g`.
+Sampling is weighted, thus, for example, if the first weight in `weights` is higher than
+the others, then the first atom in the alphabet is selected more frequently.
+
+See also [`AbstractAlphabet`](@ref), [`AbstractWeights`](@ref), [`Atom`](@ref).
+"""
 
 function StatsBase.sample(
     alphabet::AbstractAlphabet,
@@ -135,24 +190,17 @@ function StatsBase.sample(
     StatsBase.sample(rng, grammar(l), weights, args...; kwargs...)
 end
 
-"""
-    StatsBase.sample(
-        [rng::AbstractRNG = Random.GLOBAL_RNG, ]
-        g::AbstractGrammar,
-        height::Integer,
-        args...;
-        kwargs...
-    )::Formula
+"""$(doc_sample)"""
+function StatsBase.sample(
+    height::Integer,
+    g::AbstractGrammar,
+    args...;
+    kwargs...
+)
+    StatsBase.sample(Random.GLOBAL_RNG, height, g, args...; kwargs...)
+end
 
-Randomly sample a logic formula of given `height` from a grammar `g`.
-
-# Implementation
-This method for must be implemented, and additional keyword arguments should be provided
-in order to limit the (otherwise infinite) sampling domain.
-
-See also
-[`AbstractAlphabet`](@ref).
-"""
+"""$(doc_sample)"""
 function StatsBase.sample(
     rng::AbstractRNG,
     height::Integer,
@@ -167,21 +215,13 @@ function StatsBase.sample(
         opweights = opweights, kwargs...)
 end
 
-function StatsBase.sample(
-    height::Integer,
-    g::AbstractGrammar,
-    args...;
-    kwargs...
-)
-    StatsBase.sample(Random.GLOBAL_RNG, height, g, args...; kwargs...)
-end
-
 #= ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ CompleteFlatGrammar ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ =#
 
 # TODO
 # - make rng first (optional) argument of randformula (see above)
 # - in randformula, keyword argument alphabet_sample_kwargs that are unpacked upon sampling atoms, as in: Base.rand(rng, a; alphabet_sample_kwargs...). This would allow to sample from infinite alphabets, so when this parameter, !isfinite(alphabet) is allowed!
 
+# TODO @Mauro implement this method.
 doc_randformula = """
     randformula(
         height::Integer,
@@ -190,7 +230,6 @@ doc_randformula = """
         rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG
     )::SyntaxTree
 
-    # TODO @Mauro implement this method.
     function randformula(
         height::Integer,
         g::AbstractGrammar;
