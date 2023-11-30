@@ -537,7 +537,7 @@ function normalize(
         if isnothing(reduce_negations)           reduce_negations = true end
         if isnothing(simplify_constants)         simplify_constants = true end
         if isnothing(allow_atom_flipping)        allow_atom_flipping = false end
-        if isnothing(prefer_implications)        prefer_implications = true end
+        if isnothing(prefer_implications)        prefer_implications = false end
         if isnothing(remove_identities)          remove_identities = true end
         if isnothing(unify_toones)               unify_toones = true end
         if isnothing(rotate_commutatives)        rotate_commutatives = true end
