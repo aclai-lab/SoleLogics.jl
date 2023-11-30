@@ -526,6 +526,7 @@ function normalize(
     reduce_negations = nothing,
     simplify_constants = nothing,
     allow_atom_flipping = nothing,
+    prefer_implications = nothing,
     forced_negation_removal = nothing,
     remove_identities = nothing,
     unify_toones = nothing,
@@ -536,6 +537,7 @@ function normalize(
         if isnothing(reduce_negations)           reduce_negations = true end
         if isnothing(simplify_constants)         simplify_constants = true end
         if isnothing(allow_atom_flipping)        allow_atom_flipping = false end
+        if isnothing(prefer_implications)        prefer_implications = true end
         if isnothing(remove_identities)          remove_identities = true end
         if isnothing(unify_toones)               unify_toones = true end
         if isnothing(rotate_commutatives)        rotate_commutatives = true end
@@ -545,6 +547,7 @@ function normalize(
         if isnothing(reduce_negations)           reduce_negations = true end
         if isnothing(simplify_constants)         simplify_constants = true end
         if isnothing(allow_atom_flipping)        allow_atom_flipping = false end
+        if isnothing(prefer_implications)        prefer_implications = false end
         if isnothing(remove_identities)          remove_identities = true end
         if isnothing(unify_toones)               unify_toones = true end
         if isnothing(rotate_commutatives)        rotate_commutatives = true end
@@ -568,6 +571,7 @@ function normalize(
         reduce_negations = reduce_negations,
         simplify_constants = simplify_constants,
         allow_atom_flipping = allow_atom_flipping,
+        prefer_implications = prefer_implications,
         forced_negation_removal = forced_negation_removal,
         remove_identities = remove_identities,
         unify_toones = unify_toones,
@@ -602,7 +606,11 @@ function normalize(
                 ∧(_normalize(¬(grandchildren[1])), _normalize(¬(grandchildren[2])))
                 # TODO use implication, maybe it's more interpretable?
             elseif reduce_negations && (chtok == ∧) && arity(chtok) == 2
+                # if prefer_implications
+                #     →(_normalize(grandchildren[1]), _normalize(¬(grandchildren[2])))
+                # else
                 ∨(_normalize(¬(grandchildren[1])), _normalize(¬(grandchildren[2])))
+                # end
             elseif reduce_negations && (chtok == →) && arity(chtok) == 2
                 # _normalize(∨(¬(grandchildren[1]), grandchildren[2]))
                 ∧(_normalize(grandchildren[1]), _normalize(¬(grandchildren[2])))
@@ -650,37 +658,50 @@ function normalize(
                 elseif token(chs[2]) == ⊥  chs[1]          # φ ∨ ⊥ ≡ φ
                 elseif token(chs[1]) == ⊤  ⊤              # ⊤ ∨ φ ≡ ⊤
                 elseif token(chs[2]) == ⊤  ⊤              # φ ∨ ⊤ ≡ ⊤
-                else                      newt
+                else                       newt
                 end
             elseif (tok == ∧) && arity(tok) == 2
                 if     token(chs[1]) == ⊥  ⊥              # ⊥ ∧ φ ≡ ⊥
                 elseif token(chs[2]) == ⊥  ⊥              # φ ∧ ⊥ ≡ ⊥
                 elseif token(chs[1]) == ⊤  chs[2]          # ⊤ ∧ φ ≡ φ
                 elseif token(chs[2]) == ⊤  chs[1]          # φ ∧ ⊤ ≡ φ
-                else                      newt
+                else                       newt
                 end
             elseif (tok == →) && arity(tok) == 2
                 if     token(chs[1]) == ⊥  ⊤                   # ⊥ → φ ≡ ⊤
                 elseif token(chs[2]) == ⊥  _normalize(¬chs[1])  # φ → ⊥ ≡ ¬φ
                 elseif token(chs[1]) == ⊤  chs[2]               # ⊤ → φ ≡ φ
                 elseif token(chs[2]) == ⊤  ⊤                   # φ → ⊤ ≡ ⊤
-                else                      _normalize(∨(¬chs[1], chs[2]))
+                else                       newt
                 end
             elseif (tok == ¬) && arity(tok) == 1
                 if     token(chs[1]) == ⊤  ⊥
                 elseif token(chs[1]) == ⊥  ⊤
-                else                      newt
+                else                       newt
                 end
             elseif SoleLogics.isbox(tok) && arity(tok) == 1
                 if     token(chs[1]) == ⊤  ⊤
-                else                      newt
+                else                       newt
                 end
             elseif SoleLogics.isdiamond(tok) && arity(tok) == 1
                 if     token(chs[1]) == ⊥  ⊥
-                else                      newt
+                else                       newt
                 end
             else
                 newt
+            end
+        else
+            newt
+        end
+    end
+
+    newt = begin
+        tok, chs = token(newt), children(newt)
+        if prefer_implications && (tok == ∨)
+            if token(chs[1]) == ¬
+                →(_normalize(first(children(chs[1]))), _normalize((chs[2])))
+            else
+                →(_normalize(¬chs[1]), _normalize((chs[2])))
             end
         else
             newt
