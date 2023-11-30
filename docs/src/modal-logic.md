@@ -70,7 +70,7 @@ valuation = Dict([world => TruthDict(p => true)]) # after some calculations, we 
 Now here's a challenge. Try to express the following fact using just propositional logic: *the audio contains at least two pauses of three seconds that are interspersed with each other by three or more seconds of loud speaking*. After a few tries you should be convinced that this is not possible, because through propositional logic we are not able to *quantify over relations **inside** the sample*. What we can do instead, is upgrade propositional logic to modal logic. We have to deal in a more granular manner with the original audio sample, and we don't want to denature it. Here is what we need:
 
 * an [`Atom`](@ref) $p$, representing the fact *the audio is loud*;
-* an [`Atom`](@ref) $q$, repressening the fact *the audio is silence*;
+* an [`Atom`](@ref) $q$, representing the fact *the audio is silence*;
 * [`World`](@ref)s describing small pieces of the original audio. In particular, we establish that each world is representative for $3$ seconds of audio;
 * an accessibility relation (a specific [`AbstractRelation`](@ref)) to express which worlds are reachable from another through a modal [`NamedConnective`](@ref). 
 
