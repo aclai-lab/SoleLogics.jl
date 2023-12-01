@@ -765,10 +765,12 @@ julia> SoleLogics.isbox(□)
 true
 ```
 """
+isbox(::Any)::Bool = false
 isbox(::Type{<:Connective})::Bool = false
 isbox(c::Connective)::Bool = isbox(typeof(c))
 isbox(::Truth)::Bool = false
 
+isdiamond(::Any)::Bool = false
 isdiamond(C::Type{<:Connective})::Bool = ismodal(C) && !isbox(C)
 isdiamond(c::Connective)::Bool = isdiamond(typeof(c))
 isdiamond(::Truth)::Bool = false
