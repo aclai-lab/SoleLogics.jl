@@ -98,12 +98,12 @@ julia> syntaxstring.(IARelations)
 
 julia> syntaxstring.(IA7Relations)
 6-element Vector{String}:
- "A∨O"
+ "AO"
  "L"
- "D∨B∨E"
- "A̅∨O̅"
+ "DBE"
+ "A̅O̅"
  "L̅"
- "D̅∨B̅∨E̅"
+ "D̅B̅E̅"
 
 julia> syntaxstring.(SoleLogics.IA3Relations)
 3-element Vector{String}:
@@ -207,7 +207,7 @@ IA32IARelations(::_IA_I)          = [
     IA_Ai, IA_Oi, IA_Di, IA_Bi, IA_Ei
 ]
 
-syntaxstring(r::Union{_IA_AorO,_IA_DorBorE,_IA_AiorOi,_IA_DiorBiorEi}; kwargs...) = join(map(_r->syntaxstring(_r; kwargs...), IA72IARelations(r)), "∨")
+syntaxstring(r::Union{_IA_AorO,_IA_DorBorE,_IA_AiorOi,_IA_DiorBiorEi}; kwargs...) = join(map(_r->syntaxstring(_r; kwargs...), IA72IARelations(r)), "")
 syntaxstring(::_IA_I; kwargs...)          = "I"
 
 ############################################################################################
