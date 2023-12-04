@@ -524,6 +524,7 @@ value(p::Atom) = p.value
 
 dual(p::Atom) = Atom(dual(value(p)))
 hasdual(p::Atom) = hasdual(value(p))
+hasdual(value) = false
 dual(value) = error("Please, provide method SoleLogics.dual(::$(typeof(value))).") # TODO explain why?
 
 valuetype(::Atom{V}) where {V} = V

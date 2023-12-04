@@ -34,13 +34,15 @@ rel2natlang(::SoleLogics._Topo_NTPPi) = "outer"
 # Note: assuming interval frame
 function formula2natlang(φ::SyntaxTree; depth = 0, kwargs...)
     f2nl = (ch)->formula2natlang(ch; depth = depth+1, kwargs...)
-    if token(φ) == globalbox
-        "∀ intervals have ($(f2nl(first(children(φ)))))"
+    if token(φ) == ¬
+        "¬($(f2nl(first(children(φ)))))"
+    elseif token(φ) == globalbox
+        "∀ intervals ($(f2nl(first(children(φ)))))"
     elseif token(φ) == globaldiamond
         "∃ interval where ($(f2nl(first(children(φ)))))"
     elseif SoleLogics.isbox(token(φ)) && token(φ) isa SoleLogics.AbstractRelationalConnective
         r = SoleLogics.relation(token(φ))
-        "∀ $(rel2natlang(r)) intervals have ($(f2nl(first(children(φ)))))"
+        "∀ $(rel2natlang(r)) intervals ($(f2nl(first(children(φ)))))"
     elseif SoleLogics.isdiamond(token(φ)) && token(φ) isa SoleLogics.AbstractRelationalConnective
         r = SoleLogics.relation(token(φ))
         "∃ $(rel2natlang(r)) interval where ($(f2nl(first(children(φ)))))"

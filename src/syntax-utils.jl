@@ -527,6 +527,7 @@ function normalize(
     simplify_constants = nothing,
     allow_atom_flipping = nothing,
     prefer_implications = nothing,
+    remove_implications = nothing,
     forced_negation_removal = nothing,
     remove_identities = nothing,
     unify_toones = nothing,
@@ -538,6 +539,7 @@ function normalize(
         if isnothing(simplify_constants)         simplify_constants = true end
         if isnothing(allow_atom_flipping)        allow_atom_flipping = false end
         if isnothing(prefer_implications)        prefer_implications = false end
+        if isnothing(remove_implications)        remove_implications = false end
         if isnothing(remove_identities)          remove_identities = true end
         if isnothing(unify_toones)               unify_toones = true end
         if isnothing(rotate_commutatives)        rotate_commutatives = true end
@@ -548,6 +550,7 @@ function normalize(
         if isnothing(simplify_constants)         simplify_constants = true end
         if isnothing(allow_atom_flipping)        allow_atom_flipping = false end
         if isnothing(prefer_implications)        prefer_implications = false end
+        if isnothing(remove_implications)        remove_implications = false end
         if isnothing(remove_identities)          remove_identities = true end
         if isnothing(unify_toones)               unify_toones = true end
         if isnothing(rotate_commutatives)        rotate_commutatives = true end
@@ -572,6 +575,7 @@ function normalize(
         simplify_constants = simplify_constants,
         allow_atom_flipping = allow_atom_flipping,
         prefer_implications = prefer_implications,
+        remove_implications = remove_implications,
         forced_negation_removal = forced_negation_removal,
         remove_identities = remove_identities,
         unify_toones = unify_toones,
@@ -695,6 +699,7 @@ function normalize(
         end
     end
 
+    # Implication <-> disjunction
     newt = begin
         tok, chs = token(newt), children(newt)
         if prefer_implications && (tok == ∨)
@@ -702,6 +707,12 @@ function normalize(
                 →(_normalize(first(children(chs[1]))), _normalize((chs[2])))
             else
                 →(_normalize(¬chs[1]), _normalize((chs[2])))
+            end
+        elseif remove_implications && (tok == →)
+            if token(chs[1]) == ¬
+                ∨(_normalize(first(children(chs[1]))), _normalize((chs[2])))
+            else
+                ∨(_normalize(¬chs[1]), _normalize((chs[2])))
             end
         else
             newt
