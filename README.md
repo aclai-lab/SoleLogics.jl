@@ -13,7 +13,7 @@
 ## In a nutshell
 
 *SoleLogics.jl* provides a fresh codebase for computational logic, featuring easy manipulation of:
-- Propositional and (multi)modal logics (atoms, logical constants, alphabet, grammars, crisp/fuzzy algebras);
+- Propositional and (multi)modal logics (atoms, logical constants, alphabets, grammars, crisp/fuzzy algebras);
 - Logical formulas (parsing, random generation, minimization);
 - Logical interpretations (e.g., propositional valuations, Kripke structures);
 - Algorithms for *finite [model checking](https://en.wikipedia.org/wiki/Model_checking)*, that is, checking that a formula is satisfied by an interpretation.
