@@ -6,27 +6,28 @@ import StatsBase: sample
 
 #= ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Formulas ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ =#
 
-# WIP by Mauro
-# TODO: add these new methods for rand formula generation
-# rand(connectives, atom leaves array, algebra from which infer truth values)
-# rand(connectives, atom leaves array, truth values with common supertype)
-# rand(connectives, atom leaves array, true/false (use truth values as leaf or not. If true, default to boolean))
-# sample(..., probability distribution)
-
 doc_rand = """
     Base.rand(
-        [rng::AbstractRNG = Random.GLOBAL_RNG,]
+        [rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG,]
         alphabet::AbstractAlphabet,
         args...;
         kwargs...
     )::Atom
 
     Base.rand(
-        [rng::AbstractRNG = Random.GLOBAL_RNG,]
+        [rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG],
+        height::Integer,
+        l::AbstractLogic,
+        args...;
+        kwargs...
+    )::Formula
+
+    Base.rand(
+        [rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG,]
         height::Integer,
         g::CompleteFlatGrammar,
         args...
-    )
+    )::Formula
 
     Base.rand(
         height::Integer,
@@ -36,9 +37,11 @@ doc_rand = """
         args...;
         rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG,
         kwargs...
-    )
+    )::Formula
 
-Randomly sample an atom from an `alphabet`, according to a uniform distribution.
+Randomly generate an [`Atom`](@ref) from an [`AbstractAlphabet`](@ref) according to a
+uniform distribution. If a [`CompleteFlatGrammar`](@ref) is provided together with an
+`height` a [`Formula`](@ref) could also be generated.
 
 # Implementation
 If the `alphabet` is finite, the function defaults to `rand(rng, atoms(alphabet))`;
@@ -46,7 +49,8 @@ otherwise, it must be implemented, and additional keyword arguments should be pr
 in order to limit the (otherwise infinite) sampling domain.
 
 See also
-[`AbstractAlphabet`](@ref).
+[`AbstractAlphabet`](@ref), [`Atom`](@ref), [`CompleteFlatGrammar`](@ref),
+[`Formula`](@ref), [`randformula`](@ref).
 """
 
 """$(doc_rand)"""
@@ -55,22 +59,34 @@ function Base.rand(alphabet::AbstractAlphabet, args...; kwargs...)
 end
 
 function Base.rand(
-    rng::AbstractRNG,
+    rng::Union{Integer,AbstractRNG},
     alphabet::AbstractAlphabet,
     args...;
     kwargs...
 )
     if isfinite(alphabet)
-        Base.rand(rng, atoms(alphabet), args...; kwargs...)
+        Base.rand(initrng(rng), atoms(alphabet), args...; kwargs...)
     else
         error("Please, provide method Base.rand(rng::AbstractRNG, " *
             "alphabet::$(typeof(alphabet)), args...; kwargs...).")
     end
 end
 
+function Base.rand(height::Integer, l::AbstractLogic, args...; kwargs...)
+    Base.rand(Random.GLOBAL_RNG, height, l, args...; kwargs...)
+end
+
+function Base.rand(
+    rng::Union{Integer,AbstractRNG},
+    height::Integer,
+    l::AbstractLogic,
+    args...;
+    kwargs...
+)
+    Base.rand(initrng(rng), grammar(l), args...; kwargs...)
+end
 
 # For the case of a CompleteFlatGrammar, the alphabet and the operators suffice.
-"""$(doc_rand)"""
 function Base.rand(
     height::Integer,
     g::CompleteFlatGrammar,
@@ -80,23 +96,34 @@ function Base.rand(
 end
 
 function Base.rand(
-    rng::AbstractRNG,
+    rng::Union{Integer,AbstractRNG},
     height::Integer,
     g::CompleteFlatGrammar,
     args...;
     kwargs...
 )
-    randformula(rng, height, alphabet(g), operators(g), args...; kwargs...)
+    randformula(initrng(rng), height, alphabet(g), operators(g), args...; kwargs...)
 end
 
-"""$(doc_rand)"""
 function Base.rand(
-    height::Integer,    # By Mauro - to generate a random formula, height has to be known
-    connectives::Union{AbstractVector{<:Operator},AbstractVector{<:Connective}},
+    height::Integer,
     atoms::Union{AbstractVector{<:Atom},AbstractAlphabet},
+    connectives::Union{AbstractVector{<:Operator},AbstractVector{<:Connective}},
     truthvalues::Union{Nothing,AbstractVector{<:Truth},AbstractAlgebra} = nothing,
     args...;
-    rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG,
+    kwargs...
+)
+    Base.rand(Random.GLOBAL_RNG, height, atoms, connectives, truthvalues, args...;
+        kwargs...)
+end
+
+function Base.rand(
+    rng::Union{Integer,AbstractRNG},
+    height::Integer,
+    atoms::Union{AbstractVector{<:Atom},AbstractAlphabet},
+    connectives::Union{AbstractVector{<:Operator},AbstractVector{<:Connective}},
+    truthvalues::Union{Nothing,AbstractVector{<:Truth},AbstractAlgebra} = nothing,
+    args...;
     kwargs...
 )
     # If Truth's are specified as `operators`, then they cannot be simultaneously
@@ -115,7 +142,7 @@ function Base.rand(
         ops = vcat(ops, truthvalues)
     end
 
-    randformula(height, ops, atoms, args...; rng=rng, kwargs...)
+    randformula(height, ops, atoms, args...; rng=initrng(rng), kwargs...)
 end
 
 doc_sample = """
@@ -157,62 +184,73 @@ function StatsBase.sample(
     weights::AbstractWeights,
     args...;
     kwargs...
-)
+)::Atom
     StatsBase.sample(Random.GLOBAL_RNG, alphabet, weights, args...; kwargs...)
 end
 
 function StatsBase.sample(
-    rng::AbstractRNG,
+    rng::Union{Integer,AbstractRNG},
     alphabet::AbstractAlphabet,
     weights::AbstractWeights,
     args...;
     kwargs...
-)
+)::Atom
     if isfinite(alphabet)
-        StatsBase.sample(rng, atoms(alphabet), weights, args...; kwargs...)
+        StatsBase.sample(initrng(rng), atoms(alphabet), weights, args...; kwargs...)
     else
         error("Please, provide method StatsBase.sample(rng::AbstractRNG, " *
             "alphabet::$(typeof(alphabet)), args...; kwargs...).")
     end
 end
 
-function StatsBase.sample(l::AbstractLogic, weights::AbstractWeights, args...; kwargs...)
-    StatsBase.sample(Random.GLOBAL_RNG, l, weights, args...; kwargs...)
-end
-
 function StatsBase.sample(
-    rng::AbstractRNG,
     l::AbstractLogic,
-    weights::AbstractWeights,
+    atomweights::AbstractWeights,
+    opweights::AbstractWeights,
     args...;
     kwargs...
 )
-    StatsBase.sample(rng, grammar(l), weights, args...; kwargs...)
+    StatsBase.sample(Random.GLOBAL_RNG, l, atomweights, opweights, args...; kwargs...)
+end
+
+function StatsBase.sample(
+    rng::Union{Integer,AbstractRNG},
+    l::AbstractLogic,
+    atomweights::AbstractWeights,
+    opweights::AbstractWeights,
+    args...;
+    kwargs...
+)
+    StatsBase.sample(init(rng), grammar(l), atomweights, opweights, args...; kwargs...)
 end
 
 """$(doc_sample)"""
 function StatsBase.sample(
     height::Integer,
     g::AbstractGrammar,
+    atomweights::Union{Nothing,AbstractWeights} = nothing,
+    opweights::Union{Nothing,AbstractWeights} = nothing,
     args...;
     kwargs...
 )
-    StatsBase.sample(Random.GLOBAL_RNG, height, g, args...; kwargs...)
+    StatsBase.sample(Random.GLOBAL_RNG, height, g, atomweights, opweights, args...;
+        kwargs...)
 end
 
 """$(doc_sample)"""
 function StatsBase.sample(
-    rng::AbstractRNG,
+    rng::Union{Integer,AbstractRNG},
     height::Integer,
     g::AbstractGrammar,
+    atomweights::Union{Nothing,AbstractWeights} = nothing,
     opweights::Union{Nothing,AbstractWeights} = nothing,
     args...;
     kwargs...
 )
     randformula(
-        rng, height, alphabet(g), operators(g), args...;
+        initrng(rng), height, alphabet(g), operators(g), args...;
         # atompicker=(rng,dom)->StatsBase.sample(rng, dom, atomweights), kwargs...)
-        opweights = opweights, kwargs...)
+        atompicker = atomweights, opweights = opweights, kwargs...)
 end
 
 #= ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ CompleteFlatGrammar ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ =#
@@ -262,7 +300,7 @@ See also [`AbstractAlphabet`](@ref), [`SyntaxBranch`](@ref).
 
 """$(doc_randformula)"""
 function randformula(
-    rng::AbstractRNG,
+    rng::Union{Integer,AbstractRNG},
     height::Integer,
     alphabet,
     operators::AbstractVector;
@@ -270,6 +308,7 @@ function randformula(
     atompicker::Union{Function,AbstractWeights,AbstractVector{<:Real},Nothing} = sample,
     opweights::Union{AbstractWeights,AbstractVector{<:Real},Nothing} = nothing,
 )::SyntaxTree
+    rng = initrng(rng)
     alphabet = convert(AbstractAlphabet, alphabet)
 
     @assert all(x->x isa Operator, operators) "Unexpected object(s) passed as" *

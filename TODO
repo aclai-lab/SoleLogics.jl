@@ -1,34 +1,52 @@
-Outreaching:
-  Documentation:
-    ☐ In the documentation, show how to create a custom operator (maybe a Xor/⊻/⊕) starting from scratch.
-  README:
-    ✔ Check examples (see NOTE or pluto-demo.jl) @done(23-09-05 19:34)
-    ✔ List of similar packages @done(23-09-05 19:30)
-    ☐ Highlight SoleLogics use cases
+Random:
+  ✔ Clean rand and sample dispatches
+  ☐ Generator for complete collection of formulas generator (all possible combinations of formulas are considered)
+  ☐ Logger for offline formulas (in a log file, i can load and retrieve already generated formulas)
+  ☐ Generator for formulas with specific contraints:
+    ✔ Fixed height formulas @done(23-12-06 12:04)
+    ☐ CNF/DNF formulas
+    ☐ UnSAT formulas
+    ☐ Fuzzy formulas (algebra is an argument)
 
-Readibility: 
-  ✔ Write check's docstring @done(23-09-05 19:33)
-  ☐ Rename things to increase readability, using @deprecate in a deprecate.jl file.
+  ☐ Add the following utility dispatches:
+    rand(connectives, atom leaves array, algebra from which infer truth values)
+    rand(connectives, atom leaves array, truth values with common supertype)
+    rand(connectives, atom leaves array, true/false (use truth values as leaf or not. If true, default to boolean))
+    sample(..., probability distribution)
+  ☐ Write random models generation (see pluto-demo.jl)
 
-Tests:
-  ✔ Fix SatsBase.sample errors @done(23-09-05 19:36)
 
-Utilities:
-  ✔ Differentiate Base.rand and StatsBase.sample (randformula should have a picker::Function argument, which can be rand or sample) @done(23-09-05 19:36)
-  ✔ @atoms defaulted to String @done(23-09-12 15:48)
+Normalization:
+  ☐ Add custom normalization rules to normalize
+  ✔ Simplify code when possible, using dual/hasdual traits @done(23-12-06 12:05)
+
+Interpretations:
+  ☐ Create a SupportedInterpretation
+  ☐ Algorithm to generate a truth table
 
 From PAndQ:
   ✔ Write the algorithm that produces truth tables of propositional formulae @done(23-09-05 19:36)
   ☐ Recognize if a formula is satisfiable, is a contingency, a tautology or a contraddiction.
   ✔ Macro to easily create atoms and parse expressions related to syntax (See PAndQ.jl) @done(23-09-05 19:36)
 
-General:
-  ☐ Write random models generation (see pluto-demo.jl)
+########## DONE ##########################################################################################
 
-  Normalization:
-    ☐ Add custom normalization rules to normalize
-    ☐ Simplify code when possible, using dual/hasdual traits
+Outreaching:
+  Documentation:
+    ✔ In the documentation, show how to create a custom operator (maybe a Xor/⊻/⊕) starting from scratch. @done(23-12-06 12:05)
+  README:
+    ✔ Check examples (see NOTE or pluto-demo.jl) @done(23-09-05 19:34)
+    ✔ List of similar packages @done(23-09-05 19:30)
+    ✔ Highlight SoleLogics use cases
 
-  Interpretations:
-    ☐ Create a SupportedInterpretation
-    ☐ Algorithm to generate a truth table
+Readibility: 
+  ✔ Write check's docstring @done(23-09-05 19:33)
+  ✔ Rename things to increase readability, using @deprecate in a deprecate.jl file. @done(23-12-06 12:05)
+
+Tests:
+  ✔ Fix SatsBase.sample errors @done(23-09-05 19:36)
+
+Utilities:
+  ✔ Differentiate Base.rand and StatsBase.sample (randformula should have a picker::Function argument, which can be rand or sample) @done(23-12-06 12:05)
+  ✔ @atoms defaulted to String @done(23-09-12 15:48)
+    
