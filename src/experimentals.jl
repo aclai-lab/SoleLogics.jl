@@ -32,6 +32,12 @@ rel2natlang(::SoleLogics._Topo_NTPP)  = "inner"
 rel2natlang(::SoleLogics._Topo_NTPPi) = "outer"
 
 # Note: assuming interval frame
+function formula2natlang(φ::Formula; kwargs...)
+    syntaxstring(tree(φ); kwargs...)
+end
+function formula2natlang(φ::SyntaxLeaf; depth = 0, kwargs...)
+    syntaxstring(φ; kwargs...)
+end
 function formula2natlang(φ::SyntaxTree; depth = 0, kwargs...)
     f2nl = (ch)->formula2natlang(ch; depth = depth+1, kwargs...)
     if token(φ) == ¬

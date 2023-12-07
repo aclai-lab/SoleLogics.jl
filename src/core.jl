@@ -821,6 +821,7 @@ function syntaxstring(
     remove_redundant_parentheses = true,
     parenthesize_atoms = !remove_redundant_parentheses,
     parenthesization_level = 1,
+    parenthesize_commutatives = false,
     kwargs...
 )::String
     ch_kwargs = merge((; kwargs...), (;
@@ -828,6 +829,7 @@ function syntaxstring(
         remove_redundant_parentheses = remove_redundant_parentheses,
         parenthesize_atoms = parenthesize_atoms,
         parenthesization_level = parenthesization_level,
+        parenthesize_commutatives = parenthesize_commutatives,
     ))
 
     # Parenthesization rules for binary operators in infix notation
@@ -852,7 +854,9 @@ function syntaxstring(
                 tprec = precedence(ptok)
                 chprec = precedence(chtok)
                 if ptok == chtok
-                    if associativity(ptok) == :left && childtype == :left
+                    if !parenthesize_commutatives && iscommutative(ptok)
+                        false
+                    elseif associativity(ptok) == :left && childtype == :left
                         false # a ∧ b ∧ c = (a ∧ b) ∧ c
                     elseif associativity(ptok) == :right && childtype == :right
                         false # a → b → c = a → (b → c)
