@@ -33,10 +33,7 @@ rel2natlang(::SoleLogics._Topo_NTPPi) = "outer"
 
 # Note: assuming interval frame
 function formula2natlang(φ::Formula; kwargs...)
-    syntaxstring(tree(φ); kwargs...)
-end
-function formula2natlang(φ::SyntaxLeaf; depth = 0, kwargs...)
-    syntaxstring(φ; kwargs...)
+    formula2natlang(tree(φ); kwargs...)
 end
 function formula2natlang(φ::SyntaxTree; depth = 0, kwargs...)
     f2nl = (ch)->formula2natlang(ch; depth = depth+1, kwargs...)
@@ -54,13 +51,16 @@ function formula2natlang(φ::SyntaxTree; depth = 0, kwargs...)
         "∃ $(rel2natlang(r)) interval where ($(f2nl(first(children(φ)))))"
     elseif token(φ) == ∧
         "($(f2nl(first(children(φ))))) and ($(f2nl(last(children(φ)))))"
-    elseif token(φ) == ∧
+    elseif token(φ) == ∨
         "($(f2nl(first(children(φ))))) or ($(f2nl(last(children(φ)))))"
     elseif token(φ) == →
         "whenever $(f2nl(first(children(φ)))) holds, also $(f2nl(last(children(φ))))"
     else
         syntaxstring(φ; kwargs...)
     end
+end
+function formula2natlang(φ::SyntaxLeaf; depth = 0, kwargs...)
+    syntaxstring(φ; kwargs...)
 end
 
 end
