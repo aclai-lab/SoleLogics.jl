@@ -476,20 +476,32 @@ end
 """
     normalize(
         f::Formula;
-        remove_boxes = true,
+        profile = :readability,
+        remove_boxes = nothing,
         reduce_negations = true,
-        allow_atom_flipping = true
+        simplify_constants = true,
+        allow_atom_flipping = false,
+        prefer_implications = false,
+        remove_implications = false,
+        forced_negation_removal = nothing,
+        remove_identities = true,
+        unify_toones = true,
+        rotate_commutatives = true,
     )
 
 Return a modified version of a given formula, that has the same semantics
-but different syntax. This is useful when dealing with the truth of many
-(possibly similar) formulas; for example, when performing
+but different syntax. This is useful for simplifying formulas for readability,
+or when checking the truth of many
+(possibly semantically similar) formulas; for example, when performing
 [model checking](https://en.wikipedia.org/wiki/Model_checking).
-BEWARE: it currently assumes the underlying algebra is Boolean!
+The current implementation assumes the underlying algebra is Boolean!
 
 # Arguments
 - `f::Formula`: when set to `true`,
     the formula;
+- `profile::Symbol`: possible values are :readability, which optimizes for qualitative
+    simplicity for a human to understand, and :modelchecking, which optimizes
+    model checking speed;
 - `remove_boxes::Bool`: remove all (non-relational and relational) box operators by using the
     equivalence ◊φ ≡ ¬□¬φ. Note: this assumes an underlying Boolean algebra.
 - `reduce_negations::Bool`: when set to `true`,
@@ -527,17 +539,19 @@ function normalize(
     simplify_constants = nothing,
     allow_atom_flipping = nothing,
     prefer_implications = nothing,
+    remove_implications = nothing,
     forced_negation_removal = nothing,
     remove_identities = nothing,
     unify_toones = nothing,
-    rotate_commutatives = nothing
+    rotate_commutatives = nothing,
 )
     if profile == :readability
         if isnothing(remove_boxes)               remove_boxes = false end
         if isnothing(reduce_negations)           reduce_negations = true end
         if isnothing(simplify_constants)         simplify_constants = true end
         if isnothing(allow_atom_flipping)        allow_atom_flipping = false end
-        if isnothing(prefer_implications)        prefer_implications = true end
+        if isnothing(prefer_implications)        prefer_implications = false end
+        if isnothing(remove_implications)        remove_implications = false end
         if isnothing(remove_identities)          remove_identities = true end
         if isnothing(unify_toones)               unify_toones = true end
         if isnothing(rotate_commutatives)        rotate_commutatives = true end
@@ -548,6 +562,7 @@ function normalize(
         if isnothing(simplify_constants)         simplify_constants = true end
         if isnothing(allow_atom_flipping)        allow_atom_flipping = false end
         if isnothing(prefer_implications)        prefer_implications = false end
+        if isnothing(remove_implications)        remove_implications = false end
         if isnothing(remove_identities)          remove_identities = true end
         if isnothing(unify_toones)               unify_toones = true end
         if isnothing(rotate_commutatives)        rotate_commutatives = true end
@@ -572,6 +587,7 @@ function normalize(
         simplify_constants = simplify_constants,
         allow_atom_flipping = allow_atom_flipping,
         prefer_implications = prefer_implications,
+        remove_implications = remove_implications,
         forced_negation_removal = forced_negation_removal,
         remove_identities = remove_identities,
         unify_toones = unify_toones,
@@ -695,6 +711,7 @@ function normalize(
         end
     end
 
+    # Implication <-> disjunction
     newt = begin
         tok, chs = token(newt), children(newt)
         if prefer_implications && (tok == ∨)
@@ -702,6 +719,12 @@ function normalize(
                 →(_normalize(first(children(chs[1]))), _normalize((chs[2])))
             else
                 →(_normalize(¬chs[1]), _normalize((chs[2])))
+            end
+        elseif remove_implications && (tok == →)
+            if token(chs[1]) == ¬
+                ∨(_normalize(first(children(chs[1]))), _normalize((chs[2])))
+            else
+                ∨(_normalize(¬chs[1]), _normalize((chs[2])))
             end
         else
             newt

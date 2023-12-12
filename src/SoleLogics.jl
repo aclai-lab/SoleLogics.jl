@@ -108,6 +108,8 @@ export @atoms, @synexpr
 
 include("ui.jl")
 
+include("experimentals.jl")
+
 include("deprecate.jl")
 
 end

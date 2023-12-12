@@ -524,6 +524,7 @@ value(p::Atom) = p.value
 
 dual(p::Atom) = Atom(dual(value(p)))
 hasdual(p::Atom) = hasdual(value(p))
+hasdual(value) = false
 dual(value) = error("Please, provide method SoleLogics.dual(::$(typeof(value))).") # TODO explain why?
 
 valuetype(::Atom{V}) where {V} = V
@@ -819,42 +820,91 @@ function syntaxstring(
     function_notation = false,
     remove_redundant_parentheses = true,
     parenthesize_atoms = !remove_redundant_parentheses,
+    parenthesization_level = 1,
+    parenthesize_commutatives = false,
     kwargs...
 )::String
     ch_kwargs = merge((; kwargs...), (;
         function_notation = function_notation,
         remove_redundant_parentheses = remove_redundant_parentheses,
         parenthesize_atoms = parenthesize_atoms,
+        parenthesization_level = parenthesization_level,
+        parenthesize_commutatives = parenthesize_commutatives,
     ))
 
     # Parenthesization rules for binary operators in infix notation
     function _binary_infix_syntaxstring(
-        tok::SyntaxToken,
-        ch::SyntaxTree
+        ptok::SyntaxToken,
+        ch::SyntaxTree,
+        childtype::Symbol
     )
         chtok = token(ch)
         chtokstring = syntaxstring(ch; ch_kwargs...)
 
-        lpar, rpar = (!remove_redundant_parentheses) ? ["(", ")"] : ["", ""]
+        parenthesize = begin
+            if !remove_redundant_parentheses
+                true
+            elseif arity(chtok) == 0
+                if chtok isa Atom && parenthesize_atoms
+                    true
+                else
+                    false
+                end
+            elseif arity(chtok) == 2 # My child is infix
+                tprec = precedence(ptok)
+                chprec = precedence(chtok)
+                if ptok == chtok
+                    if !parenthesize_commutatives && iscommutative(ptok)
+                        false
+                    elseif associativity(ptok) == :left && childtype == :left
+                        false # a ∧ b ∧ c = (a ∧ b) ∧ c
+                    elseif associativity(ptok) == :right && childtype == :right
+                        false # a → b → c = a → (b → c)
+                    else
+                        true
+                    end
+                elseif tprec == chprec # Read left to right
+                    if childtype == :left
+                        false
+                    elseif childtype == :right
+                        true
+                    end
+                elseif tprec < chprec
+                    if chprec-tprec <= parenthesization_level
+                        true
+                    else
+                        false
+                    end
+                elseif tprec > chprec
+                    true
+                    # # 1st condition, before "||" -> "◊¬p ∧ ¬q" instead of "(◊¬p) ∧ (¬q)"
+                    # # 2nd condition, after  "||" -> "(q → p) → ¬q" instead of "q → p → ¬q" <- Not sure: wrong?
+                    # # 3nd condition
+                    # @show !(tprec <= chprec)
+                    # @show ((chprec-tprec) <= parenthesization_level)
+                    # @show tprec <= chprec
+                    # @show chprec-tprec
+                    # @show chprec-tprec <= parenthesization_level
+                    # @show iscommutative(ptok)
+                    # @show ptok, chtok, iscommutative(ptok), tprec, chprec
+                    # @show ((!iscommutative(ptok) || ptok != chtok) && (tprec > chprec))
+                    # @show (!iscommutative(ptok) && tprec <= chprec)
 
-        if arity(chtok) == 0
-            if chtok isa Atom && parenthesize_atoms # Force parenthesization
-                return "($(chtokstring))"
+
+                    # if (
+                    #     (tprec > chprec  && (!iscommutative(ptok) || ptok != chtok)) || # 1
+                    #     (tprec <= chprec && (!iscommutative(ptok))) # 2
+                    # )
+                    #     true
+                    # else
+                    #     false
+                    # end
+                end
             else
-                return "$(lpar)$(chtokstring)$(rpar)"
+                false
             end
         end
-
-        tprec = precedence(tok)
-        chprec = precedence(chtok)
-
-        # 1st condition, before "||" -> "◊¬p ∧ ¬q" instead of "(◊¬p) ∧ (¬q)"
-        # 2nd condition, after  "||" -> "(q → p) → ¬q" instead of "q → p → ¬q"
-        if ((!iscommutative(tok) || tok != chtok) && (tprec > chprec)) ||
-            (!iscommutative(tok) && tprec <= chprec)
-            lpar, rpar = "(", ")"
-        end
-
+        lpar, rpar = parenthesize ? ["(", ")"] : ["", ""]
         return "$(lpar)$(chtokstring)$(rpar)"
     end
 
@@ -867,23 +917,26 @@ function syntaxstring(
     elseif arity(tok) == 2 && !function_notation
         # Infix notation for binary operators
 
-        "$(_binary_infix_syntaxstring(tok, children(φ)[1])) " *
-        "$tokstr $(_binary_infix_syntaxstring(tok, children(φ)[2]))"
+        "$(_binary_infix_syntaxstring(tok, children(φ)[1], :left)) " *
+        "$tokstr $(_binary_infix_syntaxstring(tok, children(φ)[2], :right))"
     else
         # Infix notation with arity != 2, or function notation
         lpar, rpar = "(", ")"
-        charity = arity(token(children(φ)[1]))
+        ch = token(children(φ)[1])
+        charity = arity(ch)
         if !function_notation && arity(tok) == 1 &&
-            (charity == 1 || (charity == 0 && !parenthesize_atoms))
+            (charity == 1 || (ch isa Atom && !parenthesize_atoms))
             # When not in function notation, print "¬p" instead of "¬(p)";
             # note that "◊((p ∧ q) → s)" must not be simplified as "◊(p ∧ q) → s".
             lpar, rpar = "", ""
         end
 
-        length(children(φ)) == 0 ?
-               tokstr :
-               tokstr * "$(lpar)" * join(
-                    [syntaxstring(c; ch_kwargs...) for c in children(φ)], ", ") * "$(rpar)"
+        if length(children(φ)) == 0
+            tokstr
+        else
+            tokstr * "$(lpar)" * join(
+                [syntaxstring(c; ch_kwargs...) for c in children(φ)], ", ") * "$(rpar)"
+        end
     end
 end
 

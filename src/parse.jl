@@ -42,9 +42,9 @@ doc_parseformula = """
         function_notation::Bool = false,
         atom_parser::Base.Callable = Atom{String},
         additional_whitespaces::Vector{Char} = Char[],
-        opening_parenthesis::String = DEFAULT_OPENING_PARENTHESIS,
-        closing_parenthesis::String = DEFAULT_CLOSING_PARENTHESIS,
-        arg_delim::String = DEFAULT_ARG_DELIM
+        opening_parenthesis::String = $(repr(DEFAULT_OPENING_PARENTHESIS)),
+        closing_parenthesis::String = $(repr(DEFAULT_CLOSING_PARENTHESIS)),
+        arg_delim::String = $(repr(DEFAULT_ARG_DELIM))
     )::F
 
     parseformula(F::Type{<:Formula}, expr::String, additional_operators = nothing; kwargs...)
