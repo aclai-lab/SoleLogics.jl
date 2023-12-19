@@ -306,3 +306,7 @@ f = parseformula(s)
     )
 
 @test_nowarn parseformula("10 ∧ ⟨G⟩ 2 ∧ [=] -1"; atom_parser = x->(Atom{Int64}(parse(Int, x))))
+
+# synexpr
+
+@test (parseformula("p ∧ q ∧ r ∨ s ∧ t")) == @synexpr p ∧ q ∧ r ∨ s ∧ t
