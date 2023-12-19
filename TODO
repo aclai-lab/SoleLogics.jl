@@ -1,5 +1,4 @@
 Random:
-  ✔ Clean rand and sample dispatches
   ☐ Generator for formulas with specific contraints:
     ✔ Fixed height formulas @done(23-12-06 12:04)
     ☐ CNF/DNF formulas
@@ -17,26 +16,29 @@ Random:
 
 Normalization:
   ☐ Add custom normalization rules to normalize
-  ✔ Simplify code when possible, using dual/hasdual traits @done(23-12-06 12:05)
 
 Interpretations:
   ☐ Create a SupportedInterpretation
   ☐ Algorithm to generate a truth table
 
 From PAndQ:
-  ✔ Write the algorithm that produces truth tables of propositional formulae @done(23-09-05 19:36)
   ☐ Recognize if a formula is satisfiable, is a contingency, a tautology or a contraddiction.
-  ✔ Macro to easily create atoms and parse expressions related to syntax (See PAndQ.jl) @done(23-09-05 19:36)
 
 ########## DONE ##########################################################################################
 
-Outreaching:
-  Documentation:
-    ✔ In the documentation, show how to create a custom operator (maybe a Xor/⊻/⊕) starting from scratch. @done(23-12-06 12:05)
-  README:
-    ✔ Check examples (see NOTE or pluto-demo.jl) @done(23-09-05 19:34)
-    ✔ List of similar packages @done(23-09-05 19:30)
-    ✔ Highlight SoleLogics use cases
+Documentation:
+  ✔ In the documentation, show how to create a custom operator (maybe a Xor/⊻/⊕) starting from scratch. @done(23-12-06 12:05)
+
+Normalization:
+  ✔ Simplify code when possible, using dual/hasdual traits @done(23-12-06 12:05)
+  
+Random:
+  ✔ Clean rand and sample dispatches
+
+README:
+  ✔ Check examples (see NOTE or pluto-demo.jl) @done(23-09-05 19:34)
+  ✔ List of similar packages @done(23-09-05 19:30)
+  ✔ Highlight SoleLogics use cases
 
 Readability: 
   ✔ Write check's docstring @done(23-09-05 19:33)
@@ -52,3 +54,6 @@ Utilities:
   ✔ Differentiate Base.rand and StatsBase.sample (randformula should have a picker::Function argument, which can be rand or sample) @done(23-12-06 12:05)
   ✔ @atoms defaulted to String @done(23-09-12 15:48)
 
+PAndQ:
+  ✔ Write the algorithm that produces truth tables of propositional formulae @done(23-09-05 19:36)
+  ✔ Macro to easily create atoms and parse expressions related to syntax (See PAndQ.jl) @done(23-09-05 19:36)
