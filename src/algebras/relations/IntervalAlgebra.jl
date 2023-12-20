@@ -1,7 +1,6 @@
 ############################################################################################
 # Allen's Interval Algebra relations
 ############################################################################################
-
 doc_IntervalRelation = """
     abstract type IntervalRelation <: GeometricalRelation end
 
@@ -15,30 +14,32 @@ The 12 relations are
 the 6 relations `after`, `later`, `begins`, `ends`, `during`, `overlaps`,
 and their inverses.
 
-If we consider a reference interval `(x,y)`, we can graphically represent the 6
-base relations by providing an example of a world `(z,t)` that is accessible via each
+If we consider a reference interval `(x−y)`, we can graphically represent the 6
+base relations by providing an example of a world `(z−t)` that is accessible via each
 of them:
 
-RELATION    ABBR.     x                   y                     PROPERTY
-                      |-------------------|
-                      .                   .
-                      .                   z        t            y = z
-After       (A)       .                   |--------|
-                      .                   .
-                      .                   .   z         t       y < z
-Later       (L)       .                   .   |---------|
-                      .                   .
-                      z     t             .                     x = z, t < y
-Begins      (B)       |-----|             .
-                      .                   .
-                      .             z     t                     y = t, x < z
-Ends        (E)       .             |-----|
-                      .                   .
-                      .   z        t      .                     x < z, t < y
-During      (D)       .   |--------|      .
-                      .                   .
-                      .           z       .    t                x < z < y < t
-Overlaps    (O)       .           |------------|
+| Relation    | Full name          |       Property      |       Graphical Representation w.r.t (x−y) |
+| :---------- |:------------------ |:-------------------:| :----------------------------------------: |
+|             |                    |                     |`_____x___________________y________________`|
+|             |                    |                     |`_____∣−−−−−−−−−−−−−−−−−−−∣________________`|
+|             |                    |                     |`_____.___________________.________________`|
+|             |                    |                     |`_____.___________________z________t_______`|
+| A           | After (or meets)   |    y = z            |`_____.___________________∣−−−−−−−−∣_______`|
+|             |                    |                     |`_____.___________________.________________`|
+|             |                    |                     |`_____.___________________.___z_________t__`|
+| L           | Later              |    y < z            |`_____.___________________.___∣−−−−−−−−−∣__`|
+|             |                    |                     |`_____.___________________.________________`|
+|             |                    |                     |`_____z_____t_____________.________________`|
+| B           | Begins (or starts) |    x = z, t < y     |`_____∣−−−−−∣_____________.________________`|
+|             |                    |                     |`_____.___________________.________________`|
+|             |                    |                     |`_____._____________z_____t________________`|
+| E           | Ends (or finishes) |    y = t, x < z     |`_____._____________∣−−−−−∣________________`|
+|             |                    |                     |`_____.___________________.________________`|
+|             |                    |                     |`_____.___z________t______.________________`|
+| D           | During             |    x < z, t < y     |`_____.___∣−−−−−−−−∣______.________________`|
+|             |                    |                     |`_____.___________________.________________`|
+|             |                    |                     |`_____.___________z_______.____t___________`|
+| O           | Overlaps           |    x < z < y < t    |`_____.___________∣−−−−−−−−−−−−∣___________`|
 
 Coarser relations can be defined by union of these 12 relations.
 
