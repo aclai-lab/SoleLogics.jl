@@ -62,7 +62,8 @@ end
 
 @test alphabet(logic(parsebaseformula("p→q"))) == AlphabetOfAny{String}()
 
-
+@test syntaxstring(parseformula("(◊¬p) ∧ (¬q)")) == "◊¬p ∧ ¬q"
+@test syntaxstring(parseformula("q → p → ¬q"), remove_redundant_parentheses=false) == "(q) → ((p) → (¬(q)))"
 # function notation ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 @test syntaxstring(parseformula("p∧q"); function_notation = true) == "∧(p, q)"

@@ -9,9 +9,6 @@ using StatsBase
 using Reexport
 using Lazy
 
-
-include("utils.jl")
-
 export iscrisp, isfinite, isnullary, isunary, isbinary
 
 export Syntactical, Connective,
@@ -82,6 +79,8 @@ export AbstractWorlds, Worlds
 
 export Interval, Interval2D, OneWorld
 
+include("utils.jl")
+
 include("modal-logic.jl")
 
 export LeftmostLinearForm, LeftmostConjunctiveForm, LeftmostDisjunctiveForm, Literal
@@ -97,6 +96,7 @@ export parseformula
 include("parse.jl")
 
 export randbaseformula, randformula
+export randframe, randmodel
 
 include("random.jl")
 
