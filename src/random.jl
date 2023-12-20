@@ -391,7 +391,7 @@ function randformula(
     rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG,
     kwargs...
 )
-    randformula(rng=initrng(rng), height, args...; kwargs...)
+    randformula(initrng(rng), height, args...; kwargs...)
 end
 
 #= ~~~~~~~~~~~~~~~~~~~~~~~~~~ Kripke Models generation ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ =#
