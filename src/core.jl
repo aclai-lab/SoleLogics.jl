@@ -86,7 +86,7 @@ you might want to avoid providing these methods at all.
 
 The semantics of a *propositional* connective can be specified via `collatetruth` (see example below);
 in principle, the definition can rely on the partial order between truth values
-(specified via `Base.isless`).
+(specified via `precedes`).
 
 Here is an example of a custom implementation of the xor (⊻) Boolean operator.
 ```julia
@@ -565,7 +565,7 @@ that is, an algebra with three truth values
 can be based on the following `Truth` value definitions:
 
 ```julia
-import Base: isless
+import SoleLogics: precedes
 
 abstract type ThreeVTruth <: Truth end
 
@@ -584,15 +584,15 @@ syntaxstring(::ThreeUnknown; kwargs...) = "υ"
 istop(t::ThreeTop) = true
 isbot(t::ThreeBot) = true
 
-Base.isless(::ThreeBot, ::ThreeTop) = true
-Base.isless(::ThreeBot, ::ThreeUnknown) = true
-Base.isless(::ThreeUnknown, ::ThreeTop) = true
-Base.isless(::ThreeTop, ::ThreeBot) = false
-Base.isless(::ThreeUnknown, ::ThreeBot) = false
-Base.isless(::ThreeTop, ::ThreeUnknown) = false
+precedes(::ThreeBot, ::ThreeTop) = true
+precedes(::ThreeBot, ::ThreeUnknown) = true
+precedes(::ThreeUnknown, ::ThreeTop) = true
+precedes(::ThreeTop, ::ThreeBot) = false
+precedes(::ThreeUnknown, ::ThreeBot) = false
+precedes(::ThreeTop, ::ThreeUnknown) = false
 ```
 
-Note that `Base.isless` is used to define the (partial) order between `Truth` values.
+Note that `precedes` is used to define the (partial) order between `Truth` values.
 
 See also [`Connective`](@ref), [`BooleanTruth`](@ref).
 """
@@ -639,12 +639,23 @@ function truthsupertype(T::Type{<:Truth})
     return T
 end
 
-function Base.isless(t1::Truth, t2::Truth)
+"""
+TODO docstring it's mandatory.
+"""
+function precedes(t1::Truth, t2::Truth)
     if Base.isequal(t1, t2)
         return false
     else
-        return error("Please, provide method Base.isless(::$(typeof(t1)), ::$(typeof(t2))).")
+        return error("Please, provide method precedes(::$(typeof(t1)), ::$(typeof(t2))).")
     end
+end
+
+# Alias
+const ≺ = precedes
+
+# Fallback
+function Base.:<(t1::Truth, t2::Truth)
+    return precedes(t1, t2)
 end
 
 # Helper: some types can be specified to be converted to Truth types

@@ -1,5 +1,3 @@
-import Base: isless
-
 """
     collatetruth(c::Connective, ts::NTuple{N,T where T<:Truth})::Truth where {N}
 
@@ -257,8 +255,8 @@ dual(c::typeof(⊤))   = typeof(⊥)
 hasdual(::typeof(⊥)) = true
 dual(c::typeof(⊥))   = typeof(⊤)
 
-Base.isless(::Bot, ::Top) = true
-Base.isless(::Top, ::Bot) = false
+precedes(::Bot, ::Top) = true
+precedes(::Top, ::Bot) = false
 
 """
     struct BooleanAlgebra <: AbstractAlgebra{Bool} end
