@@ -87,25 +87,25 @@ t2 = @test_nowarn TruthDict(Pair{Real,Bool}[1.0 => true, 2 => true, 3 => true])
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-@test TruthDict(["p", "q"])["p"] isa Top
-@test TruthDict(["p", "q"])[Atom("p")] isa Top
-@test_throws MethodError interpret("p", TruthDict(["p", "q"])) isa Top
-@test interpret(Atom("p"), TruthDict(["p", "q"])) isa Top
+@test TruthDict(["p", "q"])["p"] |> istop
+@test TruthDict(["p", "q"])[Atom("p")] |> istop
+@test_throws MethodError interpret("p", TruthDict(["p", "q"])) |> istop
+@test interpret(Atom("p"), TruthDict(["p", "q"])) |> istop
 
 @test TruthDict(["p", "q"])["r"] isa Atom
 @test TruthDict(["p", "q"])[Atom("r")] isa Atom
 @test_throws MethodError interpret("r", TruthDict(["p", "q"])) isa Atom
 @test interpret(Atom("r"), TruthDict(["p", "q"])) isa Atom
 
-@test DefaultedTruthDict(["p", "q"])["p"] isa Top
-@test DefaultedTruthDict(["p", "q"])[Atom("p")] isa Top
-@test_throws MethodError interpret("p", DefaultedTruthDict(["p", "q"])) isa Top
-@test interpret(Atom("p"), DefaultedTruthDict(["p", "q"])) isa Top
+@test DefaultedTruthDict(["p", "q"])["p"] |> istop
+@test DefaultedTruthDict(["p", "q"])[Atom("p")] |> istop
+@test_throws MethodError interpret("p", DefaultedTruthDict(["p", "q"])) |> istop
+@test interpret(Atom("p"), DefaultedTruthDict(["p", "q"])) |> istop
 
-@test DefaultedTruthDict(["p", "q"])["r"] isa Bot
-@test DefaultedTruthDict(["p", "q"])[Atom("r")] isa Bot
-@test_throws MethodError interpret("r", DefaultedTruthDict(["p", "q"])) isa Bot
-@test interpret(Atom("r"), DefaultedTruthDict(["p", "q"])) isa Bot
+@test DefaultedTruthDict(["p", "q"])["r"] |> isbot
+@test DefaultedTruthDict(["p", "q"])[Atom("r")] |> isbot
+@test_throws MethodError interpret("r", DefaultedTruthDict(["p", "q"])) |> isbot
+@test interpret(Atom("r"), DefaultedTruthDict(["p", "q"])) |> isbot
 
 
 #  normalization: negations compression ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

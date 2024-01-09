@@ -9,8 +9,6 @@
     │   │   │   │   ├── Atom
     │   │   │   │   └── Truth
     │   │   │   │       ├── BooleanTruth
-    │   │   │   │       │   ├── Top (⊤)
-    │   │   │   │       │   └── Bot (⊥)
     │   │   │   │       └── ...
     │   │   │   └── SyntaxBranch (e.g., p ∧ q)
     │   │   ├── LeftmostLinearForm (e.g., conjunctions, disjunctions, DNFs, CNFs)
@@ -102,17 +100,12 @@ accepting an `NTuple{arity,T}` as a second argument.
 To make the operator work with incomplete interpretations (e.g., when the `Truth` value
 for an atom is not known), simplification rules for `NTuple{arity,T where T<:Formula}`s
 should be provided via methods for `simplify`.
-For example, these rules suffice for simplifying xors between `Top/`Bot`s, and other formulas:
+For example, these rules suffice for simplifying xors between `TOP/`BOT`s, and other formulas:
 ```julia
 import SoleLogics: simplify
-simplify(::typeof(⊻), (t1, t2)::Tuple{Top,Top}) = Bot
-simplify(::typeof(⊻), (t1, t2)::Tuple{Top,Bot}) = Top
-simplify(::typeof(⊻), (t1, t2)::Tuple{Bot,Top}) = Top
-simplify(::typeof(⊻), (t1, t2)::Tuple{Bot,Bot}) = Bot
-simplify(::typeof(⊻), (t1, t2)::Tuple{Top,Formula}) = ¬t2
-simplify(::typeof(⊻), (t1, t2)::Tuple{Bot,Formula}) = t2
-simplify(::typeof(⊻), (t1, t2)::Tuple{Formula,Top}) = ¬t1
-simplify(::typeof(⊻), (t1, t2)::Tuple{Formula,Bot}) = t1
+simplify(::typeof(⊻), (t1, t2)::Tuple{BooleanTruth,BooleanTruth}) = flag(t1) == flag(t2) ? BOT : TOP
+simplify(::typeof(⊻), (t1, t2)::Tuple{BooleanTruth,Formula}) = istop(t1) ? ¬t2 : t2
+simplify(::typeof(⊻), (t1, t2)::Tuple{Formula,BooleanTruth}) = istop(t2) ? ¬t1 : t1
 ```
 
 Beware of dispatch ambiguities!
@@ -553,10 +546,9 @@ syntaxstring(value; kwargs...) = string(value)
 
 Abstract type for syntax leaves representing values of a
 [lattice algebra](https://en.wikipedia.org/wiki/Lattice_(order)).
-In Boolean logic, the two [`BooleanTruth`](@ref) values [`Top`](@ref)
-and [`Bot`](@ref) are used.
+In Boolean logic, the two [`BooleanTruth`](@ref) values TOP (⊤) and BOT (⊥) are used.
 
-See also [`Top`](@ref), [`Bot`](@ref), [`BooleanTruth`](@ref).
+See also [`BooleanTruth`](@ref).
 
 # Implementation
 A [three-valued algebra](https://en.wikipedia.org/wiki/Three-valued_logic),

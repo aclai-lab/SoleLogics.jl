@@ -1072,8 +1072,9 @@ function collateworlds(
 end
 
 # I know, these exceed 92 characters. But they look nicer like this!! :D
-collateworlds(fr::AbstractFrame{W}, ::typeof(⊤), ::NTuple{0,<:AbstractWorlds}) where {W<:AbstractWorld} = allworlds(fr)
-collateworlds(::AbstractFrame{W}, ::typeof(⊥), ::NTuple{0,<:AbstractWorlds}) where {W<:AbstractWorld} = W[]
+function collateworlds(fr::AbstractFrame{W}, t::BooleanTruth, ::NTuple{0,<:AbstractWorlds}) where {W<:AbstractWorld}
+    istop(t) ? allworlds(fr) : W[]
+end
 
 collateworlds(fr::AbstractFrame{W}, ::typeof(¬), (ws,)::NTuple{1,<:AbstractWorlds}) where {W<:AbstractWorld} = setdiff(allworlds(fr), ws)
 collateworlds(::AbstractFrame{W}, ::typeof(∧), (ws1, ws2)::NTuple{2,<:AbstractWorlds}) where {W<:AbstractWorld} = intersect(ws1, ws2)

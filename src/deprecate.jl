@@ -12,7 +12,7 @@ Base.@deprecate joinformulas(args...; kwargs...) composeformulas(args...; kwargs
 export BOTTOM, Bottom, bottom, isbottom
 
 const BOTTOM = BOT
-const Bottom = Bot
+const Bottom = BOT
 
 Base.@deprecate bottom(a) bot(a)
 Base.@deprecate isbottom(a) isbot(a)

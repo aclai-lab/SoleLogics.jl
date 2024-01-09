@@ -40,8 +40,8 @@ export domain, top, bot, grammar, algebra, logic
 
 include("logics.jl")
 
-export Top, TOP, ⊤
-export Bot, BOT, ⊥
+export TOP, ⊤
+export BOT, ⊥
 export BooleanTruth
 export istop, isbot
 export truthsupertype
