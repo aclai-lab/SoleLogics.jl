@@ -8,7 +8,7 @@
     │   │   │   ├── SyntaxLeaf
     │   │   │   │   ├── Atom
     │   │   │   │   └── Truth
-    │   │   │   │       ├── BooleanTruth
+    │   │   │   │       ├── BooleanTruth (⊤ and ⊥)
     │   │   │   │       └── ...
     │   │   │   └── SyntaxBranch (e.g., p ∧ q)
     │   │   ├── LeftmostLinearForm (e.g., conjunctions, disjunctions, DNFs, CNFs)
