@@ -1,12 +1,17 @@
 using Graphs
 
-struct HeytingTruth
+struct HeytingTruth <: Truth
     label::String
     index::Int  # the index of the node in the domain vector: no order is implied!
 end
 
 label(heytingtruth::HeytingTruth)::String = heytingtruth.label
 index(heytingtruth::HeytingTruth)::Int = heytingtruth.index
+
+istop(heytingtruth::HeytingTruth) = label(heytingtruth) == "⊤"
+isbot(heytingtruth::HeytingTruth) = label(heytingtruth) == "⊥"
+
+syntaxstring(heytingtruth::HeytingTruth) = label(heytingtruth)
 
 convert(::Type{HeytingTruth}, booleantruth::BooleanTruth) = istop(booleantruth) ? HeytingTruth("⊤", 2) : HeytingTruth("⊥", 1)
 
@@ -50,6 +55,8 @@ Note that values of type HeytingTruth must be created beforehand (e.g., with @he
 macro heytingalgebra(name, values, relations...)
     quote
         domain = [convert(HeytingTruth, ⊥), convert(HeytingTruth, ⊤), $values...]
+        println(domain)
+        println(typeof(domain))
         edges = Vector{Edge{Int64}}()
         map(e -> push!(edges, Edge(eval(e))), $relations)
         const $name = (HeytingAlgebra(domain, edges))
@@ -168,3 +175,14 @@ end
 collatetruth(c::Connective, (α, β)::Tuple{HeytingTruth, BooleanTruth}, h::HeytingAlgebra) = collatetruth(c, (α, convert(HeytingTruth, β)), h)
 collatetruth(c::Connective, (α, β)::Tuple{BooleanTruth, HeytingTruth}, h::HeytingAlgebra) = collatetruth(c, (convert(HeytingTruth, α), β), h)
 collatetruth(c::Connective, (α, β)::Tuple{BooleanTruth, BooleanTruth}, h::HeytingAlgebra) = collatetruth(c, (convert(HeytingTruth, α), convert(HeytingTruth, β)), h)
+
+simplify(c::Connective, (α, β)::Tuple{HeytingTruth,HeytingTruth}, h::HeytingAlgebra) = collatetruth(c, (α, β), h)
+simplify(c::Connective, (α, β)::Tuple{HeytingTruth,BooleanTruth}, h::HeytingAlgebra) = collatetruth(c, (α, convert(HeytingTruth, β)), h)
+simplify(c::Connective, (α, β)::Tuple{BooleanTruth,HeytingTruth}, h::HeytingAlgebra) = collatetruth(c, (convert(HeytingTruth, α), β), h)
+simplify(c::Connective, (α, β)::Tuple{BooleanTruth,BooleanTruth}, h::HeytingAlgebra) = collatetruth(c, (convert(HeytingTruth, α), convert(HeytingTruth, β)), h)
+
+function interpret(φ::SyntaxBranch, i::AbstractAssignment, h::HeytingAlgebra, args...; kwargs...)::Formula
+    return simplify(token(φ), Tuple(
+        [interpret(ch, i, h, args...; kwargs...) for ch in children(φ)]
+    ), h)
+end

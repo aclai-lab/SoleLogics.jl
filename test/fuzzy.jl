@@ -69,3 +69,13 @@ using Graphs
 @test collatetruth(→, (⊤, α), heytingalgebra4)  == α
 @test collatetruth(→, (β, ⊤), heytingalgebra4)  == convert(HeytingTruth, ⊤)
 @test collatetruth(→, (⊤, β), heytingalgebra4)  == β
+
+@atoms a b
+φ = parseformula("(a∧b)∨a")
+td1 = TruthDict([a=>α, b=>β])
+td2 = TruthDict([a=>⊤, b=>β])
+
+interpret(φ, td1, heytingalgebra4) == α
+
+check(φ, td1, heytingalgebra4) == false
+check(φ, td2, heytingalgebra4) == true
