@@ -60,6 +60,15 @@ export propositionallogic
 export TruthDict, DefaultedTruthDict
 export truth_table
 
+include("fuzzy.jl")
+
+export HeytingTruth, HeytingAlgebra
+export label, index
+export domain, top, bot, graph
+export precedes, succeedes, precedeq, succedeq
+export collatetruth
+export @heytingtruths, @heytingalgebra
+
 include("propositional-logic.jl")
 
 export accessibles
