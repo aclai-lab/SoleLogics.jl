@@ -176,8 +176,9 @@ dual(c::typeof(∨))   = typeof(∧)
         flag::Bool
     end
 
-Struct representing the two truth values of `BooleanAlgebra`.
-It contains a flag which takes value `true` for ⊤ (TOP), `false` for ⊥ (BOT)
+Structure for representing the Boolean truth values ⊤ and ⊥.
+It wraps a flag which takes value `true` for ⊤ ([`TOP`](@ref)),
+and `false` for ⊥ ([`BOT`](@ref))
 
 See also [`BooleanAlgebra`](@ref).
 """
