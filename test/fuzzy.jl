@@ -1,6 +1,8 @@
 using SoleLogics
 using Graphs
 
+### Check all basic operations work correctly foc simplest meaningful many-valued algebra ###
+
 @heytingtruths α β
 @heytingalgebra heytingalgebra4 (α, β) (⊥, α) (⊥, β) (α, ⊤) (β, ⊤)
 
@@ -70,12 +72,31 @@ using Graphs
 @test collatetruth(→, (β, ⊤), heytingalgebra4)  == convert(HeytingTruth, ⊤)
 @test collatetruth(→, (⊤, β), heytingalgebra4)  == β
 
-@atoms a b
-φ = parseformula("(a∧b)∨a")
-td1 = TruthDict([a=>α, b=>β])
-td2 = TruthDict([a=>⊤, b=>β])
+### Testing if check works on random propositional formulas and it gives the same result ###
 
-interpret(φ, td1, heytingalgebra4) == α
+using Random
 
-check(φ, td1, heytingalgebra4) == false
-check(φ, td2, heytingalgebra4) == true
+@heytingalgebra booleanalgebra () (⊥, ⊤)
+
+myalphabet = @atoms a b c
+td1 = TruthDict([a => ⊥, b => ⊥, c => ⊥])
+td2 = TruthDict([a => ⊥, b => ⊥, c => ⊤])
+td3 = TruthDict([a => ⊥, b => ⊤, c => ⊥])
+td4 = TruthDict([a => ⊤, b => ⊥, c => ⊥])
+td5 = TruthDict([a => ⊥, b => ⊤, c => ⊤])
+td6 = TruthDict([a => ⊤, b => ⊥, c => ⊤])
+td7 = TruthDict([a => ⊤, b => ⊤, c => ⊥])
+td8 = TruthDict([a => ⊤, b => ⊤, c => ⊤])
+
+for i ∈ range(20, 100)
+    height = div(i, 10)
+    rf = randformula(Random.MersenneTwister(), height, myalphabet, SoleLogics.BASE_PROPOSITIONAL_CONNECTIVES)
+    check(rf, td1) == check(rf, td1, booleanalgebra)
+    check(rf, td2) == check(rf, td2, booleanalgebra)
+    check(rf, td3) == check(rf, td3, booleanalgebra)
+    check(rf, td4) == check(rf, td4, booleanalgebra)
+    check(rf, td5) == check(rf, td5, booleanalgebra)
+    check(rf, td6) == check(rf, td6, booleanalgebra)
+    check(rf, td7) == check(rf, td7, booleanalgebra)
+    check(rf, td8) == check(rf, td8, booleanalgebra)
+end

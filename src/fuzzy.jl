@@ -13,6 +13,7 @@ isbot(heytingtruth::HeytingTruth) = label(heytingtruth) == "⊥"
 
 syntaxstring(heytingtruth::HeytingTruth) = label(heytingtruth)
 
+convert(::Type{HeytingTruth}, heytingtruth::HeytingTruth) = heytingtruth
 convert(::Type{HeytingTruth}, booleantruth::BooleanTruth) = istop(booleantruth) ? HeytingTruth("⊤", 2) : HeytingTruth("⊥", 1)
 
 struct HeytingAlgebra
@@ -38,6 +39,9 @@ domain(h::HeytingAlgebra) = h.domain
 top(h::HeytingAlgebra) = h.top
 bot(h::HeytingAlgebra) = h.bot
 graph(h::HeytingAlgebra) = h.graph
+
+cardinality(h::HeytingAlgebra) = length(domain(h))
+isboolean(h::HeytingAlgebra) = cardinality(h) == 2
 
 """
 ⊥ and ⊤ already exist as const of type BooleanTruth and they are treated as HeytingTruth with index 1 and 2 respectively
@@ -181,8 +185,30 @@ simplify(c::Connective, (α, β)::Tuple{HeytingTruth,BooleanTruth}, h::HeytingAl
 simplify(c::Connective, (α, β)::Tuple{BooleanTruth,HeytingTruth}, h::HeytingAlgebra) = collatetruth(c, (convert(HeytingTruth, α), β), h)
 simplify(c::Connective, (α, β)::Tuple{BooleanTruth,BooleanTruth}, h::HeytingAlgebra) = collatetruth(c, (convert(HeytingTruth, α), convert(HeytingTruth, β)), h)
 
+"""
+Note: output type can both be BooleanTruth or HeytingTruth, i.e., the following check can be used effectively
+convert(HeytingTruth, interpret(φ, td8)) == convert(HeytingTruth,interpret(φ, td8, booleanalgebra)))
+"""
 function interpret(φ::SyntaxBranch, i::AbstractAssignment, h::HeytingAlgebra, args...; kwargs...)::Formula
     return simplify(token(φ), Tuple(
         [interpret(ch, i, h, args...; kwargs...) for ch in children(φ)]
     ), h)
 end
+
+function collatetruth(::typeof(¬), (α,)::Tuple{HeytingTruth}, h::HeytingAlgebra)
+    if isboolean(h)
+        if istop(α)
+            return ⊥
+        else
+            return ⊤
+        end
+    else
+        return error("¬ operation isn't defined outside of BooleanAlgebra")
+    end
+end
+collatetruth(c::Connective, (α,)::Tuple{BooleanTruth}, h::HeytingAlgebra) = collatetruth(c, convert(HeytingTruth, α), h)
+
+simplify(c::Connective, (α,)::Tuple{HeytingTruth}, h::HeytingAlgebra) = collatetruth(c, (α,), h)
+simplify(c::Connective, (α,)::Tuple{BooleanTruth}, h::HeytingAlgebra) = simplify(c, convert(HeytingTruth, α), h)
+simplify(c::Connective, α::HeytingTruth, h::HeytingAlgebra) = simplify(c, (α,), h)
+simplify(c::Connective, α::BooleanTruth, h::HeytingAlgebra) = simplify(c, convert(HeytingTruth, α), h)
