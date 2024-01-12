@@ -1,20 +1,77 @@
 using Graphs
 
+############################################################################################
+#### HeytingTruth ##########################################################################
+############################################################################################
+
+"""
+    struct HeytingTruth <: Truth
+        label::String
+        index::Int
+    end
+
+Structure for representing the truth values of an Heyting algebra.
+They are represented by a label and an index corresponding to their
+position in the domain array of the associated algebra.
+Values ⊥ and ⊤ always exist with index 1 and 2 respectively.
+New values can easily be constructed through the @heytingtruths macro.
+"""
 struct HeytingTruth <: Truth
     label::String
     index::Int  # the index of the node in the domain vector: no order is implied!
 end
 
+"""
+Getter for the label of a heytingtruth.
+"""
 label(heytingtruth::HeytingTruth)::String = heytingtruth.label
+
+"""
+Getter for the index of a heytingtruth.
+"""
 index(heytingtruth::HeytingTruth)::Int = heytingtruth.index
 
+"""
+Returns true if the heytingtruth is the top (⊤) of the algebra.
+"""
 istop(heytingtruth::HeytingTruth) = label(heytingtruth) == "⊤"
+
+"""
+Returns true if the heytingtruth is the bot (⊥) of the algebra.
+"""
 isbot(heytingtruth::HeytingTruth) = label(heytingtruth) == "⊥"
 
-syntaxstring(heytingtruth::HeytingTruth) = label(heytingtruth)
+"""
+Returns the label associated with the heytingtruth.
+"""
+syntaxstring(heytingtruth::HeytingTruth; kwargs...) = label(heytingtruth)
 
+"""
+Converts an object of type HeytingTruth to an object of type HeytingTruth.
+"""
 convert(::Type{HeytingTruth}, heytingtruth::HeytingTruth) = heytingtruth
+
+"""
+Converts an object of type BooleanTruth to an object of type HeytingTruth.
+"""
 convert(::Type{HeytingTruth}, booleantruth::BooleanTruth) = istop(booleantruth) ? HeytingTruth("⊤", 2) : HeytingTruth("⊥", 1)
+
+"""
+Converts an object of type HeytingTruth to an object of type BooleanTruth (if possible).
+"""
+function convert(::Type{BooleanTruth}, heytingtruth::HeytingTruth)
+    if istop(heytingtruth)
+        return BooleanTruth(true)
+    elseif isbot(heytingtruth)
+        return BooleanTruth(false)
+    else
+        error("Cannot convert " * syntaxstring(heytingtruth) * " of type HeytingTruth to BooleanTruth\n" *
+              "Only ⊤ and ⊥ can be casted to BooleanTruth.")
+end
+
+############################################################################################
+#### HeytingAlgebra ########################################################################
+############################################################################################
 
 struct HeytingAlgebra
     domain::Vector{HeytingTruth}
