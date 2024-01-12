@@ -67,6 +67,7 @@ function convert(::Type{BooleanTruth}, heytingtruth::HeytingTruth)
     else
         error("Cannot convert " * syntaxstring(heytingtruth) * " of type HeytingTruth to BooleanTruth\n" *
               "Only ⊤ and ⊥ can be casted to BooleanTruth.")
+    end
 end
 
 ############################################################################################
