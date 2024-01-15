@@ -19,6 +19,14 @@ New values can easily be constructed through the @heytingtruths macro.
 struct HeytingTruth <: Truth
     label::String
     index::Int  # the index of the node in the domain vector: no order is implied!
+
+    function HeytingTruth(label::String, index::Int)
+        return new(label, index)
+    end
+
+    function HeytingTruth(booleantruth::BooleanTruth)
+        istop(booleantruth) ? HeytingTruth("⊤", 2) : HeytingTruth("⊥", 1)
+    end
 end
 
 """
