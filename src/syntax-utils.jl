@@ -433,7 +433,7 @@ function _cnf(φ::SyntaxBranch{typeof(∨)}, literaltype = Literal)
         # @show typeof(c1 ∨ c2)
         # LeftmostDisjunctiveForm{literaltype}(c1 ∨ c2)
         c1 ∨ c2
-    end for (c1,c2) in IterTools.product(conjuncts(_cnf(first(children(φ)), literaltype)),conjuncts(_cnf(last(children(φ)), literaltype)))])
+    end for (c1,c2) in Iterators.product(conjuncts(_cnf(first(children(φ)), literaltype)),conjuncts(_cnf(last(children(φ)), literaltype)))])
     # @show typeof.(conjs)
     # conjs = Vector{LeftmostDisjunctiveForm{literaltype}}(conjs)
     LeftmostConjunctiveForm(conjs)

@@ -123,7 +123,7 @@ dnf1 = @test_nowarn DNF([lfcf1, lfcf2])
 @test cnf(parseformula("(p ∧ ¬s) ∨ (¬q ∧ p)")) isa CNF
 @test cnf(parseformula("(p ∧ ¬s) ∨ (¬q ∧ p)")) isa CNF
 
-alpha = @atoms p q r
+alpha = Atom.(["p", "q", "r"])
 @test all(isa.([cnf(randformula(4, alpha, [∨, ∧, ¬])) for i in 1:100], CNF))
 
 @test_nowarn [(cnf(randformula(4, alpha, [∨, ∧, ¬])) |> cnf) for i in 1:10]
