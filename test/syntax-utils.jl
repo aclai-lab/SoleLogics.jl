@@ -112,3 +112,28 @@ dnf1 = @test_nowarn DNF([lfcf1, lfcf2])
 
 @test LeftmostConjunctiveForm(parseformula.(["¬p", "q", "¬r"])) ∧ LeftmostConjunctiveForm(parseformula.(["¬p", "q", "¬r"])) isa LeftmostConjunctiveForm
 @test LeftmostDisjunctiveForm(parseformula.(["¬p", "q", "¬r"])) ∨ LeftmostDisjunctiveForm(parseformula.(["¬p", "q", "¬r"])) isa LeftmostDisjunctiveForm
+
+
+
+@test cnf(parseformula("⊤")) isa CNF
+@test cnf(parseformula("p")) isa CNF
+@test cnf(parseformula("p ∧ q")) isa CNF
+@test cnf(parseformula("p ∧ p ∧ q")) isa CNF
+@test cnf(parseformula("p ∧ p ∨ q")) isa CNF
+@test cnf(parseformula("(p ∧ ¬s) ∨ (¬q ∧ p)")) isa CNF
+@test cnf(parseformula("(p ∧ ¬s) ∨ (¬q ∧ p)")) isa CNF
+
+alpha = @atoms p q r
+@test all(isa.([cnf(randformula(4, alpha, [∨, ∧, ¬])) for i in 1:100], CNF))
+
+@test_nowarn [(cnf(randformula(4, alpha, [∨, ∧, ¬])) |> cnf) for i in 1:10]
+
+@test_nowarn cnf(normalize(parseformula("(p ∧ ¬s) ∨ (¬q ∧ p)"); profile = :nnf); allow_atom_flipping = true)
+
+for i in 1:50
+    φ = randformula(4, alpha, [∨, ∧, ¬])
+    φ2 = cnf(φ)
+    _tdict = TruthDict(Dict([p => rand([true, false]) for p in alpha]))
+    # i == 1 && println(_tdict)
+    @test check(φ, _tdict) == check(φ2, _tdict)
+end

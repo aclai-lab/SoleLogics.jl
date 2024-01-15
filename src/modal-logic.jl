@@ -778,7 +778,7 @@ isdiamond(::Truth)::Bool = false
 doc_DIAMOND = """
     const DIAMOND = NamedConnective{:◊}()
     const ◊ = DIAMOND
-    ismodal(::NamedConnective{:◊}) = true
+    ismodal(::typeof(◊)) = true
     arity(::typeof(◊)) = 1
 
 Logical diamond connective, typically interpreted as the modal existential quantifier.

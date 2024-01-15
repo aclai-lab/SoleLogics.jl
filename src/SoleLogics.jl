@@ -87,6 +87,8 @@ export LeftmostLinearForm, LeftmostConjunctiveForm, LeftmostDisjunctiveForm, Lit
 
 export subformulas, normalize
 
+export CNF, DNF, cnf
+
 include("syntax-utils.jl")
 
 include("interpretation-sets.jl")
