@@ -9,6 +9,8 @@ using StatsBase
 using Reexport
 using Lazy
 
+############################################################################################
+
 export iscrisp, isfinite, isnullary, isunary, isbinary
 
 export Syntactical, Connective,
@@ -33,6 +35,8 @@ export interpret, check
 
 include("core.jl")
 
+############################################################################################
+
 export AlphabetOfAny, ExplicitAlphabet
 
 export alphabet
@@ -40,11 +44,12 @@ export domain, top, bot, grammar, algebra, logic
 
 include("logics.jl")
 
+############################################################################################
+
 export TOP, ⊤
 export BOT, ⊥
 export BooleanTruth
 export istop, isbot
-export truthsupertype
 
 export NamedConnective, CONJUNCTION, NEGATION, DISJUNCTION, IMPLICATION
 export ∧, ¬, ∨, →
@@ -55,12 +60,16 @@ export BaseLogic
 
 include("base-logic.jl")
 
+############################################################################################
+
 export propositionallogic
 
 export TruthDict, DefaultedTruthDict
 export truth_table
 
 include("propositional-logic.jl")
+
+############################################################################################
 
 export accessibles
 export ismodal, modallogic
@@ -79,18 +88,9 @@ export AbstractWorlds, Worlds
 
 export Interval, Interval2D, OneWorld
 
-include("fuzzy.jl")
-
-export HeytingTruth, HeytingAlgebra
-export label, index
-export domain, top, bot, graph
-export precedes, succeedes, precedeq, succedeq
-export collatetruth
-export @heytingtruths, @heytingalgebra
-
-include("utils.jl")
-
 include("modal-logic.jl")
+
+############################################################################################
 
 export LeftmostLinearForm, LeftmostConjunctiveForm, LeftmostDisjunctiveForm, Literal
 
@@ -100,27 +100,58 @@ export CNF, DNF, cnf
 
 include("syntax-utils.jl")
 
+############################################################################################
+
+export HeytingTruth, HeytingAlgebra
+export label, index
+export domain, top, bot, graph
+export precedes, succeedes, precedeq, succedeq
+export collatetruth
+export @heytingtruths, @heytingalgebra
+
+include("fuzzy.jl")
+
+############################################################################################
+
 include("interpretation-sets.jl")
+
+############################################################################################
 
 export parseformula
 
 include("parse.jl")
+
+############################################################################################
 
 export randbaseformula, randformula
 export randframe, randmodel
 
 include("random.jl")
 
+############################################################################################
+
 export AnchoredFormula
 
 include("anchored-formula.jl")
+
+############################################################################################
 
 export @atoms, @synexpr
 
 include("ui.jl")
 
+############################################################################################
+
 include("experimentals.jl")
 
+############################################################################################
+
 include("deprecate.jl")
+
+############################################################################################
+
+include("utils.jl")
+
+############################################################################################
 
 end

@@ -13,31 +13,31 @@ Recalling the type hierarchy presented in [man-core](@ref), it is here enriched 
 
 - [`Connective`](@ref)
     - [`NamedConnective`](@ref)
-        - [`DIAMOND`](@ref) **(new)**
-        - [`BOX`](@ref) **(new)**
-    - [`AbstractRelationalConnective`](@ref) **(new)**
+        - [`DIAMOND`](@ref)
+        - [`BOX`](@ref)
+    - [`AbstractRelationalConnective`](@ref)
         - [`DiamondRelationalConnective`](@ref)
         - [`BoxRelationalConnective`](@ref)
 ---
 
-- [`AbstractWorld`](@ref) **(new)**
+- [`AbstractWorld`](@ref)
     - [`World{T}`](@ref)
 
 ---
 
-- [`AbstractFrame{W<:AbstractWorld}`](@ref) **(new)**
+- [`AbstractFrame{W<:AbstractWorld}`](@ref)
     - [`AbstractUniModalFrame{W<:AbstractWorld}`](@ref)
     - [`AbstractMultiModalFrame{W<:AbstractWorld}`](@ref)
     - [`WrapperMultiModalFrame{W<:AbstractWorld, D<:AbstractDict{<:AbstractRelation,<:AbstractUniModalFrame{W}}}`](@ref)
 
 ---
 
-- [`AbstractRelation`](@ref) **(new)**
+- [`AbstractRelation`](@ref)
 
 ---
 
 - [`AbstractInterpretation`](@ref)
-    - [`AbstractKripkeStructure`](@ref) **(new)**
+    - [`AbstractKripkeStructure`](@ref)
         - [`KripkeStructure{FR<:AbstractFrame, MAS<:AbstractDict}`](@ref)
 
 

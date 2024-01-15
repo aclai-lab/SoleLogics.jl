@@ -103,7 +103,7 @@ should be provided via methods for `simplify`.
 For example, these rules suffice for simplifying xors between `TOP/`BOT`s, and other formulas:
 ```julia
 import SoleLogics: simplify
-simplify(::typeof(⊻), (t1, t2)::Tuple{BooleanTruth,BooleanTruth}) = flag(t1) == flag(t2) ? BOT : TOP
+simplify(::typeof(⊻), (t1, t2)::Tuple{BooleanTruth,BooleanTruth}) = istop(t1) == istop(t2) ? BOT : TOP
 simplify(::typeof(⊻), (t1, t2)::Tuple{BooleanTruth,Formula}) = istop(t1) ? ¬t2 : t2
 simplify(::typeof(⊻), (t1, t2)::Tuple{Formula,BooleanTruth}) = istop(t2) ? ¬t1 : t1
 ```
@@ -615,24 +615,7 @@ See also [`istop`](@ref), [`Truth`](@ref).
 isbot(t::Truth)::Bool = false
 
 """
-    truthsupertype(T::Type{<:Truth})::Type
-
-Return the supertype of a `Truth` type that includes all values of the same algebra.
-
-# Examples
-```julia-repl
-julia> truthsupertype(typeof(TOP))
-BooleanTruth
-```
-
-See also [`Truth`](@ref), [`TruthDict`](@ref).
-"""
-function truthsupertype(T::Type{<:Truth})
-    return T
-end
-
-"""
-TODO docstring it's mandatory.
+TODO docstring.
 """
 function precedes(t1::Truth, t2::Truth)
     if Base.isequal(t1, t2)
@@ -643,6 +626,7 @@ function precedes(t1::Truth, t2::Truth)
 end
 
 # Alias
+"""Alias for [`precedes`](@ref)."""
 const ≺ = precedes
 
 # Fallback

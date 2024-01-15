@@ -17,44 +17,44 @@ Recalling the type hierarchy presented in [man-core](@ref), it is here enriched 
 
 
 - [`Truth`](@ref)
-    - [`BooleanTruth`](@ref) **(new)**
+    - [`BooleanTruth`](@ref)
 ---
 
 - [`Connective`](@ref)
-    - [`NamedConnective`](@ref) **(new)**
+    - [`NamedConnective`](@ref)
         - [`NEGATION`](@ref)
         - [`CONJUNCTION`](@ref) 
         - [`DISJUNCTION`](@ref)
         - [`IMPLICATION`](@ref)
 ---
 
-- [`AbstractAlphabet{V}`](@ref) **(new)**
+- [`AbstractAlphabet{V}`](@ref)
     - [`ExplicitAlphabet{V}`](@ref)
     - [`AlphabetOfAny{V}`](@ref)
 ---
 
-- [`AbstractGrammar{V<:AbstractAlphabet,O<:Operator}`](@ref) **(new)**
+- [`AbstractGrammar{V<:AbstractAlphabet,O<:Operator}`](@ref)
     - [`CompleteFlatGrammar{V<:AbstractAlphabet,O<:Operator}`](@ref)
 ---
 
-- [`AbstractAlgebra{T<:Truth}`](@ref) **(new)**
+- [`AbstractAlgebra{T<:Truth}`](@ref)
     - [`BooleanAlgebra`](@ref)
 ---
 
-- [`AbstractLogic{G<:AbstractGrammar,V<:AbstractAlgebra}`](@ref) **(new)**
+- [`AbstractLogic{G<:AbstractGrammar,V<:AbstractAlgebra}`](@ref)
     - [`BaseLogic{G<:AbstractGrammar,A<:AbstractAlgebra}`](@ref)
 ---
 
 - [`AbstractInterpretation`](@ref)
-    - [`AbstractAssignment`](@ref) **(new)**
+    - [`AbstractAssignment`](@ref)
         - [`TruthDict{D<:AbstractDict{A where A<:Atom,T where T<:Truth}}`](@ref)
         - [`DefaultedTruthDict{D<:AbstractDict{A where A<:Atom,T where T<:Truth}, T<:Truth}`](@ref)
     - [`AbstractInterpretationSet{M<:AbstractInterpretation}`](@ref) **(see [SoleBase.jl](https://github.com/aclai-lab/SoleBase.jl))**
         - [`InterpretationVector{M<:AbstractInterpretation}`](@ref)
     - [`LogicalInstance{S<:AbstractInterpretationSet}`](@ref) 
 
-- [`TruthTable{A,T<:Truth}`](@ref) **(new)**
-- [`LogicalInstance{S<:AbstractInterpretationSet}`](@ref) **(new)**
+- [`TruthTable{A,T<:Truth}`](@ref)
+- [`LogicalInstance{S<:AbstractInterpretationSet}`](@ref)
 
 ## [Alphabet](@id alphabets)
 ```@docs

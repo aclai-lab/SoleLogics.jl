@@ -186,9 +186,10 @@ struct BooleanTruth <: Truth
     flag::Bool
 end
 
-flag(t::BooleanTruth)::Bool = t.flag
+istop(t::BooleanTruth) = t.flag
+isbot(t::BooleanTruth) = !istop(t)
 
-syntaxstring(t::BooleanTruth; kwargs...) = flag(t) ? "⊤" : "⊥"
+syntaxstring(t::BooleanTruth; kwargs...) = istop(t) ? "⊤" : "⊥"
 
 function Base.show(io::IO, φ::BooleanTruth)
     print(io, "$(syntaxstring(φ))")
@@ -208,8 +209,6 @@ const TOP = BooleanTruth(true)
 """$(doc_TOP)"""
 const ⊤ = TOP
 
-istop(t::BooleanTruth) = flag(t)
-
 doc_BOTTOM = """
     const BOT = BooleanTruth(false)
     const ⊥ = BOT
@@ -223,8 +222,6 @@ See also [`TOP`](@ref), [`Truth`](@ref).
 const BOT = BooleanTruth(false)
 """$(doc_BOTTOM)"""
 const ⊥ = BOT
-
-isbot(t::BooleanTruth) = !flag(t)
 
 # NOTE: it could be useful to provide a macro to easily create
 # a new set of Truth types. In particular, a new subtree of types must be planted
@@ -249,9 +246,9 @@ Base.convert(::Type{Truth}, t::Integer) = Base.convert(BooleanTruth, t)
 
 # NOTE: are these useful?
 hasdual(::BooleanTruth) = true
-dual(c::BooleanTruth)   = BooleanTruth(!flag(c))
+dual(c::BooleanTruth)   = BooleanTruth(!istop(c))
 
-precedes(t1::BooleanTruth, t2::BooleanTruth) = flag(t1) < flag(t2)
+precedes(t1::BooleanTruth, t2::BooleanTruth) = istop(t1) < istop(t2)
 Base.max(t1::BooleanTruth, t2::BooleanTruth) = precedes(t1, t2) ? t2 : t1
 Base.min(t1::BooleanTruth, t2::BooleanTruth) = precedes(t1, t2) ? t1 : t1
 Base.isless(t1::BooleanTruth, t2::BooleanTruth) = precedes(t1, t2)
@@ -260,7 +257,7 @@ Base.isless(t1::BooleanTruth, t2::BooleanTruth) = precedes(t1, t2)
     struct BooleanAlgebra <: AbstractAlgebra{Bool} end
 
 A [Boolean algebra](https://en.wikipedia.org/wiki/Boolean_algebra), defined on the values
-TOP (representing `true`) and BOT (for bottom, representing `false`).
+TOP (representing *truth*) and BOT (for bottom, representing *falsehood*).
 For this algebra, the basic operators negation,
 conjunction and disjunction (stylized as ¬, ∧, ∨) can be defined as the complement, minimum
 and maximum, of the integer cast of `true` and `false`, respectively.

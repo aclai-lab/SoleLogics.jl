@@ -1,5 +1,7 @@
 using Graphs
 
+# Author: ilpaps
+
 ############################################################################################
 #### HeytingTruth ##########################################################################
 ############################################################################################
@@ -10,11 +12,13 @@ using Graphs
         index::Int
     end
 
-Structure for representing the truth values of an Heyting algebra.
-They are represented by a label and an index corresponding to their
-position in the domain array of the associated algebra.
-Values ⊥ and ⊤ always exist with index 1 and 2 respectively.
-New values can easily be constructed through the @heytingtruths macro.
+A truth value of a Heyting algebra.
+Heyting truth values are represented by a label, and an index corresponding to its
+position in the domain vector of the associated algebra.
+Values `⊥` and `⊤` always exist with index 1 and 2, respectively.
+New values can be easily constructed via the [`@heytingtruths`](@ref) macro.
+
+See also [`@heytingtruths`](@ref), [`HeytingAlgebra`](@ref), [`Truth`](@ref)
 """
 struct HeytingTruth <: Truth
     label::String
@@ -22,51 +26,40 @@ struct HeytingTruth <: Truth
 end
 
 """
-Getter for the label of a heytingtruth.
+Return the label of a [`HeytingTruth`](@ref).
 """
-label(heytingtruth::HeytingTruth)::String = heytingtruth.label
+label(t::HeytingTruth)::String = t.label
 
 """
-Getter for the index of a heytingtruth.
+Return the index of a [`HeytingTruth`](@ref).
 """
-index(heytingtruth::HeytingTruth)::Int = heytingtruth.index
+index(t::HeytingTruth)::Int = t.index
+
+istop(t::HeytingTruth) = index(t) == 2
+isbot(t::HeytingTruth) = index(t) == 1
 
 """
-Returns true if the heytingtruth is the top (⊤) of the algebra.
+Return the label associated with the t.
 """
-istop(heytingtruth::HeytingTruth) = label(heytingtruth) == "⊤"
+syntaxstring(t::HeytingTruth; kwargs...) = label(t)
+
+convert(::Type{HeytingTruth}, t::HeytingTruth) = t
+
+function convert(::Type{HeytingTruth}, booleantruth::BooleanTruth)
+    return istop(booleantruth) ? HeytingTruth("⊤", 2) : HeytingTruth("⊥", 1)
+end
 
 """
-Returns true if the heytingtruth is the bot (⊥) of the algebra.
+Convert an object of type HeytingTruth to an object of type BooleanTruth (if possible).
 """
-isbot(heytingtruth::HeytingTruth) = label(heytingtruth) == "⊥"
-
-"""
-Returns the label associated with the heytingtruth.
-"""
-syntaxstring(heytingtruth::HeytingTruth; kwargs...) = label(heytingtruth)
-
-"""
-Converts an object of type HeytingTruth to an object of type HeytingTruth.
-"""
-convert(::Type{HeytingTruth}, heytingtruth::HeytingTruth) = heytingtruth
-
-"""
-Converts an object of type BooleanTruth to an object of type HeytingTruth.
-"""
-convert(::Type{HeytingTruth}, booleantruth::BooleanTruth) = istop(booleantruth) ? HeytingTruth("⊤", 2) : HeytingTruth("⊥", 1)
-
-"""
-Converts an object of type HeytingTruth to an object of type BooleanTruth (if possible).
-"""
-function convert(::Type{BooleanTruth}, heytingtruth::HeytingTruth)
-    if istop(heytingtruth)
-        return BooleanTruth(true)
-    elseif isbot(heytingtruth)
-        return BooleanTruth(false)
+function convert(::Type{BooleanTruth}, t::HeytingTruth)
+    if istop(t)
+        return TOP
+    elseif isbot(t)
+        return BOT
     else
-        error("Cannot convert " * syntaxstring(heytingtruth) * " of type HeytingTruth to BooleanTruth\n" *
-              "Only ⊤ and ⊥ can be casted to BooleanTruth.")
+        error("Cannot convert HeytingTruth \"" * syntaxstring(t) * "\" to BooleanTruth. " *
+              "Only ⊤ and ⊥ can be converted to BooleanTruth.")
     end
 end
 
@@ -74,35 +67,34 @@ end
 #### HeytingAlgebra ########################################################################
 ############################################################################################
 
+"""
+TODO docstring. assumption: top and bottom are the second and first elements in the domain.
+TODO actually, invert them: top first and bottom second.
+"""
 struct HeytingAlgebra
     domain::Vector{HeytingTruth}
-    top::HeytingTruth
-    bot::HeytingTruth
     graph::Graphs.SimpleGraphs.SimpleDiGraph   # directed graph where each edge (α, β) is consistend with α ≺ β
 
-    function HeytingAlgebra(domain::Vector{HeytingTruth}, top::HeytingTruth, bot::HeytingTruth, graph::Graphs.SimpleGraphs.SimpleDiGraph)
-        return new(domain, top, bot, graph)
-    end
-
     function HeytingAlgebra(domain::Vector{HeytingTruth}, graph::Graphs.SimpleGraphs.SimpleDiGraph)
-        return HeytingAlgebra(domain, convert(HeytingTruth, ⊤), convert(HeytingTruth, ⊥), graph)
+        return new(domain, graph)
     end
 
     function HeytingAlgebra(domain::Vector{HeytingTruth}, relations::Vector{Edge{Int64}})
-        return HeytingAlgebra(domain, convert(HeytingTruth, ⊤), convert(HeytingTruth, ⊥), SimpleDiGraph(relations))
+        return HeytingAlgebra(domain, SimpleDiGraph(relations))
     end
 end
 
 domain(h::HeytingAlgebra) = h.domain
-top(h::HeytingAlgebra) = h.top
-bot(h::HeytingAlgebra) = h.bot
+top(h::HeytingAlgebra) = h.domain[2]
+bot(h::HeytingAlgebra) = h.domain[1]
 graph(h::HeytingAlgebra) = h.graph
 
 cardinality(h::HeytingAlgebra) = length(domain(h))
-isboolean(h::HeytingAlgebra) = cardinality(h) == 2
+isboolean(h::HeytingAlgebra) = (cardinality(h) == 2)
 
+# ⊥ and ⊤ already exist as const of type BooleanTruth and they are treated as HeytingTruth with index 1 and 2 respectively
 """
-⊥ and ⊤ already exist as const of type BooleanTruth and they are treated as HeytingTruth with index 1 and 2 respectively
+TODO docstring
 """
 macro heytingtruths(labels...)
     quote
@@ -111,8 +103,9 @@ macro heytingtruths(labels...)
     end |> esc
 end
 
+# Note that values of type HeytingTruth must be created beforehand (e.g., with @heytingvalues values...) and not include ⊥ and ⊤
 """
-Note that values of type HeytingTruth must be created beforehand (e.g., with @heytingvalues values...) and not include ⊥ and ⊤
+TODO docstring
 """
 macro heytingalgebra(name, values, relations...)
     quote
@@ -130,17 +123,15 @@ Graphs.Edge(t::Tuple{HeytingTruth, BooleanTruth}) = Edge((t[1], convert(HeytingT
 Graphs.Edge(t::Tuple{BooleanTruth, HeytingTruth}) = Edge((convert(HeytingTruth, t[1]), t[2]))
 Graphs.Edge(t::Tuple{BooleanTruth, BooleanTruth}) = Edge((convert(HeytingTruth, t[1]), convert(HeytingTruth, t[2])))
 
-function Graphs.inneighbors(heytingalgebra::HeytingAlgebra, heytingtruth::HeytingTruth)::Vector{HeytingTruth}
-    return domain(heytingalgebra)[inneighbors(graph(heytingalgebra), index(heytingtruth))]
+function Graphs.inneighbors(heytingalgebra::HeytingAlgebra, t::HeytingTruth)::Vector{HeytingTruth}
+    return domain(heytingalgebra)[inneighbors(graph(heytingalgebra), index(t))]
 end
 
-function Graphs.outneighbors(heytingalgebra::HeytingAlgebra, heytingtruth::HeytingTruth)::Vector{HeytingTruth}
-    return domain(heytingalgebra)[outneighbors(graph(heytingalgebra), index(heytingtruth))]
+function Graphs.outneighbors(heytingalgebra::HeytingAlgebra, t::HeytingTruth)::Vector{HeytingTruth}
+    return domain(heytingalgebra)[outneighbors(graph(heytingalgebra), index(t))]
 end
 
-"""
-α ≺ β
-"""
+# α ≺ β
 function precedes(h::HeytingAlgebra, α::HeytingTruth, β::HeytingTruth)
     if α ∈ inneighbors(h, β)
         return true
@@ -157,33 +148,25 @@ precedes(h::HeytingAlgebra, α::HeytingTruth, β::BooleanTruth) = precedes(h, α
 precedes(h::HeytingAlgebra, α::BooleanTruth, β::HeytingTruth) = precedes(h, convert(HeytingTruth, α), β)
 precedes(h::HeytingAlgebra, α::BooleanTruth, β::BooleanTruth) = precedes(h, convert(HeytingTruth, α), convert(HeytingTruth, β))
 
-"""
-β ≺ α
-"""
+# β ≺ α
 succeedes(h::HeytingAlgebra, α::HeytingTruth, β::HeytingTruth) = precedes(h, β, α)
 succeedes(h::HeytingAlgebra, α::HeytingTruth, β::BooleanTruth) = succeedes(h, α, convert(HeytingTruth, β))
 succeedes(h::HeytingAlgebra, α::BooleanTruth, β::HeytingTruth) = succeedes(h, convert(HeytingTruth, α), β)
 succeedes(h::HeytingAlgebra, α::BooleanTruth, β::BooleanTruth) = succeedes(h, convert(HeytingTruth, α), convert(HeytingTruth, β))
 
-"""
-α ⪯ β
-"""
+# α ⪯ β
 precedeq(h::HeytingAlgebra, α::HeytingTruth, β::HeytingTruth) = α == β ||  precedes(h, α, β)
 precedeq(h::HeytingAlgebra, α::HeytingTruth, β::BooleanTruth) = precedeq(h, α, convert(HeytingTruth, β))
 precedeq(h::HeytingAlgebra, α::BooleanTruth, β::HeytingTruth) = precedeq(h, convert(HeytingTruth, α), β)
 precedeq(h::HeytingAlgebra, α::BooleanTruth, β::BooleanTruth) = precedeq(h, convert(HeytingTruth, α), convert(HeytingTruth, β))
 
-"""
-β ⪯ α
-"""
+# β ⪯ α
 succeedeq(h::HeytingAlgebra, α::HeytingTruth, β::HeytingTruth) = α == β ||  succeedes(h, α, β)
 succeedeq(h::HeytingAlgebra, α::HeytingTruth, β::BooleanTruth) = succeedeq(h, α, convert(HeytingTruth, β))
 succeedeq(h::HeytingAlgebra, α::BooleanTruth, β::HeytingTruth) = succeedeq(h, convert(HeytingTruth, α), β)
 succeedeq(h::HeytingAlgebra, α::BooleanTruth, β::BooleanTruth) = succeedeq(h, convert(HeytingTruth, α), convert(HeytingTruth, β))
 
-"""
-Meet (greatest lower bound) between values α and β
-"""
+# Meet (greatest lower bound) between values α and β
 function collatetruth(::typeof(∧), (α, β)::NTuple{N, T where T<:HeytingTruth}, h::HeytingAlgebra) where {N}
     if precedeq(h, α, β)
         return α
@@ -200,9 +183,7 @@ function collatetruth(::typeof(∧), (α, β)::NTuple{N, T where T<:HeytingTruth
     end
 end
 
-"""
-Join (least upper bound) between values α and β
-"""
+# Join (least upper bound) between values α and β
 function collatetruth(::typeof(∨), (α, β)::NTuple{N, T where T<:HeytingTruth}, h::HeytingAlgebra) where {N}
     if succeedeq(h, α, β)
         return α
@@ -219,9 +200,7 @@ function collatetruth(::typeof(∨), (α, β)::NTuple{N, T where T<:HeytingTruth
     end
 end
 
-"""
-Implication/pseudo-complement α → β = join(γ | meet(α, γ) = β)
-"""
+# Implication/pseudo-complement α → β = join(γ | meet(α, γ) = β)
 function collatetruth(::typeof(→), (α, β)::NTuple{N, T where T<:HeytingTruth}, h::HeytingAlgebra) where {N}
     η = bot(h)
     for γ ∈ domain(h)
@@ -243,10 +222,8 @@ simplify(c::Connective, (α, β)::Tuple{HeytingTruth,BooleanTruth}, h::HeytingAl
 simplify(c::Connective, (α, β)::Tuple{BooleanTruth,HeytingTruth}, h::HeytingAlgebra) = collatetruth(c, (convert(HeytingTruth, α), β), h)
 simplify(c::Connective, (α, β)::Tuple{BooleanTruth,BooleanTruth}, h::HeytingAlgebra) = collatetruth(c, (convert(HeytingTruth, α), convert(HeytingTruth, β)), h)
 
-"""
-Note: output type can both be BooleanTruth or HeytingTruth, i.e., the following check can be used effectively
-convert(HeytingTruth, interpret(φ, td8)) == convert(HeytingTruth,interpret(φ, td8, booleanalgebra)))
-"""
+# Note: output type can both be BooleanTruth or HeytingTruth, i.e., the following check can be used effectively
+# convert(HeytingTruth, interpret(φ, td8)) == convert(HeytingTruth,interpret(φ, td8, booleanalgebra)))
 function interpret(φ::SyntaxBranch, i::AbstractAssignment, h::HeytingAlgebra, args...; kwargs...)::Formula
     return simplify(token(φ), Tuple(
         [interpret(ch, i, h, args...; kwargs...) for ch in children(φ)]
@@ -267,6 +244,8 @@ end
 collatetruth(c::Connective, (α,)::Tuple{BooleanTruth}, h::HeytingAlgebra) = collatetruth(c, convert(HeytingTruth, α), h)
 
 simplify(c::Connective, (α,)::Tuple{HeytingTruth}, h::HeytingAlgebra) = collatetruth(c, (α,), h)
-simplify(c::Connective, (α,)::Tuple{BooleanTruth}, h::HeytingAlgebra) = simplify(c, convert(HeytingTruth, α), h)
+simplify(c::Connective, (α,)::Tuple{BooleanTruth}, h::HeytingAlgebra) = simplify(c, (convert(HeytingTruth, α),), h)
+
+# TODO remove these two: they are dangerous.
 simplify(c::Connective, α::HeytingTruth, h::HeytingAlgebra) = simplify(c, (α,), h)
 simplify(c::Connective, α::BooleanTruth, h::HeytingAlgebra) = simplify(c, convert(HeytingTruth, α), h)
