@@ -8,9 +8,7 @@
     │   │   │   ├── SyntaxLeaf
     │   │   │   │   ├── Atom
     │   │   │   │   └── Truth
-    │   │   │   │       ├── BooleanTruth
-    │   │   │   │       │   ├── Top (⊤)
-    │   │   │   │       │   └── Bot (⊥)
+    │   │   │   │       ├── BooleanTruth (⊤ and ⊥)
     │   │   │   │       └── ...
     │   │   │   └── SyntaxBranch (e.g., p ∧ q)
     │   │   ├── LeftmostLinearForm (e.g., conjunctions, disjunctions, DNFs, CNFs)
@@ -86,7 +84,7 @@ you might want to avoid providing these methods at all.
 
 The semantics of a *propositional* connective can be specified via `collatetruth` (see example below);
 in principle, the definition can rely on the partial order between truth values
-(specified via `Base.isless`).
+(specified via `precedes`).
 
 Here is an example of a custom implementation of the xor (⊻) Boolean operator.
 ```julia
@@ -102,17 +100,12 @@ accepting an `NTuple{arity,T}` as a second argument.
 To make the operator work with incomplete interpretations (e.g., when the `Truth` value
 for an atom is not known), simplification rules for `NTuple{arity,T where T<:Formula}`s
 should be provided via methods for `simplify`.
-For example, these rules suffice for simplifying xors between `Top/`Bot`s, and other formulas:
+For example, these rules suffice for simplifying xors between `TOP/`BOT`s, and other formulas:
 ```julia
 import SoleLogics: simplify
-simplify(::typeof(⊻), (t1, t2)::Tuple{Top,Top}) = Bot
-simplify(::typeof(⊻), (t1, t2)::Tuple{Top,Bot}) = Top
-simplify(::typeof(⊻), (t1, t2)::Tuple{Bot,Top}) = Top
-simplify(::typeof(⊻), (t1, t2)::Tuple{Bot,Bot}) = Bot
-simplify(::typeof(⊻), (t1, t2)::Tuple{Top,Formula}) = ¬t2
-simplify(::typeof(⊻), (t1, t2)::Tuple{Bot,Formula}) = t2
-simplify(::typeof(⊻), (t1, t2)::Tuple{Formula,Top}) = ¬t1
-simplify(::typeof(⊻), (t1, t2)::Tuple{Formula,Bot}) = t1
+simplify(::typeof(⊻), (t1, t2)::Tuple{BooleanTruth,BooleanTruth}) = flag(t1) == flag(t2) ? BOT : TOP
+simplify(::typeof(⊻), (t1, t2)::Tuple{BooleanTruth,Formula}) = istop(t1) ? ¬t2 : t2
+simplify(::typeof(⊻), (t1, t2)::Tuple{Formula,BooleanTruth}) = istop(t2) ? ¬t1 : t1
 ```
 
 Beware of dispatch ambiguities!
@@ -553,10 +546,9 @@ syntaxstring(value; kwargs...) = string(value)
 
 Abstract type for syntax leaves representing values of a
 [lattice algebra](https://en.wikipedia.org/wiki/Lattice_(order)).
-In Boolean logic, the two [`BooleanTruth`](@ref) values [`Top`](@ref)
-and [`Bot`](@ref) are used.
+In Boolean logic, the two [`BooleanTruth`](@ref) values TOP (⊤) and BOT (⊥) are used.
 
-See also [`Top`](@ref), [`Bot`](@ref), [`BooleanTruth`](@ref).
+See also [`BooleanTruth`](@ref).
 
 # Implementation
 A [three-valued algebra](https://en.wikipedia.org/wiki/Three-valued_logic),
@@ -565,7 +557,7 @@ that is, an algebra with three truth values
 can be based on the following `Truth` value definitions:
 
 ```julia
-import Base: isless
+import SoleLogics: precedes
 
 abstract type ThreeVTruth <: Truth end
 
@@ -584,15 +576,15 @@ syntaxstring(::ThreeUnknown; kwargs...) = "υ"
 istop(t::ThreeTop) = true
 isbot(t::ThreeBot) = true
 
-Base.isless(::ThreeBot, ::ThreeTop) = true
-Base.isless(::ThreeBot, ::ThreeUnknown) = true
-Base.isless(::ThreeUnknown, ::ThreeTop) = true
-Base.isless(::ThreeTop, ::ThreeBot) = false
-Base.isless(::ThreeUnknown, ::ThreeBot) = false
-Base.isless(::ThreeTop, ::ThreeUnknown) = false
+precedes(::ThreeBot, ::ThreeTop) = true
+precedes(::ThreeBot, ::ThreeUnknown) = true
+precedes(::ThreeUnknown, ::ThreeTop) = true
+precedes(::ThreeTop, ::ThreeBot) = false
+precedes(::ThreeUnknown, ::ThreeBot) = false
+precedes(::ThreeTop, ::ThreeUnknown) = false
 ```
 
-Note that `Base.isless` is used to define the (partial) order between `Truth` values.
+Note that `precedes` is used to define the (partial) order between `Truth` values.
 
 See also [`Connective`](@ref), [`BooleanTruth`](@ref).
 """
@@ -639,12 +631,23 @@ function truthsupertype(T::Type{<:Truth})
     return T
 end
 
-function Base.isless(t1::Truth, t2::Truth)
+"""
+TODO docstring it's mandatory.
+"""
+function precedes(t1::Truth, t2::Truth)
     if Base.isequal(t1, t2)
         return false
     else
-        return error("Please, provide method Base.isless(::$(typeof(t1)), ::$(typeof(t2))).")
+        return error("Please, provide method precedes(::$(typeof(t1)), ::$(typeof(t2))).")
     end
+end
+
+# Alias
+const ≺ = precedes
+
+# Fallback
+function Base.:<(t1::Truth, t2::Truth)
+    return precedes(t1, t2)
 end
 
 # Helper: some types can be specified to be converted to Truth types

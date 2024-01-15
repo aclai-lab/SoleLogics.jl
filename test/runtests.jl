@@ -34,6 +34,8 @@ test_suites = [
     ("Type Hierarchy Update", ["type-hierarchy-update.jl"]),
 
     ("Pluto Demo", ["$(dirname(dirname(pathof(SoleLogics))))/pluto-demo.jl", ]),
+
+    ("Fuzzy", ["fuzzy.jl",]),
 ]
 
 @testset "SoleLogics.jl" begin

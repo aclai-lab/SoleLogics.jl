@@ -18,8 +18,6 @@ Recalling the type hierarchy presented in [man-core](@ref), it is here enriched 
 
 - [`Truth`](@ref)
     - [`BooleanTruth`](@ref) **(new)**
-        - [`Top`](@ref) (⊤)
-        - [`Bot`](@ref) (⊥)
 ---
 
 - [`Connective`](@ref)
@@ -126,8 +124,6 @@ BASE_CONNECTIVES
 
 ```@docs
 BooleanTruth
-Top
-Bot
 ```
 
 ```@docs
