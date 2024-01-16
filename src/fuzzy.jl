@@ -23,6 +23,14 @@ See also [`@heytingtruths`](@ref), [`HeytingAlgebra`](@ref), [`Truth`](@ref)
 struct HeytingTruth <: Truth
     label::String
     index::Int  # the index of the node in the domain vector: no order is implied!
+
+    function HeytingTruth(label::String, index::Int)
+        return new(label, index)
+    end
+
+    function HeytingTruth(booleantruth::BooleanTruth)
+        istop(booleantruth) ? HeytingTruth("⊤", 1) : HeytingTruth("⊥", 2)
+    end
 end
 
 """
