@@ -173,16 +173,8 @@ Construct a [`HeytingAlgebra`](@ref)
 with domain containing `values` and graph represented by the tuples in `relations`, with each
 tuple (α, β) representing a direct edge in the graph asserting α ≺ β.
 
-!!! info
-    Please not how the values of type [`HeytingTruth`](@ref) must be created beforehand
-    (e.g., [`@heytingvalues`](@ref)) and not include `⊤` and `⊥`.
-
 # Examples
 ```julia-repl
-julia> SoleLogics.@heytingtruths α β
-2-element Vector{HeytingTruth}:
- HeytingTruth: α
- HeytingTruth: β
 
 julia> myalgebra = SoleLogics.@heytingalgebra (α, β) (⊥, α) (⊥, β) (α, ⊤) (β, ⊤)
 HeytingAlgebra(HeytingTruth[⊤, ⊥, α, β], SimpleDiGraph{Int64}(4, [Int64[], [3, 4], [1], [1]], [[3, 4], Int64[], [2], [2]]))
@@ -191,13 +183,8 @@ See also [`HeytingTruth`](@ref), [`@heytingalgebra`](@ref)
 """
 macro heytingalgebra(values, relations...)
     quote
-        # TODO call @heytingtruths. How?
-        # SoleLogics.@heytingtruths([$(esc(v)) for v in eval(values)]...)
-        # SoleLogics.@heytingtruths([$(v) for v in eval]...)
-        # SoleLogics.@heytingtruths([t_symb for t_symb in values.args[2].args]...)
-        domain = HeytingTruth[convert(HeytingTruth, ⊤), convert(HeytingTruth, ⊥), $values...]
-        # println(domain)
-        # println(typeof(domain))
+        labels = @heytingtruths $(values.args...)
+        domain = HeytingTruth[convert(HeytingTruth, ⊤), convert(HeytingTruth, ⊥), labels...]
         edges = Vector{SoleLogics.Graphs.Edge{Int64}}()
         map(e -> push!(edges, SoleLogics.Graphs.Edge(eval(e))), $relations)
         HeytingAlgebra(domain, edges)

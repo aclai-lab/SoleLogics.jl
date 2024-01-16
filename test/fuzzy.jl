@@ -3,7 +3,6 @@ using Graphs
 
 ### Check all basic operations work correctly foc simplest meaningful many-valued algebra ###
 
-@heytingtruths α β
 myalgebra = @heytingalgebra (α, β) (⊥, α) (⊥, β) (α, ⊤) (β, ⊤)
 
 @test precedes(myalgebra, ⊥, α)   == true
