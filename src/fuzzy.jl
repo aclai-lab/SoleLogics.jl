@@ -28,8 +28,9 @@ struct HeytingTruth <: Truth
         return new(label, index)
     end
 
+    # Helper
     function HeytingTruth(booleantruth::BooleanTruth)
-        istop(booleantruth) ? HeytingTruth("⊤", 1) : HeytingTruth("⊥", 2)
+        return convert(HeytingTruth, booleantruth)
     end
 end
 
@@ -46,9 +47,6 @@ index(t::HeytingTruth)::Int = t.index
 istop(t::HeytingTruth) = index(t) == 1
 isbot(t::HeytingTruth) = index(t) == 2
 
-"""
-Return the label associated with the t.
-"""
 syntaxstring(t::HeytingTruth; kwargs...) = label(t)
 
 convert(::Type{HeytingTruth}, t::HeytingTruth) = t
@@ -57,9 +55,7 @@ function convert(::Type{HeytingTruth}, booleantruth::BooleanTruth)
     return istop(booleantruth) ? HeytingTruth("⊤", 1) : HeytingTruth("⊥", 2)
 end
 
-"""
-Convert an object of type HeytingTruth to an object of type BooleanTruth (if possible).
-"""
+# Convert an object of type HeytingTruth to an object of type `BooleanTruth` (if possible).
 function convert(::Type{BooleanTruth}, t::HeytingTruth)
     if istop(t)
         return TOP
@@ -69,6 +65,11 @@ function convert(::Type{BooleanTruth}, t::HeytingTruth)
         error("Cannot convert HeytingTruth \"" * syntaxstring(t) * "\" to BooleanTruth. " *
               "Only ⊤ and ⊥ can be converted to BooleanTruth.")
     end
+end
+
+# Helper
+function Base.show(io::IO, v::Vector{HeytingTruth})
+    print(io, displaysyntaxvector(v; quotes = false))
 end
 
 ############################################################################################
@@ -81,8 +82,9 @@ end
         graph::Graphs.SimpleGraphs.SimpleDiGraph
     end
 
-A structure for representing an Heyting algebra, characterized by the domain of its truths
-and a graph representing the partial ordering between them.
+A Heyting algebra, represented explicitly
+as a domain of truth values, and a graph over them encoding a partial order with
+specific constraints (see [here](https://en.m.wikipedia.org/wiki/Heyting_algebra)).
 ⊤ and ⊥ are always the first and the second element of each algebra, respectively.
 
 See also [`@heytingalgebra`](@ref), [`HeytingTruth`](@ref)
@@ -91,14 +93,16 @@ struct HeytingAlgebra
     domain::Vector{HeytingTruth}
     graph::Graphs.SimpleGraphs.SimpleDiGraph # directed graph where (α, β) represents α ≺ β
 
-    function HeytingAlgebra(domain::Vector{HeytingTruth},
-                            graph::Graphs.SimpleGraphs.SimpleDiGraph)
-        h = new(domain, graph)
-        if islattice(h)
-            return h
-        else
-            error("Tried to define an HeytingAlgebra with a graph which is not a lattice.")
-        end
+    function HeytingAlgebra(
+        domain::Vector{HeytingTruth},
+        graph::Graphs.SimpleGraphs.SimpleDiGraph,
+    )
+        @assert length(domain) >= 2 "Cannot instantiate `HeytingAlgebra` with domain " *
+            "of length $(length(domain)). Need to specify at least a top and a bottom " *
+            "element (to be placed at positions 1 and 2, respectively)."
+        @assert islattice(domain, graph) "Tried to define an HeytingAlgebra with a graph" *
+            "which is not a lattice."
+        return new(domain, graph)
     end
 
     function HeytingAlgebra(domain::Vector{HeytingTruth}, relations::Vector{Edge{Int64}})
@@ -114,11 +118,11 @@ graph(h::HeytingAlgebra) = h.graph
 cardinality(h::HeytingAlgebra) = length(domain(h))
 isboolean(h::HeytingAlgebra) = (cardinality(h) == 2)
 
-Graphs.has_path(h::HeytingAlgebra, α::HeytingTruth, β::HeytingTruth) = has_path(graph(h), index(α), index(β))
+Graphs.has_path(graph::AbstractGraph, α::HeytingTruth, β::HeytingTruth) = has_path(graph, index(α), index(β))
 
-function islattice(h::HeytingAlgebra)
-    for α ∈ domain(h)
-        if !has_path(h, HeytingTruth(⊥), α) || !has_path(h, α, HeytingTruth(⊤))
+function islattice(domain::Vector{HeytingTruth}, graph::Graphs.SimpleGraphs.SimpleDiGraph)
+    for α ∈ domain
+        if !has_path(graph, HeytingTruth(⊥), α) || !has_path(graph, α, HeytingTruth(⊤))
             return false
         end
     end
@@ -129,11 +133,11 @@ end
     @heytingtruths(labels...)
 
 Instantiate a collection of [`HeytingTruth`](@ref)s and return them as a vector.
-⊤ and ⊥ already exist as const of type BooleanTruth and they are treated as HeytingTruth
-with index 1 and 2 respectively.
+⊤ and ⊥ already exist as `const`s of type `BooleanTruth` and they are
+treated as `HeytingTruth`s with index 1 and 2, respectively.
 
 !!! info
-    HeytingTruths instantiated with this macro are defined in the global scope as constants.
+    `HeytingTruth`s instantiated with this macro are defined in the global scope as constants.
 
 # Examples
 ```julia-repl
@@ -149,21 +153,29 @@ See also [`HeytingTruth`](@ref), [`@heytingalgebra`](@ref)
 """
 macro heytingtruths(labels...)
     quote
-        $(map(t -> :(const $(t[2]) = $(HeytingTruth(string(t[2]), t[1]+2))), enumerate(labels))...)
-        [$(labels...)]
+        $(map(t -> begin
+            if !(t[2] in [Symbol(:⊤), Symbol(:⊥)])
+                :(const $(t[2]) = $(HeytingTruth(string(t[2]), t[1]+2)))
+            else
+                return error("Invalid heyting truth provided: $(t[2]). " *
+                    "Symbols `⊤` and `⊥` are reserved for the top and bottom of the "
+                    * "algebra, and they do not need to be specified.")
+            end
+        end, enumerate(labels))...)
+        HeytingTruth[$(labels...)]
     end |> esc
 end
 
 """
-    @heytingalgebra(name, values, relations...)
+    @heytingalgebra(values, relations...)
 
-Instantiate a [`HeytingAlgebra`](@ref) as a constant in the global scope with name `name`,
-with domain containing `values` and graph represented by the tuples `relations...` with each
+Construct a [`HeytingAlgebra`](@ref)
+with domain containing `values` and graph represented by the tuples in `relations`, with each
 tuple (α, β) representing a direct edge in the graph asserting α ≺ β.
 
 !!! info
     Please not how the values of type [`HeytingTruth`](@ref) must be created beforehand
-    (e.g., [`@heytingvalues`](@ref)) and not include ⊤ and ⊥.
+    (e.g., [`@heytingvalues`](@ref)) and not include `⊤` and `⊥`.
 
 # Examples
 ```julia-repl
@@ -172,21 +184,23 @@ julia> SoleLogics.@heytingtruths α β
  HeytingTruth: α
  HeytingTruth: β
 
-julia> SoleLogics.@heytingalgebra heytingalgebra4 (α, β) (⊥, α) (⊥, β) (α, ⊤) (β, ⊤)
-HeytingTruth[HeytingTruth: ⊤, HeytingTruth: ⊥, HeytingTruth: α, HeytingTruth: β]
-Vector{HeytingTruth}
-HeytingAlgebra(HeytingTruth[HeytingTruth: ⊤, HeytingTruth: ⊥, HeytingTruth: α, HeytingTruth: β], SimpleDiGraph{Int64}(4, [Int64[], [3, 4], [1], [1]], [[3, 4], Int64[], [2], [2]]))
+julia> myalgebra = SoleLogics.@heytingalgebra (α, β) (⊥, α) (⊥, β) (α, ⊤) (β, ⊤)
+HeytingAlgebra(HeytingTruth[⊤, ⊥, α, β], SimpleDiGraph{Int64}(4, [Int64[], [3, 4], [1], [1]], [[3, 4], Int64[], [2], [2]]))
 
 See also [`HeytingTruth`](@ref), [`@heytingalgebra`](@ref)
 """
-macro heytingalgebra(name, values, relations...)
+macro heytingalgebra(values, relations...)
     quote
-        domain = [convert(HeytingTruth, ⊤), convert(HeytingTruth, ⊥), $values...]
-        println(domain)
-        println(typeof(domain))
-        edges = Vector{Edge{Int64}}()
-        map(e -> push!(edges, Edge(eval(e))), $relations)
-        const $name = (HeytingAlgebra(domain, edges))
+        # TODO call @heytingtruths. How?
+        # SoleLogics.@heytingtruths([$(esc(v)) for v in eval(values)]...)
+        # SoleLogics.@heytingtruths([$(v) for v in eval]...)
+        # SoleLogics.@heytingtruths([t_symb for t_symb in values.args[2].args]...)
+        domain = HeytingTruth[convert(HeytingTruth, ⊤), convert(HeytingTruth, ⊥), $values...]
+        # println(domain)
+        # println(typeof(domain))
+        edges = Vector{SoleLogics.Graphs.Edge{Int64}}()
+        map(e -> push!(edges, SoleLogics.Graphs.Edge(eval(e))), $relations)
+        HeytingAlgebra(domain, edges)
     end |> esc
 end
 
