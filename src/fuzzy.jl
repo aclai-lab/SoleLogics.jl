@@ -93,7 +93,12 @@ struct HeytingAlgebra
 
     function HeytingAlgebra(domain::Vector{HeytingTruth},
                             graph::Graphs.SimpleGraphs.SimpleDiGraph)
-        return new(domain, graph)
+        h = new(domain, graph)
+        if islattice(h)
+            return h
+        else
+            error("Tried to define an HeytingAlgebra with a graph which is not a lattice.")
+        end
     end
 
     function HeytingAlgebra(domain::Vector{HeytingTruth}, relations::Vector{Edge{Int64}})
@@ -108,6 +113,17 @@ graph(h::HeytingAlgebra) = h.graph
 
 cardinality(h::HeytingAlgebra) = length(domain(h))
 isboolean(h::HeytingAlgebra) = (cardinality(h) == 2)
+
+Graphs.has_path(h::HeytingAlgebra, α::HeytingTruth, β::HeytingTruth) = has_path(graph(h), index(α), index(β))
+
+function islattice(h::HeytingAlgebra)
+    for α ∈ domain(h)
+        if !has_path(h, HeytingTruth(⊥), α) || !has_path(h, α, HeytingTruth(⊤))
+            return false
+        end
+    end
+    return true
+end
 
 """
     @heytingtruths(labels...)
