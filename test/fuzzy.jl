@@ -76,7 +76,7 @@ myalgebra = @heytingalgebra (α, β) (⊥, α) (⊥, β) (α, ⊤) (β, ⊤)
 
 using Random
 
-@heytingalgebra booleanalgebra () (⊥, ⊤)
+booleanalgebra = @heytingalgebra () (⊥, ⊤)
 
 myalphabet = @atoms a b c
 td1 = TruthDict([a => ⊥, b => ⊥, c => ⊥])
