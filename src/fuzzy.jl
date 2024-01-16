@@ -1,6 +1,6 @@
 using Graphs
 
-# Author: ilpaps
+# Author: alberto-paparella
 
 ############################################################################################
 #### HeytingTruth ##########################################################################
@@ -15,7 +15,7 @@ using Graphs
 A truth value of a Heyting algebra.
 Heyting truth values are represented by a label, and an index corresponding to its
 position in the domain vector of the associated algebra.
-Values `⊥` and `⊤` always exist with index 1 and 2, respectively.
+Values `⊤` and `⊥` always exist with index 1 and 2, respectively.
 New values can be easily constructed via the [`@heytingtruths`](@ref) macro.
 
 See also [`@heytingtruths`](@ref), [`HeytingAlgebra`](@ref), [`Truth`](@ref)
@@ -35,8 +35,8 @@ Return the index of a [`HeytingTruth`](@ref).
 """
 index(t::HeytingTruth)::Int = t.index
 
-istop(t::HeytingTruth) = index(t) == 2
-isbot(t::HeytingTruth) = index(t) == 1
+istop(t::HeytingTruth) = index(t) == 1
+isbot(t::HeytingTruth) = index(t) == 2
 
 """
 Return the label associated with the t.
@@ -46,7 +46,7 @@ syntaxstring(t::HeytingTruth; kwargs...) = label(t)
 convert(::Type{HeytingTruth}, t::HeytingTruth) = t
 
 function convert(::Type{HeytingTruth}, booleantruth::BooleanTruth)
-    return istop(booleantruth) ? HeytingTruth("⊤", 2) : HeytingTruth("⊥", 1)
+    return istop(booleantruth) ? HeytingTruth("⊤", 1) : HeytingTruth("⊥", 2)
 end
 
 """
@@ -68,14 +68,23 @@ end
 ############################################################################################
 
 """
-TODO docstring. assumption: top and bottom are the second and first elements in the domain.
-TODO actually, invert them: top first and bottom second.
+    struct HeytingAlgebra
+        domain::Vector{HeytingTruth}
+        graph::Graphs.SimpleGraphs.SimpleDiGraph
+    end
+
+A structure for representing an Heyting algebra, characterized by the domain of its truths
+and a graph representing the partial ordering between them.
+⊤ and ⊥ are always the first and the second element of each algebra, respectively.
+
+See also [`@heytingalgebra`](@ref), [`HeytingTruth`](@ref)
 """
 struct HeytingAlgebra
     domain::Vector{HeytingTruth}
-    graph::Graphs.SimpleGraphs.SimpleDiGraph   # directed graph where each edge (α, β) is consistend with α ≺ β
+    graph::Graphs.SimpleGraphs.SimpleDiGraph # directed graph where (α, β) represents α ≺ β
 
-    function HeytingAlgebra(domain::Vector{HeytingTruth}, graph::Graphs.SimpleGraphs.SimpleDiGraph)
+    function HeytingAlgebra(domain::Vector{HeytingTruth},
+                            graph::Graphs.SimpleGraphs.SimpleDiGraph)
         return new(domain, graph)
     end
 
@@ -85,16 +94,34 @@ struct HeytingAlgebra
 end
 
 domain(h::HeytingAlgebra) = h.domain
-top(h::HeytingAlgebra) = h.domain[2]
-bot(h::HeytingAlgebra) = h.domain[1]
+top(h::HeytingAlgebra) = h.domain[1]
+bot(h::HeytingAlgebra) = h.domain[2]
 graph(h::HeytingAlgebra) = h.graph
 
 cardinality(h::HeytingAlgebra) = length(domain(h))
 isboolean(h::HeytingAlgebra) = (cardinality(h) == 2)
 
-# ⊥ and ⊤ already exist as const of type BooleanTruth and they are treated as HeytingTruth with index 1 and 2 respectively
 """
-TODO docstring
+    @heytingtruths(labels...)
+
+Instantiate a collection of [`HeytingTruth`](@ref)s and return them as a vector.
+⊤ and ⊥ already exist as const of type BooleanTruth and they are treated as HeytingTruth
+with index 1 and 2 respectively.
+
+!!! info
+    HeytingTruths instantiated with this macro are defined in the global scope as constants.
+
+# Examples
+```julia-repl
+julia> SoleLogics.@heytingtruths α β
+2-element Vector{HeytingTruth}:
+ HeytingTruth: α
+ HeytingTruth: β
+
+julia> α
+HeytingTruth: α
+
+See also [`HeytingTruth`](@ref), [`@heytingalgebra`](@ref)
 """
 macro heytingtruths(labels...)
     quote
@@ -103,13 +130,34 @@ macro heytingtruths(labels...)
     end |> esc
 end
 
-# Note that values of type HeytingTruth must be created beforehand (e.g., with @heytingvalues values...) and not include ⊥ and ⊤
 """
-TODO docstring
+    @heytingalgebra(name, values, relations...)
+
+Instantiate a [`HeytingAlgebra`](@ref) as a constant in the global scope with name `name`,
+with domain containing `values` and graph represented by the tuples `relations...` with each
+tuple (α, β) representing a direct edge in the graph asserting α ≺ β.
+
+!!! info
+    Please not how the values of type [`HeytingTruth`](@ref) must be created beforehand
+    (e.g., [`@heytingvalues`](@ref)) and not include ⊤ and ⊥.
+
+# Examples
+```julia-repl
+julia> SoleLogics.@heytingtruths α β
+2-element Vector{HeytingTruth}:
+ HeytingTruth: α
+ HeytingTruth: β
+
+julia> SoleLogics.@heytingalgebra heytingalgebra4 (α, β) (⊥, α) (⊥, β) (α, ⊤) (β, ⊤)
+HeytingTruth[HeytingTruth: ⊤, HeytingTruth: ⊥, HeytingTruth: α, HeytingTruth: β]
+Vector{HeytingTruth}
+HeytingAlgebra(HeytingTruth[HeytingTruth: ⊤, HeytingTruth: ⊥, HeytingTruth: α, HeytingTruth: β], SimpleDiGraph{Int64}(4, [Int64[], [3, 4], [1], [1]], [[3, 4], Int64[], [2], [2]]))
+
+See also [`HeytingTruth`](@ref), [`@heytingalgebra`](@ref)
 """
 macro heytingalgebra(name, values, relations...)
     quote
-        domain = [convert(HeytingTruth, ⊥), convert(HeytingTruth, ⊤), $values...]
+        domain = [convert(HeytingTruth, ⊤), convert(HeytingTruth, ⊥), $values...]
         println(domain)
         println(typeof(domain))
         edges = Vector{Edge{Int64}}()
@@ -245,7 +293,3 @@ collatetruth(c::Connective, (α,)::Tuple{BooleanTruth}, h::HeytingAlgebra) = col
 
 simplify(c::Connective, (α,)::Tuple{HeytingTruth}, h::HeytingAlgebra) = collatetruth(c, (α,), h)
 simplify(c::Connective, (α,)::Tuple{BooleanTruth}, h::HeytingAlgebra) = simplify(c, (convert(HeytingTruth, α),), h)
-
-# TODO remove these two: they are dangerous.
-simplify(c::Connective, α::HeytingTruth, h::HeytingAlgebra) = simplify(c, (α,), h)
-simplify(c::Connective, α::BooleanTruth, h::HeytingAlgebra) = simplify(c, convert(HeytingTruth, α), h)
