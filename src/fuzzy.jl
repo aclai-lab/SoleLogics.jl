@@ -28,7 +28,7 @@ struct HeytingTruth <: Truth
         return new(label, index)
     end
 
-    # Helper
+    # Helpers
     function HeytingTruth(booleantruth::BooleanTruth)
         return convert(HeytingTruth, booleantruth)
     end
@@ -131,7 +131,6 @@ function isbounded(domain::Vector{HeytingTruth}, graph::Graphs.SimpleGraphs.Simp
     return true
 end
 
-
 function Graphs.inneighbors(d::Vector{HeytingTruth}, g::Graphs.SimpleGraphs.SimpleDiGraph, t::HeytingTruth)::Vector{HeytingTruth}
     return d[inneighbors(g, index(t))]
 end
@@ -140,73 +139,58 @@ function Graphs.outneighbors(d::Vector{HeytingTruth}, g::Graphs.SimpleGraphs.Sim
     return d[outneighbors(g, index(t))]
 end
 
-function precedes(d::Vector{HeytingTruth}, g::Graphs.SimpleGraphs.SimpleDiGraph, α::HeytingTruth, β::HeytingTruth)
-    if α ∈ inneighbors(d, g, β)
-        return true
-    else
-        for γ ∈ outneighbors(d, g, α)
-            if precedes(d, g, γ, β)
-                return true
-            end
-        end
-        return false
-    end
+precedes(d::Vector{HeytingTruth}, ctg::Graphs.SimpleGraphs.SimpleDiGraph, α::HeytingTruth, β::HeytingTruth) = β ∈ outneighbors(d, ctg, α)
+
+precedeq(d::Vector{HeytingTruth}, ctg::Graphs.SimpleGraphs.SimpleDiGraph, α::HeytingTruth, β::HeytingTruth) = α == β ||  precedes(d, ctg, α, β)
+
+succeedes(d::Vector{HeytingTruth}, ctg::Graphs.SimpleGraphs.SimpleDiGraph, α::HeytingTruth, β::HeytingTruth) = precedes(d, ctg, β, α)
+
+succeedeq(d::Vector{HeytingTruth}, ctg::Graphs.SimpleGraphs.SimpleDiGraph, α::HeytingTruth, β::HeytingTruth) = α == β ||  succeedes(d, ctg, α, β)
+
+greatervalues(d::Vector{HeytingTruth}, ctg::Graphs.SimpleGraphs.SimpleDiGraph, α::HeytingTruth) = union(HeytingTruth[α], outneighbors(d, ctg, α))
+
+function upperbounds(d::Vector{HeytingTruth}, ctg::Graphs.SimpleGraphs.SimpleDiGraph, α::HeytingTruth, β::HeytingTruth)
+    return greatervalues(d, ctg, α)[in.(greatervalues(d, ctg, α), Ref(greatervalues(d, ctg, β)))]
 end
 
-precedeq(d::Vector{HeytingTruth}, g::Graphs.SimpleGraphs.SimpleDiGraph, α::HeytingTruth, β::HeytingTruth) = α == β ||  precedes(d, g, α, β)
-
-succeedes(d::Vector{HeytingTruth}, g::Graphs.SimpleGraphs.SimpleDiGraph, α::HeytingTruth, β::HeytingTruth) = precedes(d, g, β, α)
-
-succeedeq(d::Vector{HeytingTruth}, g::Graphs.SimpleGraphs.SimpleDiGraph, α::HeytingTruth, β::HeytingTruth) = α == β ||  succeedes(d, g, α, β)
-
-function greatervalues(d::Vector{HeytingTruth}, g::Graphs.SimpleGraphs.SimpleDiGraph, α::HeytingTruth)
-    istop(α) ? HeytingTruth[⊤] : union(HeytingTruth[α], map(β -> greatervalues(d, g, β), outneighbors(d, g, α))...)
-end
-
-function upperbounds(d::Vector{HeytingTruth}, g::Graphs.SimpleGraphs.SimpleDiGraph, α::HeytingTruth, β::HeytingTruth)
-    return greatervalues(d, g, α)[in.(greatervalues(d, g, α), Ref(greatervalues(d, g, β)))]
-end
-
-function isleastupperbound(d::Vector{HeytingTruth}, g::Graphs.SimpleGraphs.SimpleDiGraph, α::HeytingTruth, ubs::Vector{HeytingTruth})
+function isleastupperbound(d::Vector{HeytingTruth}, ctg::Graphs.SimpleGraphs.SimpleDiGraph, α::HeytingTruth, ubs::Vector{HeytingTruth})
     for ub ∈ ubs
-        if !precedeq(d, g, α, ub)
+        if !precedeq(d, ctg, α, ub)
             return false
         end
     end
     return true
 end
 
-function leastupperbound(d::Vector{HeytingTruth}, g::Graphs.SimpleGraphs.SimpleDiGraph, α::HeytingTruth, β::HeytingTruth)
-    ubs = upperbounds(d, g, α, β)
+function leastupperbound(d::Vector{HeytingTruth}, ctg::Graphs.SimpleGraphs.SimpleDiGraph, α::HeytingTruth, β::HeytingTruth)
+    ubs = upperbounds(d, ctg, α, β)
     for ub ∈ ubs
-        if isleastupperbound(d, g, ub, ubs)
+        if isleastupperbound(d, ctg, ub, ubs)
             return ub
         end
     end
     return nothing
 end
 
-function lesservalues(d::Vector{HeytingTruth}, g::Graphs.SimpleGraphs.SimpleDiGraph, α::HeytingTruth)
-    isbot(α) ? HeytingTruth[⊥] : union(HeytingTruth[α], map(β -> lesservalues(d, g, β), inneighbors(d, g, α))...)
+lesservalues(d::Vector{HeytingTruth}, ctg::Graphs.SimpleGraphs.SimpleDiGraph, α::HeytingTruth) = union(HeytingTruth[α], inneighbors(d, ctg, α))
+
+function lowerbounds(d::Vector{HeytingTruth}, ctg::Graphs.SimpleGraphs.SimpleDiGraph, α::HeytingTruth, β::HeytingTruth)
+    return lesservalues(d, ctg, α)[in.(lesservalues(d, ctg, α), Ref(lesservalues(d, ctg, β)))]
 end
 
-function lowerbounds(d::Vector{HeytingTruth}, g::Graphs.SimpleGraphs.SimpleDiGraph, α::HeytingTruth, β::HeytingTruth)
-    return lesservalues(d, g, α)[in.(lesservalues(d, g, α), Ref(lesservalues(d, g, β)))]
-end
-
-function isgreatestlowerbound(d::Vector{HeytingTruth}, g::Graphs.SimpleGraphs.SimpleDiGraph, α::HeytingTruth, lbs::Vector{HeytingTruth})
+function isgreatestlowerbound(d::Vector{HeytingTruth}, ctg::Graphs.SimpleGraphs.SimpleDiGraph, α::HeytingTruth, lbs::Vector{HeytingTruth})
     for lb ∈ lbs
-        if !succeedeq(d, g, α, lb)
+        if !succeedeq(d, ctg, α, lb)
             return false
         end
     end
     return true
 end
 
-function greatestlowerbound(d::Vector{HeytingTruth}, g::Graphs.SimpleGraphs.SimpleDiGraph, α::HeytingTruth, β::HeytingTruth)
-    lbs = lowerbounds(d, g, α, β)
+function greatestlowerbound(d::Vector{HeytingTruth}, ctg::Graphs.SimpleGraphs.SimpleDiGraph, α::HeytingTruth, β::HeytingTruth)
+    lbs = lowerbounds(d, ctg, α, β)
     for lb ∈ lbs
-        if isgreatestlowerbound(d, g, lb, lbs)
+        if isgreatestlowerbound(d, ctg, lb, lbs)
             return lb
         end
     end
@@ -214,9 +198,10 @@ function greatestlowerbound(d::Vector{HeytingTruth}, g::Graphs.SimpleGraphs.Simp
 end
 
 function iscomplete(d::Vector{HeytingTruth}, g::Graphs.SimpleGraphs.SimpleDiGraph)
+    ctg = transitiveclosure(g)
     for α ∈ d
         for β ∈ d
-            if α != β && (isnothing(leastupperbound(d, g, α, β)) || isnothing(greatestlowerbound(d, g, α, β)))
+            if α != β && (isnothing(leastupperbound(d, ctg, α, β)) || isnothing(greatestlowerbound(d, ctg, α, β)))
                 return false
             end
         end

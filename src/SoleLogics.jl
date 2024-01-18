@@ -109,6 +109,8 @@ export precedes, succeedes, precedeq, succedeq
 export collatetruth
 export @heytingtruths, @heytingalgebra
 
+export iscomplete
+
 include("fuzzy.jl")
 
 ############################################################################################
