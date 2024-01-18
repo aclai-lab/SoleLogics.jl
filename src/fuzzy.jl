@@ -28,7 +28,7 @@ struct HeytingTruth <: Truth
         return new(label, index)
     end
 
-    # Helpers
+    # Helper
     function HeytingTruth(booleantruth::BooleanTruth)
         return convert(HeytingTruth, booleantruth)
     end
