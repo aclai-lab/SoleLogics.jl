@@ -3,8 +3,16 @@ using Graphs
 
 ### Check all basic operations work correctly foc simplest meaningful many-valued algebra ###
 
-@heytingtruths α β
 myalgebra = @heytingalgebra (α, β) (⊥, α) (⊥, β) (α, ⊤) (β, ⊤)
+
+# A more complex algebra
+# myalgebra = @heytingalgebra (A, B, C, D, E, F, G) (⊥, A) (⊥, B) (A, C) (A, D) (B, D) (B, E) (C, F) (D, F) (D, G) (E, G) (F, ⊤) (G, ⊤)
+
+# Not a bounded lattice (it has more than one possible ⊤, i.e., ⊥ and ⊤)
+# myalgebra = @heytingalgebra (α, β) (⊥, α) (⊥, β) (α, ⊤)
+
+# Not a complete algebra (there are some elements α and β such that they don't have a meet or a join)
+# myalgebra = @heytingalgebra (A, B, C, D) (⊥, A) (⊥, B) (A, C) (A, D) (B, C) (B, D) (C, ⊤) (D, ⊤)
 
 @test precedes(myalgebra, ⊥, α)   == true
 @test precedes(myalgebra, α, ⊥)   == false
@@ -76,7 +84,7 @@ myalgebra = @heytingalgebra (α, β) (⊥, α) (⊥, β) (α, ⊤) (β, ⊤)
 
 using Random
 
-@heytingalgebra booleanalgebra () (⊥, ⊤)
+booleanalgebra = @heytingalgebra () (⊥, ⊤)
 
 myalphabet = @atoms a b c
 td1 = TruthDict([a => ⊥, b => ⊥, c => ⊥])

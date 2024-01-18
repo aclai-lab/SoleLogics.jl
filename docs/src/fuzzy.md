@@ -37,19 +37,10 @@ This could be represented by the following bounded lattice:
    ⊥
 ```
 
-To declare a new Heyting algebra in SoleLogics, we first have to declare the new truth values different from ⊥ and ⊤ as variable of type HeytingTruth. To do that, we can use the [`heytingtruths`](@ref) macro, which takes as input the symbols of the new truths and returns a vector containing the HeytingTruths representing such values, which have been declared as constants in the global scope.
-
-```julia-repl
-julia> SoleLogics.@heytingtruths α β
-2-element Vector{HeytingTruth}:
- HeytingTruth: α
- HeytingTruth: β
-```
-
-Then, we can declare our new Heyting algebra using the [`heytingalgebra`](@ref) macro, which takes as input the name of the new algebra, the a tuple containing the new values of the algebra other than ⊥ and ⊤, and the direct relations between these values, with each relation being a tuple (t1, t2) asserting that t1 < t2.
+To declare a new Heyting algebra in SoleLogics, we can use the [`heytingalgebra`](@ref) macro, which takes as input a tuple containing the symbols representing the new values of the algebra other than ⊥ and ⊤, and the direct relations between these values, with each relation being a tuple (t1, t2) asserting that t1 < t2. The macro will take care of the declaration of [`HeytingTruths`](@ref).
 
 !!!info
-    The order of the symbols passed as an argument to the macro in the tuple **must** be consistent with the order in which they have been declared, e.g., in our case, (α, β) and NOT (β, α)!
+    Please note how both the HeytingTruths and the HeytingAlgebra defined in this way are declared as constants in the global scope.
 
 ```julia-repl
 julia> SoleLogics.@heytingalgebra myalgebra (α, β) (⊥, α) (⊥, β) (α, ⊤) (β, ⊤)
@@ -71,35 +62,4 @@ HeytingTruth: ⊤
 julia>  collatetruth(→, (α, β), myalgebra)
 HeytingTruth: β
 ```
-
-# [About Boolean algebra backward compatibility](@id fuzzy-boolean)
-
-It is also possible to get the classical Boolean algebra, e.g., using the [`heytingalgebra`](@ref) macro leaving the tuple of new values empty and using a single relation `(⊥, ⊤)`.
-
-```julia-repl
-booleanalgebra = @heytingalgebra () (⊥, ⊤)
-```
-
-This way, it is also possible, given a [`TruthDict`](@ref), to [`check`](@ref) a formula on a logical interpretation:
-
-```julia-repl
-julia> @atoms a b
-2-element Vector{Atom{String}}:
- Atom{String}: a
- Atom{String}: b
-
-julia> td = TruthDict([a => ⊤, b => ⊥])
-TruthDict with values:
-┌────────┬────────┐
-│      b │      a │
-│ String │ String │
-├────────┼────────┤
-│      ⊥ │      ⊤ │
-└────────┴────────┘
-
-julia> rf = randformula(Random.MersenneTwister(1234), 3, [a, b], SoleLogics.BASE_PROPOSITIONAL_CONNECTIVES)
-SyntaxBranch{NamedConnective{:∨}}: (b ∨ b → b ∧ b) ∨ ((b → a) → ¬b)
-
-julia> check(rf, td)
-true
 ```
