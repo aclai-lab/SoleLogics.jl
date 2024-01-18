@@ -100,8 +100,10 @@ struct HeytingAlgebra
         @assert length(domain) >= 2 "Cannot instantiate `HeytingAlgebra` with domain " *
             "of length $(length(domain)). Need to specify at least a top and a bottom " *
             "element (to be placed at positions 1 and 2, respectively)."
-        @assert islattice(domain, graph) "Tried to define an HeytingAlgebra with a graph" *
-            "which is not a lattice."
+        @assert isbounded(domain, graph) "Tried to define an HeytingAlgebra with a graph" *
+            "which is not a bounded lattice."
+        @assert iscomplete(domain, graph) "Tried to define an HeytingAlgebra" *
+            "with a graph which is not a complete lattice."
         return new(domain, graph)
     end
 
@@ -120,10 +122,103 @@ isboolean(h::HeytingAlgebra) = (cardinality(h) == 2)
 
 Graphs.has_path(graph::AbstractGraph, α::HeytingTruth, β::HeytingTruth) = has_path(graph, index(α), index(β))
 
-function islattice(domain::Vector{HeytingTruth}, graph::Graphs.SimpleGraphs.SimpleDiGraph)
+function isbounded(domain::Vector{HeytingTruth}, graph::Graphs.SimpleGraphs.SimpleDiGraph)
     for α ∈ domain
         if !has_path(graph, HeytingTruth(⊥), α) || !has_path(graph, α, HeytingTruth(⊤))
             return false
+        end
+    end
+    return true
+end
+
+
+function Graphs.inneighbors(d::Vector{HeytingTruth}, g::Graphs.SimpleGraphs.SimpleDiGraph, t::HeytingTruth)::Vector{HeytingTruth}
+    return d[inneighbors(g, index(t))]
+end
+
+function Graphs.outneighbors(d::Vector{HeytingTruth}, g::Graphs.SimpleGraphs.SimpleDiGraph, t::HeytingTruth)::Vector{HeytingTruth}
+    return d[outneighbors(g, index(t))]
+end
+
+function precedes(d::Vector{HeytingTruth}, g::Graphs.SimpleGraphs.SimpleDiGraph, α::HeytingTruth, β::HeytingTruth)
+    if α ∈ inneighbors(d, g, β)
+        return true
+    else
+        for γ ∈ outneighbors(d, g, α)
+            if precedes(d, g, γ, β)
+                return true
+            end
+        end
+        return false
+    end
+end
+
+precedeq(d::Vector{HeytingTruth}, g::Graphs.SimpleGraphs.SimpleDiGraph, α::HeytingTruth, β::HeytingTruth) = α == β ||  precedes(d, g, α, β)
+
+succeedes(d::Vector{HeytingTruth}, g::Graphs.SimpleGraphs.SimpleDiGraph, α::HeytingTruth, β::HeytingTruth) = precedes(d, g, β, α)
+
+succeedeq(d::Vector{HeytingTruth}, g::Graphs.SimpleGraphs.SimpleDiGraph, α::HeytingTruth, β::HeytingTruth) = α == β ||  succeedes(d, g, α, β)
+
+function greatervalues(d::Vector{HeytingTruth}, g::Graphs.SimpleGraphs.SimpleDiGraph, α::HeytingTruth)
+    istop(α) ? HeytingTruth[⊤] : union(HeytingTruth[α], map(β -> greatervalues(d, g, β), outneighbors(d, g, α))...)
+end
+
+function upperbounds(d::Vector{HeytingTruth}, g::Graphs.SimpleGraphs.SimpleDiGraph, α::HeytingTruth, β::HeytingTruth)
+    return greatervalues(d, g, α)[in.(greatervalues(d, g, α), Ref(greatervalues(d, g, β)))]
+end
+
+function isleastupperbound(d::Vector{HeytingTruth}, g::Graphs.SimpleGraphs.SimpleDiGraph, α::HeytingTruth, ubs::Vector{HeytingTruth})
+    for ub ∈ ubs
+        if !precedeq(d, g, α, ub)
+            return false
+        end
+    end
+    return true
+end
+
+function leastupperbound(d::Vector{HeytingTruth}, g::Graphs.SimpleGraphs.SimpleDiGraph, α::HeytingTruth, β::HeytingTruth)
+    ubs = upperbounds(d, g, α, β)
+    for ub ∈ ubs
+        if isleastupperbound(d, g, ub, ubs)
+            return ub
+        end
+    end
+    return nothing
+end
+
+function lesservalues(d::Vector{HeytingTruth}, g::Graphs.SimpleGraphs.SimpleDiGraph, α::HeytingTruth)
+    isbot(α) ? HeytingTruth[⊥] : union(HeytingTruth[α], map(β -> lesservalues(d, g, β), inneighbors(d, g, α))...)
+end
+
+function lowerbounds(d::Vector{HeytingTruth}, g::Graphs.SimpleGraphs.SimpleDiGraph, α::HeytingTruth, β::HeytingTruth)
+    return lesservalues(d, g, α)[in.(lesservalues(d, g, α), Ref(lesservalues(d, g, β)))]
+end
+
+function isgreatestlowerbound(d::Vector{HeytingTruth}, g::Graphs.SimpleGraphs.SimpleDiGraph, α::HeytingTruth, lbs::Vector{HeytingTruth})
+    for lb ∈ lbs
+        if !succeedeq(d, g, α, lb)
+            return false
+        end
+    end
+    return true
+end
+
+function greatestlowerbound(d::Vector{HeytingTruth}, g::Graphs.SimpleGraphs.SimpleDiGraph, α::HeytingTruth, β::HeytingTruth)
+    lbs = lowerbounds(d, g, α, β)
+    for lb ∈ lbs
+        if isgreatestlowerbound(d, g, lb, lbs)
+            return lb
+        end
+    end
+    return nothing
+end
+
+function iscomplete(d::Vector{HeytingTruth}, g::Graphs.SimpleGraphs.SimpleDiGraph)
+    for α ∈ d
+        for β ∈ d
+            if α != β && (isnothing(leastupperbound(d, g, α, β)) || isnothing(greatestlowerbound(d, g, α, β)))
+                return false
+            end
         end
     end
     return true
