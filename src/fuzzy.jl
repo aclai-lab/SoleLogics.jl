@@ -76,10 +76,13 @@ end
 #### HeytingAlgebra ########################################################################
 ############################################################################################
 
+# TODO verify: these may be useful:
+# - https://github.com/scheinerman/SimplePosets.jl
+# - https://github.com/simonschoelly/SimpleValueGraphs.jl
 """
-    struct HeytingAlgebra
-        domain::Vector{HeytingTruth}
-        graph::Graphs.SimpleGraphs.SimpleDiGraph
+    struct HeytingAlgebra{D<:AbstractVector{HeytingTruth},G<:Graphs.SimpleGraphs.SimpleDiGraph}
+        domain::D
+        graph::G
     end
 
 A Heyting algebra, represented explicitly
@@ -89,20 +92,26 @@ specific constraints (see [here](https://en.m.wikipedia.org/wiki/Heyting_algebra
 
 See also [`@heytingalgebra`](@ref), [`HeytingTruth`](@ref)
 """
-struct HeytingAlgebra
-    domain::Vector{HeytingTruth}
-    graph::Graphs.SimpleGraphs.SimpleDiGraph # directed graph where (α, β) represents α ≺ β
+struct HeytingAlgebra{
+    D<:AbstractVector{HeytingTruth},
+    G<:Graphs.SimpleGraphs.SimpleDiGraph,
+}
+    domain::D
+    graph::G # directed graph where (α, β) represents α ≺ β
 
     function HeytingAlgebra(
-        domain::Vector{HeytingTruth},
-        graph::Graphs.SimpleGraphs.SimpleDiGraph,
-    )
+        domain::D,
+        graph::G,
+    ) where {
+        D<:AbstractVector{HeytingTruth},
+        G<:Graphs.SimpleGraphs.SimpleDiGraph,
+    }
         @assert length(domain) >= 2 "Cannot instantiate `HeytingAlgebra` with domain " *
             "of length $(length(domain)). Need to specify at least a top and a bottom " *
             "element (to be placed at positions 1 and 2, respectively)."
         @assert islattice(domain, graph) "Tried to define an HeytingAlgebra with a graph" *
             "which is not a lattice."
-        return new(domain, graph)
+        return new{G,D}(domain, graph)
     end
 
     function HeytingAlgebra(domain::Vector{HeytingTruth}, relations::Vector{Edge{Int64}})
