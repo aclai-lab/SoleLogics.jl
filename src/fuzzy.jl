@@ -113,9 +113,9 @@ struct HeytingAlgebra{
         @assert length(domain) >= 2 "Cannot instantiate `HeytingAlgebra` with domain " *
             "of length $(length(domain)). Need to specify at least a top and a bottom " *
             "element (to be placed at positions 1 and 2, respectively)."
-        @assert isbounded(domain, graph) "Tried to define an HeytingAlgebra with a graph" *
+        @assert isbounded(domain, graph) "Tried to define an HeytingAlgebra with a graph " *
             "which is not a bounded lattice."
-        @assert iscomplete(domain, graph) "Tried to define an HeytingAlgebra" *
+        @assert iscomplete(domain, graph) "Tried to define an HeytingAlgebra " *
             "with a graph which is not a complete lattice."
         return new{D,G}(domain, graph, transitiveclosure(graph))
     end
@@ -271,7 +271,7 @@ function succeedes(
 end
 
 function succeedes(h::HeytingAlgebra, α::HeytingTruth, β::HeytingTruth)
-    return succeedes(domain(h), transitiveclosure(h), β, α)
+    return succeedes(domain(h), transitiveclosure(h), α, β)
 end
 
 function succeedes(h::HeytingAlgebra, α::HeytingTruth, β::BooleanTruth)
@@ -678,4 +678,3 @@ end
     function simplify(c::Connective, (α,)::Tuple{BooleanTruth}, h::HeytingAlgebra)
     return simplify(c, (convert(HeytingTruth, α),), h)
 end
-

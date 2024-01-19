@@ -105,7 +105,7 @@ include("syntax-utils.jl")
 export HeytingTruth, HeytingAlgebra
 export label, index
 export domain, top, bot, graph
-export precedes, succeedes, precedeq, succedeq
+export precedes, succeedes, precedeq, succeedeq
 export collatetruth
 export @heytingtruths, @heytingalgebra
 
