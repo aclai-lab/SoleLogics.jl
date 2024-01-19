@@ -51,8 +51,8 @@ syntaxstring(t::HeytingTruth; kwargs...) = label(t)
 
 convert(::Type{HeytingTruth}, t::HeytingTruth) = t
 
-function convert(::Type{HeytingTruth}, booleantruth::BooleanTruth)
-    return istop(booleantruth) ? HeytingTruth("⊤", 1) : HeytingTruth("⊥", 2)
+function convert(::Type{HeytingTruth}, t::BooleanTruth)
+    return istop(t) ? HeytingTruth("⊤", 1) : HeytingTruth("⊥", 2)
 end
 
 # Convert an object of type HeytingTruth to an object of type `BooleanTruth` (if possible).
@@ -80,31 +80,35 @@ end
 # - https://github.com/scheinerman/SimplePosets.jl
 # - https://github.com/simonschoelly/SimpleValueGraphs.jl
 """
-    struct HeytingAlgebra{D<:AbstractVector{HeytingTruth},G<:Graphs.SimpleGraphs.SimpleDiGraph}
+    struct HeytingAlgebra{D<:AbstractVector{HeytingTruth},
+                          G<:Graphs.SimpleGraphs.SimpleDiGraph}
         domain::D
         graph::G
+        transitiveclosure::G
     end
 
 A Heyting algebra, represented explicitly
 as a domain of truth values, and a graph over them encoding a partial order with
 specific constraints (see [here](https://en.m.wikipedia.org/wiki/Heyting_algebra)).
 ⊤ and ⊥ are always the first and the second element of each algebra, respectively.
+A copy of the graph under transitive closure is also stored for optimization purposes.
 
 See also [`@heytingalgebra`](@ref), [`HeytingTruth`](@ref)
 """
 struct HeytingAlgebra{
     D<:AbstractVector{HeytingTruth},
-    G<:Graphs.SimpleGraphs.SimpleDiGraph,
+    G<:Graphs.SimpleGraphs.SimpleDiGraph
 }
     domain::D
     graph::G # directed graph where (α, β) represents α ≺ β
+    transitiveclosure::G # transitive closure of the graph (useful for some optimization)
 
     function HeytingAlgebra(
         domain::D,
-        graph::G,
+        graph::G
     ) where {
         D<:AbstractVector{HeytingTruth},
-        G<:Graphs.SimpleGraphs.SimpleDiGraph,
+        G<:Graphs.SimpleGraphs.SimpleDiGraph
     }
         @assert length(domain) >= 2 "Cannot instantiate `HeytingAlgebra` with domain " *
             "of length $(length(domain)). Need to specify at least a top and a bottom " *
@@ -113,7 +117,7 @@ struct HeytingAlgebra{
             "which is not a bounded lattice."
         @assert iscomplete(domain, graph) "Tried to define an HeytingAlgebra" *
             "with a graph which is not a complete lattice."
-        return new{D,G}(domain, graph)
+        return new{D,G}(domain, graph, transitiveclosure(graph))
     end
 
     function HeytingAlgebra(domain::Vector{HeytingTruth}, relations::Vector{Edge{Int64}})
@@ -125,97 +129,355 @@ domain(h::HeytingAlgebra) = h.domain
 top(h::HeytingAlgebra) = h.domain[1]
 bot(h::HeytingAlgebra) = h.domain[2]
 graph(h::HeytingAlgebra) = h.graph
+Graphs.transitiveclosure(h::HeytingAlgebra) = h.transitiveclosure
 
 cardinality(h::HeytingAlgebra) = length(domain(h))
 isboolean(h::HeytingAlgebra) = (cardinality(h) == 2)
 
-Graphs.has_path(graph::AbstractGraph, α::HeytingTruth, β::HeytingTruth) = has_path(graph, index(α), index(β))
+function Graphs.has_path(
+    g::G,
+    α::HeytingTruth,
+    β::HeytingTruth
+) where {
+    G<:Graphs.SimpleGraphs.SimpleDiGraph
+}
+    return has_path(g, index(α), index(β))
+end
 
-function isbounded(domain::Vector{HeytingTruth}, graph::Graphs.SimpleGraphs.SimpleDiGraph)
-    for α ∈ domain
-        if !has_path(graph, HeytingTruth(⊥), α) || !has_path(graph, α, HeytingTruth(⊤))
+function isbounded(
+    d::D,
+    g::G
+) where {
+    D<:AbstractVector{HeytingTruth},
+    G<:Graphs.SimpleGraphs.SimpleDiGraph
+}
+    for α ∈ d
+        if !has_path(g, HeytingTruth(⊥), α) || !has_path(g, α, HeytingTruth(⊤))
             return false
         end
     end
     return true
 end
 
-function Graphs.inneighbors(d::Vector{HeytingTruth}, g::Graphs.SimpleGraphs.SimpleDiGraph, t::HeytingTruth)::Vector{HeytingTruth}
+function Graphs.inneighbors(
+    d::D,
+    g::G,
+    t::HeytingTruth
+) where {
+    D<:AbstractVector{HeytingTruth},
+    G<:Graphs.SimpleGraphs.SimpleDiGraph
+}
     return d[inneighbors(g, index(t))]
 end
 
-function Graphs.outneighbors(d::Vector{HeytingTruth}, g::Graphs.SimpleGraphs.SimpleDiGraph, t::HeytingTruth)::Vector{HeytingTruth}
+function Graphs.inneighbors(h::HeytingAlgebra, t::HeytingTruth)
+    return domain(h)[inneighbors(graph(h), index(t))]
+end
+
+function Graphs.outneighbors(
+    d::D,
+    g::G,
+    t::HeytingTruth
+) where {
+    D<:AbstractVector{HeytingTruth},
+    G<:Graphs.SimpleGraphs.SimpleDiGraph
+}
     return d[outneighbors(g, index(t))]
 end
 
-precedes(d::Vector{HeytingTruth}, ctg::Graphs.SimpleGraphs.SimpleDiGraph, α::HeytingTruth, β::HeytingTruth) = β ∈ outneighbors(d, ctg, α)
-
-precedeq(d::Vector{HeytingTruth}, ctg::Graphs.SimpleGraphs.SimpleDiGraph, α::HeytingTruth, β::HeytingTruth) = α == β ||  precedes(d, ctg, α, β)
-
-succeedes(d::Vector{HeytingTruth}, ctg::Graphs.SimpleGraphs.SimpleDiGraph, α::HeytingTruth, β::HeytingTruth) = precedes(d, ctg, β, α)
-
-succeedeq(d::Vector{HeytingTruth}, ctg::Graphs.SimpleGraphs.SimpleDiGraph, α::HeytingTruth, β::HeytingTruth) = α == β ||  succeedes(d, ctg, α, β)
-
-greatervalues(d::Vector{HeytingTruth}, ctg::Graphs.SimpleGraphs.SimpleDiGraph, α::HeytingTruth) = union(HeytingTruth[α], outneighbors(d, ctg, α))
-
-function upperbounds(d::Vector{HeytingTruth}, ctg::Graphs.SimpleGraphs.SimpleDiGraph, α::HeytingTruth, β::HeytingTruth)
-    return greatervalues(d, ctg, α)[in.(greatervalues(d, ctg, α), Ref(greatervalues(d, ctg, β)))]
+function Graphs.outneighbors(h::HeytingAlgebra, t::HeytingTruth)
+    return domain(h)[outneighbors(graph(h), index(t))]
 end
 
-function isleastupperbound(d::Vector{HeytingTruth}, ctg::Graphs.SimpleGraphs.SimpleDiGraph, α::HeytingTruth, ubs::Vector{HeytingTruth})
+# α ≺ β (note: in general, α ⊀ β ≠ α ⪰ β)
+function precedes(
+    d::D,
+    tc::G,
+    α::HeytingTruth,
+    β::HeytingTruth
+) where {
+    D<:AbstractVector{HeytingTruth},
+    G<:Graphs.SimpleGraphs.SimpleDiGraph
+}
+    return β ∈ outneighbors(d, tc, α)
+end
+
+function precedes(h::HeytingAlgebra, α::HeytingTruth, β::HeytingTruth) 
+    return precedes(domain(h), transitiveclosure(h), α, β)
+end
+
+function precedes(h::HeytingAlgebra, α::HeytingTruth, β::BooleanTruth)
+    return precedes(domain(h), transitiveclosure(h), α, convert(HeytingTruth, β))
+end
+
+function precedes(h::HeytingAlgebra, α::BooleanTruth, β::HeytingTruth)
+    return precedes(domain(h), transitiveclosure(h), convert(HeytingTruth, α), β)
+end
+
+function precedes(h::HeytingAlgebra, α::BooleanTruth, β::BooleanTruth)
+    return precedes(
+        domain(h),
+        transitiveclosure(h),
+        convert(HeytingTruth, α),
+        convert(HeytingTruth, β)
+    )
+end
+
+# α ⪯ β (note: in general, α ⪯̸ β ≠ α ≻ β)
+function precedeq(
+    d::D,
+    tc::G,
+    α::HeytingTruth,
+    β::HeytingTruth
+) where {
+    D<:AbstractVector{HeytingTruth},
+    G<:Graphs.SimpleGraphs.SimpleDiGraph
+}
+    return α == β || precedes(d, tc, α, β)
+end
+
+function precedeq(h::HeytingAlgebra, α::HeytingTruth, β::HeytingTruth)
+    return α == β || precedes(domain(h), transitiveclosure(h), α, β)
+end
+
+function precedeq(h::HeytingAlgebra, α::HeytingTruth, β::BooleanTruth)
+    return precedeq(h, α, convert(HeytingTruth, β))
+end
+
+function precedeq(h::HeytingAlgebra, α::BooleanTruth, β::HeytingTruth)
+    return precedeq(h, convert(HeytingTruth, α), β)
+end
+
+function precedeq(h::HeytingAlgebra, α::BooleanTruth, β::BooleanTruth)
+    return α == β || precedes(
+        domain(h),
+        transitiveclosure(h),
+        convert(HeytingTruth, α),
+        convert(HeytingTruth, β)
+    )
+end
+
+# α ≻ β (note: in general, α ⊁ β ≠ α ⪯ β)
+function succeedes(
+    d::D,
+    tc::G,
+    α::HeytingTruth,
+    β::HeytingTruth
+) where {
+    D<:AbstractVector{HeytingTruth},
+    G<:Graphs.SimpleGraphs.SimpleDiGraph
+}
+    return β ∈ inneighbors(d, tc, α)
+end
+
+function succeedes(h::HeytingAlgebra, α::HeytingTruth, β::HeytingTruth)
+    return succeedes(domain(h), transitiveclosure(h), β, α)
+end
+
+function succeedes(h::HeytingAlgebra, α::HeytingTruth, β::BooleanTruth)
+    return succeedes(domain(h), transitiveclosure(h), α, convert(HeytingTruth, β))
+end
+
+function succeedes(h::HeytingAlgebra, α::BooleanTruth, β::HeytingTruth)
+    return succeedes(domain(h), transitiveclosure(h), convert(HeytingTruth, α), β)
+end
+
+function succeedes(h::HeytingAlgebra, α::BooleanTruth, β::BooleanTruth)
+    return succeedes(
+        domain(h),
+        transitiveclosure(h),
+        convert(HeytingTruth, α),
+        convert(HeytingTruth, β)
+    )
+end
+
+# α ⪰ β (note: in general, α ⪰̸ β ≠ α ≺ β)
+function succeedeq(
+    d::D,
+    tc::G,
+    α::HeytingTruth,
+    β::HeytingTruth
+) where {
+    D<:AbstractVector{HeytingTruth},
+    G<:Graphs.SimpleGraphs.SimpleDiGraph
+}
+    return α == β || succeedes(d, tc, α, β)
+end
+
+function succeedeq(h::HeytingAlgebra, α::HeytingTruth, β::HeytingTruth)
+    return α == β || succeedes(domain(h), transitiveclosure(h), α, β)
+end
+
+function succeedeq(h::HeytingAlgebra, α::HeytingTruth, β::BooleanTruth)
+    return succeedeq(h, α, convert(HeytingTruth, β))
+end
+
+function succeedeq(h::HeytingAlgebra, α::BooleanTruth, β::HeytingTruth)
+    return succeedeq(h, convert(HeytingTruth, α), β)
+end
+
+function succeedeq(h::HeytingAlgebra, α::BooleanTruth, β::BooleanTruth)
+    return α == β || succeedes(
+        domain(h),
+        transitiveclosure(h),
+        convert(HeytingTruth, α),
+        convert(HeytingTruth, β)
+    )
+end
+
+function greatervalues(
+    d::D,
+    tc::G,
+    α::HeytingTruth
+) where {
+    D<:AbstractVector{HeytingTruth},
+    G<:Graphs.SimpleGraphs.SimpleDiGraph
+}
+    return outneighbors(d, tc, α)
+end
+
+function upperbounds(
+    d::D,
+    tc::G,
+    α::HeytingTruth,
+    β::HeytingTruth
+) where {
+    D<:AbstractVector{HeytingTruth},
+    G<:Graphs.SimpleGraphs.SimpleDiGraph
+}
+    geqα = push!(greatervalues(d, tc, α), α)
+    geqβ = push!(greatervalues(d, tc, β), β)
+    return geqα[in.(geqα, Ref(geqβ))]
+end
+
+function isleastupperbound(
+    d::D,
+    tc::G,
+    α::HeytingTruth,
+    ubs::D
+) where {
+    D<:AbstractVector{HeytingTruth},
+    G<:Graphs.SimpleGraphs.SimpleDiGraph
+}
     for ub ∈ ubs
-        if !precedeq(d, ctg, α, ub)
+        if !precedeq(d, tc, α, ub)  # note: in general, α ⪯̸ β ≠ α ≻ β
             return false
         end
     end
     return true
 end
 
-function leastupperbound(d::Vector{HeytingTruth}, ctg::Graphs.SimpleGraphs.SimpleDiGraph, α::HeytingTruth, β::HeytingTruth)
-    ubs = upperbounds(d, ctg, α, β)
+function leastupperbound(
+    d::D,
+    tc::G,
+    α::HeytingTruth,
+    β::HeytingTruth
+) where {
+    D<:AbstractVector{HeytingTruth},
+    G<:Graphs.SimpleGraphs.SimpleDiGraph
+}
+    ubs = upperbounds(d, tc, α, β)
     for ub ∈ ubs
-        if isleastupperbound(d, ctg, ub, ubs)
+        if isleastupperbound(d, tc, ub, ubs)
             return ub
         end
     end
     return nothing
 end
 
-lesservalues(d::Vector{HeytingTruth}, ctg::Graphs.SimpleGraphs.SimpleDiGraph, α::HeytingTruth) = union(HeytingTruth[α], inneighbors(d, ctg, α))
-
-function lowerbounds(d::Vector{HeytingTruth}, ctg::Graphs.SimpleGraphs.SimpleDiGraph, α::HeytingTruth, β::HeytingTruth)
-    return lesservalues(d, ctg, α)[in.(lesservalues(d, ctg, α), Ref(lesservalues(d, ctg, β)))]
+function lesservalues(
+    d::D,
+    tc::G,
+    α::HeytingTruth
+) where {
+    D<:AbstractVector{HeytingTruth},
+    G<:Graphs.SimpleGraphs.SimpleDiGraph
+}
+    return inneighbors(d, tc, α)
 end
 
-function isgreatestlowerbound(d::Vector{HeytingTruth}, ctg::Graphs.SimpleGraphs.SimpleDiGraph, α::HeytingTruth, lbs::Vector{HeytingTruth})
+function lowerbounds(
+    d::D,
+    tc::G,
+    α::HeytingTruth,
+    β::HeytingTruth
+) where {
+    D<:AbstractVector{HeytingTruth},
+    G<:Graphs.SimpleGraphs.SimpleDiGraph
+}
+    leqα = push!(lesservalues(d, tc, α), α)
+    leqβ = push!(lesservalues(d, tc, β), β)
+    return leqα[in.(leqα, Ref(leqβ))]
+end
+
+function isgreatestlowerbound(
+    d::D,
+    tc::G,
+    α::HeytingTruth,
+    lbs::D
+) where {
+    D<:AbstractVector{HeytingTruth},
+    G<:Graphs.SimpleGraphs.SimpleDiGraph
+}
     for lb ∈ lbs
-        if !succeedeq(d, ctg, α, lb)
+        if !succeedeq(d, tc, α, lb) # note: in general, α ⪰̸ β ≠ α ≺ β
             return false
         end
     end
     return true
 end
 
-function greatestlowerbound(d::Vector{HeytingTruth}, ctg::Graphs.SimpleGraphs.SimpleDiGraph, α::HeytingTruth, β::HeytingTruth)
-    lbs = lowerbounds(d, ctg, α, β)
+function greatestlowerbound(
+    d::D,
+    tc::G,
+    α::HeytingTruth,
+    β::HeytingTruth
+) where {
+    D<:AbstractVector{HeytingTruth},
+    G<:Graphs.SimpleGraphs.SimpleDiGraph
+}
+    lbs = lowerbounds(d, tc, α, β)
     for lb ∈ lbs
-        if isgreatestlowerbound(d, ctg, lb, lbs)
+        if isgreatestlowerbound(d, tc, lb, lbs)
             return lb
         end
     end
     return nothing
 end
 
-function iscomplete(d::Vector{HeytingTruth}, g::Graphs.SimpleGraphs.SimpleDiGraph)
-    ctg = transitiveclosure(g)
+function iscomplete(
+    d::D,
+    g::G
+) where {
+    D<:AbstractVector{HeytingTruth},
+    G<:Graphs.SimpleGraphs.SimpleDiGraph
+}
+    tc = transitiveclosure(g)
     for α ∈ d
         for β ∈ d
-            if α != β && (isnothing(leastupperbound(d, ctg, α, β)) || isnothing(greatestlowerbound(d, ctg, α, β)))
+            if α != β && (
+                isnothing(leastupperbound(d, tc, α, β)) ||
+                isnothing(greatestlowerbound(d, tc, α, β))
+            )
                 return false
             end
         end
     end
     return true
+end
+
+Graphs.Edge(t::Tuple{HeytingTruth, HeytingTruth}) = Edge(index(t[1]), index(t[2]))
+
+function Graphs.Edge(t::Tuple{HeytingTruth, BooleanTruth})
+    return Edge((t[1], convert(HeytingTruth, t[2])))
+end
+
+function Graphs.Edge(t::Tuple{BooleanTruth, HeytingTruth})
+    return Edge((convert(HeytingTruth, t[1]), t[2]))
+end
+
+function Graphs.Edge(t::Tuple{BooleanTruth, BooleanTruth})
+    return Edge((convert(HeytingTruth, t[1]), convert(HeytingTruth, t[2])))
 end
 
 """
@@ -226,7 +488,8 @@ Instantiate a collection of [`HeytingTruth`](@ref)s and return them as a vector.
 treated as `HeytingTruth`s with index 1 and 2, respectively.
 
 !!! info
-    `HeytingTruth`s instantiated with this macro are defined in the global scope as constants.
+    `HeytingTruth`s instantiated with this macro are defined in the global scope as
+    constants.
 
 # Examples
 ```julia-repl
@@ -259,14 +522,15 @@ end
     @heytingalgebra(values, relations...)
 
 Construct a [`HeytingAlgebra`](@ref)
-with domain containing `values` and graph represented by the tuples in `relations`, with each
-tuple (α, β) representing a direct edge in the graph asserting α ≺ β.
+with domain containing `values` and graph represented by the tuples in `relations`, with
+each tuple (α, β) representing a direct edge in the graph asserting α ≺ β.
 
 # Examples
 ```julia-repl
 
 julia> myalgebra = SoleLogics.@heytingalgebra (α, β) (⊥, α) (⊥, β) (α, ⊤) (β, ⊤)
-HeytingAlgebra(HeytingTruth[⊤, ⊥, α, β], SimpleDiGraph{Int64}(4, [Int64[], [3, 4], [1], [1]], [[3, 4], Int64[], [2], [2]]))
+HeytingAlgebra(HeytingTruth[⊤, ⊥, α, β], SimpleDiGraph{Int64}(4, [Int64[], [3, 4], [1], [1]]
+, [[3, 4], Int64[], [2], [2]]))
 
 See also [`HeytingTruth`](@ref), [`@heytingalgebra`](@ref)
 """
@@ -280,113 +544,112 @@ macro heytingalgebra(values, relations...)
     end |> esc
 end
 
-Graphs.Edge(t::Tuple{HeytingTruth, HeytingTruth}) = Edge(index(t[1]), index(t[2]))
-Graphs.Edge(t::Tuple{HeytingTruth, BooleanTruth}) = Edge((t[1], convert(HeytingTruth, t[2])))
-Graphs.Edge(t::Tuple{BooleanTruth, HeytingTruth}) = Edge((convert(HeytingTruth, t[1]), t[2]))
-Graphs.Edge(t::Tuple{BooleanTruth, BooleanTruth}) = Edge((convert(HeytingTruth, t[1]), convert(HeytingTruth, t[2])))
-
-function Graphs.inneighbors(heytingalgebra::HeytingAlgebra, t::HeytingTruth)::Vector{HeytingTruth}
-    return domain(heytingalgebra)[inneighbors(graph(heytingalgebra), index(t))]
-end
-
-function Graphs.outneighbors(heytingalgebra::HeytingAlgebra, t::HeytingTruth)::Vector{HeytingTruth}
-    return domain(heytingalgebra)[outneighbors(graph(heytingalgebra), index(t))]
-end
-
-# α ≺ β
-function precedes(h::HeytingAlgebra, α::HeytingTruth, β::HeytingTruth)
-    if α ∈ inneighbors(h, β)
-        return true
-    else
-        for γ ∈ outneighbors(h, α)
-            if precedes(h, γ, β)
-                return true
-            end
-        end
-        return false
-    end
-end
-precedes(h::HeytingAlgebra, α::HeytingTruth, β::BooleanTruth) = precedes(h, α, convert(HeytingTruth, β))
-precedes(h::HeytingAlgebra, α::BooleanTruth, β::HeytingTruth) = precedes(h, convert(HeytingTruth, α), β)
-precedes(h::HeytingAlgebra, α::BooleanTruth, β::BooleanTruth) = precedes(h, convert(HeytingTruth, α), convert(HeytingTruth, β))
-
-# β ≺ α
-succeedes(h::HeytingAlgebra, α::HeytingTruth, β::HeytingTruth) = precedes(h, β, α)
-succeedes(h::HeytingAlgebra, α::HeytingTruth, β::BooleanTruth) = succeedes(h, α, convert(HeytingTruth, β))
-succeedes(h::HeytingAlgebra, α::BooleanTruth, β::HeytingTruth) = succeedes(h, convert(HeytingTruth, α), β)
-succeedes(h::HeytingAlgebra, α::BooleanTruth, β::BooleanTruth) = succeedes(h, convert(HeytingTruth, α), convert(HeytingTruth, β))
-
-# α ⪯ β
-precedeq(h::HeytingAlgebra, α::HeytingTruth, β::HeytingTruth) = α == β ||  precedes(h, α, β)
-precedeq(h::HeytingAlgebra, α::HeytingTruth, β::BooleanTruth) = precedeq(h, α, convert(HeytingTruth, β))
-precedeq(h::HeytingAlgebra, α::BooleanTruth, β::HeytingTruth) = precedeq(h, convert(HeytingTruth, α), β)
-precedeq(h::HeytingAlgebra, α::BooleanTruth, β::BooleanTruth) = precedeq(h, convert(HeytingTruth, α), convert(HeytingTruth, β))
-
-# β ⪯ α
-succeedeq(h::HeytingAlgebra, α::HeytingTruth, β::HeytingTruth) = α == β ||  succeedes(h, α, β)
-succeedeq(h::HeytingAlgebra, α::HeytingTruth, β::BooleanTruth) = succeedeq(h, α, convert(HeytingTruth, β))
-succeedeq(h::HeytingAlgebra, α::BooleanTruth, β::HeytingTruth) = succeedeq(h, convert(HeytingTruth, α), β)
-succeedeq(h::HeytingAlgebra, α::BooleanTruth, β::BooleanTruth) = succeedeq(h, convert(HeytingTruth, α), convert(HeytingTruth, β))
-
 # Meet (greatest lower bound) between values α and β
-function collatetruth(::typeof(∧), (α, β)::NTuple{N, T where T<:HeytingTruth}, h::HeytingAlgebra) where {N}
-    if precedeq(h, α, β)
-        return α
-    elseif succeedes(h, α, β)
-        return β
-    else
-        for γ ∈ inneighbors(h, α)
-            if γ ∈ inneighbors(h, β)
-                return γ
-            else
-                collatetruth(∧, (α, β), h)
-            end
-        end
-    end
+function collatetruth(
+    ::typeof(∧),
+    (α, β)::NTuple{N, T where T<:HeytingTruth},
+    h::HeytingAlgebra
+) where {
+    N
+}
+    return greatestlowerbound(domain(h), transitiveclosure(h), α, β)
 end
 
 # Join (least upper bound) between values α and β
-function collatetruth(::typeof(∨), (α, β)::NTuple{N, T where T<:HeytingTruth}, h::HeytingAlgebra) where {N}
-    if succeedeq(h, α, β)
-        return α
-    elseif precedes(h, α, β)
-        return β
-    else
-        for γ ∈ outneighbors(h, α)
-            if γ ∈ outneighbors(h, β)
-                return γ
-            else
-                return collatetruth(∨, (α, β), h)
-            end
-        end
-    end
+function collatetruth(
+    ::typeof(∨),
+    (α, β)::NTuple{N, T where T<:HeytingTruth},
+    h::HeytingAlgebra
+) where {
+    N
+}
+    return leastupperbound(domain(h), transitiveclosure(h), α, β)
 end
 
-# Implication/pseudo-complement α → β = join(γ | meet(α, γ) = β)
-function collatetruth(::typeof(→), (α, β)::NTuple{N, T where T<:HeytingTruth}, h::HeytingAlgebra) where {N}
+# Implication/pseudo-complement α → β = join(γ | meet(α, γ) ⪯ β)
+function collatetruth(
+    ::typeof(→),
+    (α, β)::NTuple{N, T where T<:HeytingTruth},
+    h::HeytingAlgebra
+) where {
+    N
+}
     η = bot(h)
     for γ ∈ domain(h)
         if precedeq(h, collatetruth(∧, (α, γ), h), β)
             η = collatetruth(∨, (η, γ), h)
-        else
-            continue
         end
     end
     return η
 end
 
-collatetruth(c::Connective, (α, β)::Tuple{HeytingTruth, BooleanTruth}, h::HeytingAlgebra) = collatetruth(c, (α, convert(HeytingTruth, β)), h)
-collatetruth(c::Connective, (α, β)::Tuple{BooleanTruth, HeytingTruth}, h::HeytingAlgebra) = collatetruth(c, (convert(HeytingTruth, α), β), h)
-collatetruth(c::Connective, (α, β)::Tuple{BooleanTruth, BooleanTruth}, h::HeytingAlgebra) = collatetruth(c, (convert(HeytingTruth, α), convert(HeytingTruth, β)), h)
+function collatetruth(
+    c::Connective,
+    (α, β)::Tuple{HeytingTruth, BooleanTruth},
+    h::HeytingAlgebra
+)
+    return collatetruth(c, (α, convert(HeytingTruth, β)), h)
+end
 
-simplify(c::Connective, (α, β)::Tuple{HeytingTruth,HeytingTruth}, h::HeytingAlgebra) = collatetruth(c, (α, β), h)
-simplify(c::Connective, (α, β)::Tuple{HeytingTruth,BooleanTruth}, h::HeytingAlgebra) = collatetruth(c, (α, convert(HeytingTruth, β)), h)
-simplify(c::Connective, (α, β)::Tuple{BooleanTruth,HeytingTruth}, h::HeytingAlgebra) = collatetruth(c, (convert(HeytingTruth, α), β), h)
-simplify(c::Connective, (α, β)::Tuple{BooleanTruth,BooleanTruth}, h::HeytingAlgebra) = collatetruth(c, (convert(HeytingTruth, α), convert(HeytingTruth, β)), h)
+function collatetruth(
+    c::Connective,
+    (α, β)::Tuple{BooleanTruth, HeytingTruth},
+    h::HeytingAlgebra
+)
+    return collatetruth(c, (convert(HeytingTruth, α), β), h)
+end
 
-# Note: output type can both be BooleanTruth or HeytingTruth, i.e., the following check can be used effectively
-# convert(HeytingTruth, interpret(φ, td8)) == convert(HeytingTruth,interpret(φ, td8, booleanalgebra)))
-function interpret(φ::SyntaxBranch, i::AbstractAssignment, h::HeytingAlgebra, args...; kwargs...)::Formula
+function collatetruth(
+    c::Connective,
+    (α, β)::Tuple{BooleanTruth, BooleanTruth},
+    h::HeytingAlgebra
+)
+    return collatetruth(c, (convert(HeytingTruth, α), convert(HeytingTruth, β)), h)
+end
+
+function simplify(
+    c::Connective,
+    (α, β)::Tuple{HeytingTruth,HeytingTruth},
+    h::HeytingAlgebra
+)
+    return collatetruth(c, (α, β), h)
+end
+
+    function simplify(
+    c::Connective,
+    (α, β)::Tuple{HeytingTruth,BooleanTruth},
+    h::HeytingAlgebra
+)
+    return collatetruth(c, (α, convert(HeytingTruth, β)), h)
+end
+
+    function simplify(
+    c::Connective,
+    (α, β)::Tuple{BooleanTruth,HeytingTruth},
+    h::HeytingAlgebra
+)
+    return collatetruth(c, (convert(HeytingTruth, α), β), h)
+end
+
+    function simplify(
+    c::Connective,
+    (α, β)::Tuple{BooleanTruth,BooleanTruth},
+    h::HeytingAlgebra
+)
+    return collatetruth(c, (convert(HeytingTruth, α), convert(HeytingTruth, β)), h)
+end
+
+# Note: output type can both be BooleanTruth or HeytingTruth, i.e.,
+# the following check can be used effectively
+# convert(HeytingTruth, interpret(φ, td8)) == convert(HeytingTruth, interpret(φ, td8, ba)))
+# where ba is a BooleanAlgebra specified as an HeytingAlgebra
+function interpret(
+    φ::SyntaxBranch,
+    i::AbstractAssignment,
+    h::HeytingAlgebra,
+    args...;
+    kwargs...
+)
     return simplify(token(φ), Tuple(
         [interpret(ch, i, h, args...; kwargs...) for ch in children(φ)]
     ), h)
@@ -403,7 +666,16 @@ function collatetruth(::typeof(¬), (α,)::Tuple{HeytingTruth}, h::HeytingAlgebr
         return error("¬ operation isn't defined outside of BooleanAlgebra")
     end
 end
-collatetruth(c::Connective, (α,)::Tuple{BooleanTruth}, h::HeytingAlgebra) = collatetruth(c, convert(HeytingTruth, α), h)
 
-simplify(c::Connective, (α,)::Tuple{HeytingTruth}, h::HeytingAlgebra) = collatetruth(c, (α,), h)
-simplify(c::Connective, (α,)::Tuple{BooleanTruth}, h::HeytingAlgebra) = simplify(c, (convert(HeytingTruth, α),), h)
+function collatetruth(c::Connective, (α,)::Tuple{BooleanTruth}, h::HeytingAlgebra)
+    return collatetruth(c, convert(HeytingTruth, α), h)
+end
+
+function simplify(c::Connective, (α,)::Tuple{HeytingTruth}, h::HeytingAlgebra)
+    return collatetruth(c, (α,), h)
+end
+
+    function simplify(c::Connective, (α,)::Tuple{BooleanTruth}, h::HeytingAlgebra)
+    return simplify(c, (convert(HeytingTruth, α),), h)
+end
+
