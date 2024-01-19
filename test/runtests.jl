@@ -13,27 +13,27 @@ end
 println("Julia version: ", VERSION)
 
 test_suites = [
-    # ("Core", ["core.jl",]),
-    # ("Parse", ["parse.jl",]),
-    # ("Random", ["random.jl",]),
-    # ("Normalize", ["normalize.jl",]),
-    # ("Syntax Utils", ["syntax-utils.jl",]),
+    ("Core", ["core.jl",]),
+    ("Parse", ["parse.jl",]),
+    ("Random", ["random.jl",]),
+    ("Normalize", ["normalize.jl",]),
+    ("Syntax Utils", ["syntax-utils.jl",]),
 
-    # ("Formula Generation", ["formulas/generation.jl",]),
-    # ("Formulas I/O", ["formulas/input.jl",]),
+    ("Formula Generation", ["formulas/generation.jl",]),
+    ("Formulas I/O", ["formulas/input.jl",]),
 
-    # ("Operators", ["logics/operators.jl"]),
-    # # ("Logics", ["logics/logics.jl"]),
+    ("Operators", ["logics/operators.jl"]),
+    # ("Logics", ["logics/logics.jl"]),
 
-    # ("Algebras: worlds", ["algebras/worlds.jl",]),
-    # ("Algebras: frames", ["algebras/frames.jl",]),
+    ("Algebras: worlds", ["algebras/worlds.jl",]),
+    ("Algebras: frames", ["algebras/frames.jl",]),
 
-    # ("Kripke word", ["kripke-word.jl",]),
-    # ("Kripke image", ["kripke-image.jl",]),
+    ("Kripke word", ["kripke-word.jl",]),
+    ("Kripke image", ["kripke-image.jl",]),
 
-    # ("Type Hierarchy Update", ["type-hierarchy-update.jl"]),
+    ("Type Hierarchy Update", ["type-hierarchy-update.jl"]),
 
-    # ("Pluto Demo", ["$(dirname(dirname(pathof(SoleLogics))))/pluto-demo.jl", ]),
+    ("Pluto Demo", ["$(dirname(dirname(pathof(SoleLogics))))/pluto-demo.jl", ]),
 
     ("Fuzzy", ["fuzzy.jl",]),
 ]
