@@ -690,7 +690,7 @@ myalgebra = HeytingAlgebra(domain, relations)
 using Random
 
 booleanalgebra = @heytingalgebra () (⊥, ⊤)
-myalphabet = @atoms a b c d e f g
+myalphabet = Atom.(["a", "b", "c", "d", "e", "f", "g"])
 
 for i ∈ 20:200
     height = div(i, 10)
