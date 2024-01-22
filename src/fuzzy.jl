@@ -325,6 +325,18 @@ function succeedeq(h::HeytingAlgebra, α::BooleanTruth, β::BooleanTruth)
     )
 end
 
+"""
+Return all maximal members of h not above t.
+"""
+function maximalmembers(h::HeytingAlgebra, t::HeytingTruth)
+    return inneighbors(h, t)
+end
+
+"Return all minimal members of h not below t"
+function minimalmembers(h::HeytingAlgebra, t::HeytingTruth)
+    return outneighbors(h, t)
+end
+
 function greatervalues(
     d::D,
     tc::G,

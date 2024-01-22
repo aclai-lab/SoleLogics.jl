@@ -107,6 +107,7 @@ export label, index
 export domain, top, bot, graph
 export precedes, succeedes, precedeq, succeedeq
 export collatetruth
+export maximalmembers, minimalmembers
 export @heytingtruths, @heytingalgebra
 
 include("fuzzy.jl")
