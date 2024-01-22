@@ -332,7 +332,9 @@ function maximalmembers(h::HeytingAlgebra, t::HeytingTruth)
     return inneighbors(h, t)
 end
 
-"Return all minimal members of h not below t"
+"""
+Return all minimal members of h not below t
+"""
 function minimalmembers(h::HeytingAlgebra, t::HeytingTruth)
     return outneighbors(h, t)
 end
@@ -406,6 +408,10 @@ function lesservalues(
     G<:Graphs.SimpleGraphs.SimpleDiGraph
 }
     return inneighbors(d, tc, α)
+end
+
+function lesservalues(h::HeytingAlgebra, t::HeytingTruth)
+    return lesservalues(domain(h), transitiveclosure(h), t)
 end
 
 function lowerbounds(
