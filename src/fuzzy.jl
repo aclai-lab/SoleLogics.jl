@@ -328,16 +328,8 @@ end
 """
 Return all maximal members of h not above t.
 """
-function maximalmembers(h::HeytingAlgebra, t::HeytingTruth)   
-    if istop(t)
-        return Vector{HeytingTruth}([t])
-    else 
-        mm = Vector{HeytingTruth}()
-        for o ∈ outneighbors(h, t)
-            append!(mm, inneighbors(h, o))
-        end
-        return mm
-    end
+function maximalmembers(h::HeytingAlgebra, t::HeytingTruth)
+    return inneighbors(h, t)
 end
 
 maximalmembers(h::HeytingAlgebra, t::BooleanTruth) = maximalmembers(h, HeytingTruth(t))
@@ -346,15 +338,7 @@ maximalmembers(h::HeytingAlgebra, t::BooleanTruth) = maximalmembers(h, HeytingTr
 Return all minimal members of h not below t
 """
 function minimalmembers(h::HeytingAlgebra, t::HeytingTruth)
-    if isbot(t)
-        return Vector{HeytingTruth}([t])
-    else
-        mm = Vector{HeytingTruth}()
-        for o ∈ inneighbors(h, t)
-            append!(mm, outneighbors(h, o))
-        end
-        return mm
-    end
+    return outneighbors(h, t)
 end
 
 minimalmembers(h::HeytingAlgebra, t::BooleanTruth) = minimalmembers(h, HeytingTruth(t))

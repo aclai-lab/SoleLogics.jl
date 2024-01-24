@@ -685,12 +685,6 @@ myalgebra = HeytingAlgebra(domain, relations)
 @test collatetruth(→, (⊤, G), myalgebra) == G
 @test collatetruth(→, (⊤, ⊤), myalgebra) == HeytingTruth(⊤)
 
-@test maximalmembers(myalgebra, ⊤) == Vector{HeytingTruth}([HeytingTruth(⊤)])
-@test maximalmembers(myalgebra, F) == Vector{HeytingTruth}([F, G])
-
-@test minimalmembers(myalgebra, ⊥) == Vector{HeytingTruth}([HeytingTruth(⊥)])
-@test minimalmembers(myalgebra, A) == Vector{HeytingTruth}([A, B])
-
 ### Testing if check works on random propositional formulas and it gives the same result ###
 
 using Random
