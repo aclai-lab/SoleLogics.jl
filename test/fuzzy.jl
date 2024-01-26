@@ -439,6 +439,26 @@ myalgebra = HeytingAlgebra(domain, relations)
 @test succeedeq(myalgebra, ⊤, G) == true
 @test succeedeq(myalgebra, ⊤, ⊤) == true
 
+@test maximalmembers(myalgebra, ⊥) == HeytingTruth[]
+@test maximalmembers(myalgebra, A) == HeytingTruth[E]
+@test maximalmembers(myalgebra, B) == HeytingTruth[C]
+@test maximalmembers(myalgebra, C) == HeytingTruth[G]
+@test maximalmembers(myalgebra, D) == HeytingTruth[E, C]
+@test maximalmembers(myalgebra, E) == HeytingTruth[F]
+@test maximalmembers(myalgebra, F) == HeytingTruth[C, G]
+@test maximalmembers(myalgebra, G) == HeytingTruth[F, E]
+@test maximalmembers(myalgebra, ⊤) == HeytingTruth[F, G]
+
+@test minimalmembers(myalgebra, ⊥) == HeytingTruth[B, A]
+@test minimalmembers(myalgebra, A) == HeytingTruth[C, B]
+@test minimalmembers(myalgebra, B) == HeytingTruth[E, A]
+@test minimalmembers(myalgebra, C) == HeytingTruth[B]
+@test minimalmembers(myalgebra, D) == HeytingTruth[E, C]
+@test minimalmembers(myalgebra, E) == HeytingTruth[A]
+@test minimalmembers(myalgebra, F) == HeytingTruth[E]
+@test minimalmembers(myalgebra, G) == HeytingTruth[C]
+@test minimalmembers(myalgebra, ⊤) == HeytingTruth[]
+
 @test collatetruth(∧, (⊥, ⊥), myalgebra) == HeytingTruth(⊥)
 @test collatetruth(∧, (⊥, A), myalgebra) == HeytingTruth(⊥)
 @test collatetruth(∧, (⊥, B), myalgebra) == HeytingTruth(⊥)

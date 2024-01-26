@@ -326,20 +326,40 @@ function succeedeq(h::HeytingAlgebra, α::BooleanTruth, β::BooleanTruth)
 end
 
 """
-Return all maximal members of h below t.
+Return all maximal members of h not above t.
 """
-function maximalmembers(h::HeytingAlgebra, t::HeytingTruth)
-    return inneighbors(h, t)
+function maximalmembers(h::HeytingAlgebra, t::HeytingTruth, α::HeytingTruth)
+    ismm = true
+    mm = Set{HeytingTruth}()
+    for o ∈ outneighbors(h, α)
+        if !succeedeq(h, o, t)
+            ismm = false
+            push!(mm, maximalmembers(h, t, o)...)
+        end
+    end
+    ismm && !isbot(α) ? HeytingTruth[α] : collect(mm)
 end
+
+maximalmembers(h::HeytingAlgebra, t::HeytingTruth) = maximalmembers(h, t, HeytingTruth(⊥))
 
 maximalmembers(h::HeytingAlgebra, t::BooleanTruth) = maximalmembers(h, HeytingTruth(t))
 
 """
-Return all minimal members of h above t
+Return all minimal members of h not below t
 """
-function minimalmembers(h::HeytingAlgebra, t::HeytingTruth)
-    return outneighbors(h, t)
+function minimalmembers(h::HeytingAlgebra, t::HeytingTruth, α::HeytingTruth)
+    ismm = true
+    mm = Set{HeytingTruth}()
+    for i ∈ inneighbors(h, α)
+        if !precedeq(h, i, t)
+            ismm = false
+            push!(mm, minimalmembers(h, t, i)...)
+        end
+    end
+    ismm && !istop(α) ? HeytingTruth[α] : collect(mm)
 end
+
+minimalmembers(h::HeytingAlgebra, t::HeytingTruth) = minimalmembers(h, t, HeytingTruth(⊤))
 
 minimalmembers(h::HeytingAlgebra, t::BooleanTruth) = minimalmembers(h, HeytingTruth(t))
 
@@ -605,6 +625,24 @@ function collatetruth(
     return η
 end
 
+function collatetruth2(
+    ::typeof(→),
+    (α, β)::NTuple{N, T where T<:HeytingTruth},
+    h::HeytingAlgebra
+) where {
+    N
+}
+    η = bot(h)
+    gvs = domain(h)
+    for γ ∈ gvs
+        if precedeq(h, collatetruth(∧, (α, γ), h), β)
+            η = collatetruth(∨, (η, γ), h)
+            gvs = greatervalues(domain(h), transitiveclosure(h), η)
+        end
+    end
+    return η
+end
+
 function collatetruth(
     c::Connective,
     (α, β)::Tuple{HeytingTruth, BooleanTruth},
@@ -627,6 +665,30 @@ function collatetruth(
     h::HeytingAlgebra
 )
     return collatetruth(c, (convert(HeytingTruth, α), convert(HeytingTruth, β)), h)
+end
+
+function collatetruth2(
+    c::Connective,
+    (α, β)::Tuple{HeytingTruth, BooleanTruth},
+    h::HeytingAlgebra
+)
+    return collatetruth2(c, (α, convert(HeytingTruth, β)), h)
+end
+
+function collatetruth2(
+    c::Connective,
+    (α, β)::Tuple{BooleanTruth, HeytingTruth},
+    h::HeytingAlgebra
+)
+    return collatetruth2(c, (convert(HeytingTruth, α), β), h)
+end
+
+function collatetruth2(
+    c::Connective,
+    (α, β)::Tuple{BooleanTruth, BooleanTruth},
+    h::HeytingAlgebra
+)
+    return collatetruth2(c, (convert(HeytingTruth, α), convert(HeytingTruth, β)), h)
 end
 
 function simplify(
