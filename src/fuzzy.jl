@@ -102,10 +102,17 @@ struct HeytingAlgebra{
     domain::D
     graph::G # directed graph where (α, β) represents α ≺ β
     transitiveclosure::G # transitive closure of the graph (useful for some optimization)
+    isevaluated::Bool
+    meet::Vector{Vector{HeytingTruth}}
+    join::Vector{Vector{HeytingTruth}}
+    implication::Vector{Vector{HeytingTruth}}
+    maxmembers::Vector{Vector{HeytingTruth}}
+    minmembers::Vector{Vector{HeytingTruth}}
 
     function HeytingAlgebra(
         domain::D,
-        graph::G
+        graph::G;
+        evaluate::Bool
     ) where {
         D<:AbstractVector{HeytingTruth},
         G<:Graphs.SimpleGraphs.SimpleDiGraph
@@ -117,11 +124,42 @@ struct HeytingAlgebra{
             "which is not a bounded lattice."
         @assert iscomplete(domain, graph) "Tried to define an HeytingAlgebra " *
             "with a graph which is not a complete lattice."
-        return new{D,G}(domain, graph, transitiveclosure(graph))
+        if evaluate
+            tc = transitiveclosure(graph)
+            meet = [Vector{HeytingTruth}(undef, length(domain)) for _ in 1:length(domain)]
+            join = [Vector{HeytingTruth}(undef, length(domain)) for _ in 1:length(domain)]
+            implication = [Vector{HeytingTruth}(undef, length(domain)) for _ in 1:length(domain)]
+            maxmembers = Vector{Vector{HeytingTruth}}(undef, length(domain))
+            minmembers = Vector{Vector{HeytingTruth}}(undef, length(domain))
+            for α ∈ domain
+                for β ∈ domain
+                    meet[index(α)][index(β)] = greatestlowerbound(domain, tc, α, β)
+                    join[index(α)][index(β)] = leastupperbound(domain, tc, α, β)
+                end
+            end
+            for α ∈ domain
+                for β ∈ domain
+                    η = HeytingTruth(⊥)
+                    for γ ∈ domain
+                        if precedeq(domain, tc, meet[index(α)][index(γ)], β)
+                            η = join[index(η)][index(γ)]
+                        end
+                    end
+                    implication[index(α)][index(β)] = η
+                end
+            end
+            for α ∈ domain
+                maxmembers[index(α)] = maximalmembers(domain, tc, α)
+                minmembers[index(α)] = minimalmembers(domain, tc, α)
+            end
+            return new{D,G}(domain, graph, tc, true, meet, join, implication, maxmembers, minmembers)
+        else
+            return new{D,G}(domain, graph, transitiveclosure(graph), false)
+        end
     end
 
-    function HeytingAlgebra(domain::Vector{HeytingTruth}, relations::Vector{Edge{Int64}})
-        return HeytingAlgebra(domain, SimpleDiGraph(relations))
+    function HeytingAlgebra(domain::Vector{HeytingTruth}, relations::Vector{Edge{Int64}}; evaluate::Bool=false)
+        return HeytingAlgebra(domain, SimpleDiGraph(relations), evaluate=evaluate)
     end
 end
 
@@ -130,6 +168,22 @@ top(h::HeytingAlgebra) = h.domain[1]
 bot(h::HeytingAlgebra) = h.domain[2]
 graph(h::HeytingAlgebra) = h.graph
 Graphs.transitiveclosure(h::HeytingAlgebra) = h.transitiveclosure
+isevaluated(h::HeytingAlgebra) = h.isevaluated
+
+meet(h::HeytingAlgebra) = h.meet
+meet(h::HeytingAlgebra, α, β) = meet(h)[index(α)][index(β)]
+
+Base.join(h::HeytingAlgebra) = h.join
+Base.join(h::HeytingAlgebra, α, β) = join(h)[index(α)][index(β)]
+
+implication(h::HeytingAlgebra) = h.implication
+implication(h::HeytingAlgebra, α, β) = implication(h)[index(α)][index(β)]
+
+maxmembers(h::HeytingAlgebra) = h.maxmembers
+maxmembers(h::HeytingAlgebra, t::HeytingTruth) = maxmembers(h)[index(t)]
+
+minmembers(h::HeytingAlgebra) = h.minmembers
+minmembers(h::HeytingAlgebra, t::HeytingTruth) = minmembers(h)[index(t)]
 
 cardinality(h::HeytingAlgebra) = length(domain(h))
 isboolean(h::HeytingAlgebra) = (cardinality(h) == 2)
@@ -328,38 +382,100 @@ end
 """
 Return all maximal members of h not above t.
 """
-function maximalmembers(h::HeytingAlgebra, t::HeytingTruth, α::HeytingTruth)
+function maximalmembers(
+    d::D,
+    tc::G,
+    t::HeytingTruth,
+    α::HeytingTruth
+) where {
+    D<:AbstractVector{HeytingTruth},
+    G<:Graphs.SimpleGraphs.SimpleDiGraph
+}
     ismm = true
     mm = Set{HeytingTruth}()
-    for o ∈ outneighbors(h, α)
-        if !succeedeq(h, o, t)
+    for o ∈ outneighbors(d, tc, α)
+        if !succeedeq(d, tc, o, t)
             ismm = false
-            push!(mm, maximalmembers(h, t, o)...)
+            push!(mm, maximalmembers(d, tc, t, o)...)
         end
     end
-    ismm && !isbot(α) ? HeytingTruth[α] : collect(mm)
+    ismm ? HeytingTruth[α] : collect(mm)
 end
 
-maximalmembers(h::HeytingAlgebra, t::HeytingTruth) = maximalmembers(h, t, HeytingTruth(⊥))
+function maximalmembers(
+    d::D,
+    tc::G,
+    t::HeytingTruth
+) where {
+    D<:AbstractVector{HeytingTruth},
+    G<:Graphs.SimpleGraphs.SimpleDiGraph
+}
+    if isbot(t)
+        return HeytingTruth[]
+    else
+        return maximalmembers(d, tc, t, HeytingTruth(⊥))
+    end
+end
+
+function maximalmembers(h::HeytingAlgebra, t::HeytingTruth)
+    if isbot(t)
+        return HeytingTruth[]
+    elseif isevaluated(h)
+        return maxmembers(h, t)
+    else
+        return maximalmembers(domain(h), transitiveclosure(h), t, HeytingTruth(⊥))
+    end
+end
 
 maximalmembers(h::HeytingAlgebra, t::BooleanTruth) = maximalmembers(h, HeytingTruth(t))
 
 """
 Return all minimal members of h not below t
 """
-function minimalmembers(h::HeytingAlgebra, t::HeytingTruth, α::HeytingTruth)
+function minimalmembers(
+    d::D,
+    tc::G,
+    t::HeytingTruth,
+    α::HeytingTruth
+) where {
+    D<:AbstractVector{HeytingTruth},
+    G<:Graphs.SimpleGraphs.SimpleDiGraph
+}
     ismm = true
     mm = Set{HeytingTruth}()
-    for i ∈ inneighbors(h, α)
-        if !precedeq(h, i, t)
+    for i ∈ inneighbors(d, tc, α)
+        if !precedeq(d, tc, i, t)
             ismm = false
-            push!(mm, minimalmembers(h, t, i)...)
+            push!(mm, minimalmembers(d, tc, t, i)...)
         end
     end
-    ismm && !istop(α) ? HeytingTruth[α] : collect(mm)
+    ismm ? HeytingTruth[α] : collect(mm)
 end
 
-minimalmembers(h::HeytingAlgebra, t::HeytingTruth) = minimalmembers(h, t, HeytingTruth(⊤))
+function minimalmembers(
+    d::D,
+    tc::G,
+    t::HeytingTruth
+) where {
+    D<:AbstractVector{HeytingTruth},
+    G<:Graphs.SimpleGraphs.SimpleDiGraph
+}
+    if istop(t)
+        return HeytingTruth[]
+    else
+        return minimalmembers(d, tc, t, HeytingTruth(⊤))
+    end
+end
+
+function minimalmembers(h::HeytingAlgebra, t::HeytingTruth)
+    if istop(t)
+        return HeytingTruth[]
+    elseif isevaluated(h)
+        return minmembers(h, t)
+    else
+        return minimalmembers(domain(h), transitiveclosure(h), t, HeytingTruth(⊤))
+    end
+end
 
 minimalmembers(h::HeytingAlgebra, t::BooleanTruth) = minimalmembers(h, HeytingTruth(t))
 
@@ -594,7 +710,11 @@ function collatetruth(
 ) where {
     N
 }
-    return greatestlowerbound(domain(h), transitiveclosure(h), α, β)
+    if isevaluated(h)
+        return meet(h, α, β)
+    else
+        return greatestlowerbound(domain(h), transitiveclosure(h), α, β)
+    end
 end
 
 # Join (least upper bound) between values α and β
@@ -605,7 +725,11 @@ function collatetruth(
 ) where {
     N
 }
-    return leastupperbound(domain(h), transitiveclosure(h), α, β)
+    if isevaluated(h)
+        return join(h, α, β)
+    else
+        return leastupperbound(domain(h), transitiveclosure(h), α, β)
+    end
 end
 
 # Implication/pseudo-complement α → β = join(γ | meet(α, γ) ⪯ β)
@@ -616,31 +740,17 @@ function collatetruth(
 ) where {
     N
 }
-    η = bot(h)
-    for γ ∈ domain(h)
-        if precedeq(h, collatetruth(∧, (α, γ), h), β)
-            η = collatetruth(∨, (η, γ), h)
+    if isevaluated(h)
+        return implication(h, α, β)
+    else
+        η = bot(h)
+        for γ ∈ domain(h)
+            if precedeq(h, collatetruth(∧, (α, γ), h), β)
+                η = collatetruth(∨, (η, γ), h)
+            end
         end
+        return η
     end
-    return η
-end
-
-function collatetruth2(
-    ::typeof(→),
-    (α, β)::NTuple{N, T where T<:HeytingTruth},
-    h::HeytingAlgebra
-) where {
-    N
-}
-    η = bot(h)
-    gvs = domain(h)
-    for γ ∈ gvs
-        if precedeq(h, collatetruth(∧, (α, γ), h), β)
-            η = collatetruth(∨, (η, γ), h)
-            gvs = greatervalues(domain(h), transitiveclosure(h), η)
-        end
-    end
-    return η
 end
 
 function collatetruth(
@@ -665,30 +775,6 @@ function collatetruth(
     h::HeytingAlgebra
 )
     return collatetruth(c, (convert(HeytingTruth, α), convert(HeytingTruth, β)), h)
-end
-
-function collatetruth2(
-    c::Connective,
-    (α, β)::Tuple{HeytingTruth, BooleanTruth},
-    h::HeytingAlgebra
-)
-    return collatetruth2(c, (α, convert(HeytingTruth, β)), h)
-end
-
-function collatetruth2(
-    c::Connective,
-    (α, β)::Tuple{BooleanTruth, HeytingTruth},
-    h::HeytingAlgebra
-)
-    return collatetruth2(c, (convert(HeytingTruth, α), β), h)
-end
-
-function collatetruth2(
-    c::Connective,
-    (α, β)::Tuple{BooleanTruth, BooleanTruth},
-    h::HeytingAlgebra
-)
-    return collatetruth2(c, (convert(HeytingTruth, α), convert(HeytingTruth, β)), h)
 end
 
 function simplify(

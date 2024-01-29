@@ -109,7 +109,7 @@ relations = Edge.([
     (F, ⊤),
     (G, ⊤)
 ])
-myalgebra = HeytingAlgebra(domain, relations)
+myalgebra = HeytingAlgebra(domain, relations, evaluate=true)
 
 @test precedes(myalgebra, ⊥, ⊥) == false
 @test precedes(myalgebra, ⊥, A) == true
@@ -439,25 +439,25 @@ myalgebra = HeytingAlgebra(domain, relations)
 @test succeedeq(myalgebra, ⊤, G) == true
 @test succeedeq(myalgebra, ⊤, ⊤) == true
 
-@test maximalmembers(myalgebra, ⊥) == HeytingTruth[]
-@test maximalmembers(myalgebra, A) == HeytingTruth[E]
-@test maximalmembers(myalgebra, B) == HeytingTruth[C]
-@test maximalmembers(myalgebra, C) == HeytingTruth[G]
-@test maximalmembers(myalgebra, D) == HeytingTruth[E, C]
-@test maximalmembers(myalgebra, E) == HeytingTruth[F]
-@test maximalmembers(myalgebra, F) == HeytingTruth[C, G]
-@test maximalmembers(myalgebra, G) == HeytingTruth[F, E]
-@test maximalmembers(myalgebra, ⊤) == HeytingTruth[F, G]
+@test Set{HeytingTruth}([maximalmembers(myalgebra, ⊥)...]) == Set{HeytingTruth}([HeytingTruth[]...])
+@test Set{HeytingTruth}([maximalmembers(myalgebra, A)...]) == Set{HeytingTruth}([HeytingTruth[E]...])
+@test Set{HeytingTruth}([maximalmembers(myalgebra, B)...]) == Set{HeytingTruth}([HeytingTruth[C]...])
+@test Set{HeytingTruth}([maximalmembers(myalgebra, C)...]) == Set{HeytingTruth}([HeytingTruth[G]...])
+@test Set{HeytingTruth}([maximalmembers(myalgebra, D)...]) == Set{HeytingTruth}([HeytingTruth[E, C]...])
+@test Set{HeytingTruth}([maximalmembers(myalgebra, E)...]) == Set{HeytingTruth}([HeytingTruth[F]...])
+@test Set{HeytingTruth}([maximalmembers(myalgebra, F)...]) == Set{HeytingTruth}([HeytingTruth[C, G]...])
+@test Set{HeytingTruth}([maximalmembers(myalgebra, G)...]) == Set{HeytingTruth}([HeytingTruth[F, E]...])
+@test Set{HeytingTruth}([maximalmembers(myalgebra, ⊤)...]) == Set{HeytingTruth}([HeytingTruth[F, G]...])
 
-@test minimalmembers(myalgebra, ⊥) == HeytingTruth[B, A]
-@test minimalmembers(myalgebra, A) == HeytingTruth[C, B]
-@test minimalmembers(myalgebra, B) == HeytingTruth[E, A]
-@test minimalmembers(myalgebra, C) == HeytingTruth[B]
-@test minimalmembers(myalgebra, D) == HeytingTruth[E, C]
-@test minimalmembers(myalgebra, E) == HeytingTruth[A]
-@test minimalmembers(myalgebra, F) == HeytingTruth[E]
-@test minimalmembers(myalgebra, G) == HeytingTruth[C]
-@test minimalmembers(myalgebra, ⊤) == HeytingTruth[]
+@test Set{HeytingTruth}([minimalmembers(myalgebra, ⊥)...]) ==  Set{HeytingTruth}([HeytingTruth[B, A]...])
+@test Set{HeytingTruth}([minimalmembers(myalgebra, A)...]) ==  Set{HeytingTruth}([HeytingTruth[C, B]...])
+@test Set{HeytingTruth}([minimalmembers(myalgebra, B)...]) ==  Set{HeytingTruth}([HeytingTruth[E, A]...])
+@test Set{HeytingTruth}([minimalmembers(myalgebra, C)...]) ==  Set{HeytingTruth}([HeytingTruth[B]...])
+@test Set{HeytingTruth}([minimalmembers(myalgebra, D)...]) ==  Set{HeytingTruth}([HeytingTruth[E, C]...])
+@test Set{HeytingTruth}([minimalmembers(myalgebra, E)...]) ==  Set{HeytingTruth}([HeytingTruth[A]...])
+@test Set{HeytingTruth}([minimalmembers(myalgebra, F)...]) ==  Set{HeytingTruth}([HeytingTruth[E]...])
+@test Set{HeytingTruth}([minimalmembers(myalgebra, G)...]) ==  Set{HeytingTruth}([HeytingTruth[C]...])
+@test Set{HeytingTruth}([minimalmembers(myalgebra, ⊤)...]) ==  Set{HeytingTruth}([HeytingTruth[]...])
 
 @test collatetruth(∧, (⊥, ⊥), myalgebra) == HeytingTruth(⊥)
 @test collatetruth(∧, (⊥, A), myalgebra) == HeytingTruth(⊥)
