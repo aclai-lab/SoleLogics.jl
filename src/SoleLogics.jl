@@ -81,6 +81,8 @@ export Interval, Interval2D, OneWorld
 
 include("utils.jl")
 
+export initrng, initrng!, inittruths, inittruths!
+
 include("modal-logic.jl")
 
 export LeftmostLinearForm, LeftmostConjunctiveForm, LeftmostDisjunctiveForm, Literal
