@@ -94,7 +94,8 @@ function interpret(a::Atom, i::AbstractAssignment, args...; kwargs...)::SyntaxLe
 end
 
 function interpret(φ::SyntaxBranch, i::AbstractAssignment, args...; kwargs...)::Formula
-    return simplify(token(φ), Tuple(
+    connective = token(φ)
+    return simplify(connective, Tuple(
         [interpret(ch, i, args...; kwargs...) for ch in children(φ)]
     ))
 end
