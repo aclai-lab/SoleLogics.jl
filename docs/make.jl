@@ -19,6 +19,7 @@ makedocs(;
         "Getting started" => "getting-started.md",
         "Introduction to Logics and Propositional Logic" => "base-logic.md",
         "Modal Logic" => "modal-logic.md",
+        "Fuzzy" => "fuzzy.md",
         "More on Formulas" => "more-on-formulas.md",
         "Hands On" => "hands-on.md"
     ],

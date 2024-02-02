@@ -45,9 +45,10 @@ Object representing the i-th interpretation of an interpretation set.
 
 In general, one may not be able to extract a single logical instance from a
 set; thus, this representation, holding the interpretation set + instance id (i_instance),
-can come handi in defining `check` and `interpret` methods for newly defined interpretation
+can come handy in defining `check` and `interpret` methods for newly defined interpretation
 set structures.
 """
+# TODO: struct LogicalInstance{S<:AbstractInterpretationSet{M}} <: M
 struct LogicalInstance{S<:AbstractInterpretationSet} <: AbstractInterpretation
 
     s::S
@@ -104,6 +105,7 @@ function check(
     check(φ, getinstance(s, i_instance), args...; kwargs...)
 end
 
+
 """
     check(
         φ::Formula,
@@ -133,6 +135,17 @@ function check(
         kwargs...
     ), 1:ninstances(s))
 end
+
+function interpret(φ::SyntaxBranch, i::LogicalInstance, args...; kwargs...)::Formula
+    (s, i_instance) = SoleLogics.splat(i)
+    M = interpretationtype(s)
+    @show M
+    connective = token(φ)
+    return simplify(connective, Tuple(
+        [(@invoke interpret(ch, i::M, args...; kwargs...)) for ch in children(φ)]
+    ))
+end
+
 
 ############################################################################################
 
@@ -183,24 +196,24 @@ worldtype(s::AbstractInterpretationSet) = worldtype(typeof(s))
 frametype(::Type{AbstractInterpretationSet{M}}) where {M<:AbstractKripkeStructure} = frametype(M)
 frametype(s::AbstractInterpretationSet) = frametype(typeof(s))
 
-function alphabet(X::AbstractInterpretationSet{M}) where {M<:AbstractKripkeStructure}
-    return error("Please, provide method alphabet(::$(typeof(X))).")
+function alphabet(s::AbstractInterpretationSet{M}) where {M<:AbstractKripkeStructure}
+    return error("Please, provide method alphabet(::$(typeof(s))).")
 end
 
-# function relations(X::AbstractInterpretationSet{M}) where {M<:AbstractKripkeStructure}
-#     return error("Please, provide method relations(::$(typeof(X))).")
+# function relations(s::AbstractInterpretationSet{M}) where {M<:AbstractKripkeStructure}
+#     return error("Please, provide method relations(::$(typeof(s))).")
 # end
 
-function frame(X::AbstractInterpretationSet, i_instance::Integer)
-    return frame(getinstance(X, i_instance))
+function frame(s::AbstractInterpretationSet, i_instance::Integer)
+    return frame(getinstance(s, i_instance))
 end
 
-function frame(X::AbstractInterpretationSet{M}, i_instance::Integer) where {M<:AbstractKripkeStructure}
-    return error("Please, provide method frame(::$(typeof(X)), ::$(typeof(i_instance))).")
+function frame(s::AbstractInterpretationSet{M}, i_instance::Integer) where {M<:AbstractKripkeStructure}
+    return error("Please, provide method frame(::$(typeof(s)), ::$(typeof(i_instance))).")
 end
-accessibles(X::AbstractInterpretationSet, i_instance::Integer, args...) = accessibles(frame(X, i_instance), args...)
-allworlds(X::AbstractInterpretationSet, i_instance::Integer, args...) = allworlds(frame(X, i_instance), args...)
-nworlds(X::AbstractInterpretationSet, i_instance::Integer) = nworlds(frame(X, i_instance))
+accessibles(s::AbstractInterpretationSet, i_instance::Integer, args...) = accessibles(frame(s, i_instance), args...)
+allworlds(s::AbstractInterpretationSet, i_instance::Integer, args...) = allworlds(frame(s, i_instance), args...)
+nworlds(s::AbstractInterpretationSet, i_instance::Integer) = nworlds(frame(s, i_instance))
 
 function check(
     φ::SyntaxBranch{
