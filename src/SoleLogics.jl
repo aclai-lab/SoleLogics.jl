@@ -9,6 +9,9 @@ using StatsBase
 using Reexport
 using Lazy
 
+using SoleBase
+using SoleBase: initrng
+
 ############################################################################################
 
 export iscrisp, isfinite, isnullary, isunary, isbinary

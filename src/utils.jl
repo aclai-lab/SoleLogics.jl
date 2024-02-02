@@ -8,15 +8,8 @@ function intersects(u, v)
     false
 end
 
-initrng(rng::Union{Integer,AbstractRNG}) =
-    (rng isa AbstractRNG) ? rng : Random.MersenneTwister(rng)
-initrng!(rng::Union{Integer,AbstractRNG}) =
-    rng = initirng(rng)
-
-inittruths(truthvalues::Union{Vector{<:Truth},AbstractAlgebra}) =
+inittruthvalues(truthvalues::Union{Vector{<:Truth},AbstractAlgebra}) =
     return (truthvalues isa AbstractAlgebra) ? domain(truthvalues) : truthvalues
-inittruths!(truthvalues::Union{Vector{<:Truth},AbstractAlgebra}) =
-    truthvalues = inittruths(truthvalues)
 
 
 function displaysyntaxvector(a, maxnum = 8; quotes = true)

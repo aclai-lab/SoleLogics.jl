@@ -136,7 +136,7 @@ function Base.rand(
     atoms = atoms isa AbstractAlphabet ? SoleLogics.atoms(atoms) : atoms
     ops = connectives
     if !isnothing(truthvalues)
-        inittruths(truthvalues)
+        truthvalues = inittruths(truthvalues)
         @assert typejoin(typeof.(truthvalues)...) != Truth "Truth values " *
             "$(truthvalues) must belong to the same algebra " *
             "(and have a common supertype that is not Truth)."
@@ -452,7 +452,8 @@ function randmodel(
     truthvalues::Union{AbstractAlgebra,AbstractVector{<:Truth}} = BooleanAlgebra();
     rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG
 )
-    randmodel(initrng(rng), nworlds, nedges, facts, inittruths(truthvalues))
+    truthvalues = inittruths(truthvalues)
+    randmodel(initrng(rng), nworlds, nedges, facts, truthvalues)
 end
 
 function randmodel(
