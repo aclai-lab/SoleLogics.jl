@@ -1017,6 +1017,20 @@ function interpret(
 end
 
 function interpret(
+    φ::Atom,
+    i::AbstractInterpretation,
+    args...;
+    kwargs...
+)::Formula
+    return error("Please, provide method " *
+        "interpret(φ::Atom, i::$(typeof(i)), " *
+        "args...::$(typeof(args)); " *
+        "kwargs...::$(typeof(kwargs))).")
+end
+
+
+
+function interpret(
     φ::SyntaxBranch,
     i::AbstractInterpretation,
     args...;
