@@ -108,6 +108,17 @@ function interpret(
     check(φ, getinstance(s, i_instance), args...; kwargs...)
 end
 
+function interpret(
+    φ::Atom,
+    i::LogicalInstance,
+    args...;
+    kwargs...
+)::Formula
+    return error("Please, provide method " *
+        "interpret(φ::Atom, i::$(typeof(i)), " *
+        "args...::$(typeof(args)); " *
+        "kwargs...::$(typeof(kwargs))).")
+end
 
 # TODO code repetition with AbstractAssignment ? 
 function interpret(φ::SyntaxBranch, i::LogicalInstance, args...; kwargs...)::Formula
