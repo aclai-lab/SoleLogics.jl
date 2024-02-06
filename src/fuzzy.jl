@@ -98,7 +98,7 @@ See also [`@heytingalgebra`](@ref), [`HeytingTruth`](@ref)
 struct HeytingAlgebra{
     D<:AbstractVector{HeytingTruth},
     G<:Graphs.SimpleGraphs.SimpleDiGraph
-}
+} <: AbstractAlgebra{HeytingTruth}
     domain::D
     graph::G # directed graph where (α, β) represents α ≺ β
     transitiveclosure::G # transitive closure of the graph (useful for some optimization)
@@ -809,21 +809,6 @@ end
     return collatetruth(c, (convert(HeytingTruth, α), convert(HeytingTruth, β)), h)
 end
 
-# Note: output type can both be BooleanTruth or HeytingTruth, i.e.,
-# the following check can be used effectively
-# convert(HeytingTruth, interpret(φ, td8)) == convert(HeytingTruth, interpret(φ, td8, ba)))
-# where ba is a BooleanAlgebra specified as an HeytingAlgebra
-function interpret(
-    φ::SyntaxBranch,
-    i::AbstractAssignment,
-    h::HeytingAlgebra,
-    args...;
-    kwargs...
-)
-    return simplify(token(φ), Tuple(
-        [interpret(ch, i, h, args...; kwargs...) for ch in children(φ)]
-    ), h)
-end
 
 function collatetruth(::typeof(¬), (α,)::Tuple{HeytingTruth}, h::HeytingAlgebra)
     if isboolean(h)

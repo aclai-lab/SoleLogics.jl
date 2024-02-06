@@ -625,6 +625,14 @@ function precedes(t1::Truth, t2::Truth)
     end
 end
 
+function truthmeet(t1::Truth, t2::Truth)
+    error("Please, provide method truthmeet(::$(typeof(t1)), ::$(typeof(t2))).")
+end
+function truthjoin(t1::Truth, t2::Truth)
+    error("Please, provide method truthjoin(::$(typeof(t1)), ::$(typeof(t2))).")
+end
+
+
 # Alias
 """Alias for [`precedes`](@ref)."""
 const ≺ = precedes
@@ -638,6 +646,11 @@ end
 function Base.convert(::Type{Truth}, t)::Truth
     return error("Cannot interpret value $t of type ($(typeof(t))) as Truth.")
 end
+
+# Helpers
+Base.min(t1::Truth, t2::Truth) = truthmeet(t1, t2)
+Base.max(t1::Truth, t2::Truth) = truthjoin(t1, t2)
+Base.isless(t1::Truth, t2::Truth) = precedes(t1, t2)
 
 # Fallback
 Base.convert(::Type{Truth}, t::Truth) = t

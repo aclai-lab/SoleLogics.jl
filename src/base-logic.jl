@@ -249,9 +249,8 @@ hasdual(::BooleanTruth) = true
 dual(c::BooleanTruth)   = BooleanTruth(!istop(c))
 
 precedes(t1::BooleanTruth, t2::BooleanTruth) = istop(t1) < istop(t2)
-Base.max(t1::BooleanTruth, t2::BooleanTruth) = precedes(t1, t2) ? t2 : t1
-Base.min(t1::BooleanTruth, t2::BooleanTruth) = precedes(t1, t2) ? t1 : t1
-Base.isless(t1::BooleanTruth, t2::BooleanTruth) = precedes(t1, t2)
+truthmeet(t1::BooleanTruth, t2::BooleanTruth) = precedes(t1, t2) ? t1 : t2
+truthjoin(t1::BooleanTruth, t2::BooleanTruth) = precedes(t1, t2) ? t2 : t1
 
 """
     struct BooleanAlgebra <: AbstractAlgebra{Bool} end
@@ -275,8 +274,8 @@ bot(::BooleanAlgebra) = BOT
 
 # Standard semantics for NOT, AND, OR, IMPLIES
 collatetruth(::typeof(¬), (ts,)::Tuple{BooleanTruth}) = istop(ts) ? BOT : TOP
-collatetruth(::typeof(∧), (t1, t2)::NTuple{N,T where T<:BooleanTruth}) where {N} = min(t1, t2)
-collatetruth(::typeof(∨), (t1, t2)::NTuple{N,T where T<:BooleanTruth}) where {N} = max(t1, t2)
+collatetruth(::typeof(∧), (t1, t2)::NTuple{N,T where T<:BooleanTruth}) where {N} = truthmeet(t1, t2)
+collatetruth(::typeof(∨), (t1, t2)::NTuple{N,T where T<:BooleanTruth}) where {N} = truthjoin(t1, t2)
 
 # Incomplete information
 function simplify(::typeof(∧), (t1, t2)::Tuple{BooleanTruth,BooleanTruth})
