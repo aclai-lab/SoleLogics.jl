@@ -1,5 +1,3 @@
-import Base: isless
-
 """
     collatetruth(c::Connective, ts::NTuple{N,T where T<:Truth})::Truth where {N}
 
@@ -174,21 +172,31 @@ dual(c::typeof(∨))   = typeof(∧)
 ############################################################################################
 
 """
-    abstract type BooleanTruth <: Truth end
+    struct BooleanTruth <: Truth
+        flag::Bool
+    end
 
-Supertype of `Top` and `Bot`, the two truth values of `BooleanAlgebra`
+Structure for representing the Boolean truth values ⊤ and ⊥.
+It wraps a flag which takes value `true` for ⊤ ([`TOP`](@ref)),
+and `false` for ⊥ ([`BOT`](@ref))
 
-See also [`Bot`](@ref), [`Top`](@ref), [`BooleanAlgebra`](@ref).
+See also [`BooleanAlgebra`](@ref).
 """
-abstract type BooleanTruth <: Truth end
+struct BooleanTruth <: Truth
+    flag::Bool
+end
+
+istop(t::BooleanTruth) = t.flag
+isbot(t::BooleanTruth) = !istop(t)
+
+syntaxstring(t::BooleanTruth; kwargs...) = istop(t) ? "⊤" : "⊥"
 
 function Base.show(io::IO, φ::BooleanTruth)
     print(io, "$(syntaxstring(φ))")
 end
 
 doc_TOP = """
-    struct Top <: Truth end
-    const TOP = Top()
+    const TOP = BooleanTruth(true)
     const ⊤ = TOP
 
 Canonical truth operator representing the value `true`.
@@ -197,20 +205,12 @@ It can be typed by `\\top<tab>`.
 See also [`BOT`](@ref), [`Truth`](@ref).
 """
 """$(doc_TOP)"""
-struct Top <: BooleanTruth end
-"""$(doc_TOP)"""
-const TOP = Top()
+const TOP = BooleanTruth(true)
 """$(doc_TOP)"""
 const ⊤ = TOP
 
-syntaxstring(::Top; kwargs...) = "⊤"
-
-istop(t::Top) = true
-truthsupertype(::Type{Top}) = BooleanTruth
-
 doc_BOTTOM = """
-    struct Bot <: Truth end
-    const BOT = Bot()
+    const BOT = BooleanTruth(false)
     const ⊥ = BOT
 
 Canonical truth operator representing the value `false`.
@@ -219,16 +219,9 @@ It can be typed by `\\bot<tab>`.
 See also [`TOP`](@ref), [`Truth`](@ref).
 """
 """$(doc_BOTTOM)"""
-struct Bot <: BooleanTruth end
-"""$(doc_BOTTOM)"""
-const BOT = Bot()
+const BOT = BooleanTruth(false)
 """$(doc_BOTTOM)"""
 const ⊥ = BOT
-
-syntaxstring(::Bot; kwargs...) = "⊥"
-
-isbot(t::Bot) = true
-truthsupertype(::Type{Bot}) = BooleanTruth
 
 # NOTE: it could be useful to provide a macro to easily create
 # a new set of Truth types. In particular, a new subtree of types must be planted
@@ -252,19 +245,19 @@ Base.convert(::Type{Truth}, t::Bool) = Base.convert(BooleanTruth, t)
 Base.convert(::Type{Truth}, t::Integer) = Base.convert(BooleanTruth, t)
 
 # NOTE: are these useful?
-hasdual(::typeof(⊤)) = true
-dual(c::typeof(⊤))   = typeof(⊥)
-hasdual(::typeof(⊥)) = true
-dual(c::typeof(⊥))   = typeof(⊤)
+hasdual(::BooleanTruth) = true
+dual(c::BooleanTruth)   = BooleanTruth(!istop(c))
 
-Base.isless(::Bot, ::Top) = true
-Base.isless(::Top, ::Bot) = false
+precedes(t1::BooleanTruth, t2::BooleanTruth) = istop(t1) < istop(t2)
+Base.max(t1::BooleanTruth, t2::BooleanTruth) = precedes(t1, t2) ? t2 : t1
+Base.min(t1::BooleanTruth, t2::BooleanTruth) = precedes(t1, t2) ? t1 : t1
+Base.isless(t1::BooleanTruth, t2::BooleanTruth) = precedes(t1, t2)
 
 """
     struct BooleanAlgebra <: AbstractAlgebra{Bool} end
 
 A [Boolean algebra](https://en.wikipedia.org/wiki/Boolean_algebra), defined on the values
-Top (representing `true`) and Bot (for bottom, representing `false`).
+TOP (representing *truth*) and BOT (for bottom, representing *falsehood*).
 For this algebra, the basic operators negation,
 conjunction and disjunction (stylized as ¬, ∧, ∨) can be defined as the complement, minimum
 and maximum, of the integer cast of `true` and `false`, respectively.
@@ -281,28 +274,23 @@ bot(::BooleanAlgebra) = BOT
 ############################################################################################
 
 # Standard semantics for NOT, AND, OR, IMPLIES
-collatetruth(::typeof(¬), (ts,)::Tuple{Bot}) = TOP
-collatetruth(::typeof(¬), (ts,)::Tuple{Top}) = BOT
+collatetruth(::typeof(¬), (ts,)::Tuple{BooleanTruth}) = istop(ts) ? BOT : TOP
 collatetruth(::typeof(∧), (t1, t2)::NTuple{N,T where T<:BooleanTruth}) where {N} = min(t1, t2)
 collatetruth(::typeof(∨), (t1, t2)::NTuple{N,T where T<:BooleanTruth}) where {N} = max(t1, t2)
 
 # Incomplete information
-simplify(::typeof(∧), (t1, t2)::Tuple{Top,Top}) = TOP
-simplify(::typeof(∧), (t1, t2)::Tuple{Top,Bot}) = BOT
-simplify(::typeof(∧), (t1, t2)::Tuple{Bot,Top}) = BOT
-simplify(::typeof(∧), (t1, t2)::Tuple{Bot,Bot}) = BOT
-simplify(::typeof(∧), (t1, t2)::Tuple{Top,Formula}) = t2
-simplify(::typeof(∧), (t1, t2)::Tuple{Bot,Formula}) = t1
-simplify(::typeof(∧), (t1, t2)::Tuple{Formula,Top}) = t1
-simplify(::typeof(∧), (t1, t2)::Tuple{Formula,Bot}) = t2
-simplify(::typeof(∨), (t1, t2)::Tuple{Top,Top}) = TOP
-simplify(::typeof(∨), (t1, t2)::Tuple{Top,Bot}) = TOP
-simplify(::typeof(∨), (t1, t2)::Tuple{Bot,Top}) = TOP
-simplify(::typeof(∨), (t1, t2)::Tuple{Bot,Bot}) = BOT
-simplify(::typeof(∨), (t1, t2)::Tuple{Bot,Formula}) = t2
-simplify(::typeof(∨), (t1, t2)::Tuple{Top,Formula}) = t1
-simplify(::typeof(∨), (t1, t2)::Tuple{Formula,Bot}) = t1
-simplify(::typeof(∨), (t1, t2)::Tuple{Formula,Top}) = t2
+function simplify(::typeof(∧), (t1, t2)::Tuple{BooleanTruth,BooleanTruth})
+    istop(t1) && istop(t2) ? TOP : BOT
+end
+simplify(::typeof(∧), (t1, t2)::Tuple{BooleanTruth,Formula}) = istop(t1) ? t2 : t1
+simplify(::typeof(∧), (t1, t2)::Tuple{Formula,BooleanTruth}) = istop(t2) ? t1 : t2
+
+
+function simplify(::typeof(∨), (t1, t2)::Tuple{BooleanTruth,BooleanTruth})
+    isbot(t1) && isbot(t2) ? BOT : TOP
+end
+simplify(::typeof(∨), (t1, t2)::Tuple{BooleanTruth,Formula}) = isbot(t1) ? t2 : t1
+simplify(::typeof(∨), (t1, t2)::Tuple{Formula,BooleanTruth}) = isbot(t2) ? t1 : t2
 
 # The IMPLIES operator, →, falls back to using ¬ and ∨
 function collatetruth(::typeof(→), (t1, t2)::NTuple{2,BooleanTruth})

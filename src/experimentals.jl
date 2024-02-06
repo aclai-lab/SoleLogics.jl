@@ -4,20 +4,20 @@ using SoleLogics
 
 export formula2natlang
 
-rel2natlang(r::SoleLogics.AbstractRelation)             = syntaxstring(r)
-rel2natlang(::SoleLogics._IA_A)             = "succeding"
+rel2natlang(r::SoleLogics.AbstractRelation)  = syntaxstring(r)
+rel2natlang(::SoleLogics._IA_A)              = "succeding"
 rel2natlang(::SoleLogics._IA_Ai)             = "preceding"
-rel2natlang(::SoleLogics._IA_L)             = "later"
+rel2natlang(::SoleLogics._IA_L)              = "later"
 rel2natlang(::SoleLogics._IA_Li)             = "earlier"
-rel2natlang(::SoleLogics._IA_B)             = "prefix"
-rel2natlang(::SoleLogics._IA_E)             = "suffix"
-rel2natlang(::SoleLogics._IA_D)             = "inner"
+rel2natlang(::SoleLogics._IA_B)              = "prefix"
+rel2natlang(::SoleLogics._IA_E)              = "suffix"
+rel2natlang(::SoleLogics._IA_D)              = "inner"
 rel2natlang(::SoleLogics._IA_Di)             = "outer"
-rel2natlang(::SoleLogics._IA_O)             = "partially overlapping"
+rel2natlang(::SoleLogics._IA_O)              = "partially overlapping"
 rel2natlang(::SoleLogics._IA_Oi)             = "preceding, partially overlapping"
-rel2natlang(::SoleLogics._IA_AorO)             = "partially overlapping"
-rel2natlang(::SoleLogics._IA_AiorOi)             = "preceding, partially overlapping"
-rel2natlang(::SoleLogics._IA_I)             = "intersecting"
+rel2natlang(::SoleLogics._IA_AorO)           = "partially overlapping"
+rel2natlang(::SoleLogics._IA_AiorOi)         = "preceding, partially overlapping"
+rel2natlang(::SoleLogics._IA_I)              = "intersecting"
 
 function rel2natlang(r::RectangleRelation; kwargs...)
     "$(rel2natlang(r.x; kwargs...)),$(rel2natlang(r.y; kwargs...))"

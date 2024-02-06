@@ -161,12 +161,6 @@ struct TruthDict{D<:AbstractDict} <: AbstractAssignment
     truth::D
 
     function TruthDict{D}(d::D) where {A<:Atom,T<:Truth,D<:AbstractDict{A,T}}
-        # Example:
-        # If the truth dict only contains a `Top`, then we want to upcast the dictionary
-        # to expect `BooleanTruth`, not only `Top`s.
-        _T = truthsupertype(T)
-        d = Dict{A,_T}(d)
-
         return new{typeof(d)}(d)
     end
     function TruthDict(d::AbstractDict{A,T}) where {A<:Atom,T<:Truth}
@@ -345,14 +339,13 @@ struct DefaultedTruthDict{
             return DefaultedTruthDict(default_truth)
         else
             d = TruthDict(d)
-            # @assert truthsupertype(truthtype(d)) ==  truthsupertype(default_truth)
             return DefaultedTruthDict(d, default_truth)
         end
     end
 
     function DefaultedTruthDict(default_truth = BOT)
         default_truth = convert(Truth, default_truth)
-        T = truthsupertype(typeof(default_truth))
+        T = typeof(default_truth)
         d = Dict{Atom,T}([])
         return DefaultedTruthDict{typeof(d),T}(d, default_truth)
     end
