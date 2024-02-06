@@ -93,17 +93,18 @@ function interpret(a::Atom, i::AbstractAssignment, args...; kwargs...)::SyntaxLe
     end
 end
 
-function interpret(
-    φ::SyntaxBranch,
-    i::AbstractAssignment,
-    args...;
-    kwargs...,
-)
-    connective = token(φ)
-    return simplify(connective, Tuple(
-        [interpret(ch, i, args...; kwargs...) for ch in children(φ)]
-    ), args...; kwargs...)
-end
+# # TODO remove repetition!!!
+# function interpret(
+#     φ::SyntaxBranch,
+#     i::AbstractAssignment,
+#     args...;
+#     kwargs...,
+# )
+#     connective = token(φ)
+#     return simplify(connective, Tuple(
+#         [interpret(ch, i, args...; kwargs...) for ch in children(φ)]
+#     ), args...; kwargs...)
+# end
 
 ############################################################################################
 #### Implementations #######################################################################

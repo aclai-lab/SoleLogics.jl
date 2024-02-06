@@ -1034,12 +1034,12 @@ function interpret(
     φ::SyntaxBranch,
     i::AbstractInterpretation,
     args...;
-    kwargs...
-)::Formula
-    return error("Please, provide method " *
-                 "interpret(φ::SyntaxBranch, i::$(typeof(i)), " *
-                 "args...::$(typeof(args)); " *
-                 "kwargs...::$(typeof(kwargs))).")
+    kwargs...,
+)
+    connective = token(φ)
+    return simplify(connective, Tuple(
+        [interpret(ch, i, args...; kwargs...) for ch in children(φ)]
+    ), args...; kwargs...)
 end
 
 interpret(t::Truth, i::AbstractInterpretation, args...; kwargs...) = t
