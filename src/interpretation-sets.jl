@@ -80,6 +80,47 @@ splat(i::LogicalInstance) = (i.s, i.i_instance)
 
 truthtype(i::LogicalInstance) = truthtype(i.s)
 
+function interpret(
+    φ::Atom,
+    i::LogicalInstance,
+    args...;
+    kwargs...
+)::Formula
+    return error("Please, provide method " *
+        "interpret(φ::Atom, i::$(typeof(i)), " *
+        "args...::$(typeof(args)); " *
+        "kwargs...::$(typeof(kwargs))).")
+end
+
+# TODO code repetition with AbstractAssignment ?
+function interpret(φ::SyntaxBranch, i::LogicalInstance, args...; kwargs...)::Formula
+    connective = token(φ)
+    return SoleLogics.simplify(
+        connective,
+        Tuple( [ interpret(ch, i, args...; kwargs...) for ch in children(φ) ] )
+    )
+
+end
+
+function check(
+    φ::Formula,
+    i::LogicalInstance,
+    args...;
+    kwargs...
+)
+    return check(tree(φ), i, args...; kwargs...)
+end
+
+
+function interpret(
+    φ::Formula,
+    s::AbstractInterpretationSet,
+    i_instance::Integer,
+    args...;
+    kwargs...,
+)
+    check(φ, getinstance(s, i_instance), args...; kwargs...)
+end
 
 function interpret(
     φ::Formula,
@@ -97,40 +138,6 @@ function interpret(
         kwargs...
     ), 1:ninstances(s))
 end
-
-function interpret(
-    φ::Formula,
-    s::AbstractInterpretationSet,
-    i_instance::Integer,
-    args...;
-    kwargs...,
-)
-    check(φ, getinstance(s, i_instance), args...; kwargs...)
-end
-
-function interpret(
-    φ::Atom,
-    i::LogicalInstance,
-    args...;
-    kwargs...
-)::Formula
-    return error("Please, provide method " *
-        "interpret(φ::Atom, i::$(typeof(i)), " *
-        "args...::$(typeof(args)); " *
-        "kwargs...::$(typeof(kwargs))).")
-end
-
-# TODO code repetition with AbstractAssignment ? 
-function interpret(φ::SyntaxBranch, i::LogicalInstance, args...; kwargs...)::Formula
-        
-    connective = token(φ)
-    return SoleLogics.simplify(
-        connective, 
-        Tuple( [ interpret(ch, i, args...; kwargs...) for ch in children(φ) ] )
-    )
-
-end
-
 
 """
     check(
