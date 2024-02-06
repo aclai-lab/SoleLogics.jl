@@ -69,7 +69,7 @@ end
 
 # Helper
 function Base.show(io::IO, v::Vector{HeytingTruth})
-    print(io, displaysyntaxvector(v; quotes = false))
+    print(io, SoleLogics.displaysyntaxvector(v; quotes = false))
 end
 
 ############################################################################################

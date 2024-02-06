@@ -106,12 +106,8 @@ include("syntax-utils.jl")
 ############################################################################################
 
 export HeytingTruth, HeytingAlgebra
-export label, index
-export domain, top, bot, graph
-export precedes, succeedes, precedeq, succeedeq
-export collatetruth
-export maximalmembers, minimalmembers, lesservalues
-export @heytingtruths, @heytingalgebra
+export precedes, succeedes, precedeq, succeedeq # TODO move above.
+export @heytingalgebra
 
 include("fuzzy.jl")
 
