@@ -6,7 +6,7 @@ task:
     folder: ~/.julia/artifacts
   env:
     matrix:
-      - JULIA_VERSION: 1.8
+      - JULIA_VERSION: 1.9
       - JULIA_VERSION: 1
       - JULIA_VERSION: nightly
   allow_failures: $JULIA_VERSION == 'nightly'
