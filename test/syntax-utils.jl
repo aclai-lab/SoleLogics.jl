@@ -131,7 +131,7 @@ alpha = Atom.(["p", "q", "r"])
 @test_nowarn cnf(normalize(parseformula("(p ∧ ¬s) ∨ (¬q ∧ p)"); profile = :nnf); allow_atom_flipping = true)
 
 for i in 1:50
-    φ = randformula(4, alpha, [∨, ∧, ¬])
+    local φ = randformula(4, alpha, [∨, ∧, ¬])
     φ2 = cnf(φ)
     _tdict = TruthDict(Dict([p => rand([true, false]) for p in alpha]))
     # i == 1 && println(_tdict)
