@@ -439,6 +439,8 @@ myalgebra = HeytingAlgebra(domain, relations, evaluate=true)
 @test succeedeq(myalgebra, ⊤, G) == true
 @test succeedeq(myalgebra, ⊤, ⊤) == true
 
+using SoleLogics: maximalmembers
+
 @test Set{HeytingTruth}([maximalmembers(myalgebra, ⊥)...]) == Set{HeytingTruth}([HeytingTruth[]...])
 @test Set{HeytingTruth}([maximalmembers(myalgebra, A)...]) == Set{HeytingTruth}([HeytingTruth[E]...])
 @test Set{HeytingTruth}([maximalmembers(myalgebra, B)...]) == Set{HeytingTruth}([HeytingTruth[C]...])
@@ -449,6 +451,8 @@ myalgebra = HeytingAlgebra(domain, relations, evaluate=true)
 @test Set{HeytingTruth}([maximalmembers(myalgebra, G)...]) == Set{HeytingTruth}([HeytingTruth[F, E]...])
 @test Set{HeytingTruth}([maximalmembers(myalgebra, ⊤)...]) == Set{HeytingTruth}([HeytingTruth[F, G]...])
 
+using SoleLogics: minimalmembers
+
 @test Set{HeytingTruth}([minimalmembers(myalgebra, ⊥)...]) ==  Set{HeytingTruth}([HeytingTruth[B, A]...])
 @test Set{HeytingTruth}([minimalmembers(myalgebra, A)...]) ==  Set{HeytingTruth}([HeytingTruth[C, B]...])
 @test Set{HeytingTruth}([minimalmembers(myalgebra, B)...]) ==  Set{HeytingTruth}([HeytingTruth[E, A]...])
@@ -458,6 +462,8 @@ myalgebra = HeytingAlgebra(domain, relations, evaluate=true)
 @test Set{HeytingTruth}([minimalmembers(myalgebra, F)...]) ==  Set{HeytingTruth}([HeytingTruth[E]...])
 @test Set{HeytingTruth}([minimalmembers(myalgebra, G)...]) ==  Set{HeytingTruth}([HeytingTruth[C]...])
 @test Set{HeytingTruth}([minimalmembers(myalgebra, ⊤)...]) ==  Set{HeytingTruth}([HeytingTruth[]...])
+
+using SoleLogics: collatetruth
 
 @test collatetruth(∧, (⊥, ⊥), myalgebra) == HeytingTruth(⊥)
 @test collatetruth(∧, (⊥, A), myalgebra) == HeytingTruth(⊥)

@@ -107,7 +107,7 @@ include("syntax-utils.jl")
 
 export HeytingTruth, HeytingAlgebra
 export precedes, succeedes, precedeq, succeedeq # TODO move above.
-export @heytingalgebra
+export @heytingtruths, @heytingalgebra
 
 include("fuzzy.jl")
 
