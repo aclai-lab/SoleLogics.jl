@@ -296,7 +296,7 @@ istransitive(::AbstractRelation) = false
     isgrounding(::AbstractRelation)
 
 Return whether it is known that a relation is grounding.
-A relation `R` is grounding if ∀x,y R(x,y) ⇔ R(z,y).
+A relation `R` is grounding if ∀x,z,y R(x,y) ⇔ R(z,y).
 
 See also
 [`isreflexive`](@ref), [`issymmetric`](@ref), [`istransitive`](@ref), [`AbstractRelation`](@ref).
@@ -326,6 +326,7 @@ abstract type AbstractMultiModalFrame{W<:AbstractWorld} <: AbstractFrame{W} end
 accessibles(fr::AbstractMultiModalFrame, ::GlobalRel) = allworlds(fr)
 accessibles(fr::AbstractMultiModalFrame, ::AbstractWorld, r::GlobalRel) = accessibles(fr, r)
 accessibles(fr::AbstractMultiModalFrame, w::AbstractWorld,    ::IdentityRel) = [w]
+accessibles(fr::AbstractMultiModalFrame, w::AbstractWorld,    r::AtWorldRelation) = [r.w]
 
 
 """

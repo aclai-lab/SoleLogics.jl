@@ -122,10 +122,10 @@ points_in(a1::Integer, b1::Integer, a2::Integer, b2::Integer) = IterTools.imap((
 # Convenience function: enumerate all interval2Ds in a given range
 intervals2D_in(a1::Integer, a2::Integer, b1::Integer, b2::Integer) = IterTools.imap(Interval2D{Int}, Iterators.product(_intervals_in(a1, a2), _intervals_in(b1, b2)))
 
-const Full0DFrame = FullDimensionalFrame{0,OneWorld}
-const Full1DFrame = FullDimensionalFrame{1,Interval{Int}}
+const Full0DFrame      = FullDimensionalFrame{0,OneWorld}
+const Full1DFrame      = FullDimensionalFrame{1,Interval{Int}}
 const Full1DPointFrame = FullDimensionalFrame{1,Point1D{Int}}
-const Full2DFrame = FullDimensionalFrame{2,Interval2D{Int}}
+const Full2DFrame      = FullDimensionalFrame{2,Interval2D{Int}}
 const Full2DPointFrame = FullDimensionalFrame{2,Point2D{Int}}
 
 ############################################################################################
