@@ -1,5 +1,5 @@
 using FunctionWrappers
-import FunctionWrappers: FunctionWrapper
+using FunctionWrappers: FunctionWrapper
 
 abstract type WorldFilter{W <: AbstractWorld} end
 
@@ -59,4 +59,12 @@ struct FunctionalWorldFilter{W <: AbstractWorld, F <: Function} <: WorldFilter{W
               "where worldtype is a subtype of AbstractWorld and filter is a Function."
         return FunctionalWorldFilter(filter, AbstractWorld)
     end
+end
+
+# Helper
+Base.filter(f::FunctionalWorldFilter, a::Array{T, N}) where {T, N} = filter(f.filter, a)
+
+struct FilteredRelation{R <: AbstractRelation, F <: WorldFilter}
+    r::R
+    f::F
 end
