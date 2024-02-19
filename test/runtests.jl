@@ -27,6 +27,7 @@ test_suites = [
 
     ("Algebras: worlds", ["algebras/worlds.jl",]),
     ("Algebras: frames", ["algebras/frames.jl",]),
+    ("Algebras: relations", ["algebras/relations.jl",]),
 
     ("Kripke word", ["kripke-word.jl",]),
     ("Kripke image", ["kripke-image.jl",]),

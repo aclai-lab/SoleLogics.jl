@@ -21,11 +21,15 @@ struct FunctionalWorldFilter{W <: AbstractWorld, F <: Function} <: WorldFilter{W
     filter::FunctionWrapper{Bool, Tuple{W}}
 
     function FunctionalWorldFilter{W, F}(filter::FunctionWrapper{Bool, Tuple{W}}) where {W <: AbstractWorld, F <: Function}
-        return new{W,F}(filter)
+        return new{W, F}(filter)
+    end
+
+    function FunctionalWorldFilter{W}(filter::FunctionWrapper{Bool, Tuple{W}}, functiontype::Type{F}) where {W <: AbstractWorld, F <: Function}
+        return new{W, functiontype}(filter)
     end
 
     function FunctionalWorldFilter(filter::FunctionWrapper{Bool, Tuple{W}}, functiontype::Type{F}) where {W <: AbstractWorld, F <: Function}
-        return FunctionalWorldFilter{W, functiontype}(filter)
+        return FunctionalWorldFilter{W}(filter, functiontype)
     end
 
     function FunctionalWorldFilter(filter::FunctionWrapper{Bool, Tuple{W}}) where {W <: AbstractWorld}
