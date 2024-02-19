@@ -171,3 +171,8 @@ name(r::NamedRelation) = r.name
 
 
 include("relations/geometrical-relations.jl");
+
+############################################################################################
+
+
+include("relations/filtered-relations.jl");
