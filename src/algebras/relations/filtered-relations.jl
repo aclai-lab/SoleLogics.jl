@@ -35,8 +35,8 @@ struct FunctionalWorldFilter{W <: AbstractWorld, F <: Function} <: WorldFilter{W
     function FunctionalWorldFilter(filter::FunctionWrapper{Bool, Tuple{W}}) where {W <: AbstractWorld}
         @warn "FunctionalWorldFilter initialized without specifying the functiontype.\n"*
               "Please consider using the following syntax instead:\n"*
-              "  FunctionalWorldFilter(FunctionWrapper{Bool, Tuple{W}}(f), typeof(f))\n"*
-              "where W is a subtype of AbstractWorld and f is a Function."
+              "  FunctionalWorldFilter(FunctionWrapper{Bool, Tuple{W}}(filter), typeof(filter))\n"*
+              "where W is a subtype of AbstractWorld and filter is a Function."
         return FunctionalWorldFilter(filter, Function)
     end
 
