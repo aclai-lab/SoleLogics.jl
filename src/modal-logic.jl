@@ -975,8 +975,20 @@ ismodal(::Type{<:BoxRelationalConnective}) = true
 isbox(::Type{<:DiamondRelationalConnective}) = false
 isbox(::Type{<:BoxRelationalConnective}) = true
 
-syntaxstring(op::DiamondRelationalConnective; kwargs...) = "⟨$(syntaxstring(relation(op); kwargs...))⟩"
-syntaxstring(op::BoxRelationalConnective; kwargs...)     = "[$(syntaxstring(relation(op); kwargs...))]"
+function syntaxstring(op::DiamondRelationalConnective; use_modal_superscript_notation = false, kwargs...)
+    if use_modal_superscript_notation
+        return "◊$(SoleBase.superscript(syntaxstring(relation(op); kwargs...)))"
+    else
+        return "⟨$(syntaxstring(relation(op); kwargs...))⟩"
+    end
+end
+function syntaxstring(op::BoxRelationalConnective; use_modal_superscript_notation = false, kwargs...)
+    if use_modal_superscript_notation
+        return "□$(SoleBase.superscript(syntaxstring(relation(op); kwargs...)))"
+    else
+        return "[$(syntaxstring(relation(op); kwargs...))]"
+    end
+end
 
 hasdual(::DiamondRelationalConnective) = true
 dual(op::DiamondRelationalConnective) = BoxRelationalConnective{relationtype(op)}()
