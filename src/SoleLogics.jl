@@ -91,6 +91,13 @@ export AbstractWorlds, Worlds
 
 export Interval, Interval2D, OneWorld
 
+
+export AbstractRelation
+
+export GlobalRel, IdentityRel
+export globalrel, identityrel
+
+
 include("modal-logic.jl")
 
 ############################################################################################

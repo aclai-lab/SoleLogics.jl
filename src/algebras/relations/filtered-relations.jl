@@ -1,70 +1,99 @@
+abstract type WorldFilter{W<:AbstractWorld} end
+
+function filterworlds(wf::WorldFilter, worlds::AbstractArray{W}) where {W<:AbstractWorld}
+    return error("Please, provide method filterworlds(::$(typeof(wf)), ::$(typeof(worlds))).")
+end
+
+function (wf::WorldFilter)(worlds::AbstractArray{W}) where {W<:AbstractWorld}
+    return filterworlds(wf, worlds)
+end
+
 using FunctionWrappers
 using FunctionWrappers: FunctionWrapper
 
-abstract type WorldFilter{W <: AbstractWorld} end
 
 """
-    struct FunctionalWorldFilter{W <: AbstractWorld, F <: Function} <: WorldFilter{W}
-        filter::FunctionWrapper{Bool, Tuple{W}}
-    end
+	struct FunctionalWorldFilter{W <: AbstractWorld, F <: Function} <: WorldFilter{W}
+		filter::FunctionWrapper{Bool, Tuple{W}}
+	end
 
-    FunctionalWorldFilter{W, F}(filter::FunctionWrapper{Bool, Tuple{W}}) where {W <: AbstractWorld, F <: Function}
-    FunctionalWorldFilter(filter::FunctionWrapper{Bool, Tuple{W}}, functiontype::Type{F}) where {W <: AbstractWorld, F <: Function}
-    FunctionalWorldFilter{W, F}(filter::F) where {W <: AbstractWorld, F <: Function}
-    FunctionalWorldFilter{W}(filter::F) where {W <: AbstractWorld, F <: Function}
-    FunctionalWorldFilter(filter::F, worldtype::Type{W}) where {W <: AbstractWorld, F <: Function}
+	FunctionalWorldFilter{W, F}(filter::FunctionWrapper{Bool, Tuple{W}}) where {W <: AbstractWorld, F <: Function}
+	FunctionalWorldFilter(filter::FunctionWrapper{Bool, Tuple{W}}, functiontype::Type{F}) where {W <: AbstractWorld, F <: Function}
+	FunctionalWorldFilter{W, F}(filter::F) where {W <: AbstractWorld, F <: Function}
+	FunctionalWorldFilter{W}(filter::F) where {W <: AbstractWorld, F <: Function}
+	FunctionalWorldFilter(filter::F, worldtype::Type{W}) where {W <: AbstractWorld, F <: Function}
 
 Please provide a function as filter so that it takes as input an object subtype of
 AbstractWorld and it gives as output a Bool.
 """
-struct FunctionalWorldFilter{W <: AbstractWorld, F <: Function} <: WorldFilter{W}
-    filter::FunctionWrapper{Bool, Tuple{W}}
+struct FunctionalWorldFilter{W<:AbstractWorld,F<:Function} <: WorldFilter{W}
+    filter::FunctionWrapper{Bool,Tuple{W}}
 
-    function FunctionalWorldFilter{W, F}(filter::FunctionWrapper{Bool, Tuple{W}}) where {W <: AbstractWorld, F <: Function}
-        return new{W, F}(filter)
+    function FunctionalWorldFilter{W,F}(filter::FunctionWrapper{Bool,Tuple{W}}) where {W<:AbstractWorld,F<:Function}
+        return new{W,F}(filter)
     end
 
-    function FunctionalWorldFilter{W}(filter::FunctionWrapper{Bool, Tuple{W}}, functiontype::Type{F}) where {W <: AbstractWorld, F <: Function}
-        return new{W, functiontype}(filter)
+    function FunctionalWorldFilter{W}(filter::FunctionWrapper{Bool,Tuple{W}}, functiontype::Type{F}) where {W<:AbstractWorld,F<:Function}
+        return new{W,functiontype}(filter)
     end
 
-    function FunctionalWorldFilter(filter::FunctionWrapper{Bool, Tuple{W}}, functiontype::Type{F}) where {W <: AbstractWorld, F <: Function}
+    function FunctionalWorldFilter(filter::FunctionWrapper{Bool,Tuple{W}}, functiontype::Type{F}) where {W<:AbstractWorld,F<:Function}
         return FunctionalWorldFilter{W}(filter, functiontype)
     end
 
-    function FunctionalWorldFilter(filter::FunctionWrapper{Bool, Tuple{W}}) where {W <: AbstractWorld}
-        @warn "FunctionalWorldFilter initialized without specifying the functiontype.\n"*
-              "Please consider using the following syntax instead:\n"*
-              "  FunctionalWorldFilter(FunctionWrapper{Bool, Tuple{W}}(filter), typeof(filter))\n"*
+    function FunctionalWorldFilter(filter::FunctionWrapper{Bool,Tuple{W}}) where {W<:AbstractWorld}
+        @warn "FunctionalWorldFilter initialized without specifying the functiontype.\n" *
+              "Please consider using the following syntax instead:\n" *
+              "  FunctionalWorldFilter(FunctionWrapper{Bool, Tuple{W}}(filter), typeof(filter))\n" *
               "where W is a subtype of AbstractWorld and filter is a Function."
         return FunctionalWorldFilter(filter, Function)
     end
 
-    function FunctionalWorldFilter{W, F}(filter::F) where {W <: AbstractWorld, F <: Function}
-        return FunctionalWorldFilter{W, F}(FunctionWrapper{Bool, Tuple{W}}(filter))
+    function FunctionalWorldFilter{W,F}(filter::F) where {W<:AbstractWorld,F<:Function}
+        return FunctionalWorldFilter{W,F}(FunctionWrapper{Bool,Tuple{W}}(filter))
     end
 
-    function FunctionalWorldFilter{W}(filter::F) where {W <: AbstractWorld, F <: Function}
-        return FunctionalWorldFilter{W, F}(filter)
+    function FunctionalWorldFilter{W}(filter::F) where {W<:AbstractWorld,F<:Function}
+        return FunctionalWorldFilter{W,F}(filter)
     end
 
-    function FunctionalWorldFilter(filter::F, worldtype::Type{W}) where {W <: AbstractWorld, F <: Function}
+    function FunctionalWorldFilter(filter::F, worldtype::Type{W}) where {W<:AbstractWorld,F<:Function}
         return FunctionalWorldFilter{worldtype}(filter)
     end
 
-    function FunctionalWorldFilter(filter::F) where {F <: Function}
-        @warn "FunctionalWorldFilter initialized without specifying the worldtype.\n"*
-              "Plese consider using the following syntax instead:\n"*
-              "  FunctionalWorldFilter(filter, worldtype)\n"*
+    function FunctionalWorldFilter(filter::F) where {F<:Function}
+        @warn "FunctionalWorldFilter initialized without specifying the worldtype.\n" *
+              "Plese consider using the following syntax instead:\n" *
+              "  FunctionalWorldFilter(filter, worldtype)\n" *
               "where worldtype is a subtype of AbstractWorld and filter is a Function."
         return FunctionalWorldFilter(filter, AbstractWorld)
     end
 end
 
-# Helper
-Base.filter(f::FunctionalWorldFilter, a::Array{T, N}) where {T, N} = filter(f.filter, a)
+function filterworlds(wf::FunctionalWorldFilter, worlds::AbstractArray{W}) where {W<:AbstractWorld}
+    return Base.filter(wf.filter, worlds)
+end
 
-struct FilteredRelation{R <: AbstractRelation, F <: WorldFilter}
+"""
+    struct FilteredRelation{R<:AbstractRelation,F<:WorldFilter} <: AbstractRelation
+        r::R
+        wf::F
+    end
+
+A (binary) accessibility relation `r`, filtered by a world filter `wf`.
+"""
+struct FilteredRelation{R<:AbstractRelation,F<:WorldFilter} <: AbstractRelation
     r::R
-    f::F
+    wf::F
+
+    # TODO constructor that accepts a Callable and wraps it into a FunctionalWorldFilter?
+end
+
+# TODO: figure out whether _accessibles or accessibles must be implemented...
+function _accessibles(
+    fr::AbstractMultiModalFrame,
+    w::AbstractWorld,
+    r::FilteredRelation{R,F}
+) where {R<:AbstractRelation,F<:FunctionalWorldFilter}
+    return filterworlds(r.wf, _accessibles(fr, w, r.r))
 end

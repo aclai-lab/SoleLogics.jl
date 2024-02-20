@@ -303,8 +303,126 @@ See also
 """
 isgrounding(::AbstractRelation) = false
 
-include("algebras/relations.jl")
+############################################################################################
+############################################################################################
+############################################################################################
 
+############################################################################################
+# Singletons representing natural relations
+############################################################################################
+
+doc_identityrel = """
+    struct IdentityRel <: AbstractRelation end;
+    const identityrel   = IdentityRel();
+
+Singleton type for the identity relation. This is a binary relation via which a world
+accesses itself. The relation is also symmetric, reflexive and transitive.
+
+# Examples
+```julia-repl
+julia> syntaxstring(SoleLogics.identityrel)
+"="
+
+julia> SoleLogics.converse(identityrel)
+IdentityRel()
+```
+
+See also
+[`globalrel`](@ref),
+[`AbstractRelation`](@ref),
+[`AbstractWorld`](@ref),
+[`AbstractFrame`](@ref).
+[`AbstractKripkeStructure`](@ref),
+"""
+
+"""$(doc_identityrel)"""
+struct IdentityRel <: AbstractRelation end;
+"""$(doc_identityrel)"""
+const identityrel = IdentityRel();
+
+arity(::IdentityRel) = 2
+
+syntaxstring(::IdentityRel; kwargs...) = "="
+
+hasconverse(::IdentityRel) = true
+converse(::IdentityRel) = identityrel
+istoone(::IdentityRel) = true
+issymmetric(::IdentityRel) = true
+isreflexive(::IdentityRel) = true
+istransitive(::IdentityRel) = true
+
+############################################################################################
+
+doc_globalrel = """
+    struct GlobalRel <: AbstractRelation end;
+    const globalrel  = GlobalRel();
+
+Singleton type for the global relation. This is a binary relation via which a world
+accesses every other world within the frame.
+The relation is also symmetric, reflexive and transitive.
+
+# Examples
+```julia-repl
+julia> syntaxstring(SoleLogics.globalrel)
+"G"
+
+julia> SoleLogics.converse(globalrel)
+GlobalRel()
+```
+
+See also
+[`identityrel`](@ref),
+[`AbstractRelation`](@ref),
+[`AbstractWorld`](@ref),
+[`AbstractFrame`](@ref).
+[`AbstractKripkeStructure`](@ref),
+"""
+
+"""$(doc_globalrel)"""
+struct GlobalRel <: AbstractRelation end;
+"""$(doc_globalrel)"""
+const globalrel = GlobalRel();
+
+arity(::GlobalRel) = 2
+
+syntaxstring(::GlobalRel; kwargs...) = "G"
+
+hasconverse(::GlobalRel) = true
+converse(::GlobalRel) = globalrel
+issymmetric(::GlobalRel) = true
+isreflexive(::GlobalRel) = true
+istransitive(::GlobalRel) = true
+isgrounding(::GlobalRel) = true
+
+############################################################################################
+
+"""
+A binary relation via which a world *is accessed* by every other world within the frame.
+That is, the binary relation that leads to a world.
+
+See also
+[`identityrel`](@ref),
+[`AbstractRelation`](@ref),
+[`AbstractWorld`](@ref),
+[`AbstractFrame`](@ref).
+[`AbstractKripkeStructure`](@ref),
+"""
+struct AtWorldRelation{W<:AbstractWorld} <: AbstractRelation
+    w::W
+end;
+
+arity(::AtWorldRelation) = 2
+
+syntaxstring(r::AtWorldRelation; kwargs...) = "@($(syntaxstring(r.w)))"
+
+hasconverse(::AtWorldRelation) = false
+issymmetric(::AtWorldRelation) = false
+isreflexive(::AtWorldRelation) = false
+istransitive(::AtWorldRelation) = true
+isgrounding(::AtWorldRelation) = true
+
+############################################################################################
+############################################################################################
 ############################################################################################
 
 """
@@ -483,6 +601,9 @@ end
 # allworlds(fr::AdjMatMultiModalFrame) = fr.worlds
 # nworlds(fr::AdjMatMultiModalFrame) = length(fr)
 
+
+
+include("algebras/relations.jl")
 
 include("algebras/frames.jl")
 
