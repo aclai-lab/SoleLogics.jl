@@ -9,15 +9,15 @@ i = Interval{Int}(1,2)
 
 fwf = FunctionalWorldFilter{Interval{Int}, typeof(f1)}(fw)
 @test fwf.filter(i) == true
-@test_throws MethodError(convert, (Interval{Int64}, 2), 0x000000000000855a) fwf.filter(2)
+@test_throws MethodError fwf.filter(2)
 
 fwf = FunctionalWorldFilter{Interval{Int}}(fw, typeof(f1))
 @test fwf.filter(i) == true
-@test_throws MethodError(convert, (Interval{Int64}, 2), 0x000000000000855a) fwf.filter(2)
+@test_throws MethodError fwf.filter(2)
 
 fwf = FunctionalWorldFilter(fw, typeof(f1))
 @test fwf.filter(i) == true
-@test_throws MethodError(convert, (Interval{Int64}, 2), 0x000000000000855a) fwf.filter(2)
+@test_throws MethodError fwf.filter(2)
 
 @test_logs (
     :warn,
@@ -27,19 +27,19 @@ fwf = FunctionalWorldFilter(fw, typeof(f1))
     "where W is a subtype of AbstractWorld and filter is a Function."
 ) fwf = FunctionalWorldFilter(fw)
 @test fwf.filter(i) == true
-@test_throws MethodError(convert, (Interval{Int64}, 2), 0x000000000000855b) fwf.filter(2)
+@test_throws MethodError fwf.filter(2)
 
 fwf = FunctionalWorldFilter{Interval{Int}, typeof(f1)}(f1)
 @test fwf.filter(i) == true
-@test_throws MethodError(convert, (Interval{Int64}, 2), 0x000000000000855b) fwf.filter(2)
+@test_throws MethodError fwf.filter(2)
 
 fwf = FunctionalWorldFilter{Interval{Int}}(f1)
 @test fwf.filter(i) == true
-@test_throws MethodError(convert, (Interval{Int64}, 2), 0x000000000000855b) fwf.filter(2)
+@test_throws MethodError fwf.filter(2)
 
 fwf = FunctionalWorldFilter(f1, Interval{Int})
 @test fwf.filter(i) == true
-@test_throws MethodError(convert, (Interval{Int64}, 2), 0x000000000000855b) fwf.filter(2)
+@test_throws MethodError fwf.filter(2)
 
 @test_logs (
     :warn,
@@ -49,4 +49,4 @@ fwf = FunctionalWorldFilter(f1, Interval{Int})
     "where worldtype is a subtype of AbstractWorld and filter is a Function."
 ) fwf = FunctionalWorldFilter(f1)
 @test fwf.filter(i) == true
-@test_throws MethodError(convert, (Interval{Int64}, 2), 0x000000000000855c) fwf.filter(2)
+@test_throws MethodError fwf.filter(2)
