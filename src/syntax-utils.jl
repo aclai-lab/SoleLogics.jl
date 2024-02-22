@@ -123,21 +123,31 @@ struct LeftmostLinearForm{C<:Connective,SS<:AbstractSyntaxStructure} <: Abstract
 end
 
 children(lf::LeftmostLinearForm) = lf.children
-connective(::LeftmostLinearForm{C}) where {C} = C() # TODO avoid
+connective(::LeftmostLinearForm{C}) where {C} = C() # TODO avoid using C alone, since it may not be a singleton.
 
 operatortype(::LeftmostLinearForm{C}) where {C} = C
 childrentype(::LeftmostLinearForm{C,SS}) where {C,SS} = SS
 
 nchildren(lf::LeftmostLinearForm) = length(children(lf))
 
-Base.length(lf::LeftmostLinearForm) = Base.length(children(lf))
-function Base.getindex(
-    lf::LeftmostLinearForm{C,SS},
-    idxs::AbstractVector
-) where {C,SS}
-    return LeftmostLinearForm{C,SS}(children(lf)[idxs])
-end
-Base.getindex(lf::LeftmostLinearForm, idx::Integer) = Base.getindex(lf,[idx])
+
+@forward LeftmostLinearForm.children (
+    Base.length,
+    Base.getindex, Base.setindex!,
+    Base.push!,
+    Base.iterate, Base.IteratorSize, Base.IteratorEltype,
+    Base.firstindex, Base.lastindex,
+    Base.keys, Base.values,
+)
+
+# TODO remove?
+# function Base.getindex(
+#     lf::LeftmostLinearForm{C,SS},
+#     idxs::AbstractVector
+# ) where {C,SS}
+#     return LeftmostLinearForm{C,SS}(children(lf)[idxs])
+# end
+# Base.getindex(lf::LeftmostLinearForm, idx::Integer) = Base.getindex(lf,[idx])
 
 function composeformulas(c::Connective, φs::NTuple{N,LeftmostLinearForm}) where {N}
     if all(_c->_c == c, connective.(φs)) # If operator is the same, collapse children
@@ -220,6 +230,14 @@ Base.promote_rule(::Type{<:LeftmostLinearForm}, ::Type{<:LeftmostLinearForm}) = 
 Base.promote_rule(::Type{SS}, ::Type{LF}) where {SS<:AbstractSyntaxStructure,LF<:LeftmostLinearForm} = SyntaxTree
 Base.promote_rule(::Type{LF}, ::Type{SS}) where {LF<:LeftmostLinearForm,SS<:AbstractSyntaxStructure} = SyntaxTree
 
+function Base.in(tok::SyntaxToken, φ::LeftmostLinearForm)::Bool
+    return (tok isa Connective && connective(φ) == tok) ||
+           any(Base.in(tok, children(φ)))
+end
+
+function Base.in(tok::SyntaxLeaf, φ::LeftmostLinearForm{<:SyntaxLeaf})::Bool
+    return Base.in(tok, children(φ))
+end
 ############################################################################################
 
 # TODO actually:
