@@ -133,21 +133,21 @@ nchildren(lf::LeftmostLinearForm) = length(children(lf))
 
 @forward LeftmostLinearForm.children (
     Base.length,
-    Base.getindex, Base.setindex!,
+    Base.setindex!,
     Base.push!,
     Base.iterate, Base.IteratorSize, Base.IteratorEltype,
     Base.firstindex, Base.lastindex,
     Base.keys, Base.values,
 )
 
-# TODO remove?
-# function Base.getindex(
-#     lf::LeftmostLinearForm{C,SS},
-#     idxs::AbstractVector
-# ) where {C,SS}
-#     return LeftmostLinearForm{C,SS}(children(lf)[idxs])
+# function Base.getindex(lf::LeftmostLinearForm{C,SS}, idxs::AbstractVector) where {C,SS}
+    # return LeftmostLinearForm{C,SS}(children(lf)[idxs])
 # end
 # Base.getindex(lf::LeftmostLinearForm, idx::Integer) = Base.getindex(lf,[idx])
+function Base.getindex(lf::LeftmostLinearForm, idxs::AbstractVector)
+    return LeftmostLinearForm(children(lf)[idxs])
+end
+Base.getindex(lf::LeftmostLinearForm, idx::Integer) = Base.getindex(children(lf),idx)
 
 function composeformulas(c::Connective, φs::NTuple{N,LeftmostLinearForm}) where {N}
     if all(_c->_c == c, connective.(φs)) # If operator is the same, collapse children
