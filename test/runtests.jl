@@ -36,6 +36,7 @@ test_suites = [
     ("Pluto Demo", ["$(dirname(dirname(pathof(SoleLogics))))/pluto-demo.jl", ]),
 
     ("Fuzzy", ["fuzzy.jl",]),
+    ("Miscellaneous", ["misc.jl",]),
 ]
 
 @testset "SoleLogics.jl" begin
