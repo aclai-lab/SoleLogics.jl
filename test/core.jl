@@ -270,6 +270,16 @@ emptylogic = @test_nowarn propositionallogic(; operators = SoleLogics.Operator[]
 @test modallogic() isa SoleLogics.BaseModalLogic
 @test (@test_logs (:warn,) modallogic(; operators = [¬, ∨]) isa SoleLogics.BasePropositionalLogic)
 
+@test syntaxstring(SoleLogics._Topo_TPPi()) == "T̅P̅P̅"
+
+@test syntaxstring(diamond(IA_A)) == "⟨A⟩"
+@test syntaxstring(diamond(IA_A); use_modal_superscript_notation=true) == "◊ᴬ"
+@test syntaxstring(diamond(IA_A); use_modal_superscript_notation=false) == "⟨A⟩"
+@test syntaxstring(diamond(IA_A); use_modal_superscript_notation=true) != syntaxstring(diamond(IA_A)(⊤); use_modal_superscript_notation=false)
+
+@test syntaxstring(diamond(SoleLogics._Topo_TPPi()); use_modal_superscript_notation=true) == "◊ᵀ̅ᴾ̅ᴾ̅"
+
+
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 include("check/propositional.jl")
