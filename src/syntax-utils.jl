@@ -232,12 +232,14 @@ Base.promote_rule(::Type{LF}, ::Type{SS}) where {LF<:LeftmostLinearForm,SS<:Abst
 
 function Base.in(tok::SyntaxToken, φ::LeftmostLinearForm)::Bool
     return (tok isa Connective && connective(φ) == tok) ||
-           any(Base.in(tok, children(φ)))
+           any(c->Base.in(tok, c), children(φ))
 end
 
-function Base.in(tok::SyntaxLeaf, φ::LeftmostLinearForm{<:SyntaxLeaf})::Bool
+function Base.in(tok::SyntaxLeaf, φ::LeftmostLinearForm{C,<:SyntaxLeaf})::Bool where {C<:Connective}
     return Base.in(tok, children(φ))
 end
+
+
 ############################################################################################
 
 # TODO actually:
