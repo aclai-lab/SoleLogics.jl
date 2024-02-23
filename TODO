@@ -1,5 +1,6 @@
 ########## MAIN TODOS ####################################################################################
 
+
 Connectives:
   ☐ Change DiamondRelationalConnective and BoxRelationalConnective from singletons to structs wrapping a relation.
 
@@ -33,6 +34,7 @@ Readability:
   ☐ Add parameters to syntaxstring:
     ☐ parenthesize_unary_modals = false (force <G>phi becomes <G>(phi))
     ☐ parenthesize_operators 
+  ☐ meaningful names for relations: - IA_L -> After/Right - IA_A -> RightAfter
 
 Tests:
   ☐ Increase code coverage
