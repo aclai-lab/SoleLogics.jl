@@ -169,3 +169,7 @@ include("Full2DFrame+IA2D.jl")
 include("Full2DFrame+RCC.jl")
 
 include("Full2DPointFrame.jl")
+
+############################################################################################
+
+include("filtered-frames.jl")
