@@ -102,6 +102,10 @@ include("modal-logic.jl")
 
 ############################################################################################
 
+include("many-valued-logics/ManyValuedLogics.jl")
+
+############################################################################################
+
 export LeftmostLinearForm, LeftmostConjunctiveForm, LeftmostDisjunctiveForm, Literal
 
 export subformulas, normalize
@@ -109,16 +113,6 @@ export subformulas, normalize
 export CNF, DNF, cnf
 
 include("syntax-utils.jl")
-
-############################################################################################
-
-# export HeytingTruth, HeytingAlgebra
-# export precedes, succeedes, precedeq, succeedeq # TODO move above.
-# export @heytingtruths, @heytingalgebra
-
-# include("fuzzy.jl")
-
-include("many-valued-logics/many-valued-logics.jl")
 
 ############################################################################################
 
