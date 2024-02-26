@@ -36,7 +36,8 @@ test_suites = [
 
     ("Pluto Demo", ["$(dirname(dirname(pathof(SoleLogics))))/pluto-demo.jl", ]),
 
-    ("Fuzzy", ["fuzzy.jl",]),
+    ("Many-valued logics", ["many-valued-logics.jl",]),
+
     ("Miscellaneous", ["misc.jl",]),
 ]
 

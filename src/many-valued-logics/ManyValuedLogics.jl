@@ -1,12 +1,12 @@
 module ManyValuedLogics
 
 using ..SoleLogics
-using ..SoleLogics: AbstractAlgebra
+
+include("algebras/flew-algebras.jl")
 
 export HeytingTruth, HeytingAlgebra
-export precedes, succeedes, precedeq, succeedeq # TODO move above.
-export @heytingtruths, @heytingalgebra
+export precedes, succeedes, precedeq, succeedeq
 
-include("algebras/heyting-algebra.jl")
+include("algebras/heyting-algebras.jl")
 
 end

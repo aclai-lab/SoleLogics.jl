@@ -1,4 +1,6 @@
 using Graphs
+using ..SoleLogics: AbstractAlgebra
+import ..SoleLogics: istop, simplify
 
 # Author: alberto-paparella
 
@@ -103,8 +105,8 @@ struct HeytingAlgebra{
     graph::G # directed graph where (α, β) represents α ≺ β
     transitiveclosure::G # transitive closure of the graph (useful for some optimization)
     isevaluated::Bool
-    meet::Vector{Vector{HeytingTruth}}
-    join::Vector{Vector{HeytingTruth}}
+    meettable::Vector{Vector{HeytingTruth}}
+    jointable::Vector{Vector{HeytingTruth}}
     implication::Vector{Vector{HeytingTruth}}
     maxmembers::Vector{Vector{HeytingTruth}}
     minmembers::Vector{Vector{HeytingTruth}}
@@ -126,23 +128,23 @@ struct HeytingAlgebra{
             "with a graph which is not a complete lattice."
         if evaluate
             tc = transitiveclosure(graph)
-            meet = [Vector{HeytingTruth}(undef, length(domain)) for _ in 1:length(domain)]
-            join = [Vector{HeytingTruth}(undef, length(domain)) for _ in 1:length(domain)]
+            meettable = [Vector{HeytingTruth}(undef, length(domain)) for _ in 1:length(domain)]
+            jointable = [Vector{HeytingTruth}(undef, length(domain)) for _ in 1:length(domain)]
             implication = [Vector{HeytingTruth}(undef, length(domain)) for _ in 1:length(domain)]
             maxmembers = Vector{Vector{HeytingTruth}}(undef, length(domain))
             minmembers = Vector{Vector{HeytingTruth}}(undef, length(domain))
             for α ∈ domain
                 for β ∈ domain
-                    meet[index(α)][index(β)] = greatestlowerbound(domain, tc, α, β)
-                    join[index(α)][index(β)] = leastupperbound(domain, tc, α, β)
+                    meettable[index(α)][index(β)] = greatestlowerbound(domain, tc, α, β)
+                    jointable[index(α)][index(β)] = leastupperbound(domain, tc, α, β)
                 end
             end
             for α ∈ domain
                 for β ∈ domain
                     η = HeytingTruth(⊥)
                     for γ ∈ domain
-                        if precedeq(domain, tc, meet[index(α)][index(γ)], β)
-                            η = join[index(η)][index(γ)]
+                        if precedeq(domain, tc, meettable[index(α)][index(γ)], β)
+                            η = jointable[index(η)][index(γ)]
                         end
                     end
                     implication[index(α)][index(β)] = η
@@ -152,7 +154,7 @@ struct HeytingAlgebra{
                 maxmembers[index(α)] = maximalmembers(domain, tc, α)
                 minmembers[index(α)] = minimalmembers(domain, tc, α)
             end
-            return new{D,G}(domain, graph, tc, true, meet, join, implication, maxmembers, minmembers)
+            return new{D,G}(domain, graph, tc, true, meettable, jointable, implication, maxmembers, minmembers)
         else
             return new{D,G}(domain, graph, transitiveclosure(graph), false)
         end
@@ -170,11 +172,11 @@ graph(h::HeytingAlgebra) = h.graph
 Graphs.transitiveclosure(h::HeytingAlgebra) = h.transitiveclosure
 isevaluated(h::HeytingAlgebra) = h.isevaluated
 
-meet(h::HeytingAlgebra) = h.meet
+meet(h::HeytingAlgebra) = h.meettable
 meet(h::HeytingAlgebra, α, β) = meet(h)[index(α)][index(β)]
 
-Base.join(h::HeytingAlgebra) = h.join
-Base.join(h::HeytingAlgebra, α, β) = join(h)[index(α)][index(β)]
+join(h::HeytingAlgebra) = h.jointable
+join(h::HeytingAlgebra, α, β) = join(h)[index(α)][index(β)]
 
 implication(h::HeytingAlgebra) = h.implication
 implication(h::HeytingAlgebra, α, β) = implication(h)[index(α)][index(β)]

@@ -1,5 +1,7 @@
-using SoleLogics
+using Base
 using Graphs
+using SoleLogics
+using SoleLogics.ManyValuedLogics
 
 @test_throws AssertionError(
     "Cannot instantiate `HeytingAlgebra` with domain of length 0. Need to specify at " *
@@ -439,7 +441,7 @@ myalgebra = HeytingAlgebra(domain, relations, evaluate=true)
 @test succeedeq(myalgebra, ⊤, G) == true
 @test succeedeq(myalgebra, ⊤, ⊤) == true
 
-using SoleLogics: maximalmembers
+using SoleLogics.ManyValuedLogics: maximalmembers
 
 @test Set{HeytingTruth}([maximalmembers(myalgebra, ⊥)...]) == Set{HeytingTruth}([HeytingTruth[]...])
 @test Set{HeytingTruth}([maximalmembers(myalgebra, A)...]) == Set{HeytingTruth}([HeytingTruth[E]...])
@@ -451,7 +453,7 @@ using SoleLogics: maximalmembers
 @test Set{HeytingTruth}([maximalmembers(myalgebra, G)...]) == Set{HeytingTruth}([HeytingTruth[F, E]...])
 @test Set{HeytingTruth}([maximalmembers(myalgebra, ⊤)...]) == Set{HeytingTruth}([HeytingTruth[F, G]...])
 
-using SoleLogics: minimalmembers
+using SoleLogics.ManyValuedLogics: minimalmembers
 
 @test Set{HeytingTruth}([minimalmembers(myalgebra, ⊥)...]) ==  Set{HeytingTruth}([HeytingTruth[B, A]...])
 @test Set{HeytingTruth}([minimalmembers(myalgebra, A)...]) ==  Set{HeytingTruth}([HeytingTruth[C, B]...])
@@ -463,7 +465,7 @@ using SoleLogics: minimalmembers
 @test Set{HeytingTruth}([minimalmembers(myalgebra, G)...]) ==  Set{HeytingTruth}([HeytingTruth[C]...])
 @test Set{HeytingTruth}([minimalmembers(myalgebra, ⊤)...]) ==  Set{HeytingTruth}([HeytingTruth[]...])
 
-using SoleLogics: collatetruth
+using SoleLogics.ManyValuedLogics: collatetruth
 
 @test collatetruth(∧, (⊥, ⊥), myalgebra) == HeytingTruth(⊥)
 @test collatetruth(∧, (⊥, A), myalgebra) == HeytingTruth(⊥)
@@ -714,6 +716,7 @@ using SoleLogics: collatetruth
 ### Testing if check works on random propositional formulas and it gives the same result ###
 
 using Random
+using SoleLogics.ManyValuedLogics: convert, @heytingtruths, @heytingalgebra
 
 booleanalgebra = @heytingalgebra () (⊥, ⊤)
 myalphabet = Atom.(["a", "b", "c", "d", "e", "f", "g"])
