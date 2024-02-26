@@ -112,11 +112,13 @@ include("syntax-utils.jl")
 
 ############################################################################################
 
-export HeytingTruth, HeytingAlgebra
-export precedes, succeedes, precedeq, succeedeq # TODO move above.
-export @heytingtruths, @heytingalgebra
+# export HeytingTruth, HeytingAlgebra
+# export precedes, succeedes, precedeq, succeedeq # TODO move above.
+# export @heytingtruths, @heytingalgebra
 
-include("fuzzy.jl")
+# include("fuzzy.jl")
+
+include("many-valued-logics/many-valued-logics.jl")
 
 ############################################################################################
 
