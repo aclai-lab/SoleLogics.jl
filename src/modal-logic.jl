@@ -975,8 +975,28 @@ ismodal(::Type{<:BoxRelationalConnective}) = true
 isbox(::Type{<:DiamondRelationalConnective}) = false
 isbox(::Type{<:BoxRelationalConnective}) = true
 
-syntaxstring(op::DiamondRelationalConnective; kwargs...) = "⟨$(syntaxstring(relation(op); kwargs...))⟩"
-syntaxstring(op::BoxRelationalConnective; kwargs...)     = "[$(syntaxstring(relation(op); kwargs...))]"
+function syntaxstring(op::DiamondRelationalConnective; use_modal_notation = nothing, kwargs...)
+    if isnothing(use_modal_notation)
+        return "⟨$(syntaxstring(relation(op); kwargs...))⟩"
+    elseif use_modal_notation == :superscript
+        return "◊$(SoleBase.superscript(syntaxstring(relation(op); kwargs...)))"
+    # elseif use_modal_notation == :subscript
+    #     return "◊$(SoleBase.subscript(syntaxstring(relation(op); kwargs...)))"
+    else
+        return error("Unexpected value for parameter `use_modal_notation`. Allowed are: [nothing, :superscript]")
+    end
+end
+function syntaxstring(op::BoxRelationalConnective; use_modal_notation = nothing, kwargs...)
+    if isnothing(use_modal_notation)
+        return "[$(syntaxstring(relation(op); kwargs...))]"
+    elseif use_modal_notation == :superscript
+        return "□$(SoleBase.superscript(syntaxstring(relation(op); kwargs...)))"
+    # elseif use_modal_notation == :subscript
+    #     return "□$(SoleBase.subscript(syntaxstring(relation(op); kwargs...)))"
+    else
+        return error("Unexpected value for parameter `use_modal_notation`. Allowed are: [nothing, :superscript]")
+    end
+end
 
 hasdual(::DiamondRelationalConnective) = true
 dual(op::DiamondRelationalConnective) = BoxRelationalConnective{relationtype(op)}()

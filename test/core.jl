@@ -270,6 +270,17 @@ emptylogic = @test_nowarn propositionallogic(; operators = SoleLogics.Operator[]
 @test modallogic() isa SoleLogics.BaseModalLogic
 @test (@test_logs (:warn,) modallogic(; operators = [¬, ∨]) isa SoleLogics.BasePropositionalLogic)
 
+@test syntaxstring(SoleLogics._Topo_TPPi()) == "T̅P̅P̅"
+
+@test syntaxstring(diamond(IA_A)) == "⟨A⟩"
+@test syntaxstring(diamond(IA_A); use_modal_notation=:superscript) == "◊ᴬ"
+@test syntaxstring(diamond(IA_A); use_modal_notation=nothing) == "⟨A⟩"
+@test syntaxstring(diamond(IA_A); use_modal_notation=:superscript) != syntaxstring(diamond(IA_A)(⊤); use_modal_notation=nothing)
+
+@test syntaxstring(diamond(SoleLogics._Topo_TPPi()); use_modal_notation=:superscript) == "◊ᵀ̅ᴾ̅ᴾ̅"
+@test_broken syntaxstring(diamond(SoleLogics._Topo_TPPi()); use_modal_notation=:subscript) == "◊TODO"
+
+
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 include("check/propositional.jl")
