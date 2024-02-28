@@ -76,14 +76,12 @@ end
 
 abstract type FiniteAlgebra{T<:Truth, D<:AbstractSet{T}} <: AbstractAlgebra{T} end
 
-Operation{D, D1} where D1<:AbstractSet{D}
-struct Lattice{T<:Truth, D<:AbstractSet{T}} <: FiniteAlgebra{T,D}
+struct FiniteLattice{T<:Truth, D<:AbstractSet{T}} <: FiniteAlgebra{T,D}
     domain::D
     join::Operation{T,D}
     meet::Operation{T,D}
 
     function Lattice(domain::D, join::Operation{T,D}, meet::Operation{T,D}) where {T<:Truth, D<:AbstractSet{T}}
-    
         @assert iscommutative(join) "Defined a join operation which is not commutative."
         @assert isassociative(join) "Defined a join operation which is not associative."
         @assert iscommutative(meet) "Defined a meet operation which is not commutative." 
@@ -94,68 +92,123 @@ struct Lattice{T<:Truth, D<:AbstractSet{T}} <: FiniteAlgebra{T,D}
     end
 end
 
-############################################################################################
-#### SECOND IMPLEMENTATION #################################################################
-############################################################################################
+const IdentityElement = Axiom{:IE}()
 
-# abstract type Axiom{T<:Truth, D<:AbstractSet{T}} end
+function checkaxiom(::typeof(IdentityElement), o::Operation{T,D}, identityelement::T) where {T<:Truth, D<:AbstractSet{T}}
+    for i ∈ o.domain
+        @assert o(i, identityelement) != i return false
+    end
+    return true
+end
 
-# struct Commutativity{T<:Truth, D<:AbstractSet{T}} <: Axiom{T, D}
-#     o::Operation{T,D}
+struct Monoid{T<:Truth, D<:AbstractSet{T}}
+    domain::D
+    operation::Operation{T,D}
+    identityelement::T
 
-#     function Commutativity(o::Operation{T,D}) where {T<:Truth, D<:AbstractSet{T}}
-#         for i ∈ o.domain
-#             for j ∈ o.domain
-#                 @assert o(i, j) == o(j, i) "Operation $o is not commutative."
-#             end
-#         end
-#         return new{T,D}(o)
-#     end
-# end
+    function Monoid(domain::D, operation::Operation{T,D}, identityelement::T) where {T<:Truth, D<:AbstractSet{T}}
+        @assert isassociative(monoid) "Defined an operation for the monoid which is not associative."
+        @assert checkaxiom(IdentityElement, operation, identityelement) "$identityelement is not a valid identityelement for operation $o."
+        return new(domain, operation, identityelement)
+    end
+end
 
-# struct Associativity{T<:Truth, D<:AbstractSet{T}} <: Axiom{T, D}
-#     o::Operation{T,D}
+function checkaxiom(::typeof(Commutativity), monoid::Monoid{T,D}) where {T<:Truth, D<:AbstractSet{T}}
+    return checkaxiom(Commutativity, monoid.operation)
+end
 
-#     function Associativity(o::Operation{T,D}) where {T<:Truth, D<:AbstractSet{T}}
-#         for i ∈ o.domain
-#             for j ∈ o.domain
-#                 for k ∈ o.domain
-#                     @assert o(o(i, j), k) == o(i, o(j, k)) "Operation $o is not associative."
-#                 end
-#             end
-#         end
-#         return new{T,D}(o)
-#     end
-# end
+const RightResidual = Axiom{:RR}()
 
-# struct AbsorptionLaw{T<:Truth, D<:AbstractSet{T}} <: Axiom{T, D}
-#     o1::Operation{T,D}
-#     o2::Operation{T,D}
+function checkaxiom(::typeof(RightResidual), a::A) where {T<:Truth, D<:AbstractSet{T}, A<:FiniteAlgebra{T,D}}
+    @assert islattice(a) "Trying to check an axiom for a lattice over something which is not a lattice"
+    for z ∈ m.domain
+        for x ∈ m.domain
+            candidates = Set{T}()
+            for y ∈ m.domain
+                if precedes(a, m.operation(x, y), z)
+                    candidate = true
+                    for i ∈ m.domain
+                        if !precedes(a, i, z)
+                            candidate = false
+                            break
+                        end
+                    end
+                    candidate && push!(candidates, y)
+                end
+            end
+            if length(candidates) != 1
+                return false
+            end            
+        end
+    end
+end
 
-#     function AbsorptionLaw(o1::Operation{T,D}, o2::Operation{T,D}) where {T<:Truth, D<:AbstractSet{T}}
-#         for i ∈ o1.domain
-#             for j ∈ o1.domain
-#                 @assert o1(i, o2(i, j)) == i "Absorption law doesn't hold between $o1 and $o2"
-#             end
-#         end
-#         return new{T,D}(o1, o2)
-#     end
-# end
+const LeftResidual = Axiom{:LR}()
 
-# abstract type FiniteAlgebra{T<:Truth, D<:AbstractSet{T}} <: AbstractAlgebra{T} end
+function checkaxiom(::typeof(LeftResidual), a::A) where {T<:Truth, D<:AbstractSet{T}, A<:FiniteAlgebra{T,D}}
+    @assert islattice(a) "Trying to check an axiom for a lattice over something which is not a lattice"
+    for z ∈ m.domain
+        for y ∈ m.domain
+            candidates = Set{T}()
+            for x ∈ m.domain
+                if precedes(a, m.operation(x, y), z)
+                    candidate = true
+                    for i ∈ m.domain
+                        if !precedes(a, i, z)
+                            candidate = false
+                            break
+                        end
+                    end
+                    candidate && push!(candidates, x)
+                end
+            end
+            if length(candidates) != 1
+                return false
+            end            
+        end
+    end
+end
 
-# struct Lattice{T<:Truth, D<:AbstractSet{T}} <: FiniteAlgebra{T,D}
-#     domain::D
-#     join::Operation{T,D}
-#     meet::Operation{T,D}
+struct FiniteFLewAlgebra{T<:Truth, D<:AbstractSet{T}} <: FiniteAlgebra{T,D}
+    domain::D
+    join::Operation{T,D}
+    meet::Operation{T,D}
+    star::Monoid{T,D}
+    implication::Operation{T,D}
+    bot::T
+    top::T
 
-#     function Lattice(domain::D, join::Operation{T,D}, meet::Operation{T,D}) where {T<:Truth, D<:AbstractSet{T}}    
-#         Commutativity(join)
-#         associativity(join)
-#         Commutativity(meet)
-#         associativity(meet)
-#         AbsorptionLaw(join, meet)
-#         AbsorptionLaw(meet, join)
-#         return new{T,D}(domain, join, meet)
-#     end
-# end
+    function FiniteFLewAlgebra(domain::D, join::Operation{T,D}, meet::Operation{T,D}, monoid::Operation{T,D}) where {T<:Truth, D<:AbstractSet{T}}
+        @assert iscommutative(join) "Defined a join operation which is not commutative."
+        @assert isassociative(join) "Defined a join operation which is not associative."
+        @assert iscommutative(meet) "Defined a meet operation which is not commutative." 
+        @assert isassociative(meet) "Defined a meet operation which is not associative."
+        @assert checkaxiom(AbsorptionLaw, join, meet) "Absorption law doesn't hold between join and meet"
+        @assert checkaxiom(AbsorptionLaw, meet, join) "Absorption law doesn't hold between meet and join"
+        @assert iscommutative(monoid) "Defined a monoid operation which is not commutative"
+        @assert checkaxiom(RightResidual, star) "Residuation property does not hold for the defined monoid operation."
+        return new{T,D}(domain, join, meet, star)
+    end
+end
+
+convert(::Type{Lattice}, l::FiniteFLewAlgebra) = Lattice(domain, join, meet)
+
+struct FiniteHeytingAlgebra{T<:Truth, D<:AbstractSet{T}} <: FiniteAlgebra{T,F}
+    domain::D
+    join::Operation{T,D}
+    meet::Operation{T,D}
+end
+
+struct Ordered end
+
+isordered(::Type{Lattice}) = Ordered()
+isordered(::Type{FiniteFLewAlgebra}) = Ordered()
+isordered(::Type{FiniteHeytingAlgebra}) = Ordered()
+
+function precedes(a::Ordered, t1::FLewTruth, t2::FLewTruth)
+    if a.meet(t1, t2) == t1
+        return true
+    else
+        return false
+    end
+end
