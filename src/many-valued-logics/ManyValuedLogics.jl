@@ -2,7 +2,7 @@ module ManyValuedLogics
 
 using ..SoleLogics
 
-include("algebras/algebraic-structures.jl")
+include("algebras/finite-algebras.jl")
 
 # include("algebras/flew-algebras.jl")
 
