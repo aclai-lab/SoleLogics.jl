@@ -1,7 +1,7 @@
 using ..SoleLogics: AbstractAlgebra
 
 ############################################################################################
-#### Operations ############################################################################
+#### Operation #############################################################################
 ############################################################################################
 
 """
@@ -9,7 +9,7 @@ using ..SoleLogics: AbstractAlgebra
 
 An operation is a function which takes zero or more operands to a well-defined output value.
 
-See also [`BinaryOperation`](@ref), [`Monoid`](@ref), [`Axiom`](@ref), [`checkaxiom`](@ref).
+See also [`BinaryOperation`](@ref), [`arity`](@ref).
 """
 abstract type Operation end
 
@@ -18,7 +18,7 @@ abstract type Operation end
 
 Write a text representation of an operation `o` to the output stream `io`.
 
-See also [`Operation`](@ref), [`Monoid`](@ref), [`Axiom`](@ref), [`checkaxiom`](@ref).
+See also [`Operation`](@ref), [`BinaryOperation`](@ref), [`arity`](@ref).
 """
 function Base.show(io::IO, o::O) where {O<:Operation}
     print(io, "$(typeof(o)) without a show function")
@@ -30,7 +30,7 @@ end
 
 Return the arity of an operation `o`.
 
-See also [`Operation`](@ref), [`Monoid`](@ref), [`Axiom`](@ref), [`checkaxiom`](@ref).
+See also [`Operation`](@ref), [`BinaryOperation`](@ref), [`arity`](@ref).
 """
 function arity(o::O) where {O<:Operation}
     error("Please, provide an arity for operation $o.")
@@ -47,7 +47,7 @@ S × S → S. The closure property of a binary operation expresses the existence
 for the operation given any pair of operands. Binary operations are required to be defined
 on all elements of S × S.
 
-See also [`Operation`](@ref), [`Monoid`](@ref), [`Axiom`](@ref), [`checkaxiom`](@ref).
+See also [`Operation`](@ref), [`arity`](@ref).
 """
 struct BinaryOperation{T<:Truth, D<:AbstractSet{T}} <: Operation
     domain::D
@@ -65,7 +65,8 @@ struct BinaryOperation{T<:Truth, D<:AbstractSet{T}} <: Operation
                 @assert (i, j) ∈ keys(truthtable) "truthtable[($i, $j)] is not defined."
             end
         end
-        @assert length(truthtable) == length(domain)^2 "Found truthtable[(i, j)] where i or j ∉ domain."
+        @assert length(truthtable) == length(domain)^2 "Found truthtable[(i, j)] where i " *
+            "or j ∉ domain."
         return new{T,D}(domain, truthtable)
     end
 
@@ -95,25 +96,78 @@ arity(o::BinaryOperation) = 2
 
 Helper allowing to use binary operations with function notation.
 
-See also [`Operation`](@ref), [`Monoid`](@ref), [`Axiom`](@ref), [`checkaxiom`](@ref).
+See also [`Operation`](@ref), [`BinaryOperation`](@ref), [`arity`](@ref).
 """
 function (o::BinaryOperation{T,D})(t1::T, t2::T) where {T<:Truth, D<:AbstractSet{T}}
     return o.truthtable[(t1, t2)]
 end
 
 ############################################################################################
-#### Axioms ################################################################################
+#### Axiom #################################################################################
 ############################################################################################
 
+"""
+    struct Axiom{Symbol} end
+
+An axiom is a statement that is taken to be true, to serve as a premise or starting point
+for further reasoning and arguments. Axioms aim to capture what is special about
+a particular structure (or set of structures).
+
+See also [`checkaxiom`](@ref).
+"""
 struct Axiom{Symbol} end
 
+"""
+    function checkaxiom(a::Axiom, args...)
+
+Checks if axiom `a` is satisfied.
+
+See also [`Axiom`](@ref).
+"""
 function checkaxiom(a::Axiom, args...)
     error("Please, provide a checkaxiom method for axiom $a.")
 end
 
+"""
+    function Base.show(io::IO, a::Axiom)
+
+Write a text representation of an axiom to the output stream `io`.
+
+See also [`Axiom`](@ref).
+"""
+function Base.show(io::IO, ::Axiom{S}) where {S}
+    print(io, string(S))
+end
+
+"""
+    const Commutativity
+
+A binary operation * on a set S is called commutative if x * y = y * x ∀ x, y ∈ S.
+
+See also [`Axiom`](@ref), [`BinaryOperation`](@ref), [`checkaxiom`](@ref).
+"""
 const Commutativity = Axiom{:COM}()
 
-function checkaxiom(::typeof(Commutativity), o::BinaryOperation{T,D}) where {T<:Truth, D<:AbstractSet{T}}
+"""
+    function checkaxiom(
+        ::typeof(Commutativity),
+        o::BinaryOperation{T,D}
+    ) where {
+        T<:Truth,
+        D<:AbstractSet{T}
+    }
+
+A binary operation * on a set S is called commutative if x * y = y * x ∀ x, y ∈ S.
+
+See also [`Axiom`](@ref), [`BinaryOperation`](@ref).
+"""
+function checkaxiom(
+    ::typeof(Commutativity),
+    o::BinaryOperation{T,D}
+) where {
+    T<:Truth,
+    D<:AbstractSet{T}
+}
     for i ∈ o.domain
         for j ∈ o.domain
             o(i, j) != o(j, i) && return false
@@ -123,11 +177,41 @@ function checkaxiom(::typeof(Commutativity), o::BinaryOperation{T,D}) where {T<:
 end
 
 # Helper
-iscommutative(o::BinaryOperation{T,D}) where {T<:Truth, D<:AbstractSet{T}} = checkaxiom(Commutativity, o)
+function iscommutative(o::BinaryOperation{T,D}) where {T<:Truth, D<:AbstractSet{T}}
+    return checkaxiom(Commutativity, o)
+end
 
+"""
+    const Associativity
+
+A binary operation * on a set S is called associative if it satisfies the associative law:
+(x * y) * z = x * (y * z) ∀ x, y, z ∈ S.
+
+See also [`Axiom`](@ref), [`BinaryOperation`](@ref), [`checkaxiom`](@ref).
+"""
 const Associativity = Axiom{:ASS}()
 
-function checkaxiom(::typeof(Associativity), o::BinaryOperation{T,D}) where {T<:Truth, D<:AbstractSet{T}}
+"""
+    function checkaxiom(
+        ::typeof(Associativity),
+        o::BinaryOperation{T,D}
+    ) where {
+        T<:Truth,
+        D<:AbstractSet{T}
+    }
+
+A binary operation * on a set S is called associative if it satisfies the associative law:
+(x * y) * z = x * (y * z) ∀ x, y, z ∈ S.
+
+See also [`Axiom`](@ref), [`BinaryOperation`](@ref).
+"""
+function checkaxiom(
+    ::typeof(Associativity),
+    o::BinaryOperation{T,D}
+) where {
+    T<:Truth,
+    D<:AbstractSet{T}
+}
     for i ∈ o.domain
         for j ∈ o.domain
             for k ∈ o.domain
@@ -139,53 +223,298 @@ function checkaxiom(::typeof(Associativity), o::BinaryOperation{T,D}) where {T<:
 end
 
 # Helper
-isassociative(o::BinaryOperation{T,D}) where {T<:Truth, D<:AbstractSet{T}} = checkaxiom(Associativity, o)
+function isassociative(o::BinaryOperation{T,D}) where {T<:Truth, D<:AbstractSet{T}}
+    checkaxiom(Associativity, o)
+end
 
+"""
+    const AbsorptionLaw
+
+The absorption law or absorption identity is an identity linking a pair of binary
+operations. Two binary operations, * and ⋅, are said to be connected by the absorption law
+if a * (a ⋅ b) = a ⋅ (a * b) = a.
+
+See also [`Axiom`](@ref), [`BinaryOperation`](@ref), [`checkaxiom`](@ref).
+"""
 const AbsorptionLaw = Axiom{:AL}()
 
-function checkaxiom(::typeof(AbsorptionLaw), o1::BinaryOperation{T,D}, o2::BinaryOperation{T,D}) where {T<:Truth, D<:AbstractSet{T}}
+"""
+    function checkaxiom(
+        ::typeof(AbsorptionLaw),
+        o1::BinaryOperation{T,D},
+        o2::BinaryOperation{T,D}
+    ) where {
+        T<:Truth,
+        D<:AbstractSet{T}
+    }
+
+The absorption law or absorption identity is an identity linking a pair of binary
+operations. Two binary operations, * and ⋅, are said to be connected by the absotprion law
+if a * (a ⋅ b) = a ⋅ (a * b) = a.
+
+See also [`Axiom`](@ref), [`BinaryOperation`](@ref).
+"""
+function checkaxiom(
+    ::typeof(AbsorptionLaw),
+    o1::BinaryOperation{T,D},
+    o2::BinaryOperation{T,D}
+) where {
+    T<:Truth,
+    D<:AbstractSet{T}
+}
     for i ∈ o1.domain
         for j ∈ o1.domain
             o1(i, o2(i, j)) != i && return false
+            o2(i, o1(i, j)) != i && return false
         end
     end
     return true
 end
 
-const IdentityElement = Axiom{:IE}()
+"""
+    const LeftIdentity
 
-function checkaxiom(::typeof(IdentityElement), o::BinaryOperation{T,D}, identityelement::T) where {T<:Truth, D<:AbstractSet{T}}
+Let (S, *) be a set S equipped with a binary operation *. Then an element e of S is called a
+left identity if e * s = s ∀ s ∈ S.
+
+See also [`Axiom`](@ref), [`BinaryOperation`](@ref), [`checkaxiom`](@ref).
+"""
+const LeftIdentity = Axiom{:LI}()
+
+"""
+    function checkaxiom(
+        ::typeof(LeftIdentity),
+        o::BinaryOperation{T,D},
+        e::T
+    ) where {
+        T<:Truth,
+        D<:AbstractSet{T}
+    }
+
+Let (S, *) be a set S equipped with a binary operation *. Then an element e of S is called a
+left identity if e * s = s ∀ s ∈ S.
+
+See also [`Axiom`](@ref), [`BinaryOperation`](@ref).
+"""
+function checkaxiom(
+    ::typeof(LeftIdentity),
+    o::BinaryOperation{T,D},
+    e::T
+) where {
+    T<:Truth,
+    D<:AbstractSet{T}
+}
     for i ∈ o.domain
-        @assert o(i, identityelement) != i return false
+        o(e, i) != i && return false
     end
     return true
 end
 
-function checkaxiom(a::Axiom, monoid::Monoid{T,D}) where {T<:Truth, D<:AbstractSet{T}}
-    return checkaxiom(typeof(a), monoid.operation)
+"""
+    const RightIdentity
+
+Let (S, *) be a set S equipped with a binary operation *. Then an element e of S is called a
+right identity if s * e = s ∀ s ∈ S.
+
+See also [`Axiom`](@ref), [`BinaryOperation`](@ref), [`checkaxiom`](@ref).
+"""
+const RightIdentity = Axiom{:RI}()
+
+"""
+    function checkaxiom(
+        ::typeof(RightIdentity),
+        o::BinaryOperation{T,D},
+        e::T
+    ) where {
+        T<:Truth,
+        D<:AbstractSet{T}
+    }
+
+Let (S, *) be a set S equipped with a binary operation *. Then an element e of S is called a
+right identity if s * e = s ∀ s ∈ S.
+
+See also [`Axiom`](@ref), [`BinaryOperation`](@ref).
+"""
+function checkaxiom(
+    ::typeof(RightIdentity),
+    o::BinaryOperation{T,D},
+    e::T
+) where {
+    T<:Truth,
+    D<:AbstractSet{T}
+}
+    for i ∈ o.domain
+        o(i, e) != i && return false
+    end
+    return true
 end
 
 """
-A monoid (L, ⋅, e) is a set L equipped with a binary operation L × L → L, denoted as ⋅,
-satisfying the following axiomatic identities:
- - (Associativity) ∀ a, b, c ∈ L, the equation (a ⋅ b) ⋅ c = a ⋅ (b ⋅ c) holds.
- - (Identity element) There exists an element e ∈ L such that for every element a ∈ L, the equalities e ⋅ a = a
-   and a ⋅ e = a hold. 
+    const IdentityElement
 
-The identity element of a monoid is unique.
+An identity element or neutral element of a binary operation is an element that leaves
+unchanged every element when the operation is applied. I.e., let (S, *) be a set S equipped
+with a binary operation *. Then an element e of S is called a two-sided identity, or simply
+identity, if e is both a left identity and a right identity.
+
+See also [`Axiom`](@ref), [`BinaryOperation`](@ref), [`LeftIdentity`](@ref),
+[`RightIdentity`](@ref), [`checkaxiom`](@ref).
 """
-struct Monoid{T<:Truth, D<:AbstractSet{T}}
-    domain::D
-    operation::BinaryOperation{T,D}
-    identityelement::T
+const IdentityElement = Axiom{:IE}()
 
-    function Monoid(domain::D, operation::BinaryOperation{T,D}, identityelement::T) where {T<:Truth, D<:AbstractSet{T}}
-        @assert isassociative(monoid) "Defined an operation for the monoid which is not associative."
-        @assert checkaxiom(IdentityElement, monoid, identityelement) "$identityelement is not a valid identityelement for operation $o."
-        return new{T,D}(domain, operation, identityelement)
+"""
+    function checkaxiom(
+        ::typeof(IdentityElement),
+        o::BinaryOperation{T,D},
+        e::T
+    ) where {
+        T<:Truth,
+        D<:AbstractSet{T}
+    }
+
+An identity element or neutral element of a binary operation is an element that leaves
+unchanged every element when the operation is applied. I.e., let (S, *) be a set S equipped
+with a binary operation *. Then an element e of S is called a two-sided identity, or simply
+identity, if e is both a left identity and a right identity.
+
+See also [`Axiom`](@ref), [`BinaryOperation`](@ref), [`LeftIdentity`](@ref),
+[`RightIdentity`](@ref).
+"""
+function checkaxiom(
+    ::typeof(IdentityElement),
+    o::BinaryOperation{T,D},
+    e::T
+) where {
+    T<:Truth,
+    D<:AbstractSet{T}
+}
+    if checkaxiom(LeftIdentity, o, e) && checkaxiom(RightIdentity, o, e)
+        return true
+    else
+        return false
     end
 end
 
+############################################################################################
+#### Monoid ################################################################################
+############################################################################################
+
+"""
+    struct Monoid{T<:Truth, D<:AbstractSet{T}}
+        operation::BinaryOperation{T,D}
+        identityelement::T
+    end
+
+A monoid (S, ⋅, e) is a set S equipped with a binary operation S × S → S, denoted as ⋅,
+satisfying the following axiomatic identities:
+ - (Associativity) ∀ a, b, c ∈ S, the equation (a ⋅ b) ⋅ c = a ⋅ (b ⋅ c) holds.
+ - (Identity element) There exists an element e ∈ L such that for every element a ∈ S, the
+   equalities e ⋅ a = a and a ⋅ e = a hold. 
+
+The identity element of a monoid is unique.
+
+See also [`BinaryOperation`](@ref), [`Axiom`](@ref), [`checkaxiom`](@ref),
+[`checkmonoidaxioms`](@ref), [`Associativity`](@ref), [`IdentityElement`](@ref).
+"""
+struct Monoid{T<:Truth, D<:AbstractSet{T}}
+    operation::BinaryOperation{T,D}
+    identityelement::T
+
+    function Monoid(
+        operation::BinaryOperation{T,D},
+        identityelement::T
+    ) where {
+        T<:Truth,
+        D<:AbstractSet{T}
+    }
+        checkmonoidaxioms(operation, identityelement)
+        return new{T,D}(operation, identityelement)
+    end
+end
+
+"""
+    function checkmonoidaxioms(
+        o::BinaryOperation{T,D},
+        e::T
+    ) where {
+        T<:Truth,
+        D<:AbstractSet{T}
+    }
+
+A monoid (S, ⋅, e) is a set S equipped with a binary operation S × S → S, denoted as ⋅,
+satisfying the following axiomatic identities:
+ - (Associativity) ∀ a, b, c ∈ S, the equation (a ⋅ b) ⋅ c = a ⋅ (b ⋅ c) holds.
+ - (Identity element) There exists an element e ∈ L such that for every element a ∈ S, the
+   equalities e ⋅ a = a and a ⋅ e = a hold. 
+
+The identity element of a monoid is unique.
+
+See also [`BinaryOperation`](@ref), [`Axiom`](@ref), [`checkaxiom`](@ref),
+[`Associativity`](@ref), [`IdentityElement`](@ref).
+"""
+function checkmonoidaxioms(
+    o::BinaryOperation{T,D},
+    e::T
+) where {
+    T<:Truth,
+    D<:AbstractSet{T}
+}
+    @assert checkaxiom(Associativity, o) "Defined an operation for the monoid which " *
+        "is not associative."
+    @assert checkaxiom(IdentityElement, o, e) "$e is not a valid identity element for " *
+        "the defined operation."
+    return nothing
+end
+
+"""
+    function checkaxiom(a::Axiom, m::Monoid{T,D}) where {T<:Truth, D<:AbstractSet{T}}
+
+Checks if axiom `a` is satisfied by the operation of the monoid `m`.
+
+See also [`Axiom`](@ref), [`Monoid`](@ref).
+"""
+function checkaxiom(a::Axiom, m::Monoid{T,D}) where {T<:Truth, D<:AbstractSet{T}}
+    return checkaxiom(typeof(a), m.operation)
+end
+
+"""
+    struct CommutativeMonoid{T<:Truth, D<:AbstractSet{T}}
+        operation::BinaryOperation{T,D}
+        identityelement::T
+    end
+
+A commutative monoid (S, ⋅, e) is a monoid whose operation is commutative.
+
+See also [`Monoid`](@ref), [`Commutativity`](@ref).
+"""
+struct CommutativeMonoid{T<:Truth, D<:AbstractSet{T}}
+    operation::BinaryOperation{T,D}
+    identityelement::T
+
+    function CommutativeMonoid(
+        operation::BinaryOperation{T,D},
+        identityelement::T
+    ) where {
+        T<:Truth,
+        D<:AbstractSet{T}
+    }
+        checkmonoidaxioms(operation, identityelement)
+        checkaxiom(Commutativity, operation)
+        return new{T,D}(operation, identityelement)
+    end
+end
+
+############################################################################################
+#### Finite algebra ########################################################################
+############################################################################################
+
+"""
+    abstract type FiniteAlgebra{T<:Truth, D<:AbstractSet{T}} <: AbstractAlgebra{T} end
+
+A finite algebra is an algebraic structure defined on a finite set.
+
+See also [`AbstractAlgebra`](@ref).
+"""
 abstract type FiniteAlgebra{T<:Truth, D<:AbstractSet{T}} <: AbstractAlgebra{T} end
 
 """

@@ -1,8 +1,8 @@
 using SoleLogics
 using SoleLogics.ManyValuedLogics
-using SoleLogics.ManyValuedLogics: BinaryOperation
+using SoleLogics.ManyValuedLogics: BinaryOperation, Monoid
 
-domain = Set{BooleanAlgebra}([⊥, ⊤])
+domain = Set{BooleanTruth}([⊥, ⊤])
 
 meettable = Dict{Tuple{BooleanTruth, BooleanTruth}, BooleanTruth}(
     (⊥, ⊥) => ⊥, (⊥, ⊤) => ⊥,
@@ -10,3 +10,5 @@ meettable = Dict{Tuple{BooleanTruth, BooleanTruth}, BooleanTruth}(
 )
 
 meet = BinaryOperation(domain, meettable)
+
+monoid = Monoid(meet, ⊤)
