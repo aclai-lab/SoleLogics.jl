@@ -1,12 +1,65 @@
 using ..SoleLogics: AbstractAlgebra
 
+############################################################################################
+#### Operations ############################################################################
+############################################################################################
+
+"""
+    abstract type Operation end
+
+An operation is a function which takes zero or more operands to a well-defined output value.
+
+See also [`BinaryOperation`](@ref), [`Monoid`](@ref), [`Axiom`](@ref), [`checkaxiom`](@ref).
+"""
 abstract type Operation end
 
+"""
+    function Base.show(io::IO, o::O) where {O<:Operation}
+
+Write a text representation of an operation `o` to the output stream `io`.
+
+See also [`Operation`](@ref), [`Monoid`](@ref), [`Axiom`](@ref), [`checkaxiom`](@ref).
+"""
+function Base.show(io::IO, o::O) where {O<:Operation}
+    print(io, "$(typeof(o)) without a show function")
+    @warn "Please, provide a show function for operation $(typeof(o))."
+end
+
+"""
+    function arity(o::O) where {O<:Operation}
+
+Return the arity of an operation `o`.
+
+See also [`Operation`](@ref), [`Monoid`](@ref), [`Axiom`](@ref), [`checkaxiom`](@ref).
+"""
+function arity(o::O) where {O<:Operation}
+    error("Please, provide an arity for operation $o.")
+end
+
+"""
+    struct BinaryOperation{T<:Truth, D<:AbstractSet{T}} <: Operation
+        domain::D
+        truthtable::AbstractDict{Tuple{T, T}, T}
+    end
+
+A binary operation on a set S is a mapping of the elements of the Cartesian product
+S × S → S. The closure property of a binary operation expresses the existence of a result
+for the operation given any pair of operands. Binary operations are required to be defined
+on all elements of S × S.
+
+See also [`Operation`](@ref), [`Monoid`](@ref), [`Axiom`](@ref), [`checkaxiom`](@ref).
+"""
 struct BinaryOperation{T<:Truth, D<:AbstractSet{T}} <: Operation
     domain::D
     truthtable::AbstractDict{Tuple{T, T}, T}
 
-    function BinaryOperation(domain::D, truthtable::Dict{Tuple{T, T}, T}) where {T<:Truth, D<:AbstractSet{T}}
+    function BinaryOperation(
+        domain::D,
+        truthtable::Dict{Tuple{T, T}, T}
+    ) where {
+        T<:Truth,
+        D<:AbstractSet{T}
+    }
         for i ∈ domain
             for j ∈ domain
                 @assert (i, j) ∈ keys(truthtable) "truthtable[($i, $j)] is not defined."
@@ -16,7 +69,14 @@ struct BinaryOperation{T<:Truth, D<:AbstractSet{T}} <: Operation
         return new{T,D}(domain, truthtable)
     end
 
-    function BinaryOperation(domain::D, operation::F) where {T<:Truth, D<:AbstractSet{T}, F<:Function}
+    function BinaryOperation(
+        domain::D,
+        operation::F
+    ) where {
+        T<:Truth,
+        D<:AbstractSet{T},
+        F<:Function
+    }
         truthtable = Dict{Tuple{T, T}, T}()
         for i ∈ domain
             for j ∈ domain
@@ -27,28 +87,23 @@ struct BinaryOperation{T<:Truth, D<:AbstractSet{T}} <: Operation
     end
 end
 
-(o::BinaryOperation{T,D})(t1::T, t2::T) where {T<:Truth, D<:AbstractSet{T}} = o.truthtable[(t1, t2)]
+Base.show(io::IO, o::BinaryOperation) = print(io, "$(o.truthtable)")
+arity(o::BinaryOperation) = 2
 
 """
-A monoid (L, ⋅, e) is a set L equipped with a binary operation L × L → L, denoted as ⋅,
-satisfying the following axiomatic identities:
- - (Associativity) ∀ a, b, c ∈ L, the equation (a ⋅ b) ⋅ c = a ⋅ (b ⋅ c) holds.
- - (Identity element) There exists an element e ∈ L such that for every element a ∈ L, the equalities e ⋅ a = a
-   and a ⋅ e = a hold. 
+    function (o::BinaryOperation{T,D})(t1::T, t2::T) where {T<:Truth, D<:AbstractSet{T}}
 
-The identity element of a monoid is unique.
+Helper allowing to use binary operations with function notation.
+
+See also [`Operation`](@ref), [`Monoid`](@ref), [`Axiom`](@ref), [`checkaxiom`](@ref).
 """
-struct Monoid{T<:Truth, D<:AbstractSet{T}}
-    domain::D
-    operation::BinaryOperation{T,D}
-    identityelement::T
-
-    function Monoid(domain::D, operation::BinaryOperation{T,D}, identityelement::T) where {T<:Truth, D<:AbstractSet{T}}
-        @assert isassociative(monoid) "Defined an operation for the monoid which is not associative."
-        @assert checkaxiom(IdentityElement, monoid, identityelement) "$identityelement is not a valid identityelement for operation $o."
-        return new{T,D}(domain, operation, identityelement)
-    end
+function (o::BinaryOperation{T,D})(t1::T, t2::T) where {T<:Truth, D<:AbstractSet{T}}
+    return o.truthtable[(t1, t2)]
 end
+
+############################################################################################
+#### Axioms ################################################################################
+############################################################################################
 
 struct Axiom{Symbol} end
 
@@ -108,6 +163,27 @@ end
 
 function checkaxiom(a::Axiom, monoid::Monoid{T,D}) where {T<:Truth, D<:AbstractSet{T}}
     return checkaxiom(typeof(a), monoid.operation)
+end
+
+"""
+A monoid (L, ⋅, e) is a set L equipped with a binary operation L × L → L, denoted as ⋅,
+satisfying the following axiomatic identities:
+ - (Associativity) ∀ a, b, c ∈ L, the equation (a ⋅ b) ⋅ c = a ⋅ (b ⋅ c) holds.
+ - (Identity element) There exists an element e ∈ L such that for every element a ∈ L, the equalities e ⋅ a = a
+   and a ⋅ e = a hold. 
+
+The identity element of a monoid is unique.
+"""
+struct Monoid{T<:Truth, D<:AbstractSet{T}}
+    domain::D
+    operation::BinaryOperation{T,D}
+    identityelement::T
+
+    function Monoid(domain::D, operation::BinaryOperation{T,D}, identityelement::T) where {T<:Truth, D<:AbstractSet{T}}
+        @assert isassociative(monoid) "Defined an operation for the monoid which is not associative."
+        @assert checkaxiom(IdentityElement, monoid, identityelement) "$identityelement is not a valid identityelement for operation $o."
+        return new{T,D}(domain, operation, identityelement)
+    end
 end
 
 abstract type FiniteAlgebra{T<:Truth, D<:AbstractSet{T}} <: AbstractAlgebra{T} end
