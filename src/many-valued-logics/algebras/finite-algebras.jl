@@ -831,7 +831,7 @@ function convert(
     D<:AbstractSet{T},
     L<:FiniteAlgebra{T,D}
 }
-    if islattice(l)
+    if isboundedlattice(l)
         return FiniteBoundedLattice(l.join, l.meet, l.bot, l.top)
     else
         error("Cannot convert object of type $(typeof(l)) to a value of type Lattice.")
@@ -1003,7 +1003,7 @@ function checkaxiom(
 end
 
 """
-    struct ResiduatedLattice{T<:Truth, D<:AbstractSet{T}} <: FiniteAlgebra{T,D}
+    struct FiniteResiduatedLattice{T<:Truth, D<:AbstractSet{T}} <: FiniteAlgebra{T,D}
         domain::D
         join::BinaryOperation{T,D}
         meet::BinaryOperation{T,D}
@@ -1022,7 +1022,7 @@ A residuated lattice is an algebraic structure L = (L, ∨, ∧, ⋅, e) such th
 
 See also [`FiniteBoundedLattice`](@ref), 
 """
-struct ResiduatedLattice{T<:Truth, D<:AbstractSet{T}} <: FiniteAlgebra{T,D}
+struct FiniteResiduatedLattice{T<:Truth, D<:AbstractSet{T}} <: FiniteAlgebra{T,D}
     domain::D
     join::BinaryOperation{T,D}
     meet::BinaryOperation{T,D}
@@ -1032,7 +1032,7 @@ struct ResiduatedLattice{T<:Truth, D<:AbstractSet{T}} <: FiniteAlgebra{T,D}
     bot::T
     top::T
 
-    function ResiduatedLattice(
+    function FiniteResiduatedLattice(
         join::BinaryOperation{T,D},
         meet::BinaryOperation{T,D},
         monoid::Monoid{T,D},
