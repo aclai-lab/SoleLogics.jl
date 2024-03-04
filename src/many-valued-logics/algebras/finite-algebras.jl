@@ -839,7 +839,7 @@ function convert(
 end
 
 ############################################################################################
-#### Finite FLew algebra ###################################################################
+#### Residuated lattice ####################################################################
 ############################################################################################
 
 """
@@ -874,7 +874,7 @@ function checkaxiom(
     M<:FiniteAlgebra{T,D}
 }
     !ismonoid(monoid) && error("Cannot convert an object of type $(typeof(monoid)) to an "*
-        "object of type monoid.")
+        "object of type Monoid.")
     for z ∈ getdomain(monoid)
         for x ∈ getdomain(monoid)
             candidates = Set{T}()
@@ -900,6 +900,202 @@ function checkaxiom(
     end
     return true
 end
+
+"""
+    const LeftResidual
+
+The left residual between two elements z, y ∈ S is the greatest x ∈ S such that x ⋅ y ≤ z.
+
+See also [`Axiom`](@ref), [`Monoid`](@ref), [`checkaxiom`](@ref).
+"""
+const LeftResidual = Axiom{:LR}()
+
+"""
+    function checkaxiom(
+        ::typeof(LeftResidual),
+        m::Monoid{T,D}
+    ) where {
+        T<:Truth,
+        D<:AbstractSet{T}
+    }
+
+Check that ∀ x ∈ S there exists for every y ∈ S a greatest x ∈ S such that x ⋅ y ≤ z.
+
+See also [`Axiom`](@ref), [`Monoid`](@ref).
+"""
+function checkaxiom(
+    ::typeof(LeftResidual),
+    meet::BinaryOperation{T,D},
+    monoid::M
+) where {
+    T<:Truth,
+    D<:AbstractSet{T},
+    M<:FiniteAlgebra{T,D}
+}
+    !ismonoid(monoid) && error("Cannot convert an object of type $(typeof(monoid)) to an "*
+        "object of type Monoid.")
+    for z ∈ getdomain(monoid)
+        for y ∈ getdomain(monoid)
+            candidates = Set{T}()
+            for x ∈ getdomain(monoid)
+                meet(monoid(x, y), z) == monoid(x, y) && push!(candidates, x)
+            end
+            foundlr = false
+            for x ∈ candidates
+                isgreatest = true
+                for w ∈ candidates
+                    if meet(w, x) != w
+                        isgreatest = false
+                        break
+                    end
+                end
+                if isgreatest
+                    foundlr = true
+                    break
+                end
+            end
+            !foundlr && return false
+        end
+    end
+    return true
+end
+
+"""
+    const ResiduationProperty
+
+A lattice (L, ∨, ∧, ⋅, ⊥, →) is residuated if ∀ x ∈ S there exists for every x ∈ S a
+greatest y ∈ S and for every y ∈ S a greatest x ∈ S such that x ⋅ y ≤ z.
+
+See also [`Axiom`](@ref), [`Monoid`](@ref), [`checkaxiom`](@ref).
+"""
+const ResiduationProperty = Axiom{:RP}()
+
+"""
+    function checkaxiom(
+        ::typeof(ResiduationProperty),
+        m::Monoid{T,D}
+    ) where {
+        T<:Truth,
+        D<:AbstractSet{T}
+    }
+
+Check that ∀ x ∈ S there exists for every x ∈ S a greatest y ∈ S and for every y ∈ S a
+greatest x ∈ S such that x ⋅ y ≤ z.
+
+See also [`Axiom`](@ref), [`Monoid`](@ref).
+"""
+function checkaxiom(
+    ::typeof(ResiduationProperty),
+    meet::BinaryOperation{T,D},
+    monoid::M
+) where {
+    T<:Truth,
+    D<:AbstractSet{T},
+    M<:FiniteAlgebra{T,D}
+}
+    !ismonoid(monoid) && error("Cannot convert an object of type $(typeof(monoid)) to an "*
+        "object of type Monoid.")
+    if checkaxiom(RightResidual, meet, monoid) && checkaxiom(LeftResidual, meet, monoid)
+        return true
+    else
+        return false
+    end        
+end
+
+"""
+    struct ResiduatedLattice{T<:Truth, D<:AbstractSet{T}} <: FiniteAlgebra{T,D}
+        domain::D
+        join::BinaryOperation{T,D}
+        meet::BinaryOperation{T,D}
+        monoid::Monoid{T,D}
+        rightresidual::BinaryOperation{T,D}
+        leftresidual::BinaryOperation{T,D}
+        bot::T
+        top::T
+    end
+
+A residuated lattice is an algebraic structure L = (L, ∨, ∧, ⋅, e) such that:
+ - (L, ∨, ∧) is a lattice
+ - (L, ⋅, e) is a monoid
+ - ∀ x ∈ L there exists for every x ∈ L a greatest y ∈ L and for every y ∈ L a greatest
+   x ∈ L such that x ⋅ y ≤ z
+
+See also [`FiniteBoundedLattice`](@ref), 
+"""
+struct ResiduatedLattice{T<:Truth, D<:AbstractSet{T}} <: FiniteAlgebra{T,D}
+    domain::D
+    join::BinaryOperation{T,D}
+    meet::BinaryOperation{T,D}
+    monoid::Monoid{T,D}
+    rightresidual::BinaryOperation{T,D}
+    leftresidual::BinaryOperation{T,D}
+    bot::T
+    top::T
+
+    function ResiduatedLattice(
+        join::BinaryOperation{T,D},
+        meet::BinaryOperation{T,D},
+        monoid::Monoid{T,D},
+        bot::T,
+        top::T
+    ) where {
+        T<:Truth,
+        D<:AbstractSet{T}
+    }
+        checkboundedlatticeaxioms(join, meet, bot, top)
+        @assert checkaxiom(ResiduationProperty, meet, monoid) "Residuation property does " *
+            "not hold for the defined monoid operation."
+        rrtruthtable = Dict{Tuple{T, T}, T}()
+        lrtruthtable = Dict{Tuple{T, T}, T}()
+        for z ∈ getdomain(monoid)
+            for x ∈ getdomain(monoid)
+                candidates = Set{T}()
+                for y ∈ getdomain(monoid)
+                    meet(monoid(x, y), z) == monoid(x, y) && push!(candidates, y)
+                end
+                for y ∈ candidates
+                    isgreatest = true
+                    for w ∈ candidates
+                        if meet(w, y) != w
+                            isgreatest = false
+                            break
+                        end
+                    end
+                    if isgreatest
+                        rrtruthtable[(x,z)] = y
+                        break
+                    end
+                end
+            end
+            for y ∈ getdomain(monoid)
+                candidates = Set{T}()
+                for x ∈ getdomain(monoid)
+                    meet(monoid(x, y), z) == monoid(x, y) && push!(candidates, y)
+                end
+                for x ∈ candidates
+                    isgreatest = true
+                    for w ∈ candidates
+                        if meet(w, x) != w
+                            isgreatest = false
+                            break
+                        end
+                    end
+                    if isgreatest
+                        lrtruthtable[(y,z)] = x
+                        break
+                    end
+                end
+            end
+        end
+        rightresidual = BinaryOperation(getdomain(monoid), rrtruthtable)
+        leftresidual = BinaryOperation(getdomain(monoid), lrtruthtable)
+        return new{T,D}(join, meet, monoid, rightresidual, leftresidual, bot, top)
+    end
+end
+
+############################################################################################
+#### Finite FLew algebra ###################################################################
+############################################################################################
 
 """
     struct FiniteFLewAlgebra{T<:Truth, D<:AbstractSet{T}} <: FiniteAlgebra{T,D}
@@ -938,8 +1134,8 @@ struct FiniteFLewAlgebra{T<:Truth, D<:AbstractSet{T}} <: FiniteAlgebra{T,D}
         D<:AbstractSet{T}
     }
         checkboundedlatticeaxioms(join, meet, bot, top)
-        @assert implication = checkaxiom(RightResidual, meet, monoid) "Residuation " *
-            "property does not hold for the defined monoid operation."
+        @assert checkaxiom(RightResidual, meet, monoid) "Residuation property does not " *
+            "hold for the defined monoid operation."
         implicationtruthtable = Dict{Tuple{T, T}, T}()
         for z ∈ getdomain(monoid)
             for x ∈ getdomain(monoid)
