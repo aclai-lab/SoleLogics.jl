@@ -405,6 +405,27 @@ function checkaxiom(
 end
 
 ############################################################################################
+#### Finite truth ########################################################################
+############################################################################################
+
+struct FiniteTruth <: Truth
+    label::String
+
+    function FiniteTruth(label::String)
+        return new(label)
+    end
+
+    function FiniteTruth(t::BooleanTruth)
+        return convert(FiniteTruth, t)
+    end 
+end
+
+istop(t::FiniteTruth) = t.label == "⊤"
+isbot(t::FiniteTruth) = t.label == "⊥"
+syntaxstring(t::FiniteTruth; kwargs...) = t.label
+convert(::Type{FiniteTruth}, t::BooleanTruth) = istop(t) ? FLewTruth("⊤") : FLewTruth("⊥")
+
+############################################################################################
 #### Finite algebra ########################################################################
 ############################################################################################
 
