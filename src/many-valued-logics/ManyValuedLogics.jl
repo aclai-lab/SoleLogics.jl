@@ -2,13 +2,11 @@ module ManyValuedLogics
 
 using ..SoleLogics
 
-include("algebras/finite-algebras.jl")
+export BinaryOperation, Monoid, CommutativeMonoid
+export FiniteLattice, FiniteBoundedLattice, FiniteResiduatedLattice
+export FiniteFLewAlgebra, FiniteHeytingAlgebra
+export precedeq, precedes, succeedeq, succeedes
 
-# include("algebras/flew-algebras.jl")
-
-# export HeytingTruth, HeytingAlgebra
-# export precedes, succeedes, precedeq, succeedeq
-
-# include("algebras/heyting-algebras.jl")
+include("core.jl")
 
 end
