@@ -1,10 +1,10 @@
 abstract type WorldFilter{W<:AbstractWorld} end
 
-function filterworlds(wf::WorldFilter, worlds::AbstractArray{W}) where {W<:AbstractWorld}
+function filterworlds(wf::WorldFilter, worlds) # ::AbstractArray{W}) where {W<:AbstractWorld}
     return error("Please, provide method filterworlds(::$(typeof(wf)), ::$(typeof(worlds))).")
 end
 
-function (wf::WorldFilter)(worlds::AbstractArray{W}) where {W<:AbstractWorld}
+function (wf::WorldFilter)(worlds) # ::AbstractArray{W}) where {W<:AbstractWorld}
     return filterworlds(wf, worlds)
 end
 
@@ -70,8 +70,8 @@ struct FunctionalWorldFilter{W<:AbstractWorld,F<:Function} <: WorldFilter{W}
     end
 end
 
-function filterworlds(wf::FunctionalWorldFilter, worlds::AbstractArray{W}) where {W<:AbstractWorld}
-    return Base.filter(wf.filter, worlds)
+function filterworlds(wf::FunctionalWorldFilter, worlds) # ::AbstractArray{W}) where {W<:AbstractWorld}
+    return Iterators.filter(wf.filter, worlds)
 end
 
 """
@@ -89,11 +89,10 @@ struct FilteredRelation{R<:AbstractRelation,F<:WorldFilter} <: AbstractRelation
     # TODO constructor that accepts a Callable and wraps it into a FunctionalWorldFilter?
 end
 
-# TODO: figure out whether _accessibles or accessibles must be implemented...
-function _accessibles(
+function accessibles(
     fr::AbstractMultiModalFrame,
-    w::AbstractWorld,
-    r::FilteredRelation{R,F}
-) where {R<:AbstractRelation,F<:FunctionalWorldFilter}
-    return filterworlds(r.wf, _accessibles(fr, w, r.r))
+    w::W,
+    r::FilteredRelation
+) where {W <: AbstractWorld}
+    return filterworlds(r.wf, IterTools.imap(W, _accessibles(fr, w, r.r)))
 end

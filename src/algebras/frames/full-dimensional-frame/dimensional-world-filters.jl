@@ -14,8 +14,8 @@ struct IntervalLengthFilter{F<:Function,T<:Real,W<:Interval} <: WorldFilter{W}
 
 end
 
-function filterworlds(wf::IntervalLengthFilter, worlds::AbstractArray{W}) where {W<:Interval}
-    return Base.filter(w -> wf.f(Base.length(w), wf.k), worlds)
+function filterworlds(wf::IntervalLengthFilter, worlds) # ::AbstractArray{W}) where {W<:Interval}
+    return Iterators.filter(w -> wf.f(Base.length(w), wf.k), worlds)
 end
 
 function accessibles(fr::Full1DFrame, w::Interval{Int}, r::FilteredRelation{<:AbstractRelation,IntervalLengthFilter})

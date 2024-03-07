@@ -535,7 +535,7 @@ See also [`AbstractWorld`](@ref),
 [`AbstractRelation`](@ref), [`AbstractMultiModalFrame`](@ref).
 """
 function accessibles(
-    fr::AbstractMultiModalFrame{W},
+    fr::AbstractMultiModalFrame,
     w::W,
     r::AbstractRelation
 ) where {W<:AbstractWorld}
