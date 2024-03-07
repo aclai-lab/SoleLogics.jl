@@ -1,7 +1,5 @@
 using SoleLogics
 using SoleLogics.ManyValuedLogics
-using SoleLogics.ManyValuedLogics: BinaryOperation, FiniteLattice, CommutativeMonoid
-using SoleLogics.ManyValuedLogics: FiniteFLewAlgebra, FiniteHeytingAlgebra
 
 domain = Set{BooleanTruth}([⊥, ⊤])
 
