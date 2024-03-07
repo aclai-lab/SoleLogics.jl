@@ -20,7 +20,7 @@ makedocs(;
         "Getting started" => "getting-started.md",
         "Introduction to Logics and Propositional Logic" => "base-logic.md",
         "Modal Logic" => "modal-logic.md",
-        "Many valued logics" => "many-valued-logics.md",
+        "Many-valued logics" => "many-valued-logics.md",
         "More on Formulas" => "more-on-formulas.md",
         "Hands On" => "hands-on.md"
     ],

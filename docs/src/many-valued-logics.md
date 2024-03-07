@@ -7,9 +7,9 @@ Pages = ["many-valued-logics.md"]
 ```
 
 # [Introduction](@id many-valued-logics-introduction)
-SoleLogics also provides tools to work with [many-valued logics](https://en.wikipedia.org/wiki/Many-valued_logic) (e.g., fuzzy logics), that is, logics with more truth values other than the classical Boolean ones `⊤` and `⊥`. With many-valued logics, the truth values are part of a bounded lattice encoding a partial order between them, encoding a *truer than* relation.
+SoleLogics also provides tools to work with [many-valued logics](https://en.wikipedia.org/wiki/Many-valued_logic) (e.g., fuzzy logics), that is, logics with more truth values other than the classical Boolean ones `⊤` and `⊥`. With many-valued logics, the truth values are elements of a bounded lattice, providing a partial order between them, which encodes a *truer than* relation.
 
-To use these tools, import the ManyValuedLogics subpackage:
+Most of the tools for dealing with these logics can be accessed by importing the ManyValuedLogics submodule:
 ```julia
 using SoleLogics.ManyValuedLogics
 ```
@@ -51,7 +51,7 @@ FiniteAlgebra
 ## [Monoid](@id many-valued-logics-monoid)
 ```@docs
 Monoid
-Commutativemonoid
+CommutativeMonoid
 ```
 
 ## [Finite lattice](@id many-valued-logics-finite-lattice)
