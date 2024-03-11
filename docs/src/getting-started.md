@@ -106,7 +106,6 @@ Similarly to the [`Connective`](@ref)s case, [`Truth`](@ref) explanation could b
 ```@docs
 istop(t::Truth)
 isbot(t::Truth)
-truthsupertype(T::Type{<:Truth})
 ```
 
 The union of [`Connective`](@ref)s and [`Truth`](@ref) values are exactly what is called *logical operators*, or simply [`Operator`](@ref). In SoleLogics, logical operators are splitted in two parts to highlight some differences that always holds (e.g., [`Truth`](@ref) values arity is always 0, while [`Connective`](@ref)s arity is always greater than 0); apart from this technical decision, many dispatches are defined using the more general union type [`Operator`](@ref).

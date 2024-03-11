@@ -296,7 +296,7 @@ istransitive(::AbstractRelation) = false
     isgrounding(::AbstractRelation)
 
 Return whether it is known that a relation is grounding.
-A relation `R` is grounding if ∀x,y R(x,y) ⇔ R(z,y).
+A relation `R` is grounding if ∀x,z,y R(x,y) ⇔ R(z,y).
 
 See also
 [`isreflexive`](@ref), [`issymmetric`](@ref), [`istransitive`](@ref), [`AbstractRelation`](@ref).
@@ -326,6 +326,7 @@ abstract type AbstractMultiModalFrame{W<:AbstractWorld} <: AbstractFrame{W} end
 accessibles(fr::AbstractMultiModalFrame, ::GlobalRel) = allworlds(fr)
 accessibles(fr::AbstractMultiModalFrame, ::AbstractWorld, r::GlobalRel) = accessibles(fr, r)
 accessibles(fr::AbstractMultiModalFrame, w::AbstractWorld,    ::IdentityRel) = [w]
+accessibles(fr::AbstractMultiModalFrame, w::AbstractWorld,    r::AtWorldRelation) = [r.w]
 
 
 """
@@ -778,7 +779,7 @@ isdiamond(::Truth)::Bool = false
 doc_DIAMOND = """
     const DIAMOND = NamedConnective{:◊}()
     const ◊ = DIAMOND
-    ismodal(::NamedConnective{:◊}) = true
+    ismodal(::typeof(◊)) = true
     arity(::typeof(◊)) = 1
 
 Logical diamond connective, typically interpreted as the modal existential quantifier.
@@ -1072,8 +1073,9 @@ function collateworlds(
 end
 
 # I know, these exceed 92 characters. But they look nicer like this!! :D
-collateworlds(fr::AbstractFrame{W}, ::typeof(⊤), ::NTuple{0,<:AbstractWorlds}) where {W<:AbstractWorld} = allworlds(fr)
-collateworlds(::AbstractFrame{W}, ::typeof(⊥), ::NTuple{0,<:AbstractWorlds}) where {W<:AbstractWorld} = W[]
+function collateworlds(fr::AbstractFrame{W}, t::BooleanTruth, ::NTuple{0,<:AbstractWorlds}) where {W<:AbstractWorld}
+    istop(t) ? allworlds(fr) : W[]
+end
 
 collateworlds(fr::AbstractFrame{W}, ::typeof(¬), (ws,)::NTuple{1,<:AbstractWorlds}) where {W<:AbstractWorld} = setdiff(allworlds(fr), ws)
 collateworlds(::AbstractFrame{W}, ::typeof(∧), (ws1, ws2)::NTuple{2,<:AbstractWorlds}) where {W<:AbstractWorld} = intersect(ws1, ws2)

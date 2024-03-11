@@ -64,9 +64,7 @@ Here is a (almost) complete map of SoleLogics available abstract types and struc
                     - [`Atom`](@ref)            
                     - [`Literal`](@ref)         
                     - [`Truth`](@ref)    
-                        - [`BooleanTruth`](@ref)
-                            - [`Top`](@ref)
-                            - [`Bot`](@ref)  
+                        - [`BooleanTruth`](@ref) 
                 - [`SyntaxBranch`](@ref)        
             - [`LeftmostLinearForm{C<:Connective,SS<:AbstractSyntaxStructure}`](@ref)
 
