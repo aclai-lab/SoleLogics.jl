@@ -69,14 +69,14 @@ wf = FunctionalWorldFilter(f1, Interval{Int})
     globalrel
 )
 
-fr = FullDimensionalFrame(15)
+fr = FullDimensionalFrame(50)
 worlds = allworlds(fr)
 operators = [≤, ≥, ==]
 
 for w in worlds
     for r in IARelations
         for o in operators
-            for l in 1:15
+            for l in 1:50
                 @test collect(accessibles(
                     fr,
                     w,
