@@ -76,41 +76,41 @@ wf = FunctionalWorldFilter(f1, Interval{Int})
 for i in 3:5
     @test collect(
         accessibles(
-            FullDimensionalFrame(15),
+            FullDimensionalFrame(50),
             Interval(2,5),
             FilteredRelation(IA_A, FunctionalWorldFilter{Interval}(w->(w.y-w.x >= i)))
         )
     ) == collect(
         accessibles(
-            FullDimensionalFrame(15),
+            FullDimensionalFrame(50),
             Interval(2,5),
             FilteredRelation(IA_A, IntervalLengthFilter(≥, i))
         )
     )
 end
 
-# # TIMES
-# println(
-#     @benchmark accessibles(
-#         FullDimensionalFrame(15),
-#         Interval(2,5),
-#         FilteredRelation(IA_A, FunctionalWorldFilter{Interval}(w->(w.y-w.x >= 3)))
-#     )
-# )
+# TIMES
+println(
+    @benchmark accessibles(
+        FullDimensionalFrame(50),
+        Interval(2,5),
+        FilteredRelation(IA_A, FunctionalWorldFilter{Interval}(w->(w.y-w.x >= 3)))
+    )
+)
 
-# wf = FunctionalWorldFilter(f1, Interval{Int})
-
-# println(
-#     @benchmark accessibles(
-#         FullDimensionalFrame(15),
-#         Interval(2,5),
-#         FilteredRelation(IA_A, wf)
-#     )
-# )
+wf = FunctionalWorldFilter(f1, Interval{Int})
 
 println(
     @benchmark accessibles(
-        FullDimensionalFrame(15),
+        FullDimensionalFrame(50),
+        Interval(2,5),
+        FilteredRelation(IA_A, wf)
+    )
+)
+
+println(
+    @benchmark accessibles(
+        FullDimensionalFrame(50),
         Interval(2,5),
         FilteredRelation(IA_A, IntervalLengthFilter(≥, 3))
     )
@@ -121,7 +121,7 @@ wf_lf = IntervalLengthFilter(≥, 3)
 
 println(
     @benchmark accessibles(
-        FullDimensionalFrame(15),
+        FullDimensionalFrame(50),
         Interval(2,5),
         FilteredRelation(IA_A, wf_lf)
     )
@@ -130,13 +130,13 @@ println(
 for i in 3:5
     @test collect(
         accessibles(
-            FullDimensionalFrame(15),
+            FullDimensionalFrame(50),
             Interval(2,5),
             FilteredRelation(IA_A, FunctionalWorldFilter{Interval}(w->(w.y-w.x <= i)))
         )
     ) == collect(
         accessibles(
-            FullDimensionalFrame(15),
+            FullDimensionalFrame(50),
             Interval(2,5),
             FilteredRelation(IA_A, IntervalLengthFilter(≤, i))
         )
@@ -146,7 +146,7 @@ end
 # # TIMES
 # println(
 #     @benchmark accessibles(
-#         FullDimensionalFrame(15),
+#         FullDimensionalFrame(50),
 #         Interval(2,5),
 #         FilteredRelation(IA_A, FunctionalWorldFilter{Interval}(w->(w.y-w.x <= 3)))
 #     )
@@ -154,7 +154,7 @@ end
 
 # println(
 #     @benchmark accessibles(
-#         FullDimensionalFrame(15),
+#         FullDimensionalFrame(50),
 #         Interval(2,5),
 #         FilteredRelation(IA_A, IntervalLengthFilter(≤, 3))
 #     )
@@ -163,13 +163,13 @@ end
 for i in 3:5
     @test collect(
         accessibles(
-            FullDimensionalFrame(15),
+            FullDimensionalFrame(50),
             Interval(2,5),
             FilteredRelation(IA_A, FunctionalWorldFilter{Interval}(w->(w.y-w.x == i)))
         )
     ) == collect(
         accessibles(
-            FullDimensionalFrame(15),
+            FullDimensionalFrame(50),
             Interval(2,5),
             FilteredRelation(IA_A, IntervalLengthFilter(==, i))
         )
@@ -179,7 +179,7 @@ end
 # # TIMES
 # println(
 #     @benchmark accessibles(
-#         FullDimensionalFrame(15),
+#         FullDimensionalFrame(50),
 #         Interval(2,5),
 #         FilteredRelation(IA_A, FunctionalWorldFilter{Interval}(w->(w.y-w.x == 3)))
 #     )
@@ -187,7 +187,7 @@ end
 
 # println(
 #     @benchmark accessibles(
-#         FullDimensionalFrame(15),
+#         FullDimensionalFrame(50),
 #         Interval(2,5),
 #         FilteredRelation(IA_A, IntervalLengthFilter(==, 3))
 #     )
