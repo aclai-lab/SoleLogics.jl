@@ -73,34 +73,21 @@ fr = FullDimensionalFrame(15)
 worlds = allworlds(fr)
 operators = [≤, ≥, ==]
 
-# for w in worlds
-#     for r in IARelations
-#         for o in operators
-#             for l in 1:15
-#                 @test collect(accessibles(
-#                     fr,
-#                     w,
-#                     FilteredRelation(r, FunctionalWorldFilter{Interval}(i->o(i.y-i.x, l)))
-#                 )) == collect(accessibles(
-#                     fr,
-#                     w,
-#                     FilteredRelation(r, IntervalLengthFilter(o, l))
-#                 ))
-#             end
-#         end
-#     end
-# end
-
 for w in worlds
-    for l in 1:15
-        @test collect(accessibles(
-            fr,
-            w,
-            FilteredRelation(IA_A, FunctionalWorldFilter{Interval}(i->(i.y-i.x == l)))
-        )) == collect(accessibles(
-            fr,
-            w,
-            FilteredRelation(IA_A, IntervalLengthFilter(==, l))
-        ))
+    for r in IARelations
+        for o in operators
+            for l in 1:15
+                @test collect(accessibles(
+                    fr,
+                    w,
+                    FilteredRelation(r, FunctionalWorldFilter{Interval}(i->o(i.y-i.x, l)))
+                )) == collect(accessibles(
+                    fr,
+                    w,
+                    FilteredRelation(r, IntervalLengthFilter(o, l))
+                ))
+            end
+        end
+        break
     end
 end
