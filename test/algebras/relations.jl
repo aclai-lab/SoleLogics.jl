@@ -88,6 +88,5 @@ for w in worlds
                 ))
             end
         end
-        break
     end
 end
