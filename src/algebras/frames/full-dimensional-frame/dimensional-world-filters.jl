@@ -22,6 +22,10 @@ function accessibles(fr::Full1DFrame, w::W, r::FilteredRelation{<:AbstractRelati
     return IterTools.imap(W, _accessibles(fr, w, r))
 end
 
+function accessibles(fr::Full1DFrame, w::W, r::FilteredRelation{GlobalRel, IntervalLengthFilter{F, T, W}}) where {F<:Function, T<:Real, W<:Interval{Int64}}
+    return IterTools.imap(W, _accessibles(fr, w, r))
+end
+
 function _accessibles(fr::Full1DFrame, w::W, r::FilteredRelation{<:AbstractRelation,IntervalLengthFilter{F,T,W}}) where {F<:Function,T<:Real,W<:Interval{Int}}
     return error("Please provide a method for _accessibles(fr::$(typeof(fr)), w::$(typeof(w)), r::$(typeof(r))).")
 end

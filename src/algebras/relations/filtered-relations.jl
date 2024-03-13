@@ -110,5 +110,5 @@ function accessibles(
     ::W,
     r::FilteredRelation{GlobalRel,<:WorldFilter{W}}
 ) where {W <: AbstractWorld}
-	return accessibles(fr, r.r)
+	return filterworlds(r.wf, accessibles(fr, r.r))
 end
