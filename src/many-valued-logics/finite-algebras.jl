@@ -1,5 +1,5 @@
 using ..SoleLogics: AbstractAlgebra
-import ..SoleLogics: istop
+import ..SoleLogics: istop, isbot
 import Base: convert
 
 ############################################################################################
@@ -26,6 +26,10 @@ Base.show(io::IO, t::FiniteTruth) = print(io, syntaxstring(t))
 
 function Base.convert(::Type{FiniteTruth}, t::BooleanTruth)
     return istop(t) ? FiniteTruth("⊤") : FiniteTruth("⊥")
+end
+
+function Base.isequal(t1::FiniteTruth, t2::BooleanTruth)
+    return (istop(t1) && istop(t2)) || (isbot(t1) && isbot(t2))
 end
 
 ############################################################################################
@@ -190,15 +194,23 @@ struct CommutativeMonoid{T<:Truth, D<:AbstractSet{T}} <: FiniteAlgebra{T,D}
 
     function CommutativeMonoid(
         operation::BinaryOperation{T,D},
-        identityelement::T
+        identityelement
     ) where {
         T<:Truth,
         D<:AbstractSet{T}
     }
-        checkmonoidaxioms(operation, identityelement)
+        if identityelement isa T
+            e = identityelement
+        else
+            e = convert(T, identityelement)::T
+            if !(isequal(e, identityelement)::Bool)
+                throw(ArgumentError("$(limitrepr(identityelement)) is not a valid key for type $T"))
+            end
+        end
+        checkmonoidaxioms(operation, e)
         @assert checkaxiom(Commutativity, operation) "Defined an operation for the " *
             "commutative monoid which is not commutative."
-        return new{T,D}(operation, identityelement)
+        return new{T,D}(operation, e)
     end
 end
 
@@ -751,13 +763,29 @@ struct FiniteFLewAlgebra{T<:Truth, D<:AbstractSet{T}} <: FiniteAlgebra{T,D}
         join::BinaryOperation{T,D},
         meet::BinaryOperation{T,D},
         monoid::CommutativeMonoid{T,D},
-        bot::T,
-        top::T
+        bot,
+        top
     ) where {
         T<:Truth,
         D<:AbstractSet{T}
     }
-        checkboundedlatticeaxioms(join, meet, bot, top)
+        if bot isa T
+            b = bot
+        else
+            b = convert(T, bot)::T
+            if !(isequal(b, bot)::Bool)
+                throw(ArgumentError("$(limitrepr(bot)) is not a valid key for type $T"))
+            end
+        end
+        if top isa T
+            t = top
+        else
+            t = convert(T, top)::T
+            if !(isequal(t, top)::Bool)
+                throw(ArgumentError("$(limitrepr(top)) is not a valid key for type $T"))
+            end
+        end
+        checkboundedlatticeaxioms(join, meet, b, t)
         @assert checkaxiom(RightResidual, meet, monoid) "Residuation property does not " *
             "hold for the defined monoid operation."
         implicationtruthtable = Dict{Tuple{T, T}, T}()
@@ -783,7 +811,7 @@ struct FiniteFLewAlgebra{T<:Truth, D<:AbstractSet{T}} <: FiniteAlgebra{T,D}
             end
         end
         implication = BinaryOperation(getdomain(monoid), implicationtruthtable)
-        return new{T,D}(join, meet, monoid, implication, bot, top)
+        return new{T,D}(join, meet, monoid, implication, b, t)
     end
 end
 
