@@ -7,7 +7,7 @@ function _accessibles(fr::Full1DFrame, w::W, r::FilteredRelation{_IA_A, Interval
 end
 
 function _accessibles(fr::Full1DFrame, w::W, r::FilteredRelation{_IA_A,IntervalLengthFilter{typeof(==),T,W}}) where {T<:Real,W<:Interval{<:Integer}}
-    return zip(Iterators.repeated(w.y), w.y+worldfilter(r).k:min(w.y+worldfilter(r).k,X(fr)+1))
+    return w.y+worldfilter(r).k < X(fr)+2 ? [(w.y, w.y+worldfilter(r).k)] : W[]
 end
 
 function _accessibles(fr::Full1DFrame, w::W, r::FilteredRelation{_IA_Ai,IntervalLengthFilter{typeof(≤),T,W}}) where {T<:Real,W<:Interval{<:Integer}}
@@ -19,7 +19,7 @@ function _accessibles(fr::Full1DFrame, w::W, r::FilteredRelation{_IA_Ai, Interva
 end
 
 function _accessibles(fr::Full1DFrame, w::W, r::FilteredRelation{_IA_Ai,IntervalLengthFilter{typeof(==),T,W}}) where {T<:Real,W<:Interval{<:Integer}}
-    return zip(max(w.x-worldfilter(r).k,1):w.x-worldfilter(r).k, Iterators.repeated(w.x))
+    return w.x-worldfilter(r).k > 0 ? [(w.x-worldfilter(r).k, w.x)] : W[]
 end
 
 function _accessibles(fr::Full1DFrame, w::W, r::FilteredRelation{_IA_L,IntervalLengthFilter{typeof(≤),T,W}}) where {T<:Real,W<:Interval{<:Integer}}
@@ -55,7 +55,7 @@ function _accessibles(fr::Full1DFrame, w::W, r::FilteredRelation{_IA_B, Interval
 end
 
 function _accessibles(fr::Full1DFrame, w::W, r::FilteredRelation{_IA_B,IntervalLengthFilter{typeof(==),T,W}}) where {T<:Real,W<:Interval{<:Integer}}
-    return zip(Iterators.repeated(w.x), max(w.x+worldfilter(r).k,w.x+1):min(w.x+worldfilter(r).k,w.y-1))
+    return w.x+worldfilter(r).k < w.y ? [(w.x, w.x+worldfilter(r).k)] : W[]
 end
 
 function _accessibles(fr::Full1DFrame, w::W, r::FilteredRelation{_IA_Bi,IntervalLengthFilter{typeof(≤),T,W}}) where {T<:Real,W<:Interval{<:Integer}}
@@ -67,7 +67,7 @@ function _accessibles(fr::Full1DFrame, w::W, r::FilteredRelation{_IA_Bi, Interva
 end
 
 function _accessibles(fr::Full1DFrame, w::W, r::FilteredRelation{_IA_Bi,IntervalLengthFilter{typeof(==),T,W}}) where {T<:Real,W<:Interval{<:Integer}}
-    return zip(Iterators.repeated(w.x), max(w.x+worldfilter(r).k,w.y+1):min(w.x+worldfilter(r).k,X(fr)+1))
+    return w.x+worldfilter(r).k > w.y && w.x+worldfilter(r).k < X(fr)+2 ? [(w.x, w.x+worldfilter(r).k)] : W[]
 end
 
 function _accessibles(fr::Full1DFrame, w::W, r::FilteredRelation{_IA_E,IntervalLengthFilter{typeof(≤),T,W}}) where {T<:Real,W<:Interval{<:Integer}}
@@ -79,7 +79,7 @@ function _accessibles(fr::Full1DFrame, w::W, r::FilteredRelation{_IA_E, Interval
 end
 
 function _accessibles(fr::Full1DFrame, w::W, r::FilteredRelation{_IA_E,IntervalLengthFilter{typeof(==),T,W}}) where {T<:Real,W<:Interval{<:Integer}}
-    return zip(max(w.y-worldfilter(r).k,w.x+1):w.y-worldfilter(r).k, Iterators.repeated(w.y))
+    return w.y-worldfilter(r).k > w.x ? [(w.y-worldfilter(r).k, w.y)] : W[]
 end
 
 function _accessibles(fr::Full1DFrame, w::W, r::FilteredRelation{_IA_Ei,IntervalLengthFilter{typeof(≤),T,W}}) where {T<:Real,W<:Interval{<:Integer}}
@@ -91,7 +91,7 @@ function _accessibles(fr::Full1DFrame, w::W, r::FilteredRelation{_IA_Ei, Interva
 end
 
 function _accessibles(fr::Full1DFrame, w::W, r::FilteredRelation{_IA_Ei,IntervalLengthFilter{typeof(==),T,W}}) where {T<:Real,W<:Interval{<:Integer}}
-    return zip(max(w.y-worldfilter(r).k,1):min(w.y-worldfilter(r).k, w.x-1), Iterators.repeated(w.y))
+    return w.y-worldfilter(r).k < w.x && w.y-worldfilter(r).k > 0 ? [(w.y-worldfilter(r).k, w.y)] : W[]
 end
 
 function _accessibles(fr::Full1DFrame, w::W, r::FilteredRelation{_IA_D,IntervalLengthFilter{typeof(≤),T,W}}) where {T<:Real,W<:Interval{<:Integer}}
@@ -170,51 +170,19 @@ function _accessibles(fr::Full1DFrame, w::W, r::FilteredRelation{_IA_AiorOi,Inte
 	return Iterators.filter(((x,y),)->y-x==r.wf.k, Iterators.product(1:w.x-1,   w.x:w.y-1))
 end
 
-function _accessibles(fr::Full1DFrame, w::W, r::FilteredRelation{_IA_DorBorE,IntervalLengthFilter{typeof(≤),T,W}}) where {T<:Real,W<:Interval{Int}}
+function _accessibles(fr::Full1DFrame, w::W, r::FilteredRelation{_IA_DorBorE,IntervalLengthFilter{F,T,W}}) where {F<:Function,T<:Real,W<:Interval{Int}}
 	return Iterators.flatten((
-		_accessibles(fr, w, FilteredRelation(IA_B,IntervalLengthFilter(≤,r.wf.k))),
-		_accessibles(fr, w, FilteredRelation(IA_D,IntervalLengthFilter(≤,r.wf.k))),
-		_accessibles(fr, w, FilteredRelation(IA_E,IntervalLengthFilter(≤,r.wf.k)))
+		_accessibles(fr, w, FilteredRelation(IA_B,IntervalLengthFilter(r.wf.f,r.wf.k))),
+		_accessibles(fr, w, FilteredRelation(IA_D,IntervalLengthFilter(r.wf.f,r.wf.k))),
+		_accessibles(fr, w, FilteredRelation(IA_E,IntervalLengthFilter(r.wf.f,r.wf.k)))
 	))
 end
 
-function _accessibles(fr::Full1DFrame, w::W, r::FilteredRelation{_IA_DorBorE, IntervalLengthFilter{typeof(≥),T,W}}) where {T<:Real,W<:Interval{Int}}
+function _accessibles(fr::Full1DFrame, w::W, r::FilteredRelation{_IA_DiorBiorEi,IntervalLengthFilter{F,T,W}}) where {F<:Function,T<:Real,W<:Interval{Int}}
 	return Iterators.flatten((
-		_accessibles(fr, w, FilteredRelation(IA_B,IntervalLengthFilter(≥,r.wf.k))),
-		_accessibles(fr, w, FilteredRelation(IA_D,IntervalLengthFilter(≥,r.wf.k))),
-		_accessibles(fr, w, FilteredRelation(IA_E,IntervalLengthFilter(≥,r.wf.k)))
-	))
-end
-
-function _accessibles(fr::Full1DFrame, w::W, r::FilteredRelation{_IA_DorBorE,IntervalLengthFilter{typeof(==),T,W}}) where {T<:Real,W<:Interval{Int}}
-	return Iterators.flatten((
-		_accessibles(fr, w, FilteredRelation(IA_B,IntervalLengthFilter(==,r.wf.k))),
-		_accessibles(fr, w, FilteredRelation(IA_D,IntervalLengthFilter(==,r.wf.k))),
-		_accessibles(fr, w, FilteredRelation(IA_E,IntervalLengthFilter(==,r.wf.k)))
-	))
-end
-
-function _accessibles(fr::Full1DFrame, w::W, r::FilteredRelation{_IA_DiorBiorEi,IntervalLengthFilter{typeof(≤),T,W}}) where {T<:Real,W<:Interval{Int}}
-	return Iterators.flatten((
-		_accessibles(fr, w, FilteredRelation(IA_Bi,IntervalLengthFilter(≤,r.wf.k))),
-		_accessibles(fr, w, FilteredRelation(IA_Di,IntervalLengthFilter(≤,r.wf.k))),
-		_accessibles(fr, w, FilteredRelation(IA_Ei,IntervalLengthFilter(≤,r.wf.k)))
-	))
-end
-
-function _accessibles(fr::Full1DFrame, w::W, r::FilteredRelation{_IA_DiorBiorEi, IntervalLengthFilter{typeof(≥),T,W}}) where {T<:Real,W<:Interval{Int}}
-	return Iterators.flatten((
-		_accessibles(fr, w, FilteredRelation(IA_Bi,IntervalLengthFilter(≥,r.wf.k))),
-		_accessibles(fr, w, FilteredRelation(IA_Di,IntervalLengthFilter(≥,r.wf.k))),
-		_accessibles(fr, w, FilteredRelation(IA_Ei,IntervalLengthFilter(≥,r.wf.k)))
-	))
-end
-
-function _accessibles(fr::Full1DFrame, w::W, r::FilteredRelation{_IA_DiorBiorEi,IntervalLengthFilter{typeof(==),T,W}}) where {T<:Real,W<:Interval{Int}}
-	return Iterators.flatten((
-		_accessibles(fr, w, FilteredRelation(IA_Bi,IntervalLengthFilter(==,r.wf.k))),
-		_accessibles(fr, w, FilteredRelation(IA_Di,IntervalLengthFilter(==,r.wf.k))),
-		_accessibles(fr, w, FilteredRelation(IA_Ei,IntervalLengthFilter(==,r.wf.k)))
+		_accessibles(fr, w, FilteredRelation(IA_Bi,IntervalLengthFilter(r.wf.f,r.wf.k))),
+		_accessibles(fr, w, FilteredRelation(IA_Di,IntervalLengthFilter(r.wf.f,r.wf.k))),
+		_accessibles(fr, w, FilteredRelation(IA_Ei,IntervalLengthFilter(r.wf.f,r.wf.k)))
 	))
 end
 
