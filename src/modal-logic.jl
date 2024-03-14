@@ -493,7 +493,7 @@ that are, then, fed to the world constructor the using IterTools generators, as 
 As such, when defining new frames, worlds, and/or relations, one should provide new methods
 for `_accessibles`. For example:
 
-    _accessibles(fr::Full1DFrame, w::Interval{Int}, ::_IA_A) = zip(Iterators.repeated(w.y), w.y+1:X(fr)+1)
+    _accessibles(fr::Full1DFrame, w::Interval{<:Integer}, ::_IA_A) = zip(Iterators.repeated(w.y), w.y+1:X(fr)+1)
 
 This pattern is generally convenient; it can, however, be bypassed,
 although this requires defining two additional methods in order to

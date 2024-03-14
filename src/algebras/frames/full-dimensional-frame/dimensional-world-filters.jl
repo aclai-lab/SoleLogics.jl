@@ -18,14 +18,27 @@ function filterworlds(wf::IntervalLengthFilter, worlds) # ::AbstractArray{W}) wh
     return Iterators.filter(w -> wf.f(Base.length(w), wf.k), worlds)
 end
 
-function accessibles(fr::Full1DFrame, w::W, r::FilteredRelation{<:AbstractRelation,IntervalLengthFilter{F,T,W}}) where {F<:Function,T<:Real,W<:Interval{Int}}
+function accessibles(fr::Full1DFrame, w::W, r::FilteredRelation{<:AbstractRelation,IntervalLengthFilter{F,T,W}}) where {F<:Function,T<:Real,W<:Interval{<:Integer}}
     return IterTools.imap(W, _accessibles(fr, w, r))
 end
 
-function accessibles(fr::Full1DFrame, w::W, r::FilteredRelation{GlobalRel, IntervalLengthFilter{F, T, W}}) where {F<:Function, T<:Real, W<:Interval{Int64}}
+function accessibles(fr::Full1DFrame, w::W, r::FilteredRelation{GlobalRel, IntervalLengthFilter{F, T, W}}) where {F<:Function, T<:Real, W<:Interval{<:Integer}}
     return IterTools.imap(W, _accessibles(fr, w, r))
 end
 
-function _accessibles(fr::Full1DFrame, w::W, r::FilteredRelation{<:AbstractRelation,IntervalLengthFilter{F,T,W}}) where {F<:Function,T<:Real,W<:Interval{Int}}
+function _accessibles(fr::Full1DFrame, w::W, r::FilteredRelation{<:AbstractRelation,IntervalLengthFilter{F,T,W}}) where {F<:Function,T<:Real,W<:Interval{<:Integer}}
     return error("Please provide a method for _accessibles(fr::$(typeof(fr)), w::$(typeof(w)), r::$(typeof(r))).")
+end
+
+
+function _accessibles(fr::Full1DFrame, w::W, r::FilteredRelation{GlobalRel,IntervalLengthFilter{typeof(≤),T,W}}) where {T<:Real,W<:Interval{<:Integer}}
+	return Iterators.filter(((x,y),)->((x<y)&&((y-x)≤worldfilter(r).k)), Iterators.product(1:X(fr), 2:X(fr)+1))
+end
+
+function _accessibles(fr::Full1DFrame, w::W, r::FilteredRelation{GlobalRel,IntervalLengthFilter{typeof(≥),T,W}}) where {T<:Real,W<:Interval{<:Integer}}
+	return Iterators.filter(((x,y),)->((x<y)&&((y-x)≥worldfilter(r).k)), Iterators.product(1:X(fr), 2:X(fr)+1))
+end
+
+function _accessibles(fr::Full1DFrame, w::W, r::FilteredRelation{GlobalRel,IntervalLengthFilter{typeof(==),T,W}}) where {T<:Real,W<:Interval{<:Integer}}
+	return Iterators.filter(((x,y),)->((x<y)&&((y-x)==worldfilter(r).k)), Iterators.product(1:X(fr), 2:X(fr)+1))
 end
