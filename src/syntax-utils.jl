@@ -34,6 +34,23 @@ LeftmostLinearForm{SoleLogics.NamedConnective{:∨},Literal}
 julia> LeftmostDisjunctiveForm([LeftmostConjunctiveForm(parseformula.(["¬p", "q", "¬r"]))]) isa DNF
 true
 
+julia> conj = LeftmostConjunctiveForm(@atoms p q)
+LeftmostConjunctiveForm with 2 Atom{String} children:
+        p
+        q
+
+julia> tree(conj)
+SyntaxBranch{NamedConnective{:∧}}: p ∧ q
+
+julia> nconj = NEGATION(conj)
+LeftmostLinearForm with connective ¬ and 1 LeftmostConjunctiveForm{Atom{String}} children:
+        (p) ∧ (q)
+
+julia> tree(nconj)
+SyntaxBranch{NamedConnective{:¬}}: ¬(p ∧ q)
+
+julia> tree(nconj ∧ nconj)
+SyntaxBranch{NamedConnective{:∧}}: ¬(p ∧ q) ∧ ¬(p ∧ q)
 ```
 """
 
@@ -181,9 +198,12 @@ function tree(lf::LeftmostLinearForm)
     chs = children(lf)
 
     st = begin
-        if length(chs) == 1
-            # Only child
-            tree(first(chs))
+        if length(chs) == 1 # Only child
+            if a == 1
+                c(tree(first(chs)))
+            else
+                tree(first(chs))
+            end
         else
             function _tree(φs::Vector{<:SyntaxTree})
                 @assert (length(φs) != 0) "$(φs); $(lf); $(c); $(a)."
@@ -227,6 +247,9 @@ end
 Base.promote_rule(::Type{<:LeftmostLinearForm}, ::Type{<:LeftmostLinearForm}) = SyntaxTree
 Base.promote_rule(::Type{SS}, ::Type{LF}) where {SS<:AbstractSyntaxStructure,LF<:LeftmostLinearForm} = SyntaxTree
 Base.promote_rule(::Type{LF}, ::Type{SS}) where {LF<:LeftmostLinearForm,SS<:AbstractSyntaxStructure} = SyntaxTree
+
+Base.promote_rule(::Type{LF}, ::Type{SS}) where {LF<:LeftmostLinearForm,SS<:SyntaxTree} = SyntaxTree
+Base.promote_rule(::Type{SS}, ::Type{LF}) where {LF<:LeftmostLinearForm,SS<:SyntaxTree} = SyntaxTree
 
 ############################################################################################
 

@@ -703,7 +703,7 @@ function (op::Operator)(φs::NTuple{N,Formula}) where {N}
             φs = (op(φs[1:end-1]), φs[end])
         end
     end
-    AbstractSyntaxStructure
+    
     if AbstractSyntaxStructure <: typejoin(typeof.(φs)...)
         φs = Base.promote(φs...)
     end
