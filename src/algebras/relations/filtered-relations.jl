@@ -97,12 +97,15 @@ struct FilteredRelation{R<:AbstractRelation,F<:WorldFilter} <: AbstractRelation
     # TODO constructor that accepts a Callable and wraps it into a FunctionalWorldFilter?
 end
 
+wrappedrelation(r::FilteredRelation) = r.r
+worldfilter(r::FilteredRelation) = r.wf
+
 function accessibles(
     fr::AbstractMultiModalFrame,
     w::W,
     r::FilteredRelation
 ) where {W <: AbstractWorld}
-    return filterworlds(r.wf, IterTools.imap(W, _accessibles(fr, w, r.r)))
+    return filterworlds(worldfilter(r), IterTools.imap(W, _accessibles(fr, w, r.r)))
 end
 
 function accessibles(
@@ -110,5 +113,5 @@ function accessibles(
     ::W,
     r::FilteredRelation{GlobalRel,<:WorldFilter{W}}
 ) where {W <: AbstractWorld}
-	return filterworlds(r.wf, accessibles(fr, r.r))
+	return filterworlds(worldfilter(r), accessibles(fr, r.r))
 end

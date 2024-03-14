@@ -4,7 +4,7 @@
 # Convenience function
 _accessibles__(fr::Full1DFrame, w::Interval, r::IntervalRelation) = _accessibles(fr, w, r)
 _accessibles__(fr::Full1DFrame, w::Interval, r::IdentityRel, args...) = [(w.x, w.y)]
-_accessibles__(fr::Full1DFrame, w::Interval{Int}, r::GlobalRel) = _intervals_in(1, X(fr)+1)
+_accessibles__(fr::Full1DFrame, w::Interval{<:Integer}, r::GlobalRel) = _intervals_in(1, X(fr)+1)
 
 # Accessibles are easily coded using methods for one-dimensional interval logic
 _accessibles(fr::Full2DFrame, w::Interval2D, r::RectangleRelation) =
