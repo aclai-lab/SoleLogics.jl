@@ -91,7 +91,18 @@ export AbstractWorlds, Worlds
 
 export Interval, Interval2D, OneWorld
 
+
+export AbstractRelation
+
+export GlobalRel, IdentityRel
+export globalrel, identityrel
+
+
 include("modal-logic.jl")
+
+############################################################################################
+
+include("many-valued-logics/ManyValuedLogics.jl")
 
 ############################################################################################
 
@@ -102,14 +113,6 @@ export subformulas, normalize
 export CNF, DNF, cnf
 
 include("syntax-utils.jl")
-
-############################################################################################
-
-export HeytingTruth, HeytingAlgebra
-export precedes, succeedes, precedeq, succeedeq # TODO move above.
-export @heytingtruths, @heytingalgebra
-
-include("fuzzy.jl")
 
 ############################################################################################
 
