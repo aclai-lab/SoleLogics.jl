@@ -1,3 +1,5 @@
+import SoleLogics: arity
+
 """
     abstract type Operation end
 

@@ -1,6 +1,6 @@
 using SoleLogics
 using SoleLogics.ManyValuedLogics
-using SoleLogics.ManyValuedLogics: Operation, arity
+using SoleLogics.ManyValuedLogics: Operation
 
 ############################################################################################
 #### Operations ############################################################################
