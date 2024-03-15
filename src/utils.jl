@@ -13,12 +13,13 @@ inittruthvalues(truthvalues::Union{Vector{<:Truth},AbstractAlgebra}) =
 
 
 function displaysyntaxvector(a, maxnum = 8; quotes = true)
+    q = e->(quotes ? "\"$(e)\"" : "$(e)")
     els = begin
         if length(a) > maxnum
-            [(syntaxstring.(a)[1:div(maxnum, 2)])..., "...", syntaxstring.(a)[end-div(maxnum, 2):end]...]
+            [(q.(syntaxstring.(a)[1:div(maxnum, 2)]))..., "...", (q.(syntaxstring.(a)[end-div(maxnum, 2):end]))...]
         else
-            syntaxstring.(a)
+            q.(syntaxstring.(a))
         end
     end
-    "$(eltype(a))[$(join(map(e->(quotes ? "\"$(e)\"" : "$(e)"), els), ", "))]"
+    "$(eltype(a))[$(join(els, ", "))]"
 end

@@ -32,11 +32,11 @@ test_suites = [
     ("Kripke word", ["kripke-word.jl",]),
     ("Kripke image", ["kripke-image.jl",]),
 
-    ("Type Hierarchy Update", ["type-hierarchy-update.jl"]),
-
     ("Pluto Demo", ["$(dirname(dirname(pathof(SoleLogics))))/pluto-demo.jl", ]),
 
-    ("Fuzzy", ["fuzzy.jl",]),
+    ("ManyValuedLogics", ["many-valued-logics.jl",]),
+
+    ("Miscellaneous", ["misc.jl", "util.jl"]),
 ]
 
 @testset "SoleLogics.jl" begin

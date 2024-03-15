@@ -1,3 +1,5 @@
+import Base: length
+
 """
     abstract type GeometricalWorld <: AbstractWorld end
 
@@ -47,7 +49,10 @@ struct Point{N,T} <: GeometricalWorld
     Point(xyz::Vararg) = Point(xyz)
 end
 
-Base.show(io::IO, w::Point) = print(io, "❮$(join(w.xyz, ","))❯")
+# Base.size(w::Point) = (1,) # TODO maybe not
+Base.length(w::Point) = 1
+
+inlinedisplay(w::Point) = "❮$(join(w.xyz, ","))❯"
 
 Base.getindex(w::Point, args...) = Base.getindex(w.xyz, args...)
 
@@ -113,6 +118,9 @@ struct Interval{T} <: GeometricalWorld
     # Interval(x,y) = x>0 && y>0 && x < y ? new(x,y) : error("Cannot instantiate Interval(x={$x},y={$y})")
 end
 
+# Base.size(w::Interval) = (Base.length(w),)
+Base.length(w::Interval) = (w.y - w.x)
+
 inlinedisplay(w::Interval) = "($(w.x)−$(w.y))"
 
 goeswithdim(::Type{<:Interval}, ::Val{1}) = true
@@ -165,6 +173,9 @@ struct Interval2D{T} <: GeometricalWorld
     Interval2D{T}(x::Tuple{T,T}, y::Tuple{T,T}) where {T} = Interval2D{T}(Interval(x),Interval(y))
     Interval2D(x::Tuple{T,T}, y::Tuple{T,T}) where {T} = Interval2D{T}(x,y)
 end
+
+# Base.size(w::Interval2D) = (Base.length(w.x), Base.length(w.y))
+Base.length(w::Interval2D) = prod(Base.length(w.x), Base.length(w.y))
 
 inlinedisplay(w::Interval2D) = "($(w.x)×$(w.y))"
 

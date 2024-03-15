@@ -199,16 +199,19 @@ istransitive(r::_IA_DorBorE) = true
 istransitive(r::_IA_DiorBiorEi) = true
 istopological(r::_IA_I) = true
 
-IA72IARelations(::_IA_AorO)       = [IA_A,  IA_O]
-IA72IARelations(::_IA_AiorOi)     = [IA_Ai, IA_Oi]
-IA72IARelations(::_IA_DorBorE)    = [IA_D,  IA_B,  IA_E]
-IA72IARelations(::_IA_DiorBiorEi) = [IA_Di, IA_Bi, IA_Ei]
-IA32IARelations(::_IA_I)          = [
+const IA7Relation = Union{_IA_AorO,_IA_AiorOi,_IA_DorBorE,_IA_DiorBiorEi}
+IA72IARelations(::_IA_AorO)       = (IA_A,  IA_O)
+IA72IARelations(::_IA_AiorOi)     = (IA_Ai, IA_Oi)
+IA72IARelations(::_IA_DorBorE)    = (IA_D,  IA_B,  IA_E)
+IA72IARelations(::_IA_DiorBiorEi) = (IA_Di, IA_Bi, IA_Ei)
+syntaxstring(r::IA7Relation; kwargs...) = join(map(_r->syntaxstring(_r; kwargs...), IA72IARelations(r)), "")
+
+const IA3Relation = Union{_IA_I}
+IA32IARelations(::_IA_I) = (
     IA_A,  IA_O,  IA_D,  IA_B,  IA_E,
     IA_Ai, IA_Oi, IA_Di, IA_Bi, IA_Ei
-]
+)
 
-syntaxstring(r::Union{_IA_AorO,_IA_DorBorE,_IA_AiorOi,_IA_DiorBiorEi}; kwargs...) = join(map(_r->syntaxstring(_r; kwargs...), IA72IARelations(r)), "")
 syntaxstring(::_IA_I; kwargs...)          = "I"
 
 ############################################################################################
@@ -239,7 +242,6 @@ See also
 """
 const IA7Relations = [IA_AorO,   IA_L,  IA_DorBorE,
                       IA_AiorOi, IA_Li, IA_DiorBiorEi]
-IA7Relation = Union{typeof.(IA7Relations)...}
 
 """
     const IA3Relations = [IA_I, IA_L, IA_Li]
@@ -251,7 +253,6 @@ See also
 [`IntervalRelation`](@ref), [`GeometricalRelation`](@ref).
 """
 const IA3Relations = [IA_I, IA_L, IA_Li]
-IA3Relation = Union{typeof.(IA3Relations)...}
 
 """
     const IARelations_extended = [globalrel, IARelations...]
