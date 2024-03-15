@@ -63,23 +63,6 @@ struct BinaryOperation{T<:Truth, D<:AbstractSet{T}} <: Operation
             "or j ∉ domain."
         return new{T,D}(domain, truthtable)
     end
-
-    function BinaryOperation(
-        domain::D,
-        operation::F
-    ) where {
-        T<:Truth,
-        D<:AbstractSet{T},
-        F<:Function
-    }
-        truthtable = Dict{Tuple{T, T}, T}()
-        for i ∈ domain
-            for j ∈ domain
-                truthtable[(i, j)] = operation(i, j)
-            end
-        end
-        return BinaryOperation(domain, truthtable)
-    end
 end
 
 Base.show(io::IO, o::BinaryOperation) = print(io, "$(o.truthtable)")
