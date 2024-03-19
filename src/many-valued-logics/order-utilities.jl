@@ -57,7 +57,7 @@ function precedes(
     D<:AbstractSet{T},
     L<:FiniteAlgebra{T,D}
 }
-    t1 != t2 && precedeq(l, t1, t2)
+    return t1 != t2 && precedeq(l, t1, t2)
 end
 
 """
@@ -85,7 +85,7 @@ function succeedeq(
     D<:AbstractSet{T},
     L<:FiniteAlgebra{T,D}
 }
-    precedeq(l, t2, t1)
+    return precedeq(l, t2, t1)
 end
 
 """
@@ -113,5 +113,102 @@ function succeedes(
     D<:AbstractSet{T},
     L<:FiniteAlgebra{T,D}
 }
-    precedes(l, t2, t1)
+    return precedes(l, t2, t1)
+end
+
+"""
+    function lesservalues(
+        l::L,
+        t::T1
+    ) where {
+        T<:Truth,
+        D<:AbstractSet{T},
+        L<:FiniteAlgebra{T,D},
+        T1<:Truth
+    }
+        if !isa(t, T) t = convert(T, t)::T end
+        return filter(ti->precedes(l, ti, t), getdomain(l))
+    end
+
+Return all members of l below t.
+
+See also [`precedes`](@ref), [`precedeq`](@ref).
+"""
+function lesservalues(
+    l::L,
+    t::T1
+) where {
+    T<:Truth,
+    D<:AbstractSet{T},
+    L<:FiniteAlgebra{T,D},
+    T1<:Truth
+}
+    if !isa(t, T) t = convert(T, t)::T end
+    return filter(ti->precedes(l, ti, t), getdomain(l))
+end
+
+"""
+    function maximalmembers(
+        l::L,
+        t::T1
+    ) where {
+        T<:Truth,
+        D<:AbstractSet{T},
+        L<:FiniteAlgebra{T,D},
+        T1<:Truth
+    }
+
+Return all maximal members of l not above t.
+
+See also [`succeedes`](@ref), [`succeedeq`](@ref), [`minimalmembers`](@ref).
+"""
+function maximalmembers(
+    l::L,
+    t::T1
+) where {
+    T<:Truth,
+    D<:AbstractSet{T},
+    L<:FiniteAlgebra{T,D},
+    T1<:Truth
+}
+    if !isa(t, T) t = convert(T, t)::T end
+    candidates = filter(ti->!succeedeq(l, ti, t), getdomain(l))
+    mm = D()
+    for c in candidates
+        if isempty(filter(ti->succeedes(l, ti, c), candidates)) push!(mm, c) end
+    end
+    return mm
+end
+
+"""
+    function minimalmembers(
+        l::L,
+        t::T1
+    ) where {
+        T<:Truth,
+        D<:AbstractSet{T},
+        L<:FiniteAlgebra{T,D},
+        T1<:Truth
+    }
+
+Return all minimal members of l not below t.
+
+See also [`precedes`](@ref), [`precedeq`](@ref), [`maximalmembers`](@ref).
+"""
+function minimalmembers(
+    l::L,
+    t::T1
+) where {
+    T<:Truth,
+    D<:AbstractSet{T},
+    L<:FiniteAlgebra{T,D},
+    T1<:Truth
+}
+    if !isa(t, T) t = convert(T, t)::T end
+    candidates = filter(ti->!precedeq(l, ti, t), getdomain(l))
+    mm = D()
+    for c in candidates
+        if isempty(filter(ti->precedes(l, ti, c), candidates)) push!(mm, c) end
+    end
+    return mm
 end

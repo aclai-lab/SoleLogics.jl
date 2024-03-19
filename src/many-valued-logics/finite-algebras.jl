@@ -104,11 +104,13 @@ struct Monoid{T<:Truth, D<:AbstractSet{T}} <: FiniteAlgebra{T,D}
 
     function Monoid(
         operation::BinaryOperation{T,D},
-        identityelement::T
+        identityelement::T1
     ) where {
         T<:Truth,
-        D<:AbstractSet{T}
+        D<:AbstractSet{T},
+        T1<:Truth
     }
+        if !isa(identityelement, T) identityelement = convert(T, identityelement)::T end
         checkmonoidaxioms(operation, identityelement)
         return new{T,D}(operation, identityelement)
     end
@@ -120,6 +122,7 @@ Return true if the object can be converted to an object of type `Monoid`.
 See also [`Monoid`](@ref).
 """
 ismonoid(::Monoid{T,D}) where {T<:Truth, D<:AbstractSet{T}} = true
+ismonoid(::T) where {T} = false  
 
 """
     function convert(
@@ -190,10 +193,11 @@ struct CommutativeMonoid{T<:Truth, D<:AbstractSet{T}} <: FiniteAlgebra{T,D}
 
     function CommutativeMonoid(
         operation::BinaryOperation{T,D},
-        identityelement
+        identityelement::T1
     ) where {
         T<:Truth,
-        D<:AbstractSet{T}
+        D<:AbstractSet{T},
+        T1<:Truth
     }
         if !isa(identityelement, T) identityelement = convert(T, identityelement)::T end
         checkmonoidaxioms(operation, identityelement)
@@ -298,6 +302,7 @@ Return true if the object can be converted to an object of type `FiniteLattice`.
 See also [`FiniteLattice`](@ref).
 """
 islattice(::FiniteLattice{T,D}) where {T<:Truth, D<:AbstractSet{T}} = true
+islattice(::T) where {T} = false
 
 """
     function convert(
@@ -437,6 +442,7 @@ Return true if the object can be converted to an object of type `FiniteBoundedLa
 See also [`FiniteBoundedLattice`](@ref).
 """
 isboundedlattice(::FiniteBoundedLattice{T,D}) where {T<:Truth, D<:AbstractSet{T}} = true
+isboundedlattice(::T) where {T} = false
 
 """
     function convert(
