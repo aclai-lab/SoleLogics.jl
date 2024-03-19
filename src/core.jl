@@ -810,10 +810,7 @@ struct SyntaxBranch{T<:Connective} <: SyntaxTree
 
 end
 
-"""$(doc_syntaxbranch_children)"""
 children(φ::SyntaxBranch) = φ.children
-
-"""$(doc_syntaxbranch_token)"""
 token(φ::SyntaxBranch) = φ.token
 
 function syntaxstring(

@@ -4,17 +4,15 @@ CurrentModule = SoleLogics
 
 # [Getting started](@id man-core)
 
-In this introductory section you will learn about the main building blocks of SoleLogics. Their definition, usage examples and how to customize them to your own needings. 
+In this introductory section you will learn about the main building blocks of SoleLogics. Their definition, usage examples and how to customize them to your own needs. 
 
-In a few words, you can consider this package as divided into two halves. 
-
-The [syntactical](https://en.wikipedia.org/wiki/Syntax) half deals with defining data structures to represent logical constructs such as assertions, logical constants, alphabets, grammars, crisp and fuzzy algebras, formulas etc. A consistent part of SoleLogics is devoted to randomly generate such structures, as well as parse and minimize formulas.
-
-The [semantic](https://en.wikipedia.org/wiki/Semantics) half deals with defining which rules must be applied when interpreting a logical formulas. The "semantic heart" of SoleLogics is its finite [model checking](https://en.wikipedia.org/wiki/Model_checking) algorithm, whose purpose is to efficiently check whether a formula is satisfied by an interpretation or not.
+In short, you can consider this package as divided into two halves.:
+- the [syntactical](https://en.wikipedia.org/wiki/Syntax) half, which defines structures to represent logical constructs such as assertions, logical constants, alphabets, grammars, crisp and fuzzy algebras, formulas etc. A consistent part of SoleLogics is devoted to randomly generate such structures, as well as parse and minimize formulas;
+- the [semantic](https://en.wikipedia.org/wiki/Semantics) half, which defines rules to apply when interpreting a logical formulas. The "semantic heart" of SoleLogics is its finite [model checking](https://en.wikipedia.org/wiki/Model_checking) algorithm, whose purpose is to efficiently check whether a formula is satisfied by an interpretation or not.
 
 Please, feel free to use the following tree structures to orient yourself in the reading of this section. More pieces will be added to this type-hierarchy tree in the following sections.
 
-## Syntax and Semantics tree type hierarchies
+## Type hierarchy
 - [`Syntactical`](@ref)
     - [`Connective`](@ref)                      (e.g., ∧, ∨, ¬, →)
     - [`Formula`](@ref)
@@ -25,11 +23,7 @@ Please, feel free to use the following tree structures to orient yourself in the
                     - [`Literal`](@ref)         (an [`Atom`](@ref) p, or its negation ¬p)
                     - [`Truth`](@ref)           (e.g., ⊤, ⊥)
                 - [`SyntaxBranch`](@ref)        (e.g., p ∧ q)
----
-
 - [`AbstractInterpretation`](@ref) (e.g., p is ⊤, equivalent to p is true in boolean logic)
-
----
 
 Also, two union types are defined:
 - [`Operator`](@ref), that is, `Union{Connective,Truth}`, 
@@ -125,9 +119,9 @@ The internal nodes in a [`SyntaxTree`](@ref) definitely have [`ariety`](@ref) gr
 
 ```@docs
 SyntaxBranch
-children(φ::SyntaxBranch)
-token(φ::SyntaxBranch)
 ```
+<!-- children(φ::SyntaxBranch) -->
+<!-- token(φ::SyntaxBranch) -->
 
 ## [Semantics Basics](@id semantics-base-definitions)
 ```@docs

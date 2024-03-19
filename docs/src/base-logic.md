@@ -7,7 +7,7 @@ Pages = ["base-logic.md"]
 ```
 
 # [Introduction](@id base-logic-introduction)
-At the end of this chapter, you are going to understand how [`Atom`](@ref)s and [`Truth`](@ref) values are organized in *alphabets*, and how *grammars* are defined. 
+At the end of this chapter, you are going to understand how [`Atom`](@ref)s and [`Truth`](@ref) values are arranged into *alphabets* and *grammars*.
 
 You will also get an in-depth view of how boolean [`Truth`](@ref) values and boolean [`Connective`](@ref)'s are defined from both a syntax and a syntactical standpoint of view.
 
@@ -18,43 +18,30 @@ Recalling the type hierarchy presented in [man-core](@ref), it is here enriched 
 
 - [`Truth`](@ref)
     - [`BooleanTruth`](@ref)
----
-
 - [`Connective`](@ref)
     - [`NamedConnective`](@ref)
         - [`NEGATION`](@ref)
         - [`CONJUNCTION`](@ref) 
         - [`DISJUNCTION`](@ref)
         - [`IMPLICATION`](@ref)
----
-
-- [`AbstractAlphabet{V}`](@ref)
-    - [`ExplicitAlphabet{V}`](@ref)
-    - [`AlphabetOfAny{V}`](@ref)
----
-
-- [`AbstractGrammar{V<:AbstractAlphabet,O<:Operator}`](@ref)
-    - [`CompleteFlatGrammar{V<:AbstractAlphabet,O<:Operator}`](@ref)
----
-
-- [`AbstractAlgebra{T<:Truth}`](@ref)
+- [`AbstractAlphabet`](@ref)
+    - [`ExplicitAlphabet`](@ref)
+    - [`AlphabetOfAny`](@ref)
+- [`AbstractGrammar`](@ref)
+    - [`CompleteFlatGrammar`](@ref)
+- [`AbstractAlgebra`](@ref)
     - [`BooleanAlgebra`](@ref)
----
-
-- [`AbstractLogic{G<:AbstractGrammar,V<:AbstractAlgebra}`](@ref)
-    - [`BaseLogic{G<:AbstractGrammar,A<:AbstractAlgebra}`](@ref)
----
-
+- [`AbstractLogic`](@ref)
+    - [`BaseLogic`](@ref)
 - [`AbstractInterpretation`](@ref)
     - [`AbstractAssignment`](@ref)
-        - [`TruthDict{D<:AbstractDict{A where A<:Atom,T where T<:Truth}}`](@ref)
-        - [`DefaultedTruthDict{D<:AbstractDict{A where A<:Atom,T where T<:Truth}, T<:Truth}`](@ref)
-    - [`AbstractInterpretationSet{M<:AbstractInterpretation}`](@ref) **(see [SoleBase.jl](https://github.com/aclai-lab/SoleBase.jl))**
-        - [`InterpretationVector{M<:AbstractInterpretation}`](@ref)
-    - [`LogicalInstance{S<:AbstractInterpretationSet}`](@ref) 
-
-- [`TruthTable{A,T<:Truth}`](@ref)
-- [`LogicalInstance{S<:AbstractInterpretationSet}`](@ref)
+        - [`TruthDict`](@ref)
+        - [`DefaultedTruthDict`](@ref)
+        - [`AbstractInterpretationSet`](@ref) <!-- **(see [SoleBase.jl](https://github.com/aclai-lab/SoleBase.jl))** -->
+        - [`InterpretationVector`](@ref)
+    - [`LogicalInstance`](@ref) 
+- [`TruthTable`](@ref)
+- [`LogicalInstance`](@ref)
 
 ## [Alphabet](@id alphabets)
 ```@docs
@@ -96,12 +83,12 @@ iscrisp(a::AbstractAlgebra)
 
 ## [Logic](@id logic)
 ```@docs
-AbstractLogic{G<:AbstractGrammar,V<:AbstractAlgebra}
+AbstractLogic{G<:AbstractGrammar,A<:AbstractAlgebra}
 grammar(l::AbstractLogic{G}) where {G<:AbstractGrammar}
 algebra(l::AbstractLogic{G,V}) where {G,V}
 ```
 
-## [More about Connectives](@id more-about-connectives)
+## [More on Connectives](@id more-about-connectives)
 ```@docs
 NamedConnective{Symbol}
 collatetruth(c::Connective, ts::NTuple{N,T where T<:Truth}) where {N}

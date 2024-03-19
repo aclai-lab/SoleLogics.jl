@@ -290,33 +290,17 @@ See also [`Formula`](@ref), [`SyntaxToken`](@ref).
 doc_syntaxtree_children = """
     children(φ::SyntaxTree)
 
-Getter for `φ` children.
+Return the immediate children of a syntax tree.
 
-See also [`SyntaxBranch`](@ref), [`SyntaxTree`](@ref).
+See also [`SyntaxBranch`](@ref), [`SyntaxLeaf`](@ref).
 """
 
 doc_syntaxtree_token = """
     token(φ::SyntaxTree)::SyntaxToken
 
-Getter for the token wrapped in a `SyntaxTree`.
+Return the token at the root of a syntax tree.
 
-See also [`SyntaxBranch`](@ref), [`SyntaxTree`](@ref).
-"""
-
-doc_syntaxbranch_children = """
-    children(φ::SyntaxBranch)
-
-Getter for `φ` children.
-
-See also [`SyntaxBranch`](@ref), [`SyntaxTree`](@ref).
-"""
-
-doc_syntaxbranch_token = """
-    token(φ::SyntaxBranch)::SyntaxToken
-
-Getter for the token wrapped in a `SyntaxBranch`.
-
-See also [`SyntaxBranch`](@ref), [`SyntaxTree`](@ref).
+See also [`SyntaxBranch`](@ref), [`SyntaxLeaf`](@ref).
 """
 
 doc_formula_basein = """

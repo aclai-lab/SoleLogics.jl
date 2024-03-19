@@ -18,27 +18,16 @@ Recalling the type hierarchy presented in [man-core](@ref), it is here enriched 
     - [`AbstractRelationalConnective`](@ref)
         - [`DiamondRelationalConnective`](@ref)
         - [`BoxRelationalConnective`](@ref)
----
-
 - [`AbstractWorld`](@ref)
-    - [`World{T}`](@ref)
-
----
-
-- [`AbstractFrame{W<:AbstractWorld}`](@ref)
-    - [`AbstractUniModalFrame{W<:AbstractWorld}`](@ref)
-    - [`AbstractMultiModalFrame{W<:AbstractWorld}`](@ref)
-    - [`WrapperMultiModalFrame{W<:AbstractWorld, D<:AbstractDict{<:AbstractRelation,<:AbstractUniModalFrame{W}}}`](@ref)
-
----
-
+    - [`World`](@ref)
+- [`AbstractFrame`](@ref)
+    - [`AbstractUniModalFrame`](@ref)
+    - [`AbstractMultiModalFrame`](@ref)
+    - [`WrapperMultiModalFrame`](@ref)
 - [`AbstractRelation`](@ref)
-
----
-
 - [`AbstractInterpretation`](@ref)
     - [`AbstractKripkeStructure`](@ref)
-        - [`KripkeStructure{FR<:AbstractFrame, MAS<:AbstractDict}`](@ref)
+        - [`KripkeStructure`](@ref)
 
 
 # [Pills of Modal Logic](@id modal-logic-pills)

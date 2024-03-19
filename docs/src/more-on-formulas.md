@@ -7,7 +7,7 @@ Pages = ["more-on-formulas.md"]
 ```
 
 # [More on Formulas](@id more-on-formulas-section)
-In this chapter, you are going to learn more about [`Formula`](@ref) representations that are alternative to syntax trees. As you will see, for example, formulas with specific structure (e.g., [normal forms](https://en.wikipedia.org/wiki/Canonical_normal_form)) can be represented in ways that make them more easy to handle, and can lead to great benefits in terms of both computational and memory load.
+In this chapter, you are going to learn more on [`Formula`](@ref) representations that are alternative to syntax trees. As you will see, for example, formulas with specific structure (e.g., [normal forms](https://en.wikipedia.org/wiki/Canonical_normal_form)) can be represented in ways that make them more easy to handle, and can lead to great benefits in terms of both computational and memory load.
 
 We proceed by presenting the random formulae generation engine, parsing and some utility function.
 

@@ -538,7 +538,7 @@ iscrisp(a::AbstractAlgebra) = (length(domain(a)) == 2)
 ############################################################################################
 
 """
-    abstract type AbstractLogic{G<:AbstractGrammar,V<:AbstractAlgebra} end
+    abstract type AbstractLogic{G<:AbstractGrammar,A<:AbstractAlgebra} end
 
 Abstract type of a logic, which comprehends a context-free grammar (*syntax*) and
 an algebra (*semantics*).
@@ -550,7 +550,7 @@ the methods `grammar` and `algebra` should be implemented.
 
 See also [`AbstractAlgebra`](@ref), [`AbstractGrammar`](@ref).
 """
-abstract type AbstractLogic{G<:AbstractGrammar,V<:AbstractAlgebra} end
+abstract type AbstractLogic{G<:AbstractGrammar,A<:AbstractAlgebra} end
 
 """
     grammar(l::AbstractLogic{G})::G where {G<:AbstractGrammar}
