@@ -94,7 +94,7 @@ ffa3 = FiniteFLewAlgebra(j3, m3, l3, ⊥, ⊤)
 ζ = FiniteTruth("ζ")
 η = FiniteTruth("η")
 
-d9 = Set{FiniteTruth}([⊥, α, β, γ, δ, ε, ζ, η, ⊤])
+d9 = Vector{FiniteTruth}([⊥, α, β, γ, δ, ε, ζ, η, ⊤])
 
 jt9 = Dict{Tuple{FiniteTruth, FiniteTruth}, FiniteTruth}(
     (⊥, ⊥) => ⊥, (⊥, α) => α, (⊥, β) => β, (⊥, γ) => γ, (⊥, δ) => δ, (⊥, ε) => ε, (⊥, ζ) => ζ, (⊥, η) => η, (⊥, ⊤) => ⊤,
