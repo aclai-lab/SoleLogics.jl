@@ -14,7 +14,7 @@ function Base.show(io::IO, o::MyOperation)
 end
 @test_throws ErrorException arity(MyOperation())
 
-domain = Set{BooleanTruth}([⊥, ⊤])
+domain = Vector{BooleanTruth}([⊥, ⊤])
 jointable = Dict{Tuple{BooleanTruth, BooleanTruth}, BooleanTruth}(
     (⊥, ⊥) => ⊥, (⊥, ⊤) => ⊤,
     (⊤, ⊥) => ⊤, (⊤, ⊤) => ⊤
@@ -61,7 +61,7 @@ fha = FiniteHeytingAlgebra(join, meet, implication, ⊥, ⊤)
 #### Three-valued algebra (Łukasiewich norm case) ##########################################
 ############################################################################################
 
-d3 = Set{FiniteTruth}([⊥, α, ⊤])
+d3 = Vector{FiniteTruth}([⊥, α, ⊤])
 jt3 = Dict{Tuple{FiniteTruth, FiniteTruth}, FiniteTruth}(
     (⊥, ⊥) => ⊥, (⊥, α) => α, (⊥, ⊤) => ⊤,
     (α, ⊥) => α, (α, α) => α, (α, ⊤) => ⊤,
