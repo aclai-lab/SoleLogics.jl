@@ -33,13 +33,13 @@ end
 ############################################################################################
 
 """
-    abstract type FiniteAlgebra{T<:Truth, D<:AbstractSet{T}} <: AbstractAlgebra{T} end
+    abstract type FiniteAlgebra{T<:Truth, D<:AbstractVector{T}} <: AbstractAlgebra{T} end
 
 A finite algebra is an algebraic structure defined over a finite set.
 
 See also [`AbstractAlgebra`](@ref).
 """
-abstract type FiniteAlgebra{T<:Truth, D<:AbstractSet{T}} <: AbstractAlgebra{T} end
+abstract type FiniteAlgebra{T<:Truth, D<:AbstractVector{T}} <: AbstractAlgebra{T} end
 
 ############################################################################################
 #### Monoid ################################################################################
@@ -51,7 +51,7 @@ abstract type FiniteAlgebra{T<:Truth, D<:AbstractSet{T}} <: AbstractAlgebra{T} e
         e::T
     ) where {
         T<:Truth,
-        D<:AbstractSet{T}
+        D<:AbstractVector{T}
     }
 
 Check if given domain, operation and identity element form a monoid.
@@ -72,7 +72,7 @@ function checkmonoidaxioms(
     e::T
 ) where {
     T<:Truth,
-    D<:AbstractSet{T}
+    D<:AbstractVector{T}
 }
     @assert checkaxiom(Associativity, o) "Defined an operation for the monoid which " *
         "is not associative."
@@ -82,7 +82,7 @@ function checkmonoidaxioms(
 end
 
 """
-    struct Monoid{T<:Truth, D<:AbstractSet{T}}
+    struct Monoid{T<:Truth, D<:AbstractVector{T}}
         operation::BinaryOperation{T,D}
         identityelement::T
     end
@@ -98,7 +98,7 @@ The identity element of a monoid is unique.
 See also [`BinaryOperation`](@ref), [`Axiom`](@ref), [`checkaxiom`](@ref),
 [`checkmonoidaxioms`](@ref), [`Associativity`](@ref), [`IdentityElement`](@ref).
 """
-struct Monoid{T<:Truth, D<:AbstractSet{T}} <: FiniteAlgebra{T,D}
+struct Monoid{T<:Truth, D<:AbstractVector{T}} <: FiniteAlgebra{T,D}
     operation::BinaryOperation{T,D}
     identityelement::T
 
@@ -107,7 +107,7 @@ struct Monoid{T<:Truth, D<:AbstractSet{T}} <: FiniteAlgebra{T,D}
         identityelement::T1
     ) where {
         T<:Truth,
-        D<:AbstractSet{T},
+        D<:AbstractVector{T},
         T1<:Truth
     }
         if !isa(identityelement, T) identityelement = convert(T, identityelement)::T end
@@ -121,7 +121,7 @@ Return true if the object can be converted to an object of type `Monoid`.
 
 See also [`Monoid`](@ref).
 """
-ismonoid(::Monoid{T,D}) where {T<:Truth, D<:AbstractSet{T}} = true
+ismonoid(::Monoid{T,D}) where {T<:Truth, D<:AbstractVector{T}} = true
 ismonoid(::T) where {T} = false  
 
 """
@@ -130,7 +130,7 @@ ismonoid(::T) where {T} = false
         m::M
     ) where {
         T<:Truth,
-        D<:AbstractSet{T},
+        D<:AbstractVector{T},
         M<:FiniteAlgebra{T,D}
     }
 
@@ -143,7 +143,7 @@ function Base.convert(
     m::M
 ) where {
     T<:Truth,
-    D<:AbstractSet{T},
+    D<:AbstractVector{T},
     M<:FiniteAlgebra{T,D}
 }
     if ismonoid(m)
@@ -154,31 +154,31 @@ function Base.convert(
 end
 
 """
-    function checkaxiom(a::Axiom, m::Monoid{T,D}) where {T<:Truth, D<:AbstractSet{T}}
+    function checkaxiom(a::Axiom, m::Monoid{T,D}) where {T<:Truth, D<:AbstractVector{T}}
 
 Check if axiom `a` is satisfied by the operation of the monoid `m`.
 
 See also [`Axiom`](@ref), [`Monoid`](@ref).
 """
-function checkaxiom(a::Axiom, m::Monoid{T,D}) where {T<:Truth, D<:AbstractSet{T}}
+function checkaxiom(a::Axiom, m::Monoid{T,D}) where {T<:Truth, D<:AbstractVector{T}}
     return checkaxiom(typeof(a), m.operation)
 end
 
 """
-    function (m::Monoid{T,D})(t1::T, t2::T) where {T<:Truth, D<:AbstractSet{T}}
+    function (m::Monoid{T,D})(t1::T, t2::T) where {T<:Truth, D<:AbstractVector{T}}
 
 Helper allowing to use monoids with function notation.
 
 See also [`Monoid`](@ref), [`BinaryOperation`](@ref).
 """
-(m::Monoid{T,D})(t1::T, t2::T) where {T<:Truth, D<:AbstractSet{T}} = m.operation(t1, t2)
+(m::Monoid{T,D})(t1::T, t2::T) where {T<:Truth, D<:AbstractVector{T}} = m.operation(t1, t2)
 
 ############################################################################################
 #### Commutative monoid ####################################################################
 ############################################################################################
 
 """
-    struct CommutativeMonoid{T<:Truth, D<:AbstractSet{T}}
+    struct CommutativeMonoid{T<:Truth, D<:AbstractVector{T}}
         operation::BinaryOperation{T,D}
         identityelement::T
     end
@@ -187,7 +187,7 @@ A commutative monoid (S, ⋅, e) is a monoid whose operation is commutative.
 
 See also [`Monoid`](@ref), [`Commutativity`](@ref).
 """
-struct CommutativeMonoid{T<:Truth, D<:AbstractSet{T}} <: FiniteAlgebra{T,D}
+struct CommutativeMonoid{T<:Truth, D<:AbstractVector{T}} <: FiniteAlgebra{T,D}
     operation::BinaryOperation{T,D}
     identityelement::T
 
@@ -196,7 +196,7 @@ struct CommutativeMonoid{T<:Truth, D<:AbstractSet{T}} <: FiniteAlgebra{T,D}
         identityelement::T1
     ) where {
         T<:Truth,
-        D<:AbstractSet{T},
+        D<:AbstractVector{T},
         T1<:Truth
     }
         if !isa(identityelement, T) identityelement = convert(T, identityelement)::T end
@@ -207,16 +207,16 @@ struct CommutativeMonoid{T<:Truth, D<:AbstractSet{T}} <: FiniteAlgebra{T,D}
     end
 end
 
-ismonoid(::CommutativeMonoid{T,D}) where {T<:Truth, D<:AbstractSet{T}} = true
+ismonoid(::CommutativeMonoid{T,D}) where {T<:Truth, D<:AbstractVector{T}} = true
 
 """
-    function (m::CommutativeMonoid{T,D})(t1::T, t2::T) where {T<:Truth, D<:AbstractSet{T}}
+    function(m::CommutativeMonoid{T,D})(t1::T, t2::T) where {T<:Truth, D<:AbstractVector{T}}
 
 Helper allowing to use commutative monoids with function notation.
 
 See also [`Monoid`](@ref), [`BinaryOperation`](@ref).
 """
-function (m::CommutativeMonoid{T,D})(t1::T, t2::T) where {T<:Truth, D<:AbstractSet{T}}
+function (m::CommutativeMonoid{T,D})(t1::T, t2::T) where {T<:Truth, D<:AbstractVector{T}}
     return m.operation(t1, t2)
 end
 
@@ -230,7 +230,7 @@ end
         meet::BinaryOperation{T,D}
     ) where {
         T<:Truth,
-        D<:AbstractSet{T}
+        D<:AbstractVector{T}
     }
 
 Check if given domain, join and meet form a finite lattice.
@@ -249,7 +249,7 @@ function checklatticeaxioms(
     meet::BinaryOperation{T,D}
 ) where {
     T<:Truth,
-    D<:AbstractSet{T}
+    D<:AbstractVector{T}
 }
     @assert checkaxiom(Commutativity, join) "Defined a join operation which is not " *
         "commutative."
@@ -265,7 +265,7 @@ function checklatticeaxioms(
 end
 
 """
-    struct FiniteLattice{T<:Truth, D<:AbstractSet{T}} <: FiniteAlgebra{T,D}
+    struct FiniteLattice{T<:Truth, D<:AbstractVector{T}} <: FiniteAlgebra{T,D}
         join::BinaryOperation{T,D}
         meet::BinaryOperation{T,D}
     end
@@ -280,7 +280,7 @@ identities for all elements a, b ∈ L (sometimes called absorption laws):
 
 See also [`FiniteAlgebra`](@ref), [`BinaryOperation`](@ref).
 """
-struct FiniteLattice{T<:Truth, D<:AbstractSet{T}} <: FiniteAlgebra{T,D}
+struct FiniteLattice{T<:Truth, D<:AbstractVector{T}} <: FiniteAlgebra{T,D}
     join::BinaryOperation{T,D}
     meet::BinaryOperation{T,D}
 
@@ -289,7 +289,7 @@ struct FiniteLattice{T<:Truth, D<:AbstractSet{T}} <: FiniteAlgebra{T,D}
         meet::BinaryOperation{T,D}
     ) where {
         T<:Truth,
-        D<:AbstractSet{T}
+        D<:AbstractVector{T}
     }
         checklatticeaxioms(join, meet)
         return new{T,D}(join, meet)
@@ -301,7 +301,7 @@ Return true if the object can be converted to an object of type `FiniteLattice`.
 
 See also [`FiniteLattice`](@ref).
 """
-islattice(::FiniteLattice{T,D}) where {T<:Truth, D<:AbstractSet{T}} = true
+islattice(::FiniteLattice{T,D}) where {T<:Truth, D<:AbstractVector{T}} = true
 islattice(::T) where {T} = false
 
 """
@@ -310,7 +310,7 @@ islattice(::T) where {T} = false
         l::L
     ) where {
         T<:Truth,
-        D<:AbstractSet{T},
+        D<:AbstractVector{T},
         L<:FiniteAlgebra{T,D}
     }
 
@@ -323,7 +323,7 @@ function convert(
     l::L
 ) where {
     T<:Truth,
-    D<:AbstractSet{T},
+    D<:AbstractVector{T},
     L<:FiniteAlgebra{T,D}
 }
     if islattice(l)
@@ -334,13 +334,13 @@ function convert(
 end
 
 """
-    function getdomain(a::A) where {T<:Truth, D<:AbstractSet{T}, L<:FiniteAlgebra{T,D}}
+    function getdomain(a::A) where {T<:Truth, D<:AbstractVector{T}, L<:FiniteAlgebra{T,D}}
 
 Return the domain associated to `a`.
 
 See also [`Monoid`](@ref), [`FiniteLattice`](@ref), [`ismonoid`](@ref), [`islattice`](@ref).
 """
-function getdomain(a::A) where {T<:Truth, D<:AbstractSet{T}, A<:FiniteAlgebra{T,D}}
+function getdomain(a::A) where {T<:Truth, D<:AbstractVector{T}, A<:FiniteAlgebra{T,D}}
     if ismonoid(a)
         return getdomain(a.operation)
     elseif islattice(a)
@@ -362,7 +362,7 @@ end
         top::T
     ) where {
         T<:Truth,
-        D<:AbstractSet{T}
+        D<:AbstractVector{T}
     }
 
 Check if given domain, join, meet, bot and top form a bounded lattice.
@@ -382,7 +382,7 @@ function checkboundedlatticeaxioms(
     top::T
 ) where {
     T<:Truth,
-    D<:AbstractSet{T}
+    D<:AbstractVector{T}
 }
     checklatticeaxioms(join, meet)
     @assert checkaxiom(IdentityElement, join, bot) "$bot is not a valid identity element " *
@@ -393,7 +393,7 @@ function checkboundedlatticeaxioms(
 end
 
 """
-    struct FiniteBoundedLattice{T<:Truth, D<:AbstractSet{T}} <: FiniteAlgebra{T,D}
+    struct FiniteBoundedLattice{T<:Truth, D<:AbstractVector{T}} <: FiniteAlgebra{T,D}
         join::BinaryOperation{T,D}
         meet::BinaryOperation{T,D}
         bot::T
@@ -410,7 +410,7 @@ element ⊤ is the identity element for the meet operation ∧:
 
 See also [`FiniteLattice`](@ref).
 """
-struct FiniteBoundedLattice{T<:Truth, D<:AbstractSet{T}} <: FiniteAlgebra{T,D}
+struct FiniteBoundedLattice{T<:Truth, D<:AbstractVector{T}} <: FiniteAlgebra{T,D}
     join::BinaryOperation{T,D}
     meet::BinaryOperation{T,D}
     bot::T
@@ -423,7 +423,7 @@ struct FiniteBoundedLattice{T<:Truth, D<:AbstractSet{T}} <: FiniteAlgebra{T,D}
         top::T2
     ) where {
         T<:Truth,
-        D<:AbstractSet{T},
+        D<:AbstractVector{T},
         T1<:Truth,
         T2<:Truth
     }
@@ -434,14 +434,14 @@ struct FiniteBoundedLattice{T<:Truth, D<:AbstractSet{T}} <: FiniteAlgebra{T,D}
     end
 end
 
-islattice(::FiniteBoundedLattice{T,D}) where {T<:Truth, D<:AbstractSet{T}} = true
+islattice(::FiniteBoundedLattice{T,D}) where {T<:Truth, D<:AbstractVector{T}} = true
 
 """
 Return true if the object can be converted to an object of type `FiniteBoundedLattice`.
 
 See also [`FiniteBoundedLattice`](@ref).
 """
-isboundedlattice(::FiniteBoundedLattice{T,D}) where {T<:Truth, D<:AbstractSet{T}} = true
+isboundedlattice(::FiniteBoundedLattice{T,D}) where {T<:Truth, D<:AbstractVector{T}} = true
 isboundedlattice(::T) where {T} = false
 
 """
@@ -450,7 +450,7 @@ isboundedlattice(::T) where {T} = false
         l::L
     ) where {
         T<:Truth,
-        D<:AbstractSet{T},
+        D<:AbstractVector{T},
         L<:FiniteAlgebra{T,D}
     }
 
@@ -463,7 +463,7 @@ function convert(
     l::L
 ) where {
     T<:Truth,
-    D<:AbstractSet{T},
+    D<:AbstractVector{T},
     L<:FiniteAlgebra{T,D}
 }
     if isboundedlattice(l)
@@ -492,7 +492,7 @@ const RightResidual = Axiom{:RR}()
         m::Monoid{T,D}
     ) where {
         T<:Truth,
-        D<:AbstractSet{T}
+        D<:AbstractVector{T}
     }
 
 Check that ∀ x ∈ S there exists for every x ∈ S a greatest y ∈ S such that x ⋅ y ≤ z.
@@ -505,14 +505,14 @@ function checkaxiom(
     monoid::M
 ) where {
     T<:Truth,
-    D<:AbstractSet{T},
+    D<:AbstractVector{T},
     M<:FiniteAlgebra{T,D}
 }
     !ismonoid(monoid) && error("Cannot convert an object of type $(typeof(monoid)) to an "*
         "object of type Monoid.")
     for z ∈ getdomain(monoid)
         for x ∈ getdomain(monoid)
-            candidates = Set{T}()
+            candidates = Vector{T}()
             for y ∈ getdomain(monoid)
                 meet(monoid(x, y), z) == monoid(x, y) && push!(candidates, y)
             end
@@ -551,7 +551,7 @@ const LeftResidual = Axiom{:LR}()
         m::Monoid{T,D}
     ) where {
         T<:Truth,
-        D<:AbstractSet{T}
+        D<:AbstractVector{T}
     }
 
 Check that ∀ x ∈ S there exists for every y ∈ S a greatest x ∈ S such that x ⋅ y ≤ z.
@@ -564,14 +564,14 @@ function checkaxiom(
     monoid::M
 ) where {
     T<:Truth,
-    D<:AbstractSet{T},
+    D<:AbstractVector{T},
     M<:FiniteAlgebra{T,D}
 }
     !ismonoid(monoid) && error("Cannot convert an object of type $(typeof(monoid)) to an "*
         "object of type Monoid.")
     for z ∈ getdomain(monoid)
         for y ∈ getdomain(monoid)
-            candidates = Set{T}()
+            candidates = Vector{T}()
             for x ∈ getdomain(monoid)
                 meet(monoid(x, y), z) == monoid(x, y) && push!(candidates, x)
             end
@@ -611,7 +611,7 @@ const ResiduationProperty = Axiom{:RP}()
         m::Monoid{T,D}
     ) where {
         T<:Truth,
-        D<:AbstractSet{T}
+        D<:AbstractVector{T}
     }
 
 Check that ∀ x ∈ S there exists for every x ∈ S a greatest y ∈ S and for every y ∈ S a
@@ -625,7 +625,7 @@ function checkaxiom(
     monoid::M
 ) where {
     T<:Truth,
-    D<:AbstractSet{T},
+    D<:AbstractVector{T},
     M<:FiniteAlgebra{T,D}
 }
     !ismonoid(monoid) && error("Cannot convert an object of type $(typeof(monoid)) to an "*
@@ -638,7 +638,7 @@ function checkaxiom(
 end
 
 """
-    struct FiniteResiduatedLattice{T<:Truth, D<:AbstractSet{T}} <: FiniteAlgebra{T,D}
+    struct FiniteResiduatedLattice{T<:Truth, D<:AbstractVector{T}} <: FiniteAlgebra{T,D}
         domain::D
         join::BinaryOperation{T,D}
         meet::BinaryOperation{T,D}
@@ -657,7 +657,7 @@ A residuated lattice is an algebraic structure L = (L, ∨, ∧, ⋅, e) such th
 
 See also [`FiniteBoundedLattice`](@ref), 
 """
-struct FiniteResiduatedLattice{T<:Truth, D<:AbstractSet{T}} <: FiniteAlgebra{T,D}
+struct FiniteResiduatedLattice{T<:Truth, D<:AbstractVector{T}} <: FiniteAlgebra{T,D}
     join::BinaryOperation{T,D}
     meet::BinaryOperation{T,D}
     monoid::Monoid{T,D}
@@ -674,7 +674,7 @@ struct FiniteResiduatedLattice{T<:Truth, D<:AbstractSet{T}} <: FiniteAlgebra{T,D
         top::T2
     ) where {
         T<:Truth,
-        D<:AbstractSet{T},
+        D<:AbstractVector{T},
         M<:FiniteAlgebra{T,D},
         T1<:Truth,
         T2<:Truth
@@ -689,7 +689,7 @@ struct FiniteResiduatedLattice{T<:Truth, D<:AbstractSet{T}} <: FiniteAlgebra{T,D
         lrtruthtable = Dict{Tuple{T, T}, T}()
         for z ∈ getdomain(monoid)
             for x ∈ getdomain(monoid)
-                candidates = Set{T}()
+                candidates = Vector{T}()
                 for y ∈ getdomain(monoid)
                     meet(monoid(x, y), z) == monoid(x, y) && push!(candidates, y)
                 end
@@ -708,7 +708,7 @@ struct FiniteResiduatedLattice{T<:Truth, D<:AbstractSet{T}} <: FiniteAlgebra{T,D
                 end
             end
             for y ∈ getdomain(monoid)
-                candidates = Set{T}()
+                candidates = Vector{T}()
                 for x ∈ getdomain(monoid)
                     meet(monoid(x, y), z) == monoid(x, y) && push!(candidates, y)
                 end
@@ -738,7 +738,7 @@ end
 ############################################################################################
 
 """
-    struct FiniteFLewAlgebra{T<:Truth, D<:AbstractSet{T}} <: FiniteAlgebra{T,D}
+    struct FiniteFLewAlgebra{T<:Truth, D<:AbstractVector{T}} <: FiniteAlgebra{T,D}
         domain::D
         join::BinaryOperation{T,D}
         meet::BinaryOperation{T,D}
@@ -755,7 +755,7 @@ An FLew-algebra is an algebra (L, ∨, ∧, ⋅, →, ⊥, ⊤), where
 
 See also [`FiniteBoundedLattice`](@ref), [`CommutativeMonoid`](@ref).
 """
-struct FiniteFLewAlgebra{T<:Truth, D<:AbstractSet{T}} <: FiniteAlgebra{T,D}
+struct FiniteFLewAlgebra{T<:Truth, D<:AbstractVector{T}} <: FiniteAlgebra{T,D}
     join::BinaryOperation{T,D}
     meet::BinaryOperation{T,D}
     monoid::CommutativeMonoid{T,D}
@@ -771,7 +771,7 @@ struct FiniteFLewAlgebra{T<:Truth, D<:AbstractSet{T}} <: FiniteAlgebra{T,D}
         top::T2
     ) where {
         T<:Truth,
-        D<:AbstractSet{T},
+        D<:AbstractVector{T},
         T1<:Truth,
         T2<:Truth
     }
@@ -783,7 +783,7 @@ struct FiniteFLewAlgebra{T<:Truth, D<:AbstractSet{T}} <: FiniteAlgebra{T,D}
         implicationtruthtable = Dict{Tuple{T, T}, T}()
         for z ∈ getdomain(monoid)
             for x ∈ getdomain(monoid)
-                candidates = Set{T}()
+                candidates = Vector{T}()
                 for y ∈ getdomain(monoid)
                     meet(monoid(x, y), z) == monoid(x, y) && push!(candidates, y)
                 end
@@ -807,8 +807,8 @@ struct FiniteFLewAlgebra{T<:Truth, D<:AbstractSet{T}} <: FiniteAlgebra{T,D}
     end
 end
 
-islattice(::FiniteFLewAlgebra{T,D}) where {T<:Truth, D<:AbstractSet{T}} = true
-isboundedlattice(::FiniteFLewAlgebra{T,D}) where {T<:Truth, D<:AbstractSet{T}} = true
+islattice(::FiniteFLewAlgebra{T,D}) where {T<:Truth, D<:AbstractVector{T}} = true
+isboundedlattice(::FiniteFLewAlgebra{T,D}) where {T<:Truth, D<:AbstractVector{T}} = true
 
 ############################################################################################
 #### Finite Heyting algebra ################################################################
@@ -831,7 +831,7 @@ const Implication1 = Axiom{:I1}()
         top::Truth
     ) where {
         T<:Truth,
-        D<:AbstractSet{T}
+        D<:AbstractVector{T}
     }
 
 Check if given a bounded lattice (H, ∨, ∧, ⊥, ⊤) with largest and smallest elements ⊤ and ⊥,
@@ -845,7 +845,7 @@ function checkaxiom(
     top::Truth
 ) where {
     T<:Truth,
-    D<:AbstractSet{T}
+    D<:AbstractVector{T}
 }
     for i ∈ getdomain(o)
         o(i, i) != top && return false
@@ -870,7 +870,7 @@ const Implication2 = Axiom{:I2}()
         o2::BinaryOperation{T,D}
     ) where {
         T<:Truth,
-        D<:AbstractSet{T}
+        D<:AbstractVector{T}
     }
 
 Check if given a bounded lattice (H, ∨, ∧, ⊥, ⊤) with largest and smallest elements ⊤ and ⊥,
@@ -884,7 +884,7 @@ function checkaxiom(
     o2::BinaryOperation{T,D}
 ) where {
     T<:Truth,
-    D<:AbstractSet{T}
+    D<:AbstractVector{T}
 }
     for i ∈ getdomain(o1)
         for j ∈ getdomain(o1)
@@ -911,7 +911,7 @@ const Implication3 = Axiom{:I3}()
         o2::BinaryOperation{T,D}
     ) where {
         T<:Truth,
-        D<:AbstractSet{T}
+        D<:AbstractVector{T}
     }
 
 Check if given a bounded lattice (H, ∨, ∧, ⊥, ⊤) with largest and smallest elements ⊤ and ⊥,
@@ -925,7 +925,7 @@ function checkaxiom(
     o2::BinaryOperation{T,D}
 ) where {
     T<:Truth,
-    D<:AbstractSet{T}
+    D<:AbstractVector{T}
 }
     for i ∈ getdomain(o1)
         for j ∈ getdomain(o1)
@@ -952,7 +952,7 @@ const DistributiveLaw = Axiom{:DL}()
         o2::BinaryOperation{T,D}
     ) where {
         T<:Truth,
-        D<:AbstractSet{T}
+        D<:AbstractVector{T}
     }
 
 Check if given a bounded lattice (H, ∨, ∧, ⊥, ⊤) and two binary operations ⋅ and *, ⋅ is
@@ -966,7 +966,7 @@ function checkaxiom(
     o2::BinaryOperation{T,D}
 ) where {
     T<:Truth,
-    D<:AbstractSet{T}
+    D<:AbstractVector{T}
 }
     for i ∈ getdomain(o1)
         for j ∈ getdomain(o1)
@@ -979,7 +979,7 @@ function checkaxiom(
 end
 
 """
-    struct FiniteHeytingAlgebra{T<:Truth, D<:AbstractSet{T}} <: FiniteAlgebra{T,D}
+    struct FiniteHeytingAlgebra{T<:Truth, D<:AbstractVector{T}} <: FiniteAlgebra{T,D}
         domain::D
         join::BinaryOperation{T,D}
         meet::BinaryOperation{T,D}
@@ -1000,7 +1000,7 @@ binary operation →, these together form a Heyting algebra if and only if the f
 
 See also [`FiniteBoundedLattice`](@ref), [`BinaryOperation`](@ref).
 """
-struct FiniteHeytingAlgebra{T<:Truth, D<:AbstractSet{T}} <: FiniteAlgebra{T,D}
+struct FiniteHeytingAlgebra{T<:Truth, D<:AbstractVector{T}} <: FiniteAlgebra{T,D}
     join::BinaryOperation{T,D}
     meet::BinaryOperation{T,D}
     implication::BinaryOperation{T,D}
@@ -1010,11 +1010,12 @@ struct FiniteHeytingAlgebra{T<:Truth, D<:AbstractSet{T}} <: FiniteAlgebra{T,D}
     function FiniteHeytingAlgebra(
         join::BinaryOperation{T,D},
         meet::BinaryOperation{T,D},
-        implication::BinaryOperation{T,D},bot::T1,
+        implication::BinaryOperation{T,D},
+        bot::T1,
         top::T2
     ) where {
         T<:Truth,
-        D<:AbstractSet{T},
+        D<:AbstractVector{T},
         T1<:Truth,
         T2<:Truth
     }
@@ -1031,10 +1032,29 @@ struct FiniteHeytingAlgebra{T<:Truth, D<:AbstractSet{T}} <: FiniteAlgebra{T,D}
             "does not hold for given binary operation →."
         return new{T,D}(join, meet, implication, bot, top)
     end
+
+    function FiniteHeytingAlgebra(
+        a::FiniteFLewAlgebra{T,D}
+    ) where {
+        T<:Truth,
+        D<:AbstractVector{T}
+    }
+        return convert(FiniteHeytingAlgebra{T,D}, a)
+    end
 end
 
-islattice(::FiniteHeytingAlgebra{T,D}) where {T<:Truth, D<:AbstractSet{T}} = true
-isboundedlattice(::FiniteHeytingAlgebra{T,D}) where {T<:Truth, D<:AbstractSet{T}} = true
+islattice(::FiniteHeytingAlgebra{T,D}) where {T<:Truth, D<:AbstractVector{T}} = true
+isboundedlattice(::FiniteHeytingAlgebra{T,D}) where {T<:Truth, D<:AbstractVector{T}} = true
+
+function Base.show(io::IO, a::FiniteHeytingAlgebra)
+    println(string(typeof(a)))
+    println("Domain: " * string(getdomain(a)))
+    println("Bot: " * string(a.bot))
+    println("Top: " * string(a.top))
+    println("Join: " * string(a.join))
+    println("Meet: " * string(a.meet))
+    println("Implication: " * string(a.meet))
+end
 
 """
     function convert(
@@ -1042,7 +1062,7 @@ isboundedlattice(::FiniteHeytingAlgebra{T,D}) where {T<:Truth, D<:AbstractSet{T}
         l::FiniteHeytingAlgebra
     ) where {
         T<:Truth,
-        D<:AbstractSet{T}
+        D<:AbstractVector{T}
     }
 
 Convert `l` of type `FiniteHeytingAlgebra` to a value of type `FiniteFLewAlgebra`.
@@ -1051,10 +1071,39 @@ See also [`FiniteFLewAlgebra`](@ref), [`FiniteHeytingAlgebra`](@ref).
 """
 function convert(
     ::Type{FiniteFLewAlgebra{T,D}},
-    l::FiniteHeytingAlgebra
+    l::FiniteHeytingAlgebra{T,D}
 ) where {
     T<:Truth,
-    D<:AbstractSet{T}
+    D<:AbstractVector{T}
 }
     return FiniteFLewAlgebra(l.join, l.meet, l.meet, l.bot, l.top)
+end
+
+
+"""
+    function convert(
+        ::Type{FiniteHeytingAlgebra{T,D}},
+        l::FiniteFLewAlgebra
+    ) where {
+        T<:Truth,
+        D<:AbstractVector{T}
+    }
+
+Convert `l` of type `FiniteFLewAlgebra` to a value of type `FiniteHeytingAlgebra`.
+
+See also [`FiniteHeytingAlgebra`](@ref), [`FiniteFLewAlgebra`](@ref).
+"""
+function convert(
+    ::Type{FiniteHeytingAlgebra{T,D}},
+    l::FiniteFLewAlgebra{T,D}
+) where {
+    T<:Truth,
+    D<:AbstractVector{T}
+}
+    if (l.meet == l.monoid.operation)
+        return FiniteHeytingAlgebra(l.join, l.meet, l.implication, l.bot, l.top)
+    else
+        error("Cannot convert object of type $(typeof(l)) to a value of type " *
+              " FiniteFLewAlgebra: meet and monoid must be the same.")
+    end
 end

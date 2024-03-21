@@ -127,3 +127,5 @@ m9 = BinaryOperation(d9, mt9)
 mm9 = CommutativeMonoid(m9, ⊤)
 
 ffa9 = FiniteFLewAlgebra(j9, m9, mm9, ⊥, ⊤)
+
+fha9 = FiniteHeytingAlgebra(ffa9)

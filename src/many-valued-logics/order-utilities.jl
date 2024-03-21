@@ -5,7 +5,7 @@
         t2::T
     ) where {
         T<:Truth,
-        D<:AbstractSet{T},
+        D<:AbstractVector{T},
         L<:FiniteAlgebra{T,D}
     }
 
@@ -20,7 +20,7 @@ function precedeq(
     t2::T
 ) where {
     T<:Truth,
-    D<:AbstractSet{T},
+    D<:AbstractVector{T},
     L<:FiniteAlgebra{T,D}
 }
     !islattice(l) && error("Cannot convert object of type $(typeof(l)) to an object of " *
@@ -39,7 +39,7 @@ end
         t2::T
     ) where {
         T<:Truth,
-        D<:AbstractSet{T},
+        D<:AbstractVector{T},
         L<:FiniteAlgebra{T,D}
     }
 
@@ -54,7 +54,7 @@ function precedes(
     t2::T
 ) where {
     T<:Truth,
-    D<:AbstractSet{T},
+    D<:AbstractVector{T},
     L<:FiniteAlgebra{T,D}
 }
     return t1 != t2 && precedeq(l, t1, t2)
@@ -67,7 +67,7 @@ end
         t2::T
     ) where {
         T<:Truth,
-        D<:AbstractSet{T},
+        D<:AbstractVector{T},
         L<:FiniteAlgebra{T,D}
     }
 
@@ -82,7 +82,7 @@ function succeedeq(
     t2::T
 ) where {
     T<:Truth,
-    D<:AbstractSet{T},
+    D<:AbstractVector{T},
     L<:FiniteAlgebra{T,D}
 }
     return precedeq(l, t2, t1)
@@ -95,7 +95,7 @@ end
         t2::T
     ) where {
         T<:Truth,
-        D<:AbstractSet{T},
+        D<:AbstractVector{T},
         L<:FiniteAlgebra{T,D}
     }
 
@@ -110,7 +110,7 @@ function succeedes(
     t2::T
 ) where {
     T<:Truth,
-    D<:AbstractSet{T},
+    D<:AbstractVector{T},
     L<:FiniteAlgebra{T,D}
 }
     return precedes(l, t2, t1)
@@ -122,7 +122,7 @@ end
         t::T1
     ) where {
         T<:Truth,
-        D<:AbstractSet{T},
+        D<:AbstractVector{T},
         L<:FiniteAlgebra{T,D},
         T1<:Truth
     }
@@ -139,7 +139,7 @@ function lesservalues(
     t::T1
 ) where {
     T<:Truth,
-    D<:AbstractSet{T},
+    D<:AbstractVector{T},
     L<:FiniteAlgebra{T,D},
     T1<:Truth
 }
@@ -153,7 +153,7 @@ end
         t::T1
     ) where {
         T<:Truth,
-        D<:AbstractSet{T},
+        D<:AbstractVector{T},
         L<:FiniteAlgebra{T,D},
         T1<:Truth
     }
@@ -167,7 +167,7 @@ function maximalmembers(
     t::T1
 ) where {
     T<:Truth,
-    D<:AbstractSet{T},
+    D<:AbstractVector{T},
     L<:FiniteAlgebra{T,D},
     T1<:Truth
 }
@@ -186,7 +186,7 @@ end
         t::T1
     ) where {
         T<:Truth,
-        D<:AbstractSet{T},
+        D<:AbstractVector{T},
         L<:FiniteAlgebra{T,D},
         T1<:Truth
     }
@@ -200,7 +200,7 @@ function minimalmembers(
     t::T1
 ) where {
     T<:Truth,
-    D<:AbstractSet{T},
+    D<:AbstractVector{T},
     L<:FiniteAlgebra{T,D},
     T1<:Truth
 }

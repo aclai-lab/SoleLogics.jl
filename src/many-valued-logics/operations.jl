@@ -33,7 +33,7 @@ function arity(o::O) where {O<:Operation}
 end
 
 """
-    struct BinaryOperation{T<:Truth, D<:AbstractSet{T}} <: Operation
+    struct BinaryOperation{T<:Truth, D<:AbstractVector{T}} <: Operation
         domain::D
         truthtable::AbstractDict{Tuple{T, T}, T}
     end
@@ -45,7 +45,7 @@ on all elements of S × S.
 
 See also [`Operation`](@ref), [`arity`](@ref).
 """
-struct BinaryOperation{T<:Truth, D<:AbstractSet{T}} <: Operation
+struct BinaryOperation{T<:Truth, D<:AbstractVector{T}} <: Operation
     domain::D
     truthtable::AbstractDict{Tuple{T, T}, T}
 
@@ -54,7 +54,7 @@ struct BinaryOperation{T<:Truth, D<:AbstractSet{T}} <: Operation
         truthtable::Dict{Tuple{T, T}, T}
     ) where {
         T<:Truth,
-        D<:AbstractSet{T}
+        D<:AbstractVector{T}
     }
         for i ∈ domain
             for j ∈ domain
@@ -80,12 +80,12 @@ See also [`BinaryOperation`](@ref).
 getdomain(o::BinaryOperation) = o.domain
 
 """
-    function (o::BinaryOperation{T,D})(t1::T, t2::T) where {T<:Truth, D<:AbstractSet{T}}
+    function (o::BinaryOperation{T,D})(t1::T, t2::T) where {T<:Truth, D<:AbstractVector{T}}
 
 Helper allowing to use binary operations with function notation.
 
 See also [`Operation`](@ref), [`BinaryOperation`](@ref), [`arity`](@ref).
 """
-function (o::BinaryOperation{T,D})(t1::T, t2::T) where {T<:Truth, D<:AbstractSet{T}}
+function (o::BinaryOperation{T,D})(t1::T, t2::T) where {T<:Truth, D<:AbstractVector{T}}
     return o.truthtable[(t1, t2)]
 end

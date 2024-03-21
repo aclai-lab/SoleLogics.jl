@@ -54,7 +54,7 @@ const Commutativity = Axiom{:COM}()
         o::BinaryOperation{T,D}
     ) where {
         T<:Truth,
-        D<:AbstractSet{T}
+        D<:AbstractVector{T}
     }
 
 A binary operation * on a set S is called commutative if x * y = y * x ∀ x, y ∈ S.
@@ -66,7 +66,7 @@ function checkaxiom(
     o::BinaryOperation{T,D}
 ) where {
     T<:Truth,
-    D<:AbstractSet{T}
+    D<:AbstractVector{T}
 }
     for i ∈ getdomain(o)
         for j ∈ getdomain(o)
@@ -77,7 +77,7 @@ function checkaxiom(
 end
 
 # Helper
-function iscommutative(o::BinaryOperation{T,D}) where {T<:Truth, D<:AbstractSet{T}}
+function iscommutative(o::BinaryOperation{T,D}) where {T<:Truth, D<:AbstractVector{T}}
     return checkaxiom(Commutativity, o)
 end
 
@@ -97,7 +97,7 @@ const Associativity = Axiom{:ASS}()
         o::BinaryOperation{T,D}
     ) where {
         T<:Truth,
-        D<:AbstractSet{T}
+        D<:AbstractVector{T}
     }
 
 A binary operation * on a set S is called associative if it satisfies the associative law:
@@ -110,7 +110,7 @@ function checkaxiom(
     o::BinaryOperation{T,D}
 ) where {
     T<:Truth,
-    D<:AbstractSet{T}
+    D<:AbstractVector{T}
 }
     for i ∈ getdomain(o)
         for j ∈ getdomain(o)
@@ -123,7 +123,7 @@ function checkaxiom(
 end
 
 # Helper
-function isassociative(o::BinaryOperation{T,D}) where {T<:Truth, D<:AbstractSet{T}}
+function isassociative(o::BinaryOperation{T,D}) where {T<:Truth, D<:AbstractVector{T}}
     checkaxiom(Associativity, o)
 end
 
@@ -145,7 +145,7 @@ const AbsorptionLaw = Axiom{:AL}()
         o2::BinaryOperation{T,D}
     ) where {
         T<:Truth,
-        D<:AbstractSet{T}
+        D<:AbstractVector{T}
     }
 
 The absorption law or absorption identity is an identity linking a pair of binary
@@ -160,7 +160,7 @@ function checkaxiom(
     o2::BinaryOperation{T,D}
 ) where {
     T<:Truth,
-    D<:AbstractSet{T}
+    D<:AbstractVector{T}
 }
     for i ∈ getdomain(o1)
         for j ∈ getdomain(o1)
@@ -188,7 +188,7 @@ const LeftIdentity = Axiom{:LI}()
         e::T
     ) where {
         T<:Truth,
-        D<:AbstractSet{T}
+        D<:AbstractVector{T}
     }
 
 Let (S, *) be a set S equipped with a binary operation *. Then an element e of S is called a
@@ -202,7 +202,7 @@ function checkaxiom(
     e::T
 ) where {
     T<:Truth,
-    D<:AbstractSet{T}
+    D<:AbstractVector{T}
 }
     for i ∈ getdomain(o)
         o(e, i) != i && return false
@@ -227,7 +227,7 @@ const RightIdentity = Axiom{:RI}()
         e::T
     ) where {
         T<:Truth,
-        D<:AbstractSet{T}
+        D<:AbstractVector{T}
     }
 
 Let (S, *) be a set S equipped with a binary operation *. Then an element e of S is called a
@@ -241,7 +241,7 @@ function checkaxiom(
     e::T
 ) where {
     T<:Truth,
-    D<:AbstractSet{T}
+    D<:AbstractVector{T}
 }
     for i ∈ getdomain(o)
         o(i, e) != i && return false
@@ -269,7 +269,7 @@ const IdentityElement = Axiom{:IE}()
         e::T
     ) where {
         T<:Truth,
-        D<:AbstractSet{T}
+        D<:AbstractVector{T}
     }
 
 An identity element or neutral element of a binary operation is an element that leaves
@@ -286,7 +286,7 @@ function checkaxiom(
     e::T
 ) where {
     T<:Truth,
-    D<:AbstractSet{T}
+    D<:AbstractVector{T}
 }
     if checkaxiom(LeftIdentity, o, e) && checkaxiom(RightIdentity, o, e)
         return true
