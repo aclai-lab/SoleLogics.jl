@@ -30,6 +30,17 @@ valuetype(s::AbstractInterpretationSet) = valuetype(typeof(s))
 truthtype(::Type{S}) where {M,S<:AbstractInterpretationSet{M}} = truthtype(M)
 truthtype(s::AbstractInterpretationSet) = truthtype(typeof(s))
 
+"""
+    alphabet(s::AbstractInterpretationSet)::Alphabet
+
+Return the propositional alphabet of an interpretation set.
+
+See also [`AbstractAlphabet`](@ref), [`AbstractGrammar`](@ref).
+"""
+function alphabet(s::AbstractInterpretationSet)::Alphabet
+    return error("Please, provide method alphabet(::$(typeof(s))).")
+end
+
 # Fallback
 function getinstance(s::AbstractInterpretationSet, i_instance::Integer)
     return LogicalInstance(s, i_instance)
@@ -233,10 +244,6 @@ worldtype(s::AbstractInterpretationSet) = worldtype(typeof(s))
 
 frametype(::Type{AbstractInterpretationSet{M}}) where {M<:AbstractKripkeStructure} = frametype(M)
 frametype(s::AbstractInterpretationSet) = frametype(typeof(s))
-
-function alphabet(s::AbstractInterpretationSet{M}) where {M<:AbstractKripkeStructure}
-    return error("Please, provide method alphabet(::$(typeof(s))).")
-end
 
 # function relations(s::AbstractInterpretationSet{M}) where {M<:AbstractKripkeStructure}
 #     return error("Please, provide method relations(::$(typeof(s))).")

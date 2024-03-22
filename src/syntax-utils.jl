@@ -163,6 +163,7 @@ function Base.getindex(
     return LeftmostLinearForm{C,SS}(children(lf)[idxs])
 end
 Base.getindex(lf::LeftmostLinearForm, idx::Integer) = Base.getindex(lf,[idx])
+Base.push!(lf::LeftmostLinearForm, el) = Base.push!(children(lf), el)
 
 function composeformulas(c::Connective, φs::NTuple{N,LeftmostLinearForm}) where {N}
     if all(_c->_c == c, connective.(φs)) # If operator is the same, collapse children
