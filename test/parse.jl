@@ -62,7 +62,8 @@ end
 
 @test alphabet(logic(parsebaseformula("p→q"))) == AlphabetOfAny{String}()
 
-
+@test syntaxstring(parseformula("(◊¬p) ∧ (¬q)")) == "◊¬p ∧ ¬q"
+@test syntaxstring(parseformula("q → p → ¬q"), remove_redundant_parentheses=false) == "(q) → ((p) → (¬(q)))"
 # function notation ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 @test syntaxstring(parseformula("p∧q"); function_notation = true) == "∧(p, q)"
@@ -306,3 +307,11 @@ f = parseformula(s)
     )
 
 @test_nowarn parseformula("10 ∧ ⟨G⟩ 2 ∧ [=] -1"; atom_parser = x->(Atom{Int64}(parse(Int, x))))
+
+# synexpr
+
+# NOTE: also if the following works, a MethodError is given during testing.
+# LoadError: MethodError: no method matching (::NamedConnective{:∧})(::String, ::Atom{String})
+#
+# synexpr_formula = syntaxstring(@synexpr p ∧ q ∧ r ∨ s ∧ t)
+# @test syntaxstring(parseformula("p ∧ q ∧ r ∨ s ∧ t")) == syntaxstring(synexpr_formula)

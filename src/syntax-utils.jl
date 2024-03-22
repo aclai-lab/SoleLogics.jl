@@ -31,7 +31,7 @@ julia> LeftmostDisjunctiveForm{Literal}([Literal(false, Atom("p")), Literal(true
 LeftmostLinearForm{SoleLogics.NamedConnective{:∨},Literal}
     "(¬p) ∨ (q) ∨ (¬r)"
 
-julia> LeftmostDisjunctiveForm([LeftmostConjunctiveForm(parseformula.(["¬p", "q", "¬r"]))]) isa SoleLogics.DNF
+julia> LeftmostDisjunctiveForm([LeftmostConjunctiveForm(parseformula.(["¬p", "q", "¬r"]))]) isa DNF
 true
 
 julia> conj = LeftmostConjunctiveForm(@atoms p q)
@@ -84,7 +84,13 @@ struct LeftmostLinearForm{C<:Connective,SS<:AbstractSyntaxStructure} <: Abstract
         new{C,SS}(children)
     end
 
-    function LeftmostLinearForm{C}(children::Vector) where {C<:Connective}
+    function LeftmostLinearForm{C}(children::AbstractVector{SS}) where {C<:Connective,SS<:AbstractSyntaxStructure}
+        # SS = SoleBase._typejoin(typeof.(children)...)
+        LeftmostLinearForm{C,SS}(children)
+    end
+
+    # Ugly!!
+    function LeftmostLinearForm{C}(children::AbstractVector) where {C<:Connective}
         SS = SoleBase._typejoin(typeof.(children)...)
         LeftmostLinearForm{C,SS}(children)
     end
@@ -110,8 +116,10 @@ struct LeftmostLinearForm{C<:Connective,SS<:AbstractSyntaxStructure} <: Abstract
         # Check c correctness; it should not be nothing (thus, auto inferred) if
         # tree root contains something that is not a connective
         if (!(token(tree) isa Connective) && !isnothing(c))
-            error("Syntax tree cannot be converted to a LeftmostLinearForm:" *
-                "tree root is $(token(tree))")
+            error("Syntax tree cannot be converted to a LeftmostLinearForm. " *
+                "tree root is $(token(tree)). " *
+                "Try specifying a connective as a second argument."
+            )
         end
 
         if isnothing(c)
@@ -307,6 +315,23 @@ DNF(disjuncts::Vararg{LeftmostConjunctiveForm}) = DNF(collect(disjuncts))
 CNF(conjunct::LeftmostDisjunctiveForm) = CNF([conjunct])
 DNF(disjunct::LeftmostConjunctiveForm) = DNF([disjunct])
 
+function CNF(φ::SyntaxLeaf)
+    return LeftmostConjunctiveForm([LeftmostDisjunctiveForm([φ])])
+end
+
+function DNF(φ::SyntaxLeaf)
+    return LeftmostDisjunctiveForm([LeftmostConjunctiveForm([φ])])
+end
+
+function CNF(φ::SyntaxBranch)
+    return erorr("TODO")
+end
+
+function DNF(φ::SyntaxBranch)
+    return erorr("TODO")
+end
+
+
 literaltype(::CNF{SS}) where {SS<:AbstractSyntaxStructure} = SS
 literaltype(::DNF{SS}) where {SS<:AbstractSyntaxStructure} = SS
 
@@ -325,10 +350,11 @@ ndisjuncts(m::Union{LeftmostDisjunctiveForm,DNF}) = nchildren(m)
 # disjuncts(m::CNF) = map(d->disjuncts(d), conjuncts(m))
 # ndisjuncts(m::CNF) = map(d->ndisjuncts(d), conjuncts(m))
 
+
 ############################################################################################
 
 """
-    struct Literal{T<:SyntaxToken} <: AbstractSyntaxStructure
+    struct Literal{T<:SyntaxLeaf} <: AbstractSyntaxStructure
         ispos::Bool
         prop::T
     end
@@ -337,22 +363,33 @@ An atom, or its negation.
 
 See also [`CNF`](@ref), [`DNF`](@ref), [`AbstractSyntaxStructure`](@ref).
 """
-struct Literal{T<:SyntaxToken} <: AbstractSyntaxStructure
+struct Literal{T<:SyntaxLeaf} <: AbstractSyntaxStructure
     ispos::Bool
     prop::T
 
     function Literal{T}(
         ispos::Bool,
         prop::T,
-    ) where {T<:SyntaxToken}
+    ) where {T<:SyntaxLeaf}
         new{T}(ispos, prop)
     end
 
     function Literal(
         ispos::Bool,
         prop::T,
-    ) where {T<:SyntaxToken}
+    ) where {T<:SyntaxLeaf}
         Literal{T}(ispos, prop)
+    end
+
+    function Literal(φ::SyntaxLeaf, flag = true)
+        return Literal(flag, φ)
+    end
+    function Literal(φ::SyntaxBranch{typeof(¬)}, flag = true)
+        ch = first(children(φ))
+        @assert ch isa Union{SyntaxLeaf,SyntaxBranch{typeof(¬)}} "Cannot " *
+        # @assert ch isa SyntaxLeaf "Cannot " *
+            "construct Literal with formula of type $(typeof(ch))): $(syntaxstring(ch))."
+        return Literal(ch, !flag)
     end
 end
 
@@ -371,6 +408,61 @@ function Base.show(io::IO, l::Literal)
         "Literal{$(atomstype(l))}: " * (ispos(l) ? "" : "¬") * syntaxstring(prop(l))
     )
 end
+
+############################################################################################
+# CNF conversion
+############################################################################################
+
+"""
+    cnf(φ::Formula, literaltype = Literal; kwargs...)
+
+    TODO docstring. Converts to cnf form ([`CNF`](@ref)).
+    `CNF{literaltype}`
+    Additional `kwargs` are passed to [`normalize`](@ref)
+"""
+function cnf(φ::Formula, literaltype = Literal; kwargs...)
+    return _cnf(normalize(φ; profile = :nnf, kwargs...), literaltype)
+end
+
+function cnf(φ::CNF{T}, literaltype = Literal; kwargs...) where {T<:AbstractSyntaxStructure}
+    if T == literaltype
+        return φ
+    else
+        return cnf(tree(φ), literaltype; kwargs...)
+    end
+end
+
+function cnf(φ::DNF, args...; kwargs...)
+    return cnf(tree(φ), args...; kwargs...)
+end
+
+
+function _cnf(φ::Formula, literaltype = Literal)
+    return error("Cannot convert to CNF formula of type $(typeof(φ)): $(syntaxstring(φ))")
+end
+
+function _cnf(φ::Union{SyntaxLeaf,SyntaxBranch{typeof(¬)}}, literaltype = Literal)
+    φ = φ isa literaltype ? φ : literaltype(φ)
+    return LeftmostConjunctiveForm([LeftmostDisjunctiveForm{literaltype}([φ])])
+end
+
+function _cnf(φ::SyntaxBranch{typeof(∧)}, literaltype = Literal)
+    return _cnf(first(children(φ)), literaltype) ∧ _cnf(last(children(φ)), literaltype)
+end
+
+function _cnf(φ::SyntaxBranch{typeof(∨)}, literaltype = Literal)
+    conjs = vec([begin
+        # @show typeof(c1), typeof(c2)
+        # @show typeof(c1 ∨ c2)
+        # LeftmostDisjunctiveForm{literaltype}(c1 ∨ c2)
+        c1 ∨ c2
+    end for (c1,c2) in Iterators.product(conjuncts(_cnf(first(children(φ)), literaltype)),conjuncts(_cnf(last(children(φ)), literaltype)))])
+    # @show typeof.(conjs)
+    # conjs = Vector{LeftmostDisjunctiveForm{literaltype}}(conjs)
+    LeftmostConjunctiveForm(conjs)
+end
+
+
 
 ############################################################################################
 
@@ -577,6 +669,17 @@ function normalize(
         if isnothing(remove_implications)        remove_implications = false end
         if isnothing(remove_identities)          remove_identities = true end
         if isnothing(unify_toones)               unify_toones = true end
+        if isnothing(rotate_commutatives)        rotate_commutatives = true end
+        # TODO leave \to's instead of replacing them with \lor's...
+    elseif profile == :nnf
+        if isnothing(remove_boxes)               remove_boxes = false end
+        if isnothing(reduce_negations)           reduce_negations = true end
+        if isnothing(simplify_constants)         simplify_constants = false end
+        if isnothing(allow_atom_flipping)        allow_atom_flipping = false end
+        if isnothing(prefer_implications)        prefer_implications = false end
+        if isnothing(remove_implications)        remove_implications = true end
+        if isnothing(remove_identities)          remove_identities = false end
+        if isnothing(unify_toones)               unify_toones = false end
         if isnothing(rotate_commutatives)        rotate_commutatives = true end
         # TODO leave \to's instead of replacing them with \lor's...
     elseif profile == :modelchecking

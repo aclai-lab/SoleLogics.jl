@@ -9,57 +9,58 @@ Topological binary relations from
 [Region Connection Calculus](https://en.wikipedia.org/wiki/Region_connection_calculus).
 Region Connection Calculus (RCC) is most famous for RCC8, a set of 8 topological relations,
 which comprehends the identity relation (i.e., `identityrel'), and the following 7 relations:
-- Externally connected
-- Partially overlapping
-- Tangential proper part
-- Tangential proper part inverse
-- Non-tangential proper part
-- Non-tangential proper part inverse
+- Externally connected;
+- Partially overlapping;
+- Tangential proper part;
+- Tangential proper part inverse;
+- Non-tangential proper part;
+- Non-tangential proper part inverse.
 
-If we consider a reference interval `(x,y)`, we can graphically represent the 7
- relations by providing an example of a world `(z,t)` that is accessible via each
+If we consider a reference interval `(x−y)`, we can graphically represent the 7
+ relations by providing an example of a world `(z−t)` that is accessible via each
 of them:
 
-                                                 x                   y
-RELATION                             ABBR.       |-------------------|
-                                                 .                   .
-                                                 .                   .  z        t
-Disconnected                         (DC)        .                   . |--------|
-                                                 .                   .
-                                                 .                   z         t
-Externally connected                 (EC)        .                   |---------|
-                                                 .                   .
-                                                 .                z     t
-Partially overlapping                (PO)        .                |-----|
-                                                 .                   .
-                                                 .             z     t
-Tangential proper part               (TPP)       .             |-----|
-                                                 .                   .
-                                                 z                   .     t
-Tangential proper part inverse       (T̅P̅P̅)       |-------------------------|
-                                                 .                   .
-                                                 .           z       .
-Non-tangential proper part           (NTPP)      .           |-----| .
-                                                 .                   .
-                                               z .                   . t
-Non-tangential proper part inverse   (N̅T̅P̅P̅)    |-----------------------|
+| Relation    | Full name                                |       Graphical Representation w.r.t (x−y) |
+| :---------- |:-----------------------------------------|--------------------------------------------|
+|             |                                          |`___x___________________y__________________`|
+|             |                                          |`___∣−−−−−−−−−−−−−−−−−−−∣__________________`|
+|             |                                          |`___.___________________.__________________`|
+|             |                                          |`___.___________________.__z________t______`|
+|    DC       | Disconnected                             |`___.___________________._∣−−−−−−−−∣_______`|
+|             |                                          |`___.___________________.__________________`|
+|             |                                          |`___.___________________z_________t________`|
+|    EC       | Externally connected                     |`___.___________________∣−−−−−−−−−∣________`|
+|             |                                          |`___.___________________.__________________`|
+|             |                                          |`___.________________z_____t_______________`|
+|    PO       | Partially overlapping                    |`___.________________∣−−−−−∣_______________`|
+|             |                                          |`___.___________________.__________________`|
+|             |                                          |`___._____________z_____t__________________`|
+|    TPP      | Tangential proper part                   |`___._____________∣−−−−−∣__________________`|
+|             |                                          |`___.___________________.__________________`|
+|             |                                          |`___z___________________._____t____________`|
+|    TPPi     | Tangential proper part inverse           |`___∣−−−−−−−−−−−−−−−−−−−−−−−−−∣____________`|
+|             |                                          |`___.___________________.__________________`|
+|             |                                          |`___.___________z_______.__________________`|
+|    NTPP     | Non-tangential proper part               |`___.___________∣−−−−−∣_.__________________`|
+|             |                                          |`___.___________________.__________________`|
+|             |                                          |`_z_.___________________._t________________`|
+|    NTPPi    | Non-tangential proper part inverse       |`_∣−−−−−−−−−−−−−−−−−−−−−−−∣________________`|
 
 
 Methods for RCC8 relations and Interval2D's can be obtained by combining their 1D versions,
 according to the following composition rules:
 
-                 .-------------------------------------------------------.
-                 |         DC   EC   PO   TPP   T̅P̅P̅   NTPP   N̅T̅P̅P̅    Id  |
-                 |-------------------------------------------------------|
-                 | DC   |  DC | DC | DC | DC  | DC  |  DC  |  DC  |  DC  |
-                 | EC   |  DC | EC | EC | EC  | EC  |  EC  |  EC  |  EC  |
-                 | PO   |  DC | EC | PO | PO  | PO  |  PO  |  PO  |  PO  |
-                 | TPP  |  DC | EC | PO | TPP | PO  |  TPP |  PO  |  TPP |
-                 | T̅P̅P̅  |  DC | EC | PO | PO  | T̅P̅P̅ |  PO  |  T̅P̅P̅ |  T̅P̅P̅ |
-                 | NTPP |  DC | EC | PO | TPP | PO  | NTPP |  PO  |  TPP |
-                 | N̅T̅P̅P̅ |  DC | EC | PO | PO  | T̅P̅P̅ |  PO  | N̅T̅P̅P̅ |  T̅P̅P̅ |
-                 |  Id  |  DC | EC | PO | TPP | T̅P̅P̅ |  TPP |  T̅P̅P̅ |  Id  |
-                 '-------------------------------------------------------'
+|      |  DC | EC | PO | TPP | TPP | NTPP | NTPP |  Id  |
+|:-----|:----|:---|:---|:----|:----|:-----|:-----|:-----|
+| DC   |  DC | DC | DC | DC  | DC  |  DC  |  DC  |  DC  |
+| EC   |  DC | EC | EC | EC  | EC  |  EC  |  EC  |  EC  |
+| PO   |  DC | EC | PO | PO  | PO  |  PO  |  PO  |  PO  |
+| TPP  |  DC | EC | PO | TPP | PO  |  TPP |  PO  |  TPP |
+| TPPi |  DC | EC | PO | PO  | TPP |  PO  |  TPP |  TPP |
+| NTPP |  DC | EC | PO | TPP | PO  | NTPP |  PO  |  TPP |
+| NTPPi|  DC | EC | PO | PO  | TPP |  PO  | NTPP |  TPP |
+|  Id  |  DC | EC | PO | TPP | TPP |  TPP |  TPP |  Id  |
+
 
 # Examples
 ```julia-repl

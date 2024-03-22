@@ -1,11 +1,12 @@
 using SoleLogics
+using SoleLogics.ManyValuedLogics
 using Documenter
 
 DocMeta.setdocmeta!(SoleLogics, :DocTestSetup, :(using SoleLogics); recursive = true)
 
 makedocs(;
-    modules = [SoleLogics],
-    authors = "Mauro Milella, Giovanni Pagliarini, Eduard I. Stan",
+    modules = [SoleLogics, SoleLogics.ManyValuedLogics],
+    authors = "Mauro Milella, Giovanni Pagliarini, Alberto Paparella, Eduard I. Stan",
     repo=Documenter.Remotes.GitHub("aclai-lab", "SoleLogics.jl"),
     sitename = "SoleLogics.jl",
     format = Documenter.HTML(;
@@ -19,6 +20,7 @@ makedocs(;
         "Getting started" => "getting-started.md",
         "Introduction to Logics and Propositional Logic" => "base-logic.md",
         "Modal Logic" => "modal-logic.md",
+        "Many-valued logics" => "many-valued-logics.md",
         "More on Formulas" => "more-on-formulas.md",
         "Hands On" => "hands-on.md"
     ],

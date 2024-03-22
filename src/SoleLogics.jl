@@ -9,8 +9,10 @@ using StatsBase
 using Reexport
 using Lazy
 
+using SoleBase
+using SoleBase: initrng
 
-include("utils.jl")
+############################################################################################
 
 export iscrisp, isfinite, isnullary, isunary, isbinary
 
@@ -36,6 +38,8 @@ export interpret, check
 
 include("core.jl")
 
+############################################################################################
+
 export AlphabetOfAny, ExplicitAlphabet
 
 export alphabet
@@ -43,11 +47,12 @@ export domain, top, bot, grammar, algebra, logic
 
 include("logics.jl")
 
-export Top, TOP, ⊤
-export Bot, BOT, ⊥
+############################################################################################
+
+export TOP, ⊤
+export BOT, ⊥
 export BooleanTruth
 export istop, isbot
-export truthsupertype
 
 export NamedConnective, CONJUNCTION, NEGATION, DISJUNCTION, IMPLICATION
 export ∧, ¬, ∨, →
@@ -58,12 +63,16 @@ export BaseLogic
 
 include("base-logic.jl")
 
+############################################################################################
+
 export propositionallogic
 
 export TruthDict, DefaultedTruthDict
 export truth_table
 
 include("propositional-logic.jl")
+
+############################################################################################
 
 export accessibles
 export ismodal, modallogic
@@ -82,34 +91,70 @@ export AbstractWorlds, Worlds
 
 export Interval, Interval2D, OneWorld
 
+
+export AbstractRelation
+
+export GlobalRel, IdentityRel
+export globalrel, identityrel
+
+
 include("modal-logic.jl")
+
+############################################################################################
+
+include("many-valued-logics/ManyValuedLogics.jl")
+
+############################################################################################
 
 export LeftmostLinearForm, LeftmostConjunctiveForm, LeftmostDisjunctiveForm, Literal
 
 export subformulas, normalize
 
+export CNF, DNF, cnf
+
 include("syntax-utils.jl")
 
+############################################################################################
+
 include("interpretation-sets.jl")
+
+############################################################################################
 
 export parseformula
 
 include("parse.jl")
 
+############################################################################################
+
 export randbaseformula, randformula
+export randframe, randmodel
 
 include("random.jl")
+
+############################################################################################
 
 export AnchoredFormula
 
 include("anchored-formula.jl")
 
+############################################################################################
+
 export @atoms, @synexpr
 
 include("ui.jl")
 
+############################################################################################
+
 include("experimentals.jl")
 
+############################################################################################
+
 include("deprecate.jl")
+
+############################################################################################
+
+include("utils.jl")
+
+############################################################################################
 
 end

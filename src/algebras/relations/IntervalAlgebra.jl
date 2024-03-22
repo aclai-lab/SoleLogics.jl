@@ -1,7 +1,6 @@
 ############################################################################################
 # Allen's Interval Algebra relations
 ############################################################################################
-
 doc_IntervalRelation = """
     abstract type IntervalRelation <: GeometricalRelation end
 
@@ -15,30 +14,32 @@ The 12 relations are
 the 6 relations `after`, `later`, `begins`, `ends`, `during`, `overlaps`,
 and their inverses.
 
-If we consider a reference interval `(x,y)`, we can graphically represent the 6
-base relations by providing an example of a world `(z,t)` that is accessible via each
+If we consider a reference interval `(x−y)`, we can graphically represent the 6
+base relations by providing an example of a world `(z−t)` that is accessible via each
 of them:
 
-RELATION    ABBR.     x                   y                     PROPERTY
-                      |-------------------|
-                      .                   .
-                      .                   z        t            y = z
-After       (A)       .                   |--------|
-                      .                   .
-                      .                   .   z         t       y < z
-Later       (L)       .                   .   |---------|
-                      .                   .
-                      z     t             .                     x = z, t < y
-Begins      (B)       |-----|             .
-                      .                   .
-                      .             z     t                     y = t, x < z
-Ends        (E)       .             |-----|
-                      .                   .
-                      .   z        t      .                     x < z, t < y
-During      (D)       .   |--------|      .
-                      .                   .
-                      .           z       .    t                x < z < y < t
-Overlaps    (O)       .           |------------|
+| Relation    | Full name          |       Property      |       Graphical Representation w.r.t (x−y) |
+| :---------- |:------------------ |:-------------------:| :----------------------------------------: |
+|             |                    |                     |`_____x___________________y________________`|
+|             |                    |                     |`_____∣−−−−−−−−−−−−−−−−−−−∣________________`|
+|             |                    |                     |`_____.___________________.________________`|
+|             |                    |                     |`_____.___________________z________t_______`|
+| A           | After (or meets)   |    y = z            |`_____.___________________∣−−−−−−−−∣_______`|
+|             |                    |                     |`_____.___________________.________________`|
+|             |                    |                     |`_____.___________________.___z_________t__`|
+| L           | Later              |    y < z            |`_____.___________________.___∣−−−−−−−−−∣__`|
+|             |                    |                     |`_____.___________________.________________`|
+|             |                    |                     |`_____z_____t_____________.________________`|
+| B           | Begins (or starts) |    x = z, t < y     |`_____∣−−−−−∣_____________.________________`|
+|             |                    |                     |`_____.___________________.________________`|
+|             |                    |                     |`_____._____________z_____t________________`|
+| E           | Ends (or finishes) |    y = t, x < z     |`_____._____________∣−−−−−∣________________`|
+|             |                    |                     |`_____.___________________.________________`|
+|             |                    |                     |`_____.___z________t______.________________`|
+| D           | During             |    x < z, t < y     |`_____.___∣−−−−−−−−∣______.________________`|
+|             |                    |                     |`_____.___________________.________________`|
+|             |                    |                     |`_____.___________z_______.____t___________`|
+| O           | Overlaps           |    x < z < y < t    |`_____.___________∣−−−−−−−−−−−−∣___________`|
 
 Coarser relations can be defined by union of these 12 relations.
 
@@ -198,16 +199,19 @@ istransitive(r::_IA_DorBorE) = true
 istransitive(r::_IA_DiorBiorEi) = true
 istopological(r::_IA_I) = true
 
-IA72IARelations(::_IA_AorO)       = [IA_A,  IA_O]
-IA72IARelations(::_IA_AiorOi)     = [IA_Ai, IA_Oi]
-IA72IARelations(::_IA_DorBorE)    = [IA_D,  IA_B,  IA_E]
-IA72IARelations(::_IA_DiorBiorEi) = [IA_Di, IA_Bi, IA_Ei]
-IA32IARelations(::_IA_I)          = [
+const IA7Relation = Union{_IA_AorO,_IA_AiorOi,_IA_DorBorE,_IA_DiorBiorEi}
+IA72IARelations(::_IA_AorO)       = (IA_A,  IA_O)
+IA72IARelations(::_IA_AiorOi)     = (IA_Ai, IA_Oi)
+IA72IARelations(::_IA_DorBorE)    = (IA_D,  IA_B,  IA_E)
+IA72IARelations(::_IA_DiorBiorEi) = (IA_Di, IA_Bi, IA_Ei)
+syntaxstring(r::IA7Relation; kwargs...) = join(map(_r->syntaxstring(_r; kwargs...), IA72IARelations(r)), "")
+
+const IA3Relation = Union{_IA_I}
+IA32IARelations(::_IA_I) = (
     IA_A,  IA_O,  IA_D,  IA_B,  IA_E,
     IA_Ai, IA_Oi, IA_Di, IA_Bi, IA_Ei
-]
+)
 
-syntaxstring(r::Union{_IA_AorO,_IA_DorBorE,_IA_AiorOi,_IA_DiorBiorEi}; kwargs...) = join(map(_r->syntaxstring(_r; kwargs...), IA72IARelations(r)), "")
 syntaxstring(::_IA_I; kwargs...)          = "I"
 
 ############################################################################################
@@ -238,7 +242,6 @@ See also
 """
 const IA7Relations = [IA_AorO,   IA_L,  IA_DorBorE,
                       IA_AiorOi, IA_Li, IA_DiorBiorEi]
-IA7Relation = Union{typeof.(IA7Relations)...}
 
 """
     const IA3Relations = [IA_I, IA_L, IA_Li]
@@ -250,7 +253,6 @@ See also
 [`IntervalRelation`](@ref), [`GeometricalRelation`](@ref).
 """
 const IA3Relations = [IA_I, IA_L, IA_Li]
-IA3Relation = Union{typeof.(IA3Relations)...}
 
 """
     const IARelations_extended = [globalrel, IARelations...]

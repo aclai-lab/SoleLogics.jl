@@ -27,13 +27,16 @@ test_suites = [
 
     ("Algebras: worlds", ["algebras/worlds.jl",]),
     ("Algebras: frames", ["algebras/frames.jl",]),
+    ("Algebras: relations", ["algebras/relations.jl",]),
 
     ("Kripke word", ["kripke-word.jl",]),
     ("Kripke image", ["kripke-image.jl",]),
 
-    ("Type Hierarchy Update", ["type-hierarchy-update.jl"]),
-
     ("Pluto Demo", ["$(dirname(dirname(pathof(SoleLogics))))/pluto-demo.jl", ]),
+
+    ("ManyValuedLogics", ["many-valued-logics.jl",]),
+
+    ("Miscellaneous", ["misc.jl", "util.jl"]),
 ]
 
 @testset "SoleLogics.jl" begin

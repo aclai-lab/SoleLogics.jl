@@ -14,9 +14,9 @@ We proceed by presenting the random formulae generation engine, parsing and some
 Recalling the type hierarchy presented in [man-core](@ref), it is here enriched with the following new types and structures.
 
 - [`Formula`](@ref)
-    - [`AnchoredFormula`](@ref) **(new)**
+    - [`AnchoredFormula`](@ref)
     - [`AbstractSyntaxStructure`](@ref)
-        - [`LeftmostLinearForm{C<:Connective,SS<:AbstractSyntaxStructure}`](@ref) **(new)**
+        - [`LeftmostLinearForm{C<:Connective,SS<:AbstractSyntaxStructure}`](@ref)
 ---
 
 ## Linear Forms

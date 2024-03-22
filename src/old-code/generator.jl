@@ -55,7 +55,7 @@ function fanfan(
     threshold::Float64 = 0.5,
     rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG,
 )
-    rng = (rng isa AbstractRNG) ? rng : Random.MersenneTwister(rng)
+    rng = initrng(rng)
     adjs = Adjacents{Point}()
     setindex!(adjs, Worlds{Point}([]), Point(0))  # Ecco qua ad esempio metti un GenericWorld
 
@@ -126,7 +126,7 @@ function dispense_alphabet(
     P::LetterAlphabet = SoleLogics.alphabet(MODAL_LOGIC),
     rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG,
 ) where {T<:AbstractWorld}
-    rng = (rng isa AbstractRNG) ? rng : Random.MersenneTwister(rng)
+    rng = initrng(rng)
     evals = Dict{T,LetterAlphabet}()
     for w in ws
         evals[w] = sample(P, rand(rng, 0:length(P)), replace = false)
@@ -147,7 +147,7 @@ function gen_kmodel(
     threshold = 0.5,      # needed by fanfan
     rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG,
 )
-    rng = (rng isa AbstractRNG) ? rng : Random.MersenneTwister(rng)
+    rng = initrng(rng)
     ws = Worlds{Point}(world_gen(n))
     adjs = fanfan(n, in_degree, out_degree, threshold = threshold, rng = rng)
     evs = dispense_alphabet(ws, P = P, rng = rng)

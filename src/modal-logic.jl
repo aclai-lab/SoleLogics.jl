@@ -296,15 +296,133 @@ istransitive(::AbstractRelation) = false
     isgrounding(::AbstractRelation)
 
 Return whether it is known that a relation is grounding.
-A relation `R` is grounding if ∀x,y R(x,y) ⇔ R(z,y).
+A relation `R` is grounding if ∀x,z,y R(x,y) ⇔ R(z,y).
 
 See also
 [`isreflexive`](@ref), [`issymmetric`](@ref), [`istransitive`](@ref), [`AbstractRelation`](@ref).
 """
 isgrounding(::AbstractRelation) = false
 
-include("algebras/relations.jl")
+############################################################################################
+############################################################################################
+############################################################################################
 
+############################################################################################
+# Singletons representing natural relations
+############################################################################################
+
+doc_identityrel = """
+    struct IdentityRel <: AbstractRelation end;
+    const identityrel   = IdentityRel();
+
+Singleton type for the identity relation. This is a binary relation via which a world
+accesses itself. The relation is also symmetric, reflexive and transitive.
+
+# Examples
+```julia-repl
+julia> syntaxstring(SoleLogics.identityrel)
+"="
+
+julia> SoleLogics.converse(identityrel)
+IdentityRel()
+```
+
+See also
+[`globalrel`](@ref),
+[`AbstractRelation`](@ref),
+[`AbstractWorld`](@ref),
+[`AbstractFrame`](@ref).
+[`AbstractKripkeStructure`](@ref),
+"""
+
+"""$(doc_identityrel)"""
+struct IdentityRel <: AbstractRelation end;
+"""$(doc_identityrel)"""
+const identityrel = IdentityRel();
+
+arity(::IdentityRel) = 2
+
+syntaxstring(::IdentityRel; kwargs...) = "="
+
+hasconverse(::IdentityRel) = true
+converse(::IdentityRel) = identityrel
+istoone(::IdentityRel) = true
+issymmetric(::IdentityRel) = true
+isreflexive(::IdentityRel) = true
+istransitive(::IdentityRel) = true
+
+############################################################################################
+
+doc_globalrel = """
+    struct GlobalRel <: AbstractRelation end;
+    const globalrel  = GlobalRel();
+
+Singleton type for the global relation. This is a binary relation via which a world
+accesses every other world within the frame.
+The relation is also symmetric, reflexive and transitive.
+
+# Examples
+```julia-repl
+julia> syntaxstring(SoleLogics.globalrel)
+"G"
+
+julia> SoleLogics.converse(globalrel)
+GlobalRel()
+```
+
+See also
+[`identityrel`](@ref),
+[`AbstractRelation`](@ref),
+[`AbstractWorld`](@ref),
+[`AbstractFrame`](@ref).
+[`AbstractKripkeStructure`](@ref),
+"""
+
+"""$(doc_globalrel)"""
+struct GlobalRel <: AbstractRelation end;
+"""$(doc_globalrel)"""
+const globalrel = GlobalRel();
+
+arity(::GlobalRel) = 2
+
+syntaxstring(::GlobalRel; kwargs...) = "G"
+
+hasconverse(::GlobalRel) = true
+converse(::GlobalRel) = globalrel
+issymmetric(::GlobalRel) = true
+isreflexive(::GlobalRel) = true
+istransitive(::GlobalRel) = true
+isgrounding(::GlobalRel) = true
+
+############################################################################################
+
+"""
+A binary relation via which a world *is accessed* by every other world within the frame.
+That is, the binary relation that leads to a world.
+
+See also
+[`identityrel`](@ref),
+[`AbstractRelation`](@ref),
+[`AbstractWorld`](@ref),
+[`AbstractFrame`](@ref).
+[`AbstractKripkeStructure`](@ref),
+"""
+struct AtWorldRelation{W<:AbstractWorld} <: AbstractRelation
+    w::W
+end;
+
+arity(::AtWorldRelation) = 2
+
+syntaxstring(r::AtWorldRelation; kwargs...) = "@($(syntaxstring(r.w)))"
+
+hasconverse(::AtWorldRelation) = false
+issymmetric(::AtWorldRelation) = false
+isreflexive(::AtWorldRelation) = false
+istransitive(::AtWorldRelation) = true
+isgrounding(::AtWorldRelation) = true
+
+############################################################################################
+############################################################################################
 ############################################################################################
 
 """
@@ -326,6 +444,7 @@ abstract type AbstractMultiModalFrame{W<:AbstractWorld} <: AbstractFrame{W} end
 accessibles(fr::AbstractMultiModalFrame, ::GlobalRel) = allworlds(fr)
 accessibles(fr::AbstractMultiModalFrame, ::AbstractWorld, r::GlobalRel) = accessibles(fr, r)
 accessibles(fr::AbstractMultiModalFrame, w::AbstractWorld,    ::IdentityRel) = [w]
+accessibles(fr::AbstractMultiModalFrame, w::AbstractWorld,    r::AtWorldRelation) = [r.w]
 
 
 """
@@ -374,7 +493,7 @@ that are, then, fed to the world constructor the using IterTools generators, as 
 As such, when defining new frames, worlds, and/or relations, one should provide new methods
 for `_accessibles`. For example:
 
-    _accessibles(fr::Full1DFrame, w::Interval{Int}, ::_IA_A) = zip(Iterators.repeated(w.y), w.y+1:X(fr)+1)
+    _accessibles(fr::Full1DFrame, w::Interval{<:Integer}, ::_IA_A) = zip(Iterators.repeated(w.y), w.y+1:X(fr)+1)
 
 This pattern is generally convenient; it can, however, be bypassed,
 although this requires defining two additional methods in order to
@@ -416,7 +535,7 @@ See also [`AbstractWorld`](@ref),
 [`AbstractRelation`](@ref), [`AbstractMultiModalFrame`](@ref).
 """
 function accessibles(
-    fr::AbstractMultiModalFrame{W},
+    fr::AbstractMultiModalFrame,
     w::W,
     r::AbstractRelation
 ) where {W<:AbstractWorld}
@@ -482,6 +601,9 @@ end
 # allworlds(fr::AdjMatMultiModalFrame) = fr.worlds
 # nworlds(fr::AdjMatMultiModalFrame) = length(fr)
 
+
+
+include("algebras/relations.jl")
 
 include("algebras/frames.jl")
 
@@ -778,7 +900,7 @@ isdiamond(::Truth)::Bool = false
 doc_DIAMOND = """
     const DIAMOND = NamedConnective{:◊}()
     const ◊ = DIAMOND
-    ismodal(::NamedConnective{:◊}) = true
+    ismodal(::typeof(◊)) = true
     arity(::typeof(◊)) = 1
 
 Logical diamond connective, typically interpreted as the modal existential quantifier.
@@ -974,8 +1096,28 @@ ismodal(::Type{<:BoxRelationalConnective}) = true
 isbox(::Type{<:DiamondRelationalConnective}) = false
 isbox(::Type{<:BoxRelationalConnective}) = true
 
-syntaxstring(op::DiamondRelationalConnective; kwargs...) = "⟨$(syntaxstring(relation(op); kwargs...))⟩"
-syntaxstring(op::BoxRelationalConnective; kwargs...)     = "[$(syntaxstring(relation(op); kwargs...))]"
+function syntaxstring(op::DiamondRelationalConnective; use_modal_notation = nothing, kwargs...)
+    if isnothing(use_modal_notation)
+        return "⟨$(syntaxstring(relation(op); kwargs...))⟩"
+    elseif use_modal_notation == :superscript
+        return "◊$(SoleBase.superscript(syntaxstring(relation(op); kwargs...)))"
+    # elseif use_modal_notation == :subscript
+    #     return "◊$(SoleBase.subscript(syntaxstring(relation(op); kwargs...)))"
+    else
+        return error("Unexpected value for parameter `use_modal_notation`. Allowed are: [nothing, :superscript]")
+    end
+end
+function syntaxstring(op::BoxRelationalConnective; use_modal_notation = nothing, kwargs...)
+    if isnothing(use_modal_notation)
+        return "[$(syntaxstring(relation(op); kwargs...))]"
+    elseif use_modal_notation == :superscript
+        return "□$(SoleBase.superscript(syntaxstring(relation(op); kwargs...)))"
+    # elseif use_modal_notation == :subscript
+    #     return "□$(SoleBase.subscript(syntaxstring(relation(op); kwargs...)))"
+    else
+        return error("Unexpected value for parameter `use_modal_notation`. Allowed are: [nothing, :superscript]")
+    end
+end
 
 hasdual(::DiamondRelationalConnective) = true
 dual(op::DiamondRelationalConnective) = BoxRelationalConnective{relationtype(op)}()
@@ -1072,8 +1214,9 @@ function collateworlds(
 end
 
 # I know, these exceed 92 characters. But they look nicer like this!! :D
-collateworlds(fr::AbstractFrame{W}, ::typeof(⊤), ::NTuple{0,<:AbstractWorlds}) where {W<:AbstractWorld} = allworlds(fr)
-collateworlds(::AbstractFrame{W}, ::typeof(⊥), ::NTuple{0,<:AbstractWorlds}) where {W<:AbstractWorld} = W[]
+function collateworlds(fr::AbstractFrame{W}, t::BooleanTruth, ::NTuple{0,<:AbstractWorlds}) where {W<:AbstractWorld}
+    istop(t) ? allworlds(fr) : W[]
+end
 
 collateworlds(fr::AbstractFrame{W}, ::typeof(¬), (ws,)::NTuple{1,<:AbstractWorlds}) where {W<:AbstractWorld} = setdiff(allworlds(fr), ws)
 collateworlds(::AbstractFrame{W}, ::typeof(∧), (ws1, ws2)::NTuple{2,<:AbstractWorlds}) where {W<:AbstractWorld} = intersect(ws1, ws2)

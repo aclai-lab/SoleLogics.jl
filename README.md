@@ -83,8 +83,9 @@ SyntaxBranch: ¬□p
 
 ### Model checking
 
+#### Propositional logic
 ```julia
-# Propositional case
+
 julia> phi = parseformula("¬(p ∧ q)")
 SyntaxBranch: ¬(p ∧ q)
 
@@ -99,13 +100,16 @@ julia> I = TruthDict(["p" => true, "q" => false])
 julia> check(phi, I)
 true
 
-# Modal case
+```
+
+#### Modal logic K (Saul Kripke, see an introduction [here](https://www.youtube.com/watch?v=k3Jjw8oJqBk))
+```julia
 julia> using Graphs
 
 # Instantiate a Kripke frame with 5 worlds and 5 edges
-julia> worlds = SoleLogics.World.(1:5)
+julia> worlds = SoleLogics.World.(1:5);
 
-julia> edges = Edge.([(1,2), (1,3), (2,4), (3,4), (3,5)])
+julia> edges = Edge.([(1,2), (1,3), (2,4), (3,4), (3,5)]);
 
 julia> fr = SoleLogics.ExplicitCrispUniModalFrame(worlds, Graphs.SimpleDiGraph(edges))
 SoleLogics.ExplicitCrispUniModalFrame{SoleLogics.World{Int64}, SimpleDiGraph{Int64}} with
@@ -148,6 +152,74 @@ julia> [w => check(modphi, K, w) for w in worlds]
  SoleLogics.World{Int64}(3) => 0
  SoleLogics.World{Int64}(4) => 0
  SoleLogics.World{Int64}(5) => 0
+```
+
+
+#### Temporal modal logics
+```julia
+# A temporal frame of 10 (equidistant) points
+julia> fr = SoleLogics.FullDimensionalFrame((10,), SoleLogics.Point{1,Int});
+
+# Linear Temporal Logic (LTL) `successor` relation
+julia> accessibles(fr, SoleLogics.Point(3), SoleLogics.SuccessorRel) |> collect
+1-element Vector{SoleLogics.Point{1, Int64}}:
+ ❮4❯
+
+# Linear Temporal Logic (LTL) `greater than` relation
+julia> accessibles(fr, SoleLogics.Point(3), SoleLogics.GreaterRel) |> collect
+7-element Vector{SoleLogics.Point{1, Int64}}:
+ ❮4❯
+ ❮5❯
+ ❮6❯
+ ❮7❯
+ ❮8❯
+ ❮9❯
+ ❮10❯
+
+```
+
+```julia
+# An interval temporal frame on 10 (equidistant) points
+julia> fr = SoleLogics.FullDimensionalFrame(10);
+
+# Interval Algebra (IA) relation `L` (later, see [Halpern & Shoham, 1991](https://dl.acm.org/doi/abs/10.1145/115234.115351))
+julia> accessibles(fr, Interval(3,5), IA_L) |> collect
+15-element Vector{Interval{Int64}}:
+ Interval{Int64}(6, 7)
+ Interval{Int64}(6, 8)
+ Interval{Int64}(7, 8)
+ Interval{Int64}(6, 9)
+ Interval{Int64}(7, 9)
+ Interval{Int64}(8, 9)
+ Interval{Int64}(6, 10)
+ Interval{Int64}(7, 10)
+ Interval{Int64}(8, 10)
+ Interval{Int64}(9, 10)
+ Interval{Int64}(6, 11)
+ Interval{Int64}(7, 11)
+ Interval{Int64}(8, 11)
+ Interval{Int64}(9, 11)
+ Interval{Int64}(10, 11)
+
+# Region Connection Calculus relation `DC` (disconnected, see [Cohn et al., 1997](https://link.springer.com/article/10.1023/A:1009712514511))
+julia> accessibles(fr, Interval(3,5), Topo_DC) |> collect
+ 16-element Vector{Interval{Int64}}:
+ Interval{Int64}(6, 7)
+ Interval{Int64}(6, 8)
+ Interval{Int64}(7, 8)
+ Interval{Int64}(6, 9)
+ Interval{Int64}(7, 9)
+ Interval{Int64}(8, 9)
+ Interval{Int64}(6, 10)
+ Interval{Int64}(7, 10)
+ Interval{Int64}(8, 10)
+ Interval{Int64}(9, 10)
+ Interval{Int64}(6, 11)
+ Interval{Int64}(7, 11)
+ Interval{Int64}(8, 11)
+ Interval{Int64}(9, 11)
+ Interval{Int64}(10, 11)
+ Interval{Int64}(1, 2)
 ```
 
 <!--
