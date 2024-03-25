@@ -269,6 +269,14 @@ See also [`AbstractSyntaxStructure`](@ref), [`Connective`](@ref), [`LeftmostLine
 """
 const LeftmostConjunctiveForm{SS<:AbstractSyntaxStructure} = LeftmostLinearForm{typeof(∧),SS}
 
+function check(
+    φ::LeftmostConjunctiveForm,
+    args...;
+    kwargs...
+)
+    return all(ch -> check(ch, args; kwargs...), children(φ))
+end
+
 """
     LeftmostDisjunctiveForm{SS<:AbstractSyntaxStructure} = LeftmostLinearForm{typeof(∨),SS}
 
@@ -280,6 +288,14 @@ See also [`AbstractSyntaxStructure`](@ref), [`Connective`](@ref),
 """
 const LeftmostDisjunctiveForm{SS<:AbstractSyntaxStructure} = LeftmostLinearForm{typeof(∨),SS}
 
+function check(
+    φ::LeftmostDisjunctiveForm,
+    args...;
+    kwargs...
+)
+    return any(ch -> check(ch, args; kwargs...), children(φ))
+end
+
 """
     CNF{SS<:AbstractSyntaxStructure} = LeftmostConjunctiveForm{LeftmostDisjunctiveForm{SS}}
 
@@ -290,6 +306,14 @@ See also [`AbstractSyntaxStructure`](@ref), [`LeftmostConjunctiveForm`](@ref),
 """
 const CNF{SS<:AbstractSyntaxStructure} = LeftmostConjunctiveForm{LeftmostDisjunctiveForm{SS}}
 
+function check(
+    φ::CNF,
+    args...;
+    kwargs...
+)
+    return all(ch -> any(grandch -> check(grandch, args; kwargs...), children(ch)), children(φ))
+end
+
 """
     DNF{SS<:AbstractSyntaxStructure} = LeftmostConjunctiveForm{LeftmostConjunctiveForm{SS}}
 
@@ -299,6 +323,14 @@ See also [`AbstractSyntaxStructure`](@ref), [`LeftmostConjunctiveForm`](@ref),
 [`LeftmostDisjunctiveForm`](@ref), [`CONJUNCTION`](@ref), [`DISJUNCTION`](@ref).
 """
 const DNF{SS<:AbstractSyntaxStructure} = LeftmostDisjunctiveForm{LeftmostConjunctiveForm{SS}}
+
+function check(
+    φ::DNF,
+    args...;
+    kwargs...
+)
+    return any(ch -> all(grandch -> check(grandch, args; kwargs...), children(ch)), children(φ))
+end
 
 # Helpers
 function CNF(conjuncts::AbstractVector{<:LeftmostDisjunctiveForm})
