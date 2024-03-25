@@ -104,15 +104,6 @@ function interpret(
         "kwargs...::$(typeof(kwargs))).")
 end
 
-function check(
-    φ::Formula,
-    i::LogicalInstance,
-    args...;
-    kwargs...
-)
-    return check(tree(φ), i, args...; kwargs...)
-end
-
 
 function interpret(
     φ::Formula,
