@@ -177,6 +177,41 @@ function check(
     check(φ, getinstance(s, i_instance), args...; kwargs...)
 end
 
+function check(
+    φ::LeftmostConjunctiveForm,
+    s::AbstractInterpretationSet,
+    args...;
+    kwargs...
+)
+    # TODO normalize before checking, if it is faster: φ = SoleLogics.normalize()
+    map(i_instance->check(
+        φ,
+        getinstance(s, i_instance),
+        args...;
+        # use_memo = (isnothing(use_memo) ? nothing : use_memo[[i_instance]]),
+        kwargs...
+    ), 1:ninstances(s))
+end
+
+function check(
+    φ::LeftmostConjunctiveForm,
+    s::AbstractInterpretationSet,
+    i_instance::Integer,
+    args...;
+    kwargs...
+)
+    return all(ch -> check(ch, s, i_instance, args; kwargs...), children(φ))
+end
+
+function check(
+    φ::LeftmostConjunctiveForm,
+    i::LogicalInstance,
+    args...;
+    kwargs...
+)
+    return all(ch -> check(ch, i, args; kwargs...), children(φ))
+end
+
 
 """
     check(

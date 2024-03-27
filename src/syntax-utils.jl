@@ -373,15 +373,18 @@ literaltype(::DNF{SS}) where {SS<:AbstractSyntaxStructure} = SS
 # Base.promote_rule(::Type{<:LeftmostDisjunctiveForm}, ::Type{<:LeftmostDisjunctiveForm}) = LeftmostDisjunctiveForm
 # Base.promote_rule(::Type{<:LeftmostConjunctiveForm}, ::Type{<:LeftmostDisjunctiveForm}) = SyntaxTree
 
-conjuncts(m::Union{LeftmostConjunctiveForm,CNF}) = children(m)
-nconjuncts(m::Union{LeftmostConjunctiveForm,CNF}) = nchildren(m)
-disjuncts(m::Union{LeftmostDisjunctiveForm,DNF}) = children(m)
-ndisjuncts(m::Union{LeftmostDisjunctiveForm,DNF}) = nchildren(m)
+conjuncts(φ::LeftmostConjunctiveForm) = children(φ)
+nconjuncts(φ::LeftmostConjunctiveForm) = nchildren(φ)
+pushconjunct!(φ::LeftmostLinearForm, el) = Base.push!(children(φ), el)
 
-# conjuncts(m::DNF) = map(d->conjuncts(d), disjuncts(m))
-# nconjuncts(m::DNF) = map(d->nconjuncts(d), disjuncts(m))
-# disjuncts(m::CNF) = map(d->disjuncts(d), conjuncts(m))
-# ndisjuncts(m::CNF) = map(d->ndisjuncts(d), conjuncts(m))
+disjuncts(φ::LeftmostDisjunctiveForm) = children(φ)
+ndisjuncts(φ::LeftmostDisjunctiveForm) = nchildren(φ)
+pushdisjunct(φ::LeftmostDisjunctiveForm, el) = Base.push!(children(φ), el)
+
+# conjuncts(φ::DNF) = map(d->conjuncts(d), disjuncts(φ))
+# nconjuncts(φ::DNF) = map(d->nconjuncts(d), disjuncts(φ))
+# disjuncts(φ::CNF) = map(d->disjuncts(d), conjuncts(φ))
+# ndisjuncts(φ::CNF) = map(d->ndisjuncts(d), conjuncts(φ))
 
 
 ############################################################################################

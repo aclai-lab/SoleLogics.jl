@@ -99,6 +99,9 @@ dnf1 = @test_nowarn DNF([lfcf1, lfcf2])
 
 @test_nowarn LeftmostDisjunctiveForm(tree(dnf1 ∨ lfdf1))
 
+a = LeftmostConjunctiveForm(@atoms p q r)
+@test_broken a ∧ p isa LeftmostConjunctiveForm
+
 @test_broken DNF(tree(dnf1 ∨ lfdf1)) isa DNF
 @test_broken DNF{Literal}(tree(dnf1 ∨ lfdf1)) isa DNF
 
