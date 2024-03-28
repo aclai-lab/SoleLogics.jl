@@ -9,14 +9,14 @@ import StatsBase: sample
 
 doc_rand = """
     Base.rand(
-        [rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG,]
+        [rng::AbstractRNG = Random.GLOBAL_RNG,]
         alphabet::AbstractAlphabet,
         args...;
         kwargs...
     )::Atom
 
     Base.rand(
-        [rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG],
+        [rng::AbstractRNG = Random.GLOBAL_RNG],
         height::Integer,
         l::AbstractLogic,
         args...;
@@ -24,7 +24,7 @@ doc_rand = """
     )::Formula
 
     Base.rand(
-        [rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG,]
+        [rng::AbstractRNG = Random.GLOBAL_RNG,]
         height::Integer,
         g::CompleteFlatGrammar,
         args...
@@ -36,7 +36,7 @@ doc_rand = """
         atoms::Union{AbstractVector{<:Atom},AbstractAlphabet},
         truthvalues::Union{Nothing,AbstractAlgebra,AbstractVector{<:Truth}} = nothing,
         args...;
-        rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG,
+        rng::AbstractRNG = Random.GLOBAL_RNG,
         kwargs...
     )::Formula
 
@@ -60,13 +60,13 @@ function Base.rand(alphabet::AbstractAlphabet, args...; kwargs...)
 end
 
 function Base.rand(
-    rng::Union{Integer,AbstractRNG},
+    rng::AbstractRNG,
     alphabet::AbstractAlphabet,
     args...;
     kwargs...
 )
     if isfinite(alphabet)
-        Base.rand(initrng(rng), atoms(alphabet), args...; kwargs...)
+        Base.rand(rng, atoms(alphabet), args...; kwargs...)
     else
         error("Please, provide method Base.rand(rng::AbstractRNG, " *
             "alphabet::$(typeof(alphabet)), args...; kwargs...).")
@@ -78,13 +78,13 @@ function Base.rand(height::Integer, l::AbstractLogic, args...; kwargs...)
 end
 
 function Base.rand(
-    rng::Union{Integer,AbstractRNG},
+    rng::AbstractRNG,
     height::Integer,
     l::AbstractLogic,
     args...;
     kwargs...
 )
-    Base.rand(initrng(rng), grammar(l), args...; kwargs...)
+    Base.rand(rng, grammar(l), args...; kwargs...)
 end
 
 # For the case of a CompleteFlatGrammar, the alphabet and the operators suffice.
@@ -97,13 +97,13 @@ function Base.rand(
 end
 
 function Base.rand(
-    rng::Union{Integer,AbstractRNG},
+    rng::AbstractRNG,
     height::Integer,
     g::CompleteFlatGrammar,
     args...;
     kwargs...
 )
-    randformula(initrng(rng), height, alphabet(g), operators(g), args...; kwargs...)
+    randformula(rng, height, alphabet(g), operators(g), args...; kwargs...)
 end
 
 function Base.rand(
@@ -119,7 +119,7 @@ function Base.rand(
 end
 
 function Base.rand(
-    rng::Union{Integer,AbstractRNG},
+    rng::AbstractRNG,
     height::Integer,
     atoms::Union{AbstractVector{<:Atom},AbstractAlphabet},
     connectives::Union{AbstractVector{<:Operator},AbstractVector{<:Connective}},
@@ -143,12 +143,12 @@ function Base.rand(
         ops = vcat(ops, truthvalues)
     end
 
-    randformula(height, ops, atoms, args...; rng=initrng(rng), kwargs...)
+    randformula(height, ops, atoms, args...; rng=rng, kwargs...)
 end
 
 doc_sample = """
     function StatsBase.sample(
-        [rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG,]
+        [rng::AbstractRNG = Random.GLOBAL_RNG,]
         alphabet::AbstractAlphabet,
         weights::AbstractWeights,
         args...;
@@ -156,7 +156,7 @@ doc_sample = """
     )
 
     function StatsBase.sample(
-        rng::Union{Integer,AbstractRNG},
+        rng::AbstractRNG,
         l::AbstractLogic,
         weights::AbstractWeights,
         args...;
@@ -164,7 +164,7 @@ doc_sample = """
     )
 
     StatsBase.sample(
-        [rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG,]
+        [rng::AbstractRNG = Random.GLOBAL_RNG,]
         height::Integer,
         g::AbstractGrammar,
         [opweights::Union{Nothing,AbstractWeights} = nothing,]
@@ -190,14 +190,14 @@ function StatsBase.sample(
 end
 
 function StatsBase.sample(
-    rng::Union{Integer,AbstractRNG},
+    rng::AbstractRNG,
     alphabet::AbstractAlphabet,
     weights::AbstractWeights,
     args...;
     kwargs...
 )::Atom
     if isfinite(alphabet)
-        StatsBase.sample(initrng(rng), atoms(alphabet), weights, args...; kwargs...)
+        StatsBase.sample(rng, atoms(alphabet), weights, args...; kwargs...)
     else
         error("Please, provide method StatsBase.sample(rng::AbstractRNG, " *
             "alphabet::$(typeof(alphabet)), args...; kwargs...).")
@@ -215,7 +215,7 @@ function StatsBase.sample(
 end
 
 function StatsBase.sample(
-    rng::Union{Integer,AbstractRNG},
+    rng::AbstractRNG,
     l::AbstractLogic,
     atomweights::AbstractWeights,
     opweights::AbstractWeights,
@@ -240,7 +240,7 @@ end
 
 """$(doc_sample)"""
 function StatsBase.sample(
-    rng::Union{Integer,AbstractRNG},
+    rng::AbstractRNG,
     height::Integer,
     g::AbstractGrammar,
     atomweights::Union{Nothing,AbstractWeights} = nothing,
@@ -249,7 +249,7 @@ function StatsBase.sample(
     kwargs...
 )
     randformula(
-        initrng(rng), height, alphabet(g), operators(g), args...;
+        rng, height, alphabet(g), operators(g), args...;
         # atompicker=(rng,dom)->StatsBase.sample(rng, dom, atomweights), kwargs...)
         atompicker = atomweights, opweights = opweights, kwargs...)
 end

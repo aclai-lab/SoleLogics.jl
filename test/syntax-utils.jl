@@ -1,3 +1,6 @@
+
+using Test
+using SoleLogics
 using SoleLogics: Literal, dual, LeftmostConjunctiveForm, LeftmostDisjunctiveForm
 using SoleLogics: CNF, DNF
 
@@ -136,6 +139,8 @@ alpha = Atom.(["p", "q", "r"])
 for i in 1:50
     local φ = randformula(4, alpha, [∨, ∧, ¬])
     φ2 = cnf(φ)
+    # @show φ
+    # @show φ2
     _tdict = TruthDict(Dict([p => rand([true, false]) for p in alpha]))
     # i == 1 && println(_tdict)
     @test check(φ, _tdict) == check(φ2, _tdict)

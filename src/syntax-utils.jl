@@ -274,7 +274,16 @@ function check(
     args...;
     kwargs...
 )
-    return all(ch -> check(ch, args; kwargs...), children(φ))
+    return all(ch -> check(ch, args...; kwargs...), children(φ))
+end
+
+function check(
+    φ::LeftmostConjunctiveForm,
+    i::AbstractInterpretation,
+    args...;
+    kwargs...
+)
+    return all(ch -> check(ch, i, args...; kwargs...), children(φ))
 end
 
 """
@@ -293,7 +302,16 @@ function check(
     args...;
     kwargs...
 )
-    return any(ch -> check(ch, args; kwargs...), children(φ))
+    return any(ch -> check(ch, args...; kwargs...), children(φ))
+end
+
+function check(
+    φ::LeftmostDisjunctiveForm,
+    i::AbstractInterpretation,
+    args...;
+    kwargs...
+)
+    return any(ch -> check(ch, i, args...; kwargs...), children(φ))
 end
 
 """
@@ -311,7 +329,16 @@ function check(
     args...;
     kwargs...
 )
-    return all(ch -> any(grandch -> check(grandch, args; kwargs...), children(ch)), children(φ))
+    return all(ch -> any(grandch -> check(grandch, args...; kwargs...), children(ch)), children(φ))
+end
+
+function check(
+    φ::CNF,
+    i::AbstractInterpretation,
+    args...;
+    kwargs...
+)
+    return all(ch -> any(grandch -> check(grandch, i, args...; kwargs...), children(ch)), children(φ))
 end
 
 """
@@ -329,7 +356,16 @@ function check(
     args...;
     kwargs...
 )
-    return any(ch -> all(grandch -> check(grandch, args; kwargs...), children(ch)), children(φ))
+    return any(ch -> all(grandch -> check(grandch, args...; kwargs...), children(ch)), children(φ))
+end
+
+function check(
+    φ::DNF,
+    i::AbstractInterpretation,
+    args...;
+    kwargs...
+)
+    return any(ch -> all(grandch -> check(grandch, i, args...; kwargs...), children(ch)), children(φ))
 end
 
 # Helpers
