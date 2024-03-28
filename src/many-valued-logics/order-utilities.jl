@@ -16,13 +16,17 @@ See also [`precedes`](@ref), [`succeedes`](@ref), [`succeedeq`](@ref).
 """
 function precedeq(
     l::L,
-    t1::T,
-    t2::T
+    t1::T1,
+    t2::T2
 ) where {
     T<:Truth,
     D<:AbstractVector{T},
-    L<:FiniteAlgebra{T,D}
+    L<:FiniteAlgebra{T,D},
+    T1<:Truth,
+    T2<:Truth
 }
+    if !isa(t1, T) t1 = convert(T, t1)::T end
+    if !isa(t2, T) t2 = convert(T, t2)::T end
     !islattice(l) && error("Cannot convert object of type $(typeof(l)) to an object of " *
         "type FiniteLattice.")
     if l.meet(t1, t2) == t1
