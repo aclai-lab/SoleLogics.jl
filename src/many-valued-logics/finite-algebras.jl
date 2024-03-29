@@ -805,10 +805,42 @@ struct FiniteFLewAlgebra{T<:Truth, D<:AbstractVector{T}} <: FiniteAlgebra{T,D}
         implication = BinaryOperation(getdomain(monoid), implicationtruthtable)
         return new{T,D}(join, meet, monoid, implication, bot, top)
     end
+
+    function FiniteFLewAlgebra(
+        join::BinaryOperation{T,D},
+        meet::BinaryOperation{T,D},
+        monoidoperation::BinaryOperation{T,D},
+        bot::T1,
+        top::T2
+    ) where {
+        T<:Truth,
+        D<:AbstractVector{T},
+        T1<:Truth,
+        T2<:Truth
+    }
+        return FiniteFLewAlgebra(
+            join,
+            meet,
+            CommutativeMonoid(monoidoperation, top),
+            bot,
+            top
+        )
+    end
 end
 
 islattice(::FiniteFLewAlgebra{T,D}) where {T<:Truth, D<:AbstractVector{T}} = true
 isboundedlattice(::FiniteFLewAlgebra{T,D}) where {T<:Truth, D<:AbstractVector{T}} = true
+
+function Base.show(io::IO, a::FiniteFLewAlgebra{T,D}) where {T<:Truth, D<:AbstractVector{T}}
+    println(io, string(typeof(a)))
+    println(io, "Domain: " * string(getdomain(a)))
+    println(io, "Bot: " * string(a.bot))
+    println(io, "Top: " * string(a.top))
+    println(io, "Join: " * string(a.join))
+    println(io, "Meet: " * string(a.meet))
+    println(io, "T-norm: " * string(a.monoid))
+    println(io, "Implication: " * string(a.implication))
+end
 
 ############################################################################################
 #### Finite Heyting algebra ################################################################
@@ -1048,12 +1080,12 @@ isboundedlattice(::FiniteHeytingAlgebra{T,D}) where {T<:Truth, D<:AbstractVector
 
 function Base.show(io::IO, a::FiniteHeytingAlgebra)
     println(string(typeof(a)))
-    println("Domain: " * string(getdomain(a)))
-    println("Bot: " * string(a.bot))
-    println("Top: " * string(a.top))
-    println("Join: " * string(a.join))
-    println("Meet: " * string(a.meet))
-    println("Implication: " * string(a.meet))
+    println(io, "Domain: " * string(getdomain(a)))
+    println(io, "Bot: " * string(a.bot))
+    println(io, "Top: " * string(a.top))
+    println(io, "Join: " * string(a.join))
+    println(io, "Meet: " * string(a.meet))
+    println(io, "Implication: " * string(a.implication))
 end
 
 """
