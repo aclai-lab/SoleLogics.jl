@@ -200,7 +200,7 @@ function check(
     args...;
     kwargs...
 )
-    return all(ch -> check(ch, s, i_instance, args; kwargs...), children(φ))
+    return all(ch -> check(ch, s, i_instance, args...; kwargs...), children(φ))
 end
 
 function check(
@@ -209,7 +209,7 @@ function check(
     args...;
     kwargs...
 )
-    return all(ch -> check(ch, i, args; kwargs...), children(φ))
+    return all(ch -> check(ch, i, args...; kwargs...), children(φ))
 end
 
 
