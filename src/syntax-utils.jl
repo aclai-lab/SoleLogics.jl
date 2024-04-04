@@ -268,6 +268,53 @@ function Base.in(tok::SyntaxLeaf, φ::LeftmostLinearForm{C,<:SyntaxLeaf})::Bool 
     return Base.in(tok, children(φ))
 end
 
+
+atoms(φ::LeftmostLinearForm) = Iterators.flatten(Iterators.map(atoms, children(φ)))
+leaves(φ::LeftmostLinearForm) = Iterators.flatten(Iterators.map(leaves, children(φ)))
+
+natoms(φ::LeftmostLinearForm) = sum(natoms, children(φ))
+nleaves(φ::LeftmostLinearForm) = sum(nleaves, children(φ))
+
+# function tokens(φ::LeftmostLinearForm)
+#     # return TODO
+# end
+
+function atoms(φ::LeftmostLinearForm{C,<:Atom})::Bool where {C<:Connective}
+    return children(φ)
+end
+
+# function connectives(φ::LeftmostLinearForm{C,<:Atom})::Bool where {C<:Connective}
+#     # return TODO
+# end
+
+# function operators(φ::LeftmostLinearForm{C,<:Atom})::Bool where {C<:Connective}
+#     # return TODO
+# end
+
+function leaves(φ::LeftmostLinearForm{C,<:SyntaxLeaf})::Bool where {C<:Connective}
+    return children(φ)
+end
+
+# function ntokens(φ::LeftmostLinearForm{C,<:Atom})::Bool where {C<:Connective}
+#     # return TODO
+# end
+
+function natoms(φ::LeftmostLinearForm{C,<:Atom})::Bool where {C<:Connective}
+    return nchildren(φ)
+end
+
+# function nconnectives(φ::LeftmostLinearForm{C,<:Atom})::Bool where {C<:Connective}
+#     # return TODO
+# end
+
+# function noperators(φ::LeftmostLinearForm{C,<:Atom})::Bool where {C<:Connective}
+#     # return TODO
+# end
+
+function nleaves(φ::LeftmostLinearForm{C,<:SyntaxLeaf})::Bool where {C<:Connective}
+    return nchildren(φ)
+end
+
 Base.promote_rule(::Type{LF}, ::Type{SS}) where {LF<:LeftmostLinearForm,SS<:SyntaxTree} = SyntaxTree
 Base.promote_rule(::Type{SS}, ::Type{LF}) where {LF<:LeftmostLinearForm,SS<:SyntaxTree} = SyntaxTree
 

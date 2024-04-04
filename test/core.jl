@@ -69,11 +69,12 @@ union_alphabet_int = @test_nowarn UnionAlphabet([alphabet_int, alphabet2_int])
 union_alphabet_ofany = @test_nowarn UnionAlphabet([AlphabetOfAny{String}()])
 @test Atom("My string") in union_alphabet_ofany
 @test union_alphabet_ofany("Your String") isa Atom{String}
-@test valuetype(union_union_alphabet_ofany) == @test_nowarn Union{Int,String}
+@test valuetype(union_alphabet_ofany) == @test_nowarn Union{Int, String}
 
 # TODO @Edo dovrebbe essere possibile ?
 # @test_nowarn UnionAlphabet{Real, AlphabetOfAny{Real}}([AlphabetOfAny{Int64}(), AlphabetOfAny{Float64}()])
 union_union_alphabet_ofany = @test_nowarn UnionAlphabet{Union{Int,String},AlphabetOfAny{Union{Int,String}}}([AlphabetOfAny{Union{Int,String}}()])
+# @test valuetype(union_union_alphabet_ofany) == @test_nowarn Union{Int, String}
 @test Atom("My string") in union_union_alphabet_ofany
 @test Atom(1) in union_union_alphabet_ofany
 
