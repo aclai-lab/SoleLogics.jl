@@ -148,21 +148,32 @@ struct LeftmostLinearForm{C<:Connective,SS<:AbstractSyntaxStructure} <: Abstract
 end
 
 children(lf::LeftmostLinearForm) = lf.children
-connective(::LeftmostLinearForm{C}) where {C} = C() # TODO avoid
+connective(::LeftmostLinearForm{C}) where {C} = C() # TODO avoid using C alone, since it may not be a singleton.
 
 operatortype(::LeftmostLinearForm{C}) where {C} = C
 childrentype(::LeftmostLinearForm{C,SS}) where {C,SS} = SS
 
 nchildren(lf::LeftmostLinearForm) = length(children(lf))
 
-Base.length(lf::LeftmostLinearForm) = Base.length(children(lf))
-function Base.getindex(
-    lf::LeftmostLinearForm{C,SS},
-    idxs::AbstractVector
-) where {C,SS}
-    return LeftmostLinearForm{C,SS}(children(lf)[idxs])
+
+@forward LeftmostLinearForm.children (
+    Base.length,
+    Base.setindex!,
+    Base.push!,
+    Base.iterate, Base.IteratorSize, Base.IteratorEltype,
+    Base.firstindex, Base.lastindex,
+    Base.keys, Base.values,
+)
+
+# function Base.getindex(lf::LeftmostLinearForm{C,SS}, idxs::AbstractVector) where {C,SS}
+    # return LeftmostLinearForm{C,SS}(children(lf)[idxs])
+# end
+# Base.getindex(lf::LeftmostLinearForm, idx::Integer) = Base.getindex(lf,[idx])
+function Base.getindex(lf::LeftmostLinearForm, idxs::AbstractVector)
+    return LeftmostLinearForm(children(lf)[idxs])
 end
-Base.getindex(lf::LeftmostLinearForm, idx::Integer) = Base.getindex(lf,[idx])
+Base.getindex(lf::LeftmostLinearForm, idx::Integer) = Base.getindex(children(lf),idx)
+Base.push!(lf::LeftmostLinearForm, el) = Base.push!(children(lf), el)
 
 function composeformulas(c::Connective, φs::NTuple{N,LeftmostLinearForm}) where {N}
     if all(_c->_c == c, connective.(φs)) # If operator is the same, collapse children
@@ -248,6 +259,62 @@ Base.promote_rule(::Type{<:LeftmostLinearForm}, ::Type{<:LeftmostLinearForm}) = 
 Base.promote_rule(::Type{SS}, ::Type{LF}) where {SS<:AbstractSyntaxStructure,LF<:LeftmostLinearForm} = SyntaxTree
 Base.promote_rule(::Type{LF}, ::Type{SS}) where {LF<:LeftmostLinearForm,SS<:AbstractSyntaxStructure} = SyntaxTree
 
+function Base.in(tok::SyntaxToken, φ::LeftmostLinearForm)::Bool
+    return (tok isa Connective && connective(φ) == tok) ||
+        any(c->Base.in(tok, c), children(φ))
+end
+
+function Base.in(tok::SyntaxLeaf, φ::LeftmostLinearForm{C,<:SyntaxLeaf})::Bool where {C<:Connective}
+    return Base.in(tok, children(φ))
+end
+
+
+atoms(φ::LeftmostLinearForm) = Iterators.flatten(Iterators.map(atoms, children(φ)))
+leaves(φ::LeftmostLinearForm) = Iterators.flatten(Iterators.map(leaves, children(φ)))
+
+natoms(φ::LeftmostLinearForm) = sum(natoms, children(φ))
+nleaves(φ::LeftmostLinearForm) = sum(nleaves, children(φ))
+
+# function tokens(φ::LeftmostLinearForm)
+#     # return TODO
+# end
+
+function atoms(φ::LeftmostLinearForm{C,<:Atom})::Bool where {C<:Connective}
+    return children(φ)
+end
+
+# function connectives(φ::LeftmostLinearForm{C,<:Atom})::Bool where {C<:Connective}
+#     # return TODO
+# end
+
+# function operators(φ::LeftmostLinearForm{C,<:Atom})::Bool where {C<:Connective}
+#     # return TODO
+# end
+
+function leaves(φ::LeftmostLinearForm{C,<:SyntaxLeaf})::Bool where {C<:Connective}
+    return children(φ)
+end
+
+# function ntokens(φ::LeftmostLinearForm{C,<:Atom})::Bool where {C<:Connective}
+#     # return TODO
+# end
+
+function natoms(φ::LeftmostLinearForm{C,<:Atom})::Bool where {C<:Connective}
+    return nchildren(φ)
+end
+
+# function nconnectives(φ::LeftmostLinearForm{C,<:Atom})::Bool where {C<:Connective}
+#     # return TODO
+# end
+
+# function noperators(φ::LeftmostLinearForm{C,<:Atom})::Bool where {C<:Connective}
+#     # return TODO
+# end
+
+function nleaves(φ::LeftmostLinearForm{C,<:SyntaxLeaf})::Bool where {C<:Connective}
+    return nchildren(φ)
+end
+
 Base.promote_rule(::Type{LF}, ::Type{SS}) where {LF<:LeftmostLinearForm,SS<:SyntaxTree} = SyntaxTree
 Base.promote_rule(::Type{SS}, ::Type{LF}) where {LF<:LeftmostLinearForm,SS<:SyntaxTree} = SyntaxTree
 
@@ -268,6 +335,23 @@ See also [`AbstractSyntaxStructure`](@ref), [`Connective`](@ref), [`LeftmostLine
 """
 const LeftmostConjunctiveForm{SS<:AbstractSyntaxStructure} = LeftmostLinearForm{typeof(∧),SS}
 
+function check(
+    φ::LeftmostConjunctiveForm,
+    args...;
+    kwargs...
+)
+    return all(ch -> check(ch, args...; kwargs...), children(φ))
+end
+
+function check(
+    φ::LeftmostConjunctiveForm,
+    i::AbstractInterpretation,
+    args...;
+    kwargs...
+)
+    return all(ch -> check(ch, i, args...; kwargs...), children(φ))
+end
+
 """
     LeftmostDisjunctiveForm{SS<:AbstractSyntaxStructure} = LeftmostLinearForm{typeof(∨),SS}
 
@@ -279,6 +363,23 @@ See also [`AbstractSyntaxStructure`](@ref), [`Connective`](@ref),
 """
 const LeftmostDisjunctiveForm{SS<:AbstractSyntaxStructure} = LeftmostLinearForm{typeof(∨),SS}
 
+function check(
+    φ::LeftmostDisjunctiveForm,
+    args...;
+    kwargs...
+)
+    return any(ch -> check(ch, args...; kwargs...), children(φ))
+end
+
+function check(
+    φ::LeftmostDisjunctiveForm,
+    i::AbstractInterpretation,
+    args...;
+    kwargs...
+)
+    return any(ch -> check(ch, i, args...; kwargs...), children(φ))
+end
+
 """
     CNF{SS<:AbstractSyntaxStructure} = LeftmostConjunctiveForm{LeftmostDisjunctiveForm{SS}}
 
@@ -289,6 +390,23 @@ See also [`AbstractSyntaxStructure`](@ref), [`LeftmostConjunctiveForm`](@ref),
 """
 const CNF{SS<:AbstractSyntaxStructure} = LeftmostConjunctiveForm{LeftmostDisjunctiveForm{SS}}
 
+function check(
+    φ::CNF,
+    args...;
+    kwargs...
+)
+    return all(ch -> any(grandch -> check(grandch, args...; kwargs...), children(ch)), children(φ))
+end
+
+function check(
+    φ::CNF,
+    i::AbstractInterpretation,
+    args...;
+    kwargs...
+)
+    return all(ch -> any(grandch -> check(grandch, i, args...; kwargs...), children(ch)), children(φ))
+end
+
 """
     DNF{SS<:AbstractSyntaxStructure} = LeftmostConjunctiveForm{LeftmostConjunctiveForm{SS}}
 
@@ -298,6 +416,23 @@ See also [`AbstractSyntaxStructure`](@ref), [`LeftmostConjunctiveForm`](@ref),
 [`LeftmostDisjunctiveForm`](@ref), [`CONJUNCTION`](@ref), [`DISJUNCTION`](@ref).
 """
 const DNF{SS<:AbstractSyntaxStructure} = LeftmostDisjunctiveForm{LeftmostConjunctiveForm{SS}}
+
+function check(
+    φ::DNF,
+    args...;
+    kwargs...
+)
+    return any(ch -> all(grandch -> check(grandch, args...; kwargs...), children(ch)), children(φ))
+end
+
+function check(
+    φ::DNF,
+    i::AbstractInterpretation,
+    args...;
+    kwargs...
+)
+    return any(ch -> all(grandch -> check(grandch, i, args...; kwargs...), children(ch)), children(φ))
+end
 
 # Helpers
 function CNF(conjuncts::AbstractVector{<:LeftmostDisjunctiveForm})
@@ -340,15 +475,18 @@ literaltype(::DNF{SS}) where {SS<:AbstractSyntaxStructure} = SS
 # Base.promote_rule(::Type{<:LeftmostDisjunctiveForm}, ::Type{<:LeftmostDisjunctiveForm}) = LeftmostDisjunctiveForm
 # Base.promote_rule(::Type{<:LeftmostConjunctiveForm}, ::Type{<:LeftmostDisjunctiveForm}) = SyntaxTree
 
-conjuncts(m::Union{LeftmostConjunctiveForm,CNF}) = children(m)
-nconjuncts(m::Union{LeftmostConjunctiveForm,CNF}) = nchildren(m)
-disjuncts(m::Union{LeftmostDisjunctiveForm,DNF}) = children(m)
-ndisjuncts(m::Union{LeftmostDisjunctiveForm,DNF}) = nchildren(m)
+conjuncts(φ::LeftmostConjunctiveForm) = children(φ)
+nconjuncts(φ::LeftmostConjunctiveForm) = nchildren(φ)
+pushconjunct!(φ::LeftmostLinearForm, el) = Base.push!(children(φ), el)
 
-# conjuncts(m::DNF) = map(d->conjuncts(d), disjuncts(m))
-# nconjuncts(m::DNF) = map(d->nconjuncts(d), disjuncts(m))
-# disjuncts(m::CNF) = map(d->disjuncts(d), conjuncts(m))
-# ndisjuncts(m::CNF) = map(d->ndisjuncts(d), conjuncts(m))
+disjuncts(φ::LeftmostDisjunctiveForm) = children(φ)
+ndisjuncts(φ::LeftmostDisjunctiveForm) = nchildren(φ)
+pushdisjunct(φ::LeftmostDisjunctiveForm, el) = Base.push!(children(φ), el)
+
+# conjuncts(φ::DNF) = map(d->conjuncts(d), disjuncts(φ))
+# nconjuncts(φ::DNF) = map(d->nconjuncts(d), disjuncts(φ))
+# disjuncts(φ::CNF) = map(d->disjuncts(d), conjuncts(φ))
+# ndisjuncts(φ::CNF) = map(d->ndisjuncts(d), conjuncts(φ))
 
 
 ############################################################################################

@@ -1035,9 +1035,10 @@ function interpret(
     kwargs...,
 )
     connective = token(φ)
-    return simplify(connective, Tuple(
+    ts = Tuple(
         [interpret(ch, i, args...; kwargs...) for ch in children(φ)]
-    ), args...; kwargs...)
+    )
+    return simplify(connective, ts, args...; kwargs...)
 end
 
 interpret(t::Truth, i::AbstractInterpretation, args...; kwargs...) = t
