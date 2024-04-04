@@ -1,5 +1,7 @@
-using SoleLogics
+using Base
 using Graphs
+using SoleLogics
+using SoleLogics.ManyValuedLogics
 
 @test_throws AssertionError(
     "Cannot instantiate `HeytingAlgebra` with domain of length 0. Need to specify at " *
@@ -439,6 +441,8 @@ myalgebra = HeytingAlgebra(domain, relations, evaluate=true)
 @test succeedeq(myalgebra, ⊤, G) == true
 @test succeedeq(myalgebra, ⊤, ⊤) == true
 
+using SoleLogics.ManyValuedLogics: maximalmembers
+
 @test Set{HeytingTruth}([maximalmembers(myalgebra, ⊥)...]) == Set{HeytingTruth}([HeytingTruth[]...])
 @test Set{HeytingTruth}([maximalmembers(myalgebra, A)...]) == Set{HeytingTruth}([HeytingTruth[E]...])
 @test Set{HeytingTruth}([maximalmembers(myalgebra, B)...]) == Set{HeytingTruth}([HeytingTruth[C]...])
@@ -449,6 +453,8 @@ myalgebra = HeytingAlgebra(domain, relations, evaluate=true)
 @test Set{HeytingTruth}([maximalmembers(myalgebra, G)...]) == Set{HeytingTruth}([HeytingTruth[F, E]...])
 @test Set{HeytingTruth}([maximalmembers(myalgebra, ⊤)...]) == Set{HeytingTruth}([HeytingTruth[F, G]...])
 
+using SoleLogics.ManyValuedLogics: minimalmembers
+
 @test Set{HeytingTruth}([minimalmembers(myalgebra, ⊥)...]) ==  Set{HeytingTruth}([HeytingTruth[B, A]...])
 @test Set{HeytingTruth}([minimalmembers(myalgebra, A)...]) ==  Set{HeytingTruth}([HeytingTruth[C, B]...])
 @test Set{HeytingTruth}([minimalmembers(myalgebra, B)...]) ==  Set{HeytingTruth}([HeytingTruth[E, A]...])
@@ -458,6 +464,8 @@ myalgebra = HeytingAlgebra(domain, relations, evaluate=true)
 @test Set{HeytingTruth}([minimalmembers(myalgebra, F)...]) ==  Set{HeytingTruth}([HeytingTruth[E]...])
 @test Set{HeytingTruth}([minimalmembers(myalgebra, G)...]) ==  Set{HeytingTruth}([HeytingTruth[C]...])
 @test Set{HeytingTruth}([minimalmembers(myalgebra, ⊤)...]) ==  Set{HeytingTruth}([HeytingTruth[]...])
+
+using SoleLogics.ManyValuedLogics: collatetruth
 
 @test collatetruth(∧, (⊥, ⊥), myalgebra) == HeytingTruth(⊥)
 @test collatetruth(∧, (⊥, A), myalgebra) == HeytingTruth(⊥)
@@ -708,6 +716,7 @@ myalgebra = HeytingAlgebra(domain, relations, evaluate=true)
 ### Testing if check works on random propositional formulas and it gives the same result ###
 
 using Random
+using SoleLogics.ManyValuedLogics: convert, @heytingtruths, @heytingalgebra
 
 booleanalgebra = @heytingalgebra () (⊥, ⊤)
 myalphabet = Atom.(["a", "b", "c", "d", "e", "f", "g"])

@@ -50,7 +50,8 @@ function syntaxstring(s::Syntactical; kwargs...)::String
 end
 
 function Base.show(io::IO, φ::Syntactical)
-    print(io, "$(typeof(φ))\nsyntaxstring: $(syntaxstring(φ))")
+    # print(io, "$(typeof(φ))\nsyntaxstring: $(syntaxstring(φ))")
+    print(io, "$(typeof(φ)) with syntaxstring: $(syntaxstring(φ))")
 end
 
 ############################################################################################
@@ -702,7 +703,7 @@ function (op::Operator)(φs::NTuple{N,Formula}) where {N}
             φs = (op(φs[1:end-1]), φs[end])
         end
     end
-    AbstractSyntaxStructure
+    
     if AbstractSyntaxStructure <: typejoin(typeof.(φs)...)
         φs = Base.promote(φs...)
     end
@@ -1037,9 +1038,10 @@ function interpret(
     kwargs...,
 )
     connective = token(φ)
-    return simplify(connective, Tuple(
+    ts = Tuple(
         [interpret(ch, i, args...; kwargs...) for ch in children(φ)]
-    ), args...; kwargs...)
+    )
+    return simplify(connective, ts, args...; kwargs...)
 end
 
 interpret(t::Truth, i::AbstractInterpretation, args...; kwargs...) = t

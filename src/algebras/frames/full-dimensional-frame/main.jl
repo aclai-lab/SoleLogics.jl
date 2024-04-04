@@ -160,6 +160,8 @@ centralworld(fr::Full2DPointFrame) = Point(div(X(fr)+1, 2), div(Y(fr)+1, 2))
 
 ############################################################################################
 
+include("dimensional-world-filters.jl")
+
 include("Full1DFrame+IA.jl")
 include("Full1DFrame+RCC.jl")
 
@@ -169,3 +171,5 @@ include("Full2DFrame+IA2D.jl")
 include("Full2DFrame+RCC.jl")
 
 include("Full2DPointFrame.jl")
+
+include("FullDimensionalFrame-filtered.jl")

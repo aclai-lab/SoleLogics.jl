@@ -22,7 +22,11 @@ Atom{String}("p")
 """
 macro atoms(ps...)
     quote
-        $(map(p -> :(const $p = $(string(p) |> Atom)), ps)...)
+        $(map(p -> quote
+        if !(@isdefined $p)
+            const $p = $(string(p) |> Atom)
+        end
+    end, ps)...)
         [$(ps...)]
     end |> esc
 end

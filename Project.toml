@@ -1,12 +1,13 @@
 name = "SoleLogics"
 uuid = "b002da8f-3cb3-4d91-bbe3-2953433912b5"
-authors = ["Mauro MILELLA", "Giovanni PAGLIARINI", "Eduard I. STAN"]
-version = "0.7.0"
+authors = ["Mauro MILELLA", "Giovanni PAGLIARINI", "Alberto PAPARELLA", "Eduard I. STAN"]
+version = "0.8.0"
 
 [deps]
 AbstractTrees = "1520ce14-60c1-5f80-bbc7-55ef81b5835c"
 DataStructures = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
 Dictionaries = "85a47980-9c8c-11e8-2b9f-f7ca1fa99fb4"
+FunctionWrappers = "069b7b12-0de2-55c6-9aab-29f3d0a68a2e"
 Graphs = "86223c79-3864-5bf0-83f7-82e725a168b6"
 IterTools = "c8e1da08-722c-5040-9ed9-7db0dc04731e"
 Lazy = "50d2b5c4-7a5e-59d5-8109-a42b560f39c0"
@@ -22,6 +23,7 @@ ThreadSafeDicts = "4239201d-c60e-5e0a-9702-85d713665ba7"
 AbstractTrees = "0.4"
 DataStructures = "0.18"
 Dictionaries = "0.3"
+FunctionWrappers = "1"
 Graphs = "1.8"
 IterTools = "1"
 Lazy = "0.15"
@@ -36,9 +38,10 @@ julia = "1"
 
 [extras]
 InteractiveUtils = "b77e0a4c-d291-57a0-90e8-8db25a27a240"
+BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
 Markdown = "d6f4376e-aef5-505a-96c1-9c027394607a"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
-test = ["Test", "Markdown", "InteractiveUtils", "PlutoUI"]
+test = ["Test", "Markdown", "InteractiveUtils", "PlutoUI", "BenchmarkTools"]

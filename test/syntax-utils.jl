@@ -1,3 +1,6 @@
+
+using Test
+using SoleLogics
 using SoleLogics: Literal, dual, LeftmostConjunctiveForm, LeftmostDisjunctiveForm
 using SoleLogics: CNF, DNF
 
@@ -99,6 +102,9 @@ dnf1 = @test_nowarn DNF([lfcf1, lfcf2])
 
 @test_nowarn LeftmostDisjunctiveForm(tree(dnf1 ∨ lfdf1))
 
+a = LeftmostConjunctiveForm(@atoms p q r)
+@test_broken a ∧ p isa LeftmostConjunctiveForm
+
 @test_broken DNF(tree(dnf1 ∨ lfdf1)) isa DNF
 @test_broken DNF{Literal}(tree(dnf1 ∨ lfdf1)) isa DNF
 
@@ -131,8 +137,10 @@ alpha = Atom.(["p", "q", "r"])
 @test_nowarn cnf(normalize(parseformula("(p ∧ ¬s) ∨ (¬q ∧ p)"); profile = :nnf); allow_atom_flipping = true)
 
 for i in 1:50
-    φ = randformula(4, alpha, [∨, ∧, ¬])
+    local φ = randformula(4, alpha, [∨, ∧, ¬])
     φ2 = cnf(φ)
+    # @show φ
+    # @show φ2
     _tdict = TruthDict(Dict([p => rand([true, false]) for p in alpha]))
     # i == 1 && println(_tdict)
     @test check(φ, _tdict) == check(φ2, _tdict)

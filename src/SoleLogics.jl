@@ -40,9 +40,9 @@ include("core.jl")
 
 ############################################################################################
 
-export AlphabetOfAny, ExplicitAlphabet
+export AlphabetOfAny, ExplicitAlphabet, UnionAlphabet
 
-export alphabet
+export alphabet, alphabets
 export domain, top, bot, grammar, algebra, logic
 
 include("logics.jl")
@@ -91,7 +91,18 @@ export AbstractWorlds, Worlds
 
 export Interval, Interval2D, OneWorld
 
+
+export AbstractRelation
+
+export GlobalRel, IdentityRel
+export globalrel, identityrel
+
+
 include("modal-logic.jl")
+
+############################################################################################
+
+include("many-valued-logics/ManyValuedLogics.jl")
 
 ############################################################################################
 
@@ -102,14 +113,6 @@ export subformulas, normalize
 export CNF, DNF, cnf
 
 include("syntax-utils.jl")
-
-############################################################################################
-
-export HeytingTruth, HeytingAlgebra
-export precedes, succeedes, precedeq, succeedeq # TODO move above.
-export @heytingalgebra
-
-include("fuzzy.jl")
 
 ############################################################################################
 
