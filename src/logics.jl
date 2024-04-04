@@ -220,6 +220,7 @@ See also
 [`ScalarCondition`](@ref),
 [`ScalarMetaCondition`](@ref).
 """
+
 struct UnionAlphabet{C,A<:AbstractAlphabet{C}} <: AbstractAlphabet{C}
     alphabets::Vector{A}
 end

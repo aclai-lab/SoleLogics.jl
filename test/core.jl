@@ -29,6 +29,7 @@ p_string = @test_nowarn Atom{String}("1")
 
 @test_nowarn ExplicitAlphabet(1:10)
 alphabet_int = @test_nowarn ExplicitAlphabet(Atom.(1:10))
+alphabet2_int = @test_nowarn ExplicitAlphabet(Atom.(11:20))
 @test atomstype(alphabet_int) == @test_nowarn Atom{Int}
 @test_nowarn ExplicitAlphabet(Atom{Number}.(1:10))
 alphabet_number = @test_nowarn ExplicitAlphabet{Number}(Atom.(1:10))
@@ -53,6 +54,28 @@ alphabet_mixed = AlphabetOfAny{Union{String,Number}}()
 @test Atom(1) in AlphabetOfAny{Number}()
 @test Atom(1.0) in AlphabetOfAny{Number}()
 @test !(Atom(1) in AlphabetOfAny{String}())
+
+@test_nowarn UnionAlphabet{Int,ExplicitAlphabet{Int}}([alphabet_int, alphabet2_int])
+union_alphabet_int = @test_nowarn UnionAlphabet([alphabet_int, alphabet2_int])
+@test atomstype(union_alphabet_int) == @test_nowarn Atom{Int}
+@test valuetype(union_alphabet_int) == @test_nowarn Int
+@test collect(atoms(union_alphabet_int)) isa Vector{Atom{Int}}
+@test alphabet_int(1) isa Atom{Int}
+@test Atom(1) in union_alphabet_int
+@test !(Atom("My string") in union_alphabet_int)
+
+@test_throws MethodError UnionAlphabet([alphabet_number, alphabet2_int])
+
+union_alphabet_ofany = @test_nowarn UnionAlphabet([AlphabetOfAny{String}()])
+@test Atom("My string") in union_alphabet_ofany
+@test union_alphabet_ofany("Your String") isa Atom{String}
+@test valuetype(union_union_alphabet_ofany) == @test_nowarn Union{Int,String}
+
+# TODO @Edo dovrebbe essere possibile ?
+# @test_nowarn UnionAlphabet{Real, AlphabetOfAny{Real}}([AlphabetOfAny{Int64}(), AlphabetOfAny{Float64}()])
+union_union_alphabet_ofany = @test_nowarn UnionAlphabet{Union{Int,String},AlphabetOfAny{Union{Int,String}}}([AlphabetOfAny{Union{Int,String}}()])
+@test Atom("My string") in union_union_alphabet_ofany
+@test Atom(1) in union_union_alphabet_ofany
 
 @test_nowarn convert(SyntaxTree, p1)
 @test_nowarn SyntaxTree(p1)
