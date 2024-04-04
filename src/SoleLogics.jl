@@ -40,9 +40,9 @@ include("core.jl")
 
 ############################################################################################
 
-export AlphabetOfAny, ExplicitAlphabet
+export AlphabetOfAny, ExplicitAlphabet, UnionAlphabet
 
-export alphabet
+export alphabet, alphabets
 export domain, top, bot, grammar, algebra, logic
 
 include("logics.jl")
