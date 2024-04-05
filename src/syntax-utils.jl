@@ -279,7 +279,7 @@ nleaves(φ::LeftmostLinearForm) = sum(nleaves, children(φ))
 #     # return TODO
 # end
 
-function atoms(φ::LeftmostLinearForm{C,<:Atom})::Bool where {C<:Connective}
+function atoms(φ::LeftmostLinearForm{C,<:Atom})::Vector{Atom} where {C<:Connective}
     return children(φ)
 end
 
@@ -291,7 +291,7 @@ end
 #     # return TODO
 # end
 
-function leaves(φ::LeftmostLinearForm{C,<:SyntaxLeaf})::Bool where {C<:Connective}
+function leaves(φ::LeftmostLinearForm{C,<:SyntaxLeaf})::SyntaxLeaf where {C<:Connective}
     return children(φ)
 end
 
@@ -299,7 +299,7 @@ end
 #     # return TODO
 # end
 
-function natoms(φ::LeftmostLinearForm{C,<:Atom})::Bool where {C<:Connective}
+function natoms(φ::LeftmostLinearForm{C,<:Atom})::Integer where {C<:Connective}
     return nchildren(φ)
 end
 
@@ -311,7 +311,7 @@ end
 #     # return TODO
 # end
 
-function nleaves(φ::LeftmostLinearForm{C,<:SyntaxLeaf})::Bool where {C<:Connective}
+function nleaves(φ::LeftmostLinearForm{C,<:SyntaxLeaf})::Integer where {C<:Connective}
     return nchildren(φ)
 end
 
