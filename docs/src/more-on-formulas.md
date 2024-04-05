@@ -16,8 +16,14 @@ Recalling the type hierarchy presented in [man-core](@ref), it is here enriched 
 - [`Formula`](@ref)
     - [`AnchoredFormula`](@ref)
     - [`AbstractSyntaxStructure`](@ref)
+        - [`Literal`](@ref)
         - [`LeftmostLinearForm{C<:Connective,SS<:AbstractSyntaxStructure}`](@ref)
 ---
+
+## Literals
+```@docs
+Literal
+```
 
 ## Linear Forms
 ```@docs
