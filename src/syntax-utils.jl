@@ -40,17 +40,17 @@ LeftmostConjunctiveForm with 2 Atom{String} children:
         q
 
 julia> tree(conj)
-SyntaxBranch{NamedConnective{:∧}}: p ∧ q
+SyntaxBranch: p ∧ q
 
 julia> nconj = NEGATION(conj)
 LeftmostLinearForm with connective ¬ and 1 LeftmostConjunctiveForm{Atom{String}} children:
         (p) ∧ (q)
 
 julia> tree(nconj)
-SyntaxBranch{NamedConnective{:¬}}: ¬(p ∧ q)
+SyntaxBranch: ¬(p ∧ q)
 
 julia> tree(nconj ∧ nconj)
-SyntaxBranch{NamedConnective{:∧}}: ¬(p ∧ q) ∧ ¬(p ∧ q)
+SyntaxBranch: ¬(p ∧ q) ∧ ¬(p ∧ q)
 ```
 """
 

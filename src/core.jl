@@ -737,7 +737,7 @@ julia> p,q = Atom.([p, q])
  Atom{String}: q
 
 julia> branch = SyntaxBranch(CONJUNCTION, p, q)
-SyntaxBranch{NamedConnective{:∧}}: p ∧ q
+SyntaxBranch: p ∧ q
 
 julia> token(branch)
 ∧
@@ -772,8 +772,8 @@ struct SyntaxBranch <: SyntaxTree
     # The child nodes of the current node
     children::NTuple{N,SyntaxTree} where {N}
 
-    function _aritycheck(N, T, token, children)
-        @assert arity(token) == N "Cannot instantiate SyntaxBranch{$(T)} with token " *
+    function _aritycheck(N, token, children)
+        @assert arity(token) == N "Cannot instantiate SyntaxBranch with token " *
                                   "$(token) of arity $(arity(token)) and $(N) children."
         return nothing
     end
@@ -782,7 +782,7 @@ struct SyntaxBranch <: SyntaxTree
     #     token::T,
     #     children::NTuple{N,SyntaxTree} = (),
     # ) where {T<:Connective,N}
-    #     _aritycheck(N, T, token, children)
+    #     _aritycheck(N, token, children)
     #     return new{T}(token, children)
     # end
 
@@ -793,10 +793,10 @@ struct SyntaxBranch <: SyntaxTree
     # end
 
     function SyntaxBranch(
-        token::T,
+        token::Connective,
         children::NTuple{N,SyntaxTree} = (),
-    ) where {T<:Connective,N}
-        _aritycheck(N, T, token, children)
+    ) where {N}
+        _aritycheck(N, token, children)
         return new(token, children)
     end
 
@@ -804,7 +804,7 @@ struct SyntaxBranch <: SyntaxTree
     # function SyntaxBranch{T}(token::T, children...) where {T<:Connective}
     #     return SyntaxBranch{T}(token, children)
     # end
-    function SyntaxBranch(token::T, children...) where {T<:Connective}
+    function SyntaxBranch(token::Connective, children...)
         return SyntaxBranch(token, children)
     end
 
