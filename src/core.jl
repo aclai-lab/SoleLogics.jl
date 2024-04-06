@@ -717,8 +717,8 @@ end
 ############################################################################################
 
 """
-    struct SyntaxBranch{T<:Connective} <: SyntaxTree
-        token::T
+    struct SyntaxBranch <: SyntaxTree
+        token::Connective
         children::NTuple{N,SyntaxTree} where {N}
     end
 
@@ -764,10 +764,10 @@ See also
 [`operators`](@ref), [`noperators`](@ref),
 [`tokens`](@ref), [`ntokens`](@ref),
 """
-struct SyntaxBranch{T<:Connective} <: SyntaxTree
+struct SyntaxBranch <: SyntaxTree
 
     # The syntax token at the current node
-    token::T
+    token::Connective
 
     # The child nodes of the current node
     children::NTuple{N,SyntaxTree} where {N}
@@ -778,32 +778,32 @@ struct SyntaxBranch{T<:Connective} <: SyntaxTree
         return nothing
     end
 
-    function SyntaxBranch{T}(
-        token::T,
-        children::NTuple{N,SyntaxTree} = (),
-    ) where {T<:Connective,N}
-        _aritycheck(N, T, token, children)
-        return new{T}(token, children)
-    end
+    # function SyntaxBranch{T}(
+    #     token::T,
+    #     children::NTuple{N,SyntaxTree} = (),
+    # ) where {T<:Connective,N}
+    #     _aritycheck(N, T, token, children)
+    #     return new{T}(token, children)
+    # end
 
-    function SyntaxBranch{T}(
-        φ::SyntaxBranch{T},
-    ) where {T<:Connective}
-        return SyntaxBranch{T}(token(φ), children(φ))
-    end
+    # function SyntaxBranch{T}(
+    #     φ::SyntaxBranch{T},
+    # ) where {T<:Connective}
+    #     return SyntaxBranch{T}(token(φ), children(φ))
+    # end
 
     function SyntaxBranch(
         token::T,
         children::NTuple{N,SyntaxTree} = (),
     ) where {T<:Connective,N}
         _aritycheck(N, T, token, children)
-        return new{T}(token, children)
+        return new(token, children)
     end
 
     # Helpers
-    function SyntaxBranch{T}(token::T, children...) where {T<:Connective}
-        return SyntaxBranch{T}(token, children)
-    end
+    # function SyntaxBranch{T}(token::T, children...) where {T<:Connective}
+    #     return SyntaxBranch{T}(token, children)
+    # end
     function SyntaxBranch(token::T, children...) where {T<:Connective}
         return SyntaxBranch(token, children)
     end
