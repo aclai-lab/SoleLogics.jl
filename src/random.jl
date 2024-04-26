@@ -306,7 +306,7 @@ function randformula(
     alphabet,
     operators::AbstractVector;
     modaldepth::Integer = height,
-    atompicker::Union{Function,AbstractWeights,AbstractVector{<:Real},Nothing} = sample,
+    atompicker::Union{Function,AbstractWeights,AbstractVector{<:Real},Nothing} = StatsBase.sample,
     opweights::Union{AbstractWeights,AbstractVector{<:Real},Nothing} = nothing,
 )::SyntaxTree
     rng = initrng(rng)
@@ -323,7 +323,7 @@ function randformula(
     end
 
     if (isnothing(atompicker))
-        atompicker = StatsBase.uweights(length(alphabet))
+        atompicker = StatsBase.uweights(leng(th(alphabet))
     elseif (atompicker isa AbstractVector)
         @assert length(atompicker) == length(alphabet) "Mismatching numbers of atoms " *
                 "($(length(alphabet))) and atompicker ($(length(atompicker)))."
@@ -344,8 +344,9 @@ function randformula(
     )::SyntaxTree
 
         if height == 0
-            atomslist = atoms(alphabet) |> collect
-            return rand(rng, atomslist)
+            # atomslist = atoms(alphabet) |> collect
+            # return rand(rng, atomslist)
+            return atompicker(rng, alphabet)
         else
             # Sample operator and generate children (modal connectives only if modaldepth > 0)
             ops, ops_w = begin

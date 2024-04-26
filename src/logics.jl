@@ -116,19 +116,26 @@ function Base.in(value::Union{AbstractString,Number,AbstractChar}, a::AbstractAl
     Base.in(Atom(value), a)
 end
 
-"""
-    Base.length(a::AbstractAlphabet)::Bool
 
-Return the alphabet length, if it is finite.
-
-See also [`AbstractAlphabet`](@ref), [`SyntaxBranch`](@ref).
 """
-function Base.length(a::AbstractAlphabet)
-    if isfinite(a)
-        return Base.length(atoms(a))
+    natoms(a::AbstractAlphabet)::Integer
+
+Return the number of atoms of a *finite* alphabet.
+
+See also [`AbstractAlphabet`](@ref).
+"""
+function natoms(a::AbstractAlphabet)::Integer
+    if Base.isfinite(a)
+        return error("Please, provide method natoms(::$(typeof(a))).")
     else
-        return error("Cannot compute length of (infinite) alphabet of type $(typeof(a)).")
+        return error("Cannot list natoms of (infinite) alphabet of type $(typeof(a)).")
     end
+end
+
+# Helper
+function Base.length(a::AbstractAlphabet)
+    @warn "Please use `natoms` instead of `Base.length` with alphabets."
+    return natoms(a)
 end
 
 """
