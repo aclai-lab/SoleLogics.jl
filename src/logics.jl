@@ -116,7 +116,6 @@ function Base.in(value::Union{AbstractString,Number,AbstractChar}, a::AbstractAl
     Base.in(Atom(value), a)
 end
 
-
 """
     natoms(a::AbstractAlphabet)::Integer
 
@@ -130,6 +129,14 @@ function natoms(a::AbstractAlphabet)::Integer
     else
         return error("Cannot list natoms of (infinite) alphabet of type $(typeof(a)).")
     end
+end
+
+function randatom(a::AbstractAlphabet)
+    error("Please provide method randatom(c::$(typeof(c)))")
+end
+
+function randatom(a::AbstractAlphabet,rng::Union{Random.AbstractRNG,Integer})
+    error("Please provide method randatom(rng::$(typeof(rng)), c::$(typeof(c)))")
 end
 
 # Helper
@@ -234,6 +241,8 @@ end
 
 alphabets(a::UnionAlphabet) = a.alphabets
 
+nalphabets(a::UnionAlphabet) = length(a.alphabets)
+
 function Base.show(io::IO, a::UnionAlphabet)
     println(io, "$(typeof(a)):")
     for cha in alphabets(a)
@@ -247,6 +256,44 @@ end
 
 function Base.in(p::Atom, a::UnionAlphabet)
     return any(cha -> Base.in(p, cha), alphabets(a))
+end
+
+function randatom(
+    rng::Union{Integer,AbstractRNG},
+    a::UnionAlphabet;
+    atompicking_mode::Symbol=:uniform,
+    subalphabets_weights::Union{AbstractWeights,AbstractVector{<:Real},Nothing} = nothing
+)::Atom
+    rng = SoleBase.initrng(rng)
+    alphs = alphabets(a)
+    @assert atompicking_mode in [:uniform, :twostep, :weighted] "Value for `atompicking_mode` not..."
+
+    if !isnothing(subalphabets_weights)
+        @assert length(subalphabets_weights) == nalphabets(a) "Mismatching numbers of alphabets" *
+            "($(length(alphs))) and weights ($(length(subalphabets_weights)))."
+
+        subalphabets_weights = StatsBase.weights(subalphabets_weights)
+        pickedalphabet = StatsBase.sample(rng, alphs, subalphabets_weights)
+        pickedatom = randatom(rng, pickedalphabet)
+    else
+        pickedalphabet = begin
+            if atompicking_mode == :twostep
+                rand(rng, alphs)
+            elseif atompicking_mode == :uniform
+                subalphabets_weights = Weights(natoms.(alphs))
+                sample(rng, alphs, subalphabets_weights)
+            end
+        end
+        pickedatom = randatom(rng, pickedalphabet)
+    end
+    return pickedatom
+end
+
+function randatom(
+    a::UnionAlphabet;
+    kwargs...
+)
+    randatom(Random.GLOBAL_RNG ,a, kwargs...)
 end
 
 ############################################################################################
