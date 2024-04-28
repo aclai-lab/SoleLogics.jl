@@ -323,7 +323,7 @@ function randformula(
     end
 
     if (isnothing(atompicker))
-        atompicker = StatsBase.uweights(leng(th(alphabet))
+        atompicker = StatsBase.uweights(length(alphabet))
     elseif (atompicker isa AbstractVector)
         @assert length(atompicker) == length(alphabet) "Mismatching numbers of atoms " *
                 "($(length(alphabet))) and atompicker ($(length(atompicker)))."
