@@ -274,19 +274,18 @@ function randatom(
 
         subalphabets_weights = StatsBase.weights(subalphabets_weights)
         pickedalphabet = StatsBase.sample(rng, alphs, subalphabets_weights)
-        pickedatom = randatom(rng, pickedalphabet)
     else
-        pickedalphabet = begin
+        subalphabets_weights = begin
             if atompicking_mode == :twostep
-                rand(rng, alphs)
+                Weights(ones(Int, nalphabets(alphs)))
             elseif atompicking_mode == :uniform
-                subalphabets_weights = Weights(natoms.(alphs))
-                sample(rng, alphs, subalphabets_weights)
+                Weights(natoms.(alphs))
             end
         end
-        pickedatom = randatom(rng, pickedalphabet)
+        pickedalphabet = sample(rng, alphs, subalphabets_weights)
+        end
     end
-    return pickedatom
+    return randatom(rng, pickedalphabet)
 end
 
 function randatom(
