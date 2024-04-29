@@ -259,6 +259,13 @@ function Base.in(p::Atom, a::UnionAlphabet)
 end
 
 function randatom(
+    a::UnionAlphabet;
+    kwargs...
+)
+    randatom(Random.GLOBAL_RNG ,a, kwargs...)
+end
+
+function randatom(
     rng::Union{Integer,AbstractRNG},
     a::UnionAlphabet;
     atompicking_mode::Symbol=:uniform,
@@ -269,30 +276,21 @@ function randatom(
     @assert atompicking_mode in [:uniform, :twostep, :weighted] "Value for `atompicking_mode` not..."
 
     if !isnothing(subalphabets_weights)
-        @assert length(subalphabets_weights) == nalphabets(a) "Mismatching numbers of alphabets" *
+        @assert length(subalphabets_weights) == length(alphs) "Mismatching numbers of alphabets" *
             "($(length(alphs))) and weights ($(length(subalphabets_weights)))."
-
         subalphabets_weights = StatsBase.weights(subalphabets_weights)
         pickedalphabet = StatsBase.sample(rng, alphs, subalphabets_weights)
     else
         subalphabets_weights = begin
             if atompicking_mode == :twostep
-                Weights(ones(Int, nalphabets(alphs)))
+                Weights(ones(Int, length(alphs)))
             elseif atompicking_mode == :uniform
                 Weights(natoms.(alphs))
             end
         end
         pickedalphabet = sample(rng, alphs, subalphabets_weights)
-        end
     end
     return randatom(rng, pickedalphabet)
-end
-
-function randatom(
-    a::UnionAlphabet;
-    kwargs...
-)
-    randatom(Random.GLOBAL_RNG ,a, kwargs...)
 end
 
 ############################################################################################
