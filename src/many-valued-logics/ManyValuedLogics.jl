@@ -20,8 +20,10 @@ export precedeq, precedes, succeedeq, succeedes
 
 include("order-utilities.jl")
 
-export ⋅
+export BASE_MANY_VALUED_CONNECTIVES
 
 include("many-valued-formulas.jl")
+
+include("algebras/algebras.jl")
 
 end
