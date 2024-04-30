@@ -27,7 +27,8 @@ export syntaxstring
 export arity, valuetype, tokentype, tokenstype,
         atomstype, operatorstype, truthtype,
         associativity, precedence
-export value, token, children, formulas
+# export value # Clashes with JuMP.value
+export token, children, formulas
 export tree
 
 export tokens, ntokens, atoms, natoms, truths, ntruths, leaves, nleaves,
