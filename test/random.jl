@@ -82,3 +82,6 @@ g = SoleLogics.CompleteFlatGrammar(alph, ops)
 @test_nowarn StatsBase.sample(4, g, Weights([1,1,1,1,100]))
 @test_throws MethodError StatsBase.sample(4, g, [1,1,1,1,100])
 @test_throws MethodError StatsBase.sample(Random.MersenneTwister(1), 4, g, 1:2)
+
+
+X =

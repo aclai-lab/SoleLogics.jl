@@ -117,18 +117,32 @@ function Base.in(value::Union{AbstractString,Number,AbstractChar}, a::AbstractAl
 end
 
 """
-    Base.length(a::AbstractAlphabet)::Bool
+    natoms(a::AbstractAlphabet)::Integer
 
-Return the alphabet length, if it is finite.
+Return the number of atoms of a *finite* alphabet.
 
-See also [`AbstractAlphabet`](@ref), [`SyntaxBranch`](@ref).
+See also [`AbstractAlphabet`](@ref).
 """
-function Base.length(a::AbstractAlphabet)
-    if isfinite(a)
-        return Base.length(atoms(a))
+function natoms(a::AbstractAlphabet)::Integer
+    if Base.isfinite(a)
+        return error("Please, provide method natoms(::$(typeof(a))).")
     else
-        return error("Cannot compute length of (infinite) alphabet of type $(typeof(a)).")
+        return error("Cannot list natoms of (infinite) alphabet of type $(typeof(a)).")
     end
+end
+
+function randatom(a::AbstractAlphabet)
+    error("Please provide method randatom(c::$(typeof(c)))")
+end
+
+function randatom(a::AbstractAlphabet,rng::Union{Random.AbstractRNG,Integer})
+    error("Please provide method randatom(rng::$(typeof(rng)), c::$(typeof(c)))")
+end
+
+# Helper
+function Base.length(a::AbstractAlphabet)
+    @warn "Please use `natoms` instead of `Base.length` with alphabets."
+    return natoms(a)
 end
 
 """
@@ -227,6 +241,8 @@ end
 
 alphabets(a::UnionAlphabet) = a.alphabets
 
+nalphabets(a::UnionAlphabet) = length(a.alphabets)
+
 function Base.show(io::IO, a::UnionAlphabet)
     println(io, "$(typeof(a)):")
     for cha in alphabets(a)
@@ -240,6 +256,41 @@ end
 
 function Base.in(p::Atom, a::UnionAlphabet)
     return any(cha -> Base.in(p, cha), alphabets(a))
+end
+
+function randatom(
+    a::UnionAlphabet;
+    kwargs...
+)
+    randatom(Random.GLOBAL_RNG ,a, kwargs...)
+end
+
+function randatom(
+    rng::Union{Integer,AbstractRNG},
+    a::UnionAlphabet;
+    atompicking_mode::Symbol=:uniform,
+    subalphabets_weights::Union{AbstractWeights,AbstractVector{<:Real},Nothing} = nothing
+)::Atom
+    rng = SoleBase.initrng(rng)
+    alphs = alphabets(a)
+    @assert atompicking_mode in [:uniform, :twostep, :weighted] "Value for `atompicking_mode` not..."
+
+    if !isnothing(subalphabets_weights)
+        @assert length(subalphabets_weights) == length(alphs) "Mismatching numbers of alphabets" *
+            "($(length(alphs))) and weights ($(length(subalphabets_weights)))."
+        subalphabets_weights = StatsBase.weights(subalphabets_weights)
+        pickedalphabet = StatsBase.sample(rng, alphs, subalphabets_weights)
+    else
+        subalphabets_weights = begin
+            if atompicking_mode == :twostep
+                Weights(ones(Int, length(alphs)))
+            elseif atompicking_mode == :uniform
+                Weights(natoms.(alphs))
+            end
+        end
+        pickedalphabet = sample(rng, alphs, subalphabets_weights)
+    end
+    return randatom(rng, pickedalphabet)
 end
 
 ############################################################################################

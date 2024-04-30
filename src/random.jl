@@ -306,12 +306,11 @@ function randformula(
     alphabet,
     operators::AbstractVector;
     modaldepth::Integer = height,
-    atompicker::Union{Function,AbstractWeights,AbstractVector{<:Real},Nothing} = sample,
+    atompicker::Union{Function,AbstractWeights,AbstractVector{<:Real},Nothing} = StatsBase.sample,
     opweights::Union{AbstractWeights,AbstractVector{<:Real},Nothing} = nothing,
 )::SyntaxTree
     rng = initrng(rng)
     alphabet = convert(AbstractAlphabet, alphabet)
-
     @assert all(x->x isa Operator, operators) "Unexpected object(s) passed as" *
         " operator:" * " $(filter(x->!(x isa Operator), operators))"
 
@@ -343,9 +342,11 @@ function randformula(
         height::Integer,
         modaldepth::Integer
     )::SyntaxTree
+
         if height == 0
-            # Sample atom from alphabet
-            return atompicker(rng, atoms(alphabet))
+            # atomslist = atoms(alphabet) |> collect
+            # return rand(rng, atomslist)
+            return randatom(rng, alphabet)
         else
             # Sample operator and generate children (modal connectives only if modaldepth > 0)
             ops, ops_w = begin
