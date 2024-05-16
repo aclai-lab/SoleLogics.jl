@@ -86,7 +86,15 @@ Helper allowing to use binary operations with function notation.
 
 See also [`Operation`](@ref), [`BinaryOperation`](@ref), [`arity`](@ref).
 """
-function (o::BinaryOperation{T,D})(t1::T1, t2::T2) where {T<:Truth, D<:AbstractVector{T}, T1<:Truth, T2<:Truth}
+function (o::BinaryOperation{T,D})(
+    t1::T1,
+    t2::T2
+) where {
+    T<:Truth,
+    D<:AbstractVector{T},
+    T1<:Truth,
+    T2<:Truth
+}
     if !isa(t1, T) t1 = convert(T, t1)::T end
     if !isa(t2, T) t2 = convert(T, t2)::T end
     return o.truthtable[(t1, t2)]
