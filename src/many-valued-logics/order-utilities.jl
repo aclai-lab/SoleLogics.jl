@@ -73,12 +73,14 @@ end
 """
     function succeedeq(
         l::L,
-        t1::T,
-        t2::T
+        t1::T1,
+        t2::T2
     ) where {
         T<:Truth,
         D<:AbstractVector{T},
-        L<:FiniteAlgebra{T,D}
+        L<:FiniteAlgebra{T,D},
+        T1<:Truth,
+        T2<:Truth
     }
 
 Return true if `t1` ≥ `t2` in `l`. Given an algebraically defined lattice (L, ∨, ∧), one can
