@@ -778,20 +778,6 @@ struct SyntaxBranch <: SyntaxTree
         return nothing
     end
 
-    # function SyntaxBranch{T}(
-    #     token::T,
-    #     children::NTuple{N,SyntaxTree} = (),
-    # ) where {T<:Connective,N}
-    #     _aritycheck(N, token, children)
-    #     return new{T}(token, children)
-    # end
-
-    # function SyntaxBranch{T}(
-    #     φ::SyntaxBranch{T},
-    # ) where {T<:Connective}
-    #     return SyntaxBranch{T}(token(φ), children(φ))
-    # end
-
     function SyntaxBranch(
         token::Connective,
         children::NTuple{N,SyntaxTree} = (),
@@ -801,9 +787,6 @@ struct SyntaxBranch <: SyntaxTree
     end
 
     # Helpers
-    # function SyntaxBranch{T}(token::T, children...) where {T<:Connective}
-    #     return SyntaxBranch{T}(token, children)
-    # end
     function SyntaxBranch(token::Connective, children...)
         return SyntaxBranch(token, children)
     end
