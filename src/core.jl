@@ -717,8 +717,8 @@ end
 ############################################################################################
 
 """
-    struct SyntaxBranch{T<:Connective} <: SyntaxTree
-        token::T
+    struct SyntaxBranch <: SyntaxTree
+        token::Connective
         children::NTuple{N,SyntaxTree} where {N}
     end
 
@@ -737,7 +737,7 @@ julia> p,q = Atom.([p, q])
  Atom{String}: q
 
 julia> branch = SyntaxBranch(CONJUNCTION, p, q)
-SyntaxBranch{NamedConnective{:∧}}: p ∧ q
+SyntaxBranch: p ∧ q
 
 julia> token(branch)
 ∧
@@ -764,47 +764,47 @@ See also
 [`operators`](@ref), [`noperators`](@ref),
 [`tokens`](@ref), [`ntokens`](@ref),
 """
-struct SyntaxBranch{T<:Connective} <: SyntaxTree
+struct SyntaxBranch <: SyntaxTree
 
     # The syntax token at the current node
-    token::T
+    token::Connective
 
     # The child nodes of the current node
     children::NTuple{N,SyntaxTree} where {N}
 
-    function _aritycheck(N, T, token, children)
-        @assert arity(token) == N "Cannot instantiate SyntaxBranch{$(T)} with token " *
+    function _aritycheck(N, token, children)
+        @assert arity(token) == N "Cannot instantiate SyntaxBranch with token " *
                                   "$(token) of arity $(arity(token)) and $(N) children."
         return nothing
     end
 
-    function SyntaxBranch{T}(
-        token::T,
-        children::NTuple{N,SyntaxTree} = (),
-    ) where {T<:Connective,N}
-        _aritycheck(N, T, token, children)
-        return new{T}(token, children)
-    end
+    # function SyntaxBranch{T}(
+    #     token::T,
+    #     children::NTuple{N,SyntaxTree} = (),
+    # ) where {T<:Connective,N}
+    #     _aritycheck(N, token, children)
+    #     return new{T}(token, children)
+    # end
 
-    function SyntaxBranch{T}(
-        φ::SyntaxBranch{T},
-    ) where {T<:Connective}
-        return SyntaxBranch{T}(token(φ), children(φ))
-    end
+    # function SyntaxBranch{T}(
+    #     φ::SyntaxBranch{T},
+    # ) where {T<:Connective}
+    #     return SyntaxBranch{T}(token(φ), children(φ))
+    # end
 
     function SyntaxBranch(
-        token::T,
+        token::Connective,
         children::NTuple{N,SyntaxTree} = (),
-    ) where {T<:Connective,N}
-        _aritycheck(N, T, token, children)
-        return new{T}(token, children)
+    ) where {N}
+        _aritycheck(N, token, children)
+        return new(token, children)
     end
 
     # Helpers
-    function SyntaxBranch{T}(token::T, children...) where {T<:Connective}
-        return SyntaxBranch{T}(token, children)
-    end
-    function SyntaxBranch(token::T, children...) where {T<:Connective}
+    # function SyntaxBranch{T}(token::T, children...) where {T<:Connective}
+    #     return SyntaxBranch{T}(token, children)
+    # end
+    function SyntaxBranch(token::Connective, children...)
         return SyntaxBranch(token, children)
     end
 

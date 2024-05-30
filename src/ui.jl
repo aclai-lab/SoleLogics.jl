@@ -65,8 +65,8 @@ Atom{String}("p")
 julia> @synexpr st = p ∧ q → r
 (p ∧ q) → r
 
-julia> typeof(st)
-SyntaxBranch{SoleLogics.NamedConnective{:→}}
+julia> token(st)
+→
 ```
 
 See also [`parseformula`](@ref), [`Atom`](@ref), [`Connective`](@ref),

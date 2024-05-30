@@ -40,17 +40,17 @@ LeftmostConjunctiveForm with 2 Atom{String} children:
         q
 
 julia> tree(conj)
-SyntaxBranch{NamedConnective{:∧}}: p ∧ q
+SyntaxBranch: p ∧ q
 
 julia> nconj = NEGATION(conj)
 LeftmostLinearForm with connective ¬ and 1 LeftmostConjunctiveForm{Atom{String}} children:
         (p) ∧ (q)
 
 julia> tree(nconj)
-SyntaxBranch{NamedConnective{:¬}}: ¬(p ∧ q)
+SyntaxBranch: ¬(p ∧ q)
 
 julia> tree(nconj ∧ nconj)
-SyntaxBranch{NamedConnective{:∧}}: ¬(p ∧ q) ∧ ¬(p ∧ q)
+SyntaxBranch: ¬(p ∧ q) ∧ ¬(p ∧ q)
 ```
 """
 
@@ -279,7 +279,7 @@ nleaves(φ::LeftmostLinearForm) = sum(nleaves, children(φ))
 #     # return TODO
 # end
 
-function atoms(φ::LeftmostLinearForm{C,<:Atom})::Bool where {C<:Connective}
+function atoms(φ::LeftmostLinearForm{C,<:Atom})::Vector{Atom} where {C<:Connective}
     return children(φ)
 end
 
@@ -291,7 +291,7 @@ end
 #     # return TODO
 # end
 
-function leaves(φ::LeftmostLinearForm{C,<:SyntaxLeaf})::Bool where {C<:Connective}
+function leaves(φ::LeftmostLinearForm{C,<:SyntaxLeaf})::SyntaxLeaf where {C<:Connective}
     return children(φ)
 end
 
@@ -299,7 +299,7 @@ end
 #     # return TODO
 # end
 
-function natoms(φ::LeftmostLinearForm{C,<:Atom})::Bool where {C<:Connective}
+function natoms(φ::LeftmostLinearForm{C,<:Atom})::Integer where {C<:Connective}
     return nchildren(φ)
 end
 
@@ -311,7 +311,7 @@ end
 #     # return TODO
 # end
 
-function nleaves(φ::LeftmostLinearForm{C,<:SyntaxLeaf})::Bool where {C<:Connective}
+function nleaves(φ::LeftmostLinearForm{C,<:SyntaxLeaf})::Integer where {C<:Connective}
     return nchildren(φ)
 end
 
@@ -522,10 +522,9 @@ struct Literal{T<:SyntaxLeaf} <: AbstractSyntaxStructure
     function Literal(φ::SyntaxLeaf, flag = true)
         return Literal(flag, φ)
     end
-    function Literal(φ::SyntaxBranch{typeof(¬)}, flag = true)
+    function Literal(φ::SyntaxBranch, flag = true)
         ch = first(children(φ))
-        @assert ch isa Union{SyntaxLeaf,SyntaxBranch{typeof(¬)}} "Cannot " *
-        # @assert ch isa SyntaxLeaf "Cannot " *
+        @assert (token(φ) == ¬) "Cannot " *
             "construct Literal with formula of type $(typeof(ch))): $(syntaxstring(ch))."
         return Literal(ch, !flag)
     end
@@ -579,25 +578,30 @@ function _cnf(φ::Formula, literaltype = Literal)
     return error("Cannot convert to CNF formula of type $(typeof(φ)): $(syntaxstring(φ))")
 end
 
-function _cnf(φ::Union{SyntaxLeaf,SyntaxBranch{typeof(¬)}}, literaltype = Literal)
+function _cnf(φ::SyntaxLeaf, literaltype = Literal)
     φ = φ isa literaltype ? φ : literaltype(φ)
     return LeftmostConjunctiveForm([LeftmostDisjunctiveForm{literaltype}([φ])])
 end
 
-function _cnf(φ::SyntaxBranch{typeof(∧)}, literaltype = Literal)
-    return _cnf(first(children(φ)), literaltype) ∧ _cnf(last(children(φ)), literaltype)
-end
-
-function _cnf(φ::SyntaxBranch{typeof(∨)}, literaltype = Literal)
-    conjs = vec([begin
-        # @show typeof(c1), typeof(c2)
-        # @show typeof(c1 ∨ c2)
-        # LeftmostDisjunctiveForm{literaltype}(c1 ∨ c2)
-        c1 ∨ c2
-    end for (c1,c2) in Iterators.product(conjuncts(_cnf(first(children(φ)), literaltype)),conjuncts(_cnf(last(children(φ)), literaltype)))])
-    # @show typeof.(conjs)
-    # conjs = Vector{LeftmostDisjunctiveForm{literaltype}}(conjs)
-    LeftmostConjunctiveForm(conjs)
+function _cnf(φ::SyntaxBranch, literaltype = Literal)
+    if token(φ) == ∧
+        return _cnf(first(children(φ)), literaltype) ∧ _cnf(last(children(φ)), literaltype)
+    elseif token(φ) == ∨
+        conjs = vec([begin
+            # @show typeof(c1), typeof(c2)
+            # @show typeof(c1 ∨ c2)
+            # LeftmostDisjunctiveForm{literaltype}(c1 ∨ c2)
+            c1 ∨ c2
+        end for (c1,c2) in Iterators.product(conjuncts(_cnf(first(children(φ)), literaltype)),conjuncts(_cnf(last(children(φ)), literaltype)))])
+        # @show typeof.(conjs)
+        # conjs = Vector{LeftmostDisjunctiveForm{literaltype}}(conjs)
+        return LeftmostConjunctiveForm(conjs)
+    elseif token(φ) == ¬
+        φ = φ isa literaltype ? φ : literaltype(φ)
+        return LeftmostConjunctiveForm([LeftmostDisjunctiveForm{literaltype}([φ])])
+    else
+        return error("Unexpected token $(token)!")
+    end
 end
 
 
