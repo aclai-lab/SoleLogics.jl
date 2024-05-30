@@ -1,12 +1,14 @@
 """
     function precedeq(
         l::L,
-        t1::T,
-        t2::T
+        t1::T1,
+        t2::T2
     ) where {
         T<:Truth,
         D<:AbstractVector{T},
-        L<:FiniteAlgebra{T,D}
+        L<:FiniteAlgebra{T,D},
+        T1<:Truth,
+        T2<:Truth
     }
 
 Return true if `t1` ≤ `t2` in `l`. Given an algebraically defined lattice (L, ∨, ∧), one can
@@ -39,12 +41,14 @@ end
 """
     function precedes(
         l::L,
-        t1::T,
-        t2::T
+        t1::T1,
+        t2::T2
     ) where {
         T<:Truth,
         D<:AbstractVector{T},
-        L<:FiniteAlgebra{T,D}
+        L<:FiniteAlgebra{T,D},
+        T1<:Truth,
+        T2<:Truth
     }
 
 Return true if `t1` < `t2` in `l`. Given an algebraically defined lattice (L, ∨, ∧), one can
@@ -54,12 +58,14 @@ See also [`precedeq`](@ref), [`succeedes`](@ref), [`succeedeq`](@ref).
 """
 function precedes(
     l::L,
-    t1::T,
-    t2::T
+    t1::T1,
+    t2::T2
 ) where {
     T<:Truth,
     D<:AbstractVector{T},
-    L<:FiniteAlgebra{T,D}
+    L<:FiniteAlgebra{T,D},
+    T1<:Truth,
+    T2<:Truth
 }
     return t1 != t2 && precedeq(l, t1, t2)
 end
@@ -67,12 +73,14 @@ end
 """
     function succeedeq(
         l::L,
-        t1::T,
-        t2::T
+        t1::T1,
+        t2::T2
     ) where {
         T<:Truth,
         D<:AbstractVector{T},
-        L<:FiniteAlgebra{T,D}
+        L<:FiniteAlgebra{T,D},
+        T1<:Truth,
+        T2<:Truth
     }
 
 Return true if `t1` ≥ `t2` in `l`. Given an algebraically defined lattice (L, ∨, ∧), one can
@@ -82,12 +90,14 @@ See also [`precedes`](@ref), [`precedeq`](@ref), [`succeedes`](@ref).
 """
 function succeedeq(
     l::L,
-    t1::T,
-    t2::T
+    t1::T1,
+    t2::T2
 ) where {
     T<:Truth,
     D<:AbstractVector{T},
-    L<:FiniteAlgebra{T,D}
+    L<:FiniteAlgebra{T,D},
+    T1<:Truth,
+    T2<:Truth
 }
     return precedeq(l, t2, t1)
 end
@@ -110,12 +120,14 @@ See also [`precedes`](@ref), [`precedeq`](@ref), [`succeedeq`](@ref).
 """
 function succeedes(
     l::L,
-    t1::T,
-    t2::T
+    t1::T1,
+    t2::T2
 ) where {
     T<:Truth,
     D<:AbstractVector{T},
-    L<:FiniteAlgebra{T,D}
+    L<:FiniteAlgebra{T,D},
+    T1<:Truth,
+    T2<:Truth
 }
     return precedes(l, t2, t1)
 end

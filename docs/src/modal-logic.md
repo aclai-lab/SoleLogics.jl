@@ -144,7 +144,7 @@ accessibles(fr::AbstractMultiModalFrame{W}, w::W, r::AbstractRelation) where {W<
 ```@docs
 AbstractKripkeStructure
 
-check(φ::SyntaxTree, i::AbstractKripkeStructure, w; use_memo::Union{Nothing,AbstractDict{<:Formula,<:Vector{<:AbstractWorld}}} = nothing, perform_normalization::Bool = true, memo_max_height::Union{Nothing,Int} = nothing)
+check(φ::SyntaxTree, i::AbstractKripkeStructure, w::Union{Nothing,<:AbstractWorld} = nothing; use_memo::Union{Nothing,AbstractDict{<:Formula,<:Vector{<:AbstractWorld}}} = nothing, perform_normalization::Bool = true, memo_max_height::Union{Nothing,Int} = nothing)
 
 KripkeStructure{FR<:AbstractFrame, MAS<:AbstractDict}
 ```

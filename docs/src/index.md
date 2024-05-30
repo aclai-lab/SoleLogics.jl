@@ -5,7 +5,6 @@ CurrentModule = SoleLogics
 # SoleLogics
 
 Welcome to the documentation for [SoleLogics.jl](https://github.com/aclai-lab/SoleLogics.jl), a Julia package for [computational logic](https://en.wikipedia.org/wiki/Computational_logic).
-<!-- SoleLogics.jl lays the logical foundations for [Sole.jl](https://github.com/aclai-lab/Sole.jl), an open-source framework for *symbolic machine learning*. -->
 To let you better orient yourself while understanding SoleLogics' structure, each chapter will begin with a little summary of what you are going to learn, in the form of small type-hierarchy trees that will grow during your reading journey. To see a complete map of SoleLogics.jl types and structures, please refer to [Complete Exports Map](@ref complete-exports-map).
 
 ## Feature Summary
@@ -70,7 +69,7 @@ Here is a map of SoleLogics' most important types and structures. Feels overwhel
         - [`DefaultedTruthDict`](@ref)
     - [`AbstractKripkeStructure`](@ref)
         - [`KripkeStructure`](@ref)
-    - [`LogicalInstance`](@ref) <!-- - [`TruthTable{A,T<:Truth}`](@ref) -->
+    - [`LogicalInstance`](@ref)
 - [`AbstractInterpretationSet`](@ref)
     - [`InterpretationVector`](@ref)
 - [`AbstractAlphabet`](@ref)
