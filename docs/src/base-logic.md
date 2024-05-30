@@ -37,7 +37,7 @@ Recalling the type hierarchy presented in [man-core](@ref), it is here enriched 
     - [`AbstractAssignment`](@ref)
         - [`TruthDict`](@ref)
         - [`DefaultedTruthDict`](@ref)
-        - [`AbstractInterpretationSet`](@ref) <!-- **(see [SoleBase.jl](https://github.com/aclai-lab/SoleBase.jl))** -->
+        - [`AbstractInterpretationSet`](@ref)
         - [`InterpretationVector`](@ref)
     - [`LogicalInstance`](@ref) 
 - [`TruthTable`](@ref)
