@@ -116,26 +116,14 @@ function check(
         "kwargs...::$(typeof(kwargs))).")
 end
 
-# function check(
-#     φ::SyntaxTree,
-#     i::LogicalInstance,
-#     args...;
-#     kwargs...
-# )
-#     return istop(interpret(φ, i, args...; kwargs...))
-#     # return check(tree(φ), i, args...; kwargs...)
-# end
-
 function check(
     φ::SyntaxTree,
     i::LogicalInstance,
     args...;
     kwargs...
 )
-    return error("Please, provide method " *
-        "check(φ::SyntaxTree, i::$(typeof(i)), " *
-        "args...::$(typeof(args)); " *
-        "kwargs...::$(typeof(kwargs))).")
+    return istop(interpret(φ, i, args...; kwargs...))
+    # return check(tree(φ), i, args...; kwargs...)
 end
 
 # # General grounding
