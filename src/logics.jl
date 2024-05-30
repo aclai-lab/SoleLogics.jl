@@ -121,22 +121,37 @@ end
 
 Return the number of atoms of a *finite* alphabet.
 
-See also [`AbstractAlphabet`](@ref).
+See also [`randatom`](@ref), [`AbstractAlphabet`](@ref).
 """
 function natoms(a::AbstractAlphabet)::Integer
     if Base.isfinite(a)
         return error("Please, provide method natoms(::$(typeof(a))).")
     else
-        return error("Cannot list natoms of (infinite) alphabet of type $(typeof(a)).")
+        return error("Cannot compute natoms of (infinite) alphabet of type $(typeof(a)).")
     end
 end
 
-function randatom(a::AbstractAlphabet)
-    error("Please provide method randatom(c::$(typeof(c)))")
+"""
+    randatom(a::AbstractAlphabet)
+    randatom(rng, a::AbstractAlphabet)
+
+Return a random atom from a *finite* alphabet.
+
+See also [`natoms`](@ref), [`AbstractAlphabet`](@ref).
+"""
+function randatom(a::AbstractAlphabet, args...; kwargs...)
+    randatom(Random.GLOBAL_RNG, a, args...; kwargs...)
 end
 
-function randatom(a::AbstractAlphabet,rng::Union{Random.AbstractRNG,Integer})
-    error("Please provide method randatom(rng::$(typeof(rng)), c::$(typeof(c)))")
+function randatom(rng::Union{Random.AbstractRNG, Integer}, a::AbstractAlphabet, args...; kwargs...)
+    if isfinite(a)
+        # TODO: note that `atoms(a)` can lead to brutal reduction in performance,
+        #  if one forgets to implement specific methods for `randatom` for custom alphabets!
+        Base.rand(rng, atoms(a), args...; kwargs...)
+    else
+        error("Please provide method randatom(rng::$(typeof(rng)), " *
+            "alphabet::$(typeof(a)), args...; kwargs...)")
+    end
 end
 
 # Helper
@@ -202,6 +217,7 @@ struct ExplicitAlphabet{V} <: AbstractAlphabet{V}
     end
 end
 atoms(a::ExplicitAlphabet) = a.atoms
+natoms(a::ExplicitAlphabet) = length(atoms(a))
 
 Base.convert(::Type{AbstractAlphabet}, alphabet::Vector{<:Atom}) =
     ExplicitAlphabet(alphabet)
@@ -240,8 +256,7 @@ struct UnionAlphabet{C,A<:AbstractAlphabet{C}} <: AbstractAlphabet{C}
 end
 
 alphabets(a::UnionAlphabet) = a.alphabets
-
-nalphabets(a::UnionAlphabet) = length(a.alphabets)
+nalphabets(a::UnionAlphabet) = length(alphabets(a))
 
 function Base.show(io::IO, a::UnionAlphabet)
     println(io, "$(typeof(a)):")
@@ -254,15 +269,10 @@ function atoms(a::UnionAlphabet)
     return Iterators.flatten(Iterators.map(atoms, alphabets(a)))
 end
 
+natoms(a::UnionAlphabet) = sum(natoms, alphabets(a))
+
 function Base.in(p::Atom, a::UnionAlphabet)
     return any(cha -> Base.in(p, cha), alphabets(a))
-end
-
-function randatom(
-    a::UnionAlphabet;
-    kwargs...
-)
-    randatom(Random.GLOBAL_RNG ,a, kwargs...)
 end
 
 function randatom(
@@ -276,7 +286,7 @@ function randatom(
     @assert atompicking_mode in [:uniform, :twostep, :weighted] "Value for `atompicking_mode` not..."
 
     if !isnothing(subalphabets_weights)
-        @assert length(subalphabets_weights) == length(alphs) "Mismatching numbers of alphabets" *
+        @assert length(subalphabets_weights) == length(alphs) "Mismatching numbers of alphabets " *
             "($(length(alphs))) and weights ($(length(subalphabets_weights)))."
         subalphabets_weights = StatsBase.weights(subalphabets_weights)
         pickedalphabet = StatsBase.sample(rng, alphs, subalphabets_weights)
