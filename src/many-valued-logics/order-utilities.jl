@@ -146,7 +146,7 @@ end
         return filter(ti->precedes(l, ti, t), getdomain(l))
     end
 
-Return all members of l below t.
+Return all members of l below (or equal to) t.
 
 See also [`precedes`](@ref), [`precedeq`](@ref).
 """
@@ -160,7 +160,7 @@ function lesservalues(
     T1<:Truth
 }
     if !isa(t, T) t = convert(T, t)::T end
-    return filter(ti->precedes(l, ti, t), getdomain(l))
+    return filter(ti->precedeq(l, ti, t), getdomain(l))
 end
 
 """
@@ -174,7 +174,7 @@ end
         T1<:Truth
     }
 
-Return all maximal members of l not above t.
+Return all maximal members of l not above (or equal to) t.
 
 See also [`succeedes`](@ref), [`succeedeq`](@ref), [`minimalmembers`](@ref).
 """
@@ -207,7 +207,7 @@ end
         T1<:Truth
     }
 
-Return all minimal members of l not below t.
+Return all minimal members of l not below (or equal to) t.
 
 See also [`precedes`](@ref), [`precedeq`](@ref), [`maximalmembers`](@ref).
 """
