@@ -1,4 +1,4 @@
-import Base: convert, promote_rule, _promote
+import Base: convert, promote_rule, _promote, initrng
 import Base: eltype, in, getindex, isiterable, iterate, IteratorSize, length, isequal, hash
 
 ############################################################################################
@@ -265,6 +265,8 @@ function Base.show(io::IO, a::UnionAlphabet)
     end
 end
 
+
+
 function atoms(a::UnionAlphabet)
     return Iterators.flatten(Iterators.map(atoms, alphabets(a)))
 end
@@ -281,9 +283,14 @@ function randatom(
     atompicking_mode::Symbol=:uniform,
     subalphabets_weights::Union{AbstractWeights,AbstractVector{<:Real},Nothing} = nothing
 )::Atom
-    rng = SoleBase.initrng(rng)
-    alphs = alphabets(a)
+
+    # @show a
     @assert atompicking_mode in [:uniform, :twostep, :weighted] "Value for `atompicking_mode` not..."
+    if (atompicking_mode == :weighted) & isnothing(subalphabets_weights)
+        error("`:weighted` picking_mode requires weights in `subalphabets_weights` ")
+    end
+    rng = initrng(rng)
+    alphs = alphabets(a)
 
     if !isnothing(subalphabets_weights)
         @assert length(subalphabets_weights) == length(alphs) "Mismatching numbers of alphabets " *
@@ -292,6 +299,7 @@ function randatom(
         pickedalphabet = StatsBase.sample(rng, alphs, subalphabets_weights)
     else
         subalphabets_weights = begin
+            # Atomatically exlude subalphabets with empty treshold vector
             if atompicking_mode == :twostep
                 Weights(ones(Int, length(alphs)))
             elseif atompicking_mode == :uniform
@@ -300,6 +308,7 @@ function randatom(
         end
         pickedalphabet = sample(rng, alphs, subalphabets_weights)
     end
+
     return randatom(rng, pickedalphabet)
 end
 

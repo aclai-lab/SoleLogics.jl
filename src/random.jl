@@ -302,8 +302,9 @@ function randformula(
     operators::AbstractVector;
     modaldepth::Integer = height,
     atompicker::Union{Function,AbstractWeights,AbstractVector{<:Real},Nothing} = randatom,
-    opweights::Union{AbstractWeights,AbstractVector{<:Real},Nothing} = nothing,
+    opweights::Union{AbstractWeights,AbstractVector{<:Real},Nothing} = nothing
 )::SyntaxTree
+
     rng = initrng(rng)
     alphabet = convert(AbstractAlphabet, alphabet)
     @assert all(x->x isa Operator, operators) "Unexpected object(s) passed as" *
@@ -319,6 +320,7 @@ function randformula(
 
     if (isnothing(atompicker))
         atompicker = StatsBase.uweights(natoms(alphabet))
+
     elseif (atompicker isa AbstractVector)
         @assert length(atompicker) == natoms(alphabet) "Mismatching numbers of atoms " *
                 "($(natoms(alphabet))) and atompicker ($(length(atompicker)))."
@@ -332,10 +334,11 @@ function randformula(
 
     nonmodal_operators = findall(!ismodal, operators)
 
+    # recursive call
     function _randformula(
         rng::AbstractRNG,
         height::Integer,
-        modaldepth::Integer
+        modaldepth::Integer;
     )::SyntaxTree
 
         if height == 0
