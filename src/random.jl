@@ -174,7 +174,6 @@ the others, then the first atom in the alphabet is selected more frequently.
 
 See also [`AbstractAlphabet`](@ref), [`AbstractWeights`](@ref), [`Atom`](@ref).
 """
-
 function StatsBase.sample(
     alphabet::AbstractAlphabet,
     weights::AbstractWeights,

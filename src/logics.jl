@@ -1,4 +1,6 @@
-import Base: convert, promote_rule, _promote, initrng
+import SoleBase: initrng
+
+import Base: convert, promote_rule, _promote
 import Base: eltype, in, getindex, isiterable, iterate, IteratorSize, length, isequal, hash
 
 ############################################################################################
@@ -147,7 +149,7 @@ function randatom(rng::Union{Random.AbstractRNG, Integer}, a::AbstractAlphabet, 
     if isfinite(a)
         # TODO: note that `atoms(a)` can lead to brutal reduction in performance,
         #  if one forgets to implement specific methods for `randatom` for custom alphabets!
-        Base.rand(rng, atoms(a), args...; kwargs...)
+        return Base.rand(rng, atoms(a), args...; kwargs...)
     else
         error("Please provide method randatom(rng::$(typeof(rng)), " *
             "alphabet::$(typeof(a)), args...; kwargs...)")
@@ -277,6 +279,22 @@ function Base.in(p::Atom, a::UnionAlphabet)
     return any(cha -> Base.in(p, cha), alphabets(a))
 end
 
+"""
+    randatom(
+        rng::Union{Integer,AbstractRNG},
+        a::UnionAlphabet;
+        atompicking_mode::Symbol=:uniform,
+        subalphabets_weights::Union{AbstractWeights,AbstractVector{<:Real},Nothing} = nothing
+    )::Atom
+
+Sample an atom from a `UnionAlphabet`. By default, the sampling is uniform with respect to the atoms.
+However, by setting `atompicking_mode = :uniform_subalphabets` one can force
+a uniform sampling with respect to the sub-alphabets.
+Moreover, one can specify a `:weighted` `atompicking_mode`,
+together with a `subalphabets_weights` vector.
+
+See also [`UnionAlphabet`](@ref).
+"""
 function randatom(
     rng::Union{Integer,AbstractRNG},
     a::UnionAlphabet;
@@ -285,22 +303,22 @@ function randatom(
 )::Atom
 
     # @show a
-    @assert atompicking_mode in [:uniform, :twostep, :weighted] "Value for `atompicking_mode` not..."
-    if (atompicking_mode == :weighted) & isnothing(subalphabets_weights)
-        error("`:weighted` picking_mode requires weights in `subalphabets_weights` ")
-    end
+    @assert atompicking_mode in [:uniform, :uniform_subalphabets, :weighted] "Value for `atompicking_mode` not..."
     rng = initrng(rng)
     alphs = alphabets(a)
 
-    if !isnothing(subalphabets_weights)
+    if atompicking_mode == :weighted
+        if isnothing(subalphabets_weights)
+            error("`:weighted` picking_mode requires weights in `subalphabets_weights` ")
+        end
         @assert length(subalphabets_weights) == length(alphs) "Mismatching numbers of alphabets " *
             "($(length(alphs))) and weights ($(length(subalphabets_weights)))."
         subalphabets_weights = StatsBase.weights(subalphabets_weights)
         pickedalphabet = StatsBase.sample(rng, alphs, subalphabets_weights)
     else
         subalphabets_weights = begin
-            # Atomatically exlude subalphabets with empty treshold vector
-            if atompicking_mode == :twostep
+            # This atomatically excludes subalphabets with empty threshold vector
+            if atompicking_mode == :uniform_subalphabets
                 Weights(ones(Int, length(alphs)))
             elseif atompicking_mode == :uniform
                 Weights(natoms.(alphs))
