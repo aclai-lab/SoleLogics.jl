@@ -6,7 +6,7 @@ function run_tests(list)
     println("\n" * ("#"^50))
     for test in list
         println("TEST: $test")
-        @time include(test)
+        include(test)
     end
 end
 

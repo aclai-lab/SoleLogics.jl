@@ -1,5 +1,5 @@
 using ..SoleLogics: AbstractAlgebra
-import ..SoleLogics: istop, isbot
+import ..SoleLogics: syntaxstring, istop, isbot
 import Base: convert
 
 ############################################################################################

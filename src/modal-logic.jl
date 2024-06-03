@@ -666,37 +666,11 @@ accessibles(i::AbstractKripkeStructure, args...) = accessibles(frame(i), args...
 allworlds(i::AbstractKripkeStructure, args...) = allworlds(frame(i), args...)
 nworlds(i::AbstractKripkeStructure) = nworlds(frame(i))
 
-# TODO explain
-struct AnyWorld end
-
-# # General grounding
-# function check(
-#     φ::SyntaxTree,
-#     i::AbstractKripkeStructure;
-#     kwargs...
-# )
-#     if token(φ) isa Union{DiamondRelationalConnective,BoxRelationalConnective}
-#         rel = SoleLogics.relation(SoleLogics.token(φ))
-#         if rel == tocenterrel
-#             checkw(first(children(φ)), i, centralworld(frame(i)); kwargs...)
-#         elseif rel == globalrel
-#             checkw(first(children(φ)), i, AnyWorld(); kwargs...)
-#         elseif isgrounding(rel)
-#             checkw(first(children(φ)), i, accessibles(frame(i), rel); kwargs...)
-#         else
-#             error("Unexpected formula: $φ! Perhaps ")
-#         end
-#     else
-#         # checkw(φ, i, nothing; kwargs...)
-#         error("Unexpected formula: $φ! Perhaps ")
-#     end
-# end
-
 """
     function check(
         φ::SyntaxTree,
         i::AbstractKripkeStructure,
-        w::Union{Nothing,AnyWorld,<:AbstractWorld} = nothing;
+        w::Union{Nothing,<:AbstractWorld} = nothing;
         use_memo::Union{Nothing,AbstractDict{<:Formula,<:Vector{<:AbstractWorld}}} = nothing,
         perform_normalization::Bool = true,
         memo_max_height::Union{Nothing,Int} = nothing,
@@ -750,7 +724,7 @@ See also [`SyntaxTree`](@ref), [`AbstractWorld`](@ref), [`KripkeStructure`](@ref
 function check(
     φ::SyntaxTree,
     i::AbstractKripkeStructure,
-    w::Union{Nothing,AnyWorld,<:AbstractWorld} = nothing;
+    w::Union{Nothing,<:AbstractWorld} = nothing; # TODO remove defaulting
     use_memo::Union{Nothing,AbstractDict{<:Formula,<:Vector{<:AbstractWorld}}} = nothing,
     perform_normalization::Bool = true,
     memo_max_height::Union{Nothing,Int} = nothing
@@ -762,7 +736,7 @@ function check(
             w = first(allworlds(frame(i)))
         end
     end
-    @assert isgrounded(φ) || !(isnothing(w)) "Please, specify a world in order " *
+    @assert isgrounded(φ) || !isnothing(w) "Please, specify a world in order " *
         "to check non-grounded formula: $(syntaxstring(φ))."
 
     setformula(memo_structure::AbstractDict{<:Formula}, φ::Formula, val) = memo_structure[tree(φ)] = val
@@ -824,7 +798,7 @@ function check(
     end
 
     ret = begin
-        if isnothing(w) || w isa AnyWorld
+        if isnothing(w)
             length(readformula(memo_structure, φ)) > 0
         else
             w in readformula(memo_structure, φ)

@@ -114,36 +114,16 @@ function check(
     # return check(tree(φ), i, args...; kwargs...)
 end
 
-function check(
-    φ::SyntaxTree,
-    i::LogicalInstance,
-    args...;
-    kwargs...
-)
-    return error("Please, provide method " *
-        "check(φ::SyntaxTree, i::$(typeof(i)), " *
-        "args...::$(typeof(args)); " *
-        "kwargs...::$(typeof(kwargs))).")
-end
-
-# # General grounding
 # function check(
 #     φ::SyntaxTree,
-#     i::LogicalInstance{AbstractInterpretationSet{<:AbstractKripkeStructure}};
+#     i::LogicalInstance,
+#     args...;
 #     kwargs...
 # )
-#     if token(φ) isa Union{DiamondRelationalConnective,BoxRelationalConnective}
-#         rel = SoleLogics.relation(SoleLogics.token(φ))
-#         if rel == tocenterrel
-#             check(first(children(φ)), i, centralworld(frame(i)); kwargs...)
-#         elseif rel == globalrel
-#             check(first(children(φ)), i, AnyWorld(); kwargs...)
-#         else
-#             check(first(children(φ)), i, accessibles(frame(i), rel); kwargs...)
-#         end
-#     else
-#         error("Unexpected formula: $φ!")
-#     end
+#     return error("Please, provide method " *
+#         "check(φ::SyntaxTree, i::$(typeof(i)), " *
+#         "args...::$(typeof(args)); " *
+#         "kwargs...::$(typeof(kwargs))).")
 # end
 
 function interpret(
@@ -326,3 +306,44 @@ end
 accessibles(s::AbstractInterpretationSet, i_instance::Integer, args...) = accessibles(frame(s, i_instance), args...)
 allworlds(s::AbstractInterpretationSet, i_instance::Integer, args...) = allworlds(frame(s, i_instance), args...)
 nworlds(s::AbstractInterpretationSet, i_instance::Integer) = nworlds(frame(s, i_instance))
+
+function check(
+    φ::SyntaxBranch{
+        Union{
+            DiamondRelationalConnective{typeof(tocenterrel)},
+            BoxRelationalConnective{typeof(tocenterrel)},
+        }
+    },
+    i::AbstractInterpretation;
+    kwargs...
+)
+    check(first(children(φ)), i, centralworld(frame(i)); kwargs...)
+end
+
+function check(
+    φ::SyntaxBranch{
+        Union{
+            DiamondRelationalConnective{typeof(globalrel)},
+            BoxRelationalConnective{typeof(globalrel)},
+        }
+    },
+    i::AbstractInterpretation;
+    kwargs...
+)
+    check(first(children(φ)), i, nothing; kwargs...)
+end
+
+# # General grounding
+# function check(
+#     φ::SyntaxBranch{
+#         Union{
+#             DiamondRelationalConnective{R},
+#             BoxRelationalConnective{R},
+#         }
+#     },
+#     i::AbstractInterpretation;
+#     kwargs...
+# ) where {R<:AbstractRelation}
+#     rel = SoleLogics.relation(SoleLogics.token(φ))
+#     check(first(children(φ)), i, accessibles(frame(i), rel); kwargs...)
+# end
