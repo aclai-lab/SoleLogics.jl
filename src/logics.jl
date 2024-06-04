@@ -245,7 +245,7 @@ Base.in(::Atom{PV}, ::AlphabetOfAny{VV}) where {PV,VV} = (PV <: VV)
 
 # Finite alphabet of conditions induced from a set of metaconditions
 """
-Alphabet given by the union of many alphabets.
+Alphabet given by the *union* of a number of (sub-)alphabets.
 
 See also
 [`UnboundedScalarAlphabet`](@ref),
@@ -254,29 +254,29 @@ See also
 """
 
 struct UnionAlphabet{C,A<:AbstractAlphabet{C}} <: AbstractAlphabet{C}
-    alphabets::Vector{A}
+    subalphabets::Vector{A}
 end
 
-alphabets(a::UnionAlphabet) = a.alphabets
-nalphabets(a::UnionAlphabet) = length(alphabets(a))
+subalphabets(a::UnionAlphabet) = a.subalphabets
+nsubalphabets(a::UnionAlphabet) = length(subalphabets(a))
 
 function Base.show(io::IO, a::UnionAlphabet)
     println(io, "$(typeof(a)):")
-    for cha in alphabets(a)
-        Base.show(io, cha)
+    for sa in subalphabets(a)
+        Base.show(io, sa)
     end
 end
 
 
 
 function atoms(a::UnionAlphabet)
-    return Iterators.flatten(Iterators.map(atoms, alphabets(a)))
+    return Iterators.flatten(Iterators.map(atoms, subalphabets(a)))
 end
 
-natoms(a::UnionAlphabet) = sum(natoms, alphabets(a))
+natoms(a::UnionAlphabet) = sum(natoms, subalphabets(a))
 
 function Base.in(p::Atom, a::UnionAlphabet)
-    return any(cha -> Base.in(p, cha), alphabets(a))
+    return any(sa -> Base.in(p, sa), subalphabets(a))
 end
 
 """
@@ -305,7 +305,7 @@ function randatom(
     # @show a
     @assert atompicking_mode in [:uniform, :uniform_subalphabets, :weighted] "Value for `atompicking_mode` not..."
     rng = initrng(rng)
-    alphs = alphabets(a)
+    alphs = subalphabets(a)
 
     if atompicking_mode == :weighted
         if isnothing(subalphabets_weights)
