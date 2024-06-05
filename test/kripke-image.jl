@@ -8,7 +8,7 @@ struct BWImageKripkeStructure <: AbstractKripkeStructure
 end
 
 function interpret(a::Atom{Int}, i::BWImageKripkeStructure, w::Point{2,Int})
-	integervalue = value(a)
+	integervalue = SoleLogics.value(a)
 	valueatpoint = i.image[w[1], w[2]]
 	return (valueatpoint >= integervalue) ? TOP : BOT
 end

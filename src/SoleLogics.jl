@@ -27,7 +27,9 @@ export syntaxstring
 export arity, valuetype, tokentype, tokenstype,
         atomstype, operatorstype, truthtype,
         associativity, precedence
-export value, token, children, formulas
+
+# export value # TODO remove. The name is too generic, and it clashes, e.g., with JuMP.value.
+export token, children, formulas
 export tree
 
 export tokens, ntokens, atoms, natoms, truths, ntruths, leaves, nleaves,

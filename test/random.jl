@@ -78,7 +78,7 @@ g = SoleLogics.CompleteFlatGrammar(alph, ops)
 @test_nowarn randformula(Random.MersenneTwister(1), 4, alph, ops; atompicker = 1:5)
 @test_throws AssertionError randformula(Random.MersenneTwister(1), 4, alph, ops; atompicker = 1:6)
 
-@test_nowarn StatsBase.sample(4, g, Weights([1:length(alphabet(g))]...))
+@test_nowarn StatsBase.sample(4, g, Weights([1:natoms(alphabet(g))]...))
 @test_nowarn StatsBase.sample(4, g, Weights([1,1,1,1,100]))
 @test_throws MethodError StatsBase.sample(4, g, [1,1,1,1,100])
 @test_throws MethodError StatsBase.sample(Random.MersenneTwister(1), 4, g, 1:2)

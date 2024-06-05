@@ -55,22 +55,17 @@ See also
 """
 
 """$(doc_rand)"""
-function Base.rand(alphabet::AbstractAlphabet, args...; kwargs...)
-    Base.rand(Random.GLOBAL_RNG, alphabet, args...; kwargs...)
+function Base.rand(a::AbstractAlphabet, args...; kwargs...)
+    Base.rand(Random.GLOBAL_RNG, a, args...; kwargs...)
 end
 
 function Base.rand(
     rng::AbstractRNG,
-    alphabet::AbstractAlphabet,
+    a::AbstractAlphabet,
     args...;
     kwargs...
 )
-    if isfinite(alphabet)
-        Base.rand(rng, atoms(alphabet), args...; kwargs...)
-    else
-        error("Please, provide method Base.rand(rng::AbstractRNG, " *
-            "alphabet::$(typeof(alphabet)), args...; kwargs...).")
-    end
+    randatom(rng, a, args...; kwargs...)
 end
 
 function Base.rand(height::Integer, l::AbstractLogic, args...; kwargs...)
@@ -179,7 +174,6 @@ the others, then the first atom in the alphabet is selected more frequently.
 
 See also [`AbstractAlphabet`](@ref), [`AbstractWeights`](@ref), [`Atom`](@ref).
 """
-
 function StatsBase.sample(
     alphabet::AbstractAlphabet,
     weights::AbstractWeights,
@@ -306,12 +300,12 @@ function randformula(
     alphabet,
     operators::AbstractVector;
     modaldepth::Integer = height,
-    atompicker::Union{Function,AbstractWeights,AbstractVector{<:Real},Nothing} = sample,
-    opweights::Union{AbstractWeights,AbstractVector{<:Real},Nothing} = nothing,
+    atompicker::Union{Function,AbstractWeights,AbstractVector{<:Real},Nothing} = randatom,
+    opweights::Union{AbstractWeights,AbstractVector{<:Real},Nothing} = nothing
 )::SyntaxTree
+
     rng = initrng(rng)
     alphabet = convert(AbstractAlphabet, alphabet)
-
     @assert all(x->x isa Operator, operators) "Unexpected object(s) passed as" *
         " operator:" * " $(filter(x->!(x isa Operator), operators))"
 
@@ -324,10 +318,11 @@ function randformula(
     end
 
     if (isnothing(atompicker))
-        atompicker = StatsBase.uweights(length(alphabet))
+        atompicker = StatsBase.uweights(natoms(alphabet))
+
     elseif (atompicker isa AbstractVector)
-        @assert length(atompicker) == length(alphabet) "Mismatching numbers of atoms " *
-                "($(length(alphabet))) and atompicker ($(length(atompicker)))."
+        @assert length(atompicker) == natoms(alphabet) "Mismatching numbers of atoms " *
+                "($(natoms(alphabet))) and atompicker ($(length(atompicker)))."
         atompicker = StatsBase.weights(atompicker)
     end
 
@@ -338,14 +333,15 @@ function randformula(
 
     nonmodal_operators = findall(!ismodal, operators)
 
+    # recursive call
     function _randformula(
         rng::AbstractRNG,
         height::Integer,
-        modaldepth::Integer
+        modaldepth::Integer;
     )::SyntaxTree
+
         if height == 0
-            # Sample atom from alphabet
-            return atompicker(rng, atoms(alphabet))
+            return atompicker(rng, alphabet)
         else
             # Sample operator and generate children (modal connectives only if modaldepth > 0)
             ops, ops_w = begin

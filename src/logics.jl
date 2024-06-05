@@ -1,3 +1,5 @@
+import SoleBase: initrng
+
 import Base: convert, promote_rule, _promote
 import Base: eltype, in, getindex, isiterable, iterate, IteratorSize, length, isequal, hash
 
@@ -117,18 +119,47 @@ function Base.in(value::Union{AbstractString,Number,AbstractChar}, a::AbstractAl
 end
 
 """
-    Base.length(a::AbstractAlphabet)::Bool
+    natoms(a::AbstractAlphabet)::Integer
 
-Return the alphabet length, if it is finite.
+Return the number of atoms of a *finite* alphabet.
 
-See also [`AbstractAlphabet`](@ref), [`SyntaxBranch`](@ref).
+See also [`randatom`](@ref), [`AbstractAlphabet`](@ref).
 """
-function Base.length(a::AbstractAlphabet)
-    if isfinite(a)
-        return Base.length(atoms(a))
+function natoms(a::AbstractAlphabet)::Integer
+    if Base.isfinite(a)
+        return error("Please, provide method natoms(::$(typeof(a))).")
     else
-        return error("Cannot compute length of (infinite) alphabet of type $(typeof(a)).")
+        return error("Cannot compute natoms of (infinite) alphabet of type $(typeof(a)).")
     end
+end
+
+"""
+    randatom(a::AbstractAlphabet)
+    randatom(rng, a::AbstractAlphabet)
+
+Return a random atom from a *finite* alphabet.
+
+See also [`natoms`](@ref), [`AbstractAlphabet`](@ref).
+"""
+function randatom(a::AbstractAlphabet, args...; kwargs...)
+    randatom(Random.GLOBAL_RNG, a, args...; kwargs...)
+end
+
+function randatom(rng::Union{Random.AbstractRNG, Integer}, a::AbstractAlphabet, args...; kwargs...)
+    if isfinite(a)
+        # TODO: note that `atoms(a)` can lead to brutal reduction in performance,
+        #  if one forgets to implement specific methods for `randatom` for custom alphabets!
+        return Base.rand(rng, atoms(a), args...; kwargs...)
+    else
+        error("Please provide method randatom(rng::$(typeof(rng)), " *
+            "alphabet::$(typeof(a)), args...; kwargs...)")
+    end
+end
+
+# Helper
+function Base.length(a::AbstractAlphabet)
+    @warn "Please use `natoms` instead of `Base.length` with alphabets."
+    return natoms(a)
 end
 
 """
@@ -188,6 +219,7 @@ struct ExplicitAlphabet{V} <: AbstractAlphabet{V}
     end
 end
 atoms(a::ExplicitAlphabet) = a.atoms
+natoms(a::ExplicitAlphabet) = length(atoms(a))
 
 Base.convert(::Type{AbstractAlphabet}, alphabet::Vector{<:Atom}) =
     ExplicitAlphabet(alphabet)
@@ -213,7 +245,7 @@ Base.in(::Atom{PV}, ::AlphabetOfAny{VV}) where {PV,VV} = (PV <: VV)
 
 # Finite alphabet of conditions induced from a set of metaconditions
 """
-Alphabet given by the union of many alphabets.
+Alphabet given by the *union* of a number of (sub-)alphabets.
 
 See also
 [`UnboundedScalarAlphabet`](@ref),
@@ -222,24 +254,80 @@ See also
 """
 
 struct UnionAlphabet{C,A<:AbstractAlphabet{C}} <: AbstractAlphabet{C}
-    alphabets::Vector{A}
+    subalphabets::Vector{A}
 end
 
-alphabets(a::UnionAlphabet) = a.alphabets
+subalphabets(a::UnionAlphabet) = a.subalphabets
+nsubalphabets(a::UnionAlphabet) = length(subalphabets(a))
 
 function Base.show(io::IO, a::UnionAlphabet)
     println(io, "$(typeof(a)):")
-    for cha in alphabets(a)
-        Base.show(io, cha)
+    for sa in subalphabets(a)
+        Base.show(io, sa)
     end
 end
 
+
+
 function atoms(a::UnionAlphabet)
-    return Iterators.flatten(Iterators.map(atoms, alphabets(a)))
+    return Iterators.flatten(Iterators.map(atoms, subalphabets(a)))
 end
 
+natoms(a::UnionAlphabet) = sum(natoms, subalphabets(a))
+
 function Base.in(p::Atom, a::UnionAlphabet)
-    return any(cha -> Base.in(p, cha), alphabets(a))
+    return any(sa -> Base.in(p, sa), subalphabets(a))
+end
+
+"""
+    randatom(
+        rng::Union{Integer,AbstractRNG},
+        a::UnionAlphabet;
+        atompicking_mode::Symbol=:uniform,
+        subalphabets_weights::Union{AbstractWeights,AbstractVector{<:Real},Nothing} = nothing
+    )::Atom
+
+Sample an atom from a `UnionAlphabet`. By default, the sampling is uniform with respect to the atoms.
+However, by setting `atompicking_mode = :uniform_subalphabets` one can force
+a uniform sampling with respect to the sub-alphabets.
+Moreover, one can specify a `:weighted` `atompicking_mode`,
+together with a `subalphabets_weights` vector.
+
+See also [`UnionAlphabet`](@ref).
+"""
+function randatom(
+    rng::Union{Integer,AbstractRNG},
+    a::UnionAlphabet;
+    atompicking_mode::Symbol=:uniform,
+    subalphabets_weights::Union{AbstractWeights,AbstractVector{<:Real},Nothing} = nothing
+)::Atom
+
+    # @show a
+    @assert atompicking_mode in [:uniform, :uniform_subalphabets, :weighted] "Value for `atompicking_mode` not..."
+    rng = initrng(rng)
+    alphs = subalphabets(a)
+
+    if atompicking_mode == :weighted
+        if isnothing(subalphabets_weights)
+            error("`:weighted` picking_mode requires weights in `subalphabets_weights` ")
+        end
+        @assert length(subalphabets_weights) == length(alphs) "Mismatching numbers of alphabets " *
+            "($(length(alphs))) and weights ($(length(subalphabets_weights)))."
+        subalphabets_weights = StatsBase.weights(subalphabets_weights)
+        pickedalphabet = StatsBase.sample(rng, alphs, subalphabets_weights)
+    else
+        subalphabets_weights = begin
+            # This atomatically excludes subalphabets with empty threshold vector
+            if atompicking_mode == :uniform_subalphabets
+                Weights(ones(Int, length(alphs)))
+            elseif atompicking_mode == :uniform
+                Weights(natoms.(alphs))
+            end
+        end
+        pickedalphabet = sample(rng, alphs, subalphabets_weights)
+    end
+
+    return randatom(rng, pickedalphabet)
 end
 
 ############################################################################################
