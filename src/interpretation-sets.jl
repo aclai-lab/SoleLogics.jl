@@ -1,5 +1,4 @@
-using SoleBase: AbstractDataset
-using SoleBase: ninstances
+import SoleBase: AbstractDataset, ninstances, eachinstance
 
 import Base: getindex
 
@@ -44,6 +43,10 @@ end
 # Fallback
 function getinstance(s::AbstractInterpretationSet, i_instance::Integer)
     return LogicalInstance(s, i_instance)
+end
+
+function eachinstance(s::AbstractInterpretationSet)
+    return (getinstance(s, i_instance) for i_instance in 1:ninstances(s))
 end
 
 """
