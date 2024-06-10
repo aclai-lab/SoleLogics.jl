@@ -64,6 +64,10 @@ atomstype(a::AbstractAlphabet) = atomstype(typeof(a))
 valuetype(a::Type{<:AbstractAlphabet}) = valuetype(atomstype(a))
 valuetype(a::AbstractAlphabet) = valuetype(atomstype(a))
 
+function emptyalphabet(a::AbstractAlphabet)::AbstractVector{atomstype(a)}
+        return error("Please, provide method emptyalphabet(::$(typeof(a))).")
+end
+
 """
 An alphabet of `valuetype` `V` can be used for instantiating atoms of valuetype `V`.
 """
@@ -260,6 +264,8 @@ end
 subalphabets(a::UnionAlphabet) = a.subalphabets
 nsubalphabets(a::UnionAlphabet) = length(subalphabets(a))
 
+
+
 function Base.show(io::IO, a::UnionAlphabet)
     println(io, "$(typeof(a)):")
     for sa in subalphabets(a)
@@ -278,6 +284,9 @@ natoms(a::UnionAlphabet) = sum(natoms, subalphabets(a))
 function Base.in(p::Atom, a::UnionAlphabet)
     return any(sa -> Base.in(p, sa), subalphabets(a))
 end
+
+
+emptyalphabets(a::UnionAlphabet) = emptyalphabet.(subalphabets(a))
 
 """
     randatom(
@@ -319,14 +328,19 @@ function randatom(
         subalphabets_weights = begin
             # This atomatically excludes subalphabets with empty threshold vector
             if atompicking_mode == :uniform_subalphabets
-                Weights(ones(Int, length(alphs)))
+                # set the weight of the empty alphabets to zero
+                weights = Weights(ones(Int, length(alphs)))
+                weights[emptyalphabets(a)] .= 0
             elseif atompicking_mode == :uniform
-                Weights(natoms.(alphs))
+                weights = Weights(natoms.(alphs))
             end
+            weights
         end
         pickedalphabet = sample(rng, alphs, subalphabets_weights)
     end
-
+    # @show a
+    # @show subalphabets_weights
+    # @show pickedalphabet
     return randatom(rng, pickedalphabet)
 end
 
