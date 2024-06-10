@@ -1,5 +1,4 @@
 # julia
-# using Revise
 # using Test
 # using SoleLogics
 
