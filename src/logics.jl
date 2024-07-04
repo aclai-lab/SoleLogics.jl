@@ -64,10 +64,6 @@ atomstype(a::AbstractAlphabet) = atomstype(typeof(a))
 valuetype(a::Type{<:AbstractAlphabet}) = valuetype(atomstype(a))
 valuetype(a::AbstractAlphabet) = valuetype(atomstype(a))
 
-function emptyalphabet(a::AbstractAlphabet)::AbstractVector{atomstype(a)}
-        return error("Please, provide method emptyalphabet(::$(typeof(a))).")
-end
-
 """
 An alphabet of `valuetype` `V` can be used for instantiating atoms of valuetype `V`.
 """
@@ -286,8 +282,6 @@ function Base.in(p::Atom, a::UnionAlphabet)
 end
 
 
-emptyalphabets(a::UnionAlphabet) = emptyalphabet.(subalphabets(a))
-
 """
     randatom(
         rng::Union{Integer,AbstractRNG},
@@ -330,7 +324,7 @@ function randatom(
             if atompicking_mode == :uniform_subalphabets
                 # set the weight of the empty alphabets to zero
                 weights = Weights(ones(Int, length(alphs)))
-                weights[emptyalphabets(a)] .= 0
+                weights[natoms.(alphs) == 0] .= 0
             elseif atompicking_mode == :uniform
                 weights = Weights(natoms.(alphs))
             end
