@@ -260,6 +260,8 @@ end
 subalphabets(a::UnionAlphabet) = a.subalphabets
 nsubalphabets(a::UnionAlphabet) = length(subalphabets(a))
 
+
+
 function Base.show(io::IO, a::UnionAlphabet)
     println(io, "$(typeof(a)):")
     for sa in subalphabets(a)
@@ -278,6 +280,7 @@ natoms(a::UnionAlphabet) = sum(natoms, subalphabets(a))
 function Base.in(p::Atom, a::UnionAlphabet)
     return any(sa -> Base.in(p, sa), subalphabets(a))
 end
+
 
 """
     randatom(
@@ -319,14 +322,19 @@ function randatom(
         subalphabets_weights = begin
             # This atomatically excludes subalphabets with empty threshold vector
             if atompicking_mode == :uniform_subalphabets
-                Weights(ones(Int, length(alphs)))
+                # set the weight of the empty alphabets to zero
+                weights = Weights(ones(Int, length(alphs)))
+                weights[natoms.(alphs) == 0] .= 0
             elseif atompicking_mode == :uniform
-                Weights(natoms.(alphs))
+                weights = Weights(natoms.(alphs))
             end
+            weights
         end
         pickedalphabet = sample(rng, alphs, subalphabets_weights)
     end
-
+    # @show a
+    # @show subalphabets_weights
+    # @show pickedalphabet
     return randatom(rng, pickedalphabet)
 end
 
