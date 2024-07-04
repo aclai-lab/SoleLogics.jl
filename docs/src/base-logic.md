@@ -141,7 +141,7 @@ TruthTable{A,T<:Truth}
 ```
 
 ```
-AbstractInterpretationSet{M<:AbstractInterpretation}
+AbstractInterpretationSet
 
 LogicalInstance{S<:AbstractInterpretationSet}
 

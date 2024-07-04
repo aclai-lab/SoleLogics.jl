@@ -257,31 +257,34 @@ end
 # TODO @Mauro implement this method.
 doc_randformula = """
     randformula(
+        [rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG, ]
         height::Integer,
         alphabet,
         operators::AbstractVector;
-        rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG
+        kwargs...
     )::SyntaxTree
 
-    function randformula(
+    randformula(
+        [rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG, ]
         height::Integer,
         g::AbstractGrammar;
-        rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG
+        kwargs...
     )::SyntaxTree
 
-Return a pseudo-randomic `SyntaxBranch`.
+Return a pseudo-randomic `SyntaxTree`.
 
 # Arguments
+- `rng::Union{Intger,AbstractRNG} = Random.GLOBAL_RNG`: random number generator;
 - `height::Integer`: height of the generated structure;
 - `alphabet::AbstractAlphabet`: collection from which atoms are chosen randomly;
 - `operators::AbstractVector`: vector from which legal operators are chosen;
 - `g::AbstractGrammar`: alternative to passing alphabet and operators separately. (TODO explain?)
 
 # Keyword Arguments
-- `rng::Union{Intger,AbstractRNG} = Random.GLOBAL_RNG`: random number generator;
-- `atompicker::Function` = method used to pick a random element. For example, this could be
+- `modaldepth::Integer`: maximum modal depth
+- `atompicker::Function`: method used to pick a random element. For example, this could be
     Base.rand or StatsBase.sample.
-- `opweights::AbstractWeights` = weight vector over the set of operators (see `StatsBase`).
+- `opweights::AbstractWeights`: weight vector over the set of operators (see `StatsBase`).
 
 # Examples
 
@@ -297,7 +300,7 @@ See also [`AbstractAlphabet`](@ref), [`SyntaxBranch`](@ref).
 function randformula(
     rng::Union{Integer,AbstractRNG},
     height::Integer,
-    alphabet,
+    alphabet::Union{AbstractVector,AbstractAlphabet},
     operators::AbstractVector;
     modaldepth::Integer = height,
     atompicker::Union{Function,AbstractWeights,AbstractVector{<:Real},Nothing} = randatom,
@@ -319,7 +322,6 @@ function randformula(
 
     if (isnothing(atompicker))
         atompicker = StatsBase.uweights(natoms(alphabet))
-
     elseif (atompicker isa AbstractVector)
         @assert length(atompicker) == natoms(alphabet) "Mismatching numbers of atoms " *
                 "($(natoms(alphabet))) and atompicker ($(length(atompicker)))."

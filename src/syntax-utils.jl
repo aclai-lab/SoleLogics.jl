@@ -176,7 +176,8 @@ Base.getindex(lf::LeftmostLinearForm, idx::Integer) = Base.getindex(children(lf)
 Base.push!(lf::LeftmostLinearForm, el) = Base.push!(children(lf), el)
 
 function composeformulas(c::Connective, φs::NTuple{N,LeftmostLinearForm}) where {N}
-    if all(_c->_c == c, connective.(φs)) # If operator is the same, collapse children
+    # @show φs
+    if all(_c->_c == c, connective.(φs)) # If operator is the same, collapse children TODO and operator is ... associative?
         return LeftmostLinearForm(c, collect(Iterators.flatten(children.(φs))))
         # return LeftmostLinearForm(c, reduce(vcat,children.(φs)))
     else
