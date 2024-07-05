@@ -790,6 +790,22 @@ See also
 """
 normalize(f::Formula, args...; kwargs...) = normalize(tree(f), args...; kwargs...)
 function normalize(
+    t::LLF;
+    kwargs...
+) where {LLF<:Union{LeftmostConjunctiveForm,LeftmostDisjunctiveForm}}
+    ch = children(t)
+    unique!(ch)
+    ch = normalize.(ch; kwargs...)
+    unique!(ch)
+    if connective(t) == (∧)
+        filter!(c->c != ⊤, ch)
+    elseif connective(t) == (∨)
+        filter!(c->c != ⊥, ch)
+    end
+    return LLF(ch)
+end
+
+function normalize(
     t::SyntaxTree;
     profile = :readability,
     remove_boxes = nothing,
