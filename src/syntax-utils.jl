@@ -802,7 +802,7 @@ function normalize(
     elseif connective(t) == (∨)
         filter!(c->c != ⊥, ch)
     end
-    return LLF(ch)
+    return LeftmostLinearForm(connective(t), ch)
 end
 
 function normalize(

@@ -12,7 +12,7 @@ To let you better orient yourself while understanding SoleLogics' structure, eac
 SoleLogics.jl allows manipulation of:
 
 - Syntax tokens (e.g., atoms, logical constants (e.g., operators and truth values), etc.);
-- Alphabets & context-free logical grammars (e.g., [normal forms](https://en.m.wikipedia.org/wiki/Conjunctive_normal_form));
+- Alphabets & context-free logical grammars (e.g., [normal forms](https://en.wikipedia.org/wiki/Conjunctive_normal_form));
 - Algebras (e.g., crisp, fuzzy, many-valued);
 - Logics (e.g., propositional, (multi)modal);
 - [Formulas](https://en.wikipedia.org/wiki/Well-formed_formula) (e.g., syntax trees, DNFs, CNFs): random generation, parsing, minimization;
