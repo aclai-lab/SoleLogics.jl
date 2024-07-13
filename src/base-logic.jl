@@ -6,18 +6,18 @@ with t1, ..., tN being `Truth` values.
 
 See also [`simplify`](@ref), [`Connective`](@ref), [`Truth`](@ref).
 """
-function collatetruth
-#     c::Connective,
-#     ts::NTuple{N,T where T<:Truth},
-#     args...
-# )::Truth where {N}
-#     if arity(c) != length(ts)
-#         return error("Cannot collate $(length(ts)) truth values for " *
-#                      "connective $(typeof(c)) with arity $(arity(c))).")
-#     else
-#         return error("Please, provide method collatetruth(::$(typeof(c)), " *
-#                      "::NTuple{$(arity(c)),$(eltype(ts))}).")
-#     end
+function collatetruth(
+    c::Connective,
+    ts::NTuple{N,Truth},
+    args...
+)::Truth where {N}
+    if arity(c) != length(ts)
+        return error("Cannot collate $(length(ts)) truth values for " *
+                     "connective $(typeof(c)) with arity $(arity(c))).")
+    else
+        return error("Please, provide method collatetruth(::$(typeof(c)), " *
+                     "::NTuple{$(arity(c)),$(eltype(ts))}).")
+    end
 end
 
 # Helper (so that collatetruth work for all operators)
@@ -34,11 +34,11 @@ immediate sub-formulas.
 
 See also [`collatetruth`](@ref), [`Connective`](@ref), [`Formula`](@ref).
 """
-function simplify(c::Connective, φs::NTuple{N,T where T<:Formula}, args...) where {N}
+function simplify(c::Connective, φs::NTuple{N,T}, args...) where {N, T<:Formula}
     c(φs, args...)
 end
 
-function simplify(c::Connective, φs::NTuple{N,T where T<:Truth}, args...) where {N}
+function simplify(c::Connective, φs::NTuple{N,T}, args...) where {N, T<:Truth}
     collatetruth(c, φs, args...)
 end
 
