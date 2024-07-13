@@ -1,5 +1,5 @@
 # Meet (greatest lower bound) between values α and β
-function collatetruth(
+function SoleLogics.collatetruth(
     ::typeof(∧),
     (α, β)::NTuple{N, T where T<:FiniteTruth},
     a::FiniteFLewAlgebra
@@ -10,7 +10,7 @@ function collatetruth(
 end
 
 # Join (least upper bound) between values α and β
-function collatetruth(
+function SoleLogics.collatetruth(
     ::typeof(∨),
     (α, β)::NTuple{N, T where T<:FiniteTruth},
     a::FiniteFLewAlgebra
@@ -21,7 +21,7 @@ function collatetruth(
 end
 
 # Implication/pseudo-complement α → β = join(γ | meet(α, γ) ⪯ β)
-function collatetruth(
+function SoleLogics.collatetruth(
     ::typeof(→),
     (α, β)::NTuple{N, T where T<:FiniteTruth},
     a::FiniteFLewAlgebra
@@ -31,63 +31,63 @@ function collatetruth(
     a.implication(α, β)
 end
 
-function collatetruth(
+function SoleLogics.collatetruth(
     c::Connective,
     (α, β)::Tuple{FiniteTruth, BooleanTruth},
     a::FiniteFLewAlgebra
 )
-    return collatetruth(c, (α, convert(FiniteTruth, β)), a)
+    return SoleLogics.collatetruth(c, (α, convert(FiniteTruth, β)), a)
 end
 
-function collatetruth(
+function SoleLogics.collatetruth(
     c::Connective,
     (α, β)::Tuple{BooleanTruth, FiniteTruth},
     a::FiniteFLewAlgebra
 )
-    return collatetruth(c, (convert(FiniteTruth, α), β), a)
+    return SoleLogics.collatetruth(c, (convert(FiniteTruth, α), β), a)
 end
 
-function collatetruth(
+function SoleLogics.collatetruth(
     c::Connective,
     (α, β)::Tuple{BooleanTruth, BooleanTruth},
     a::FiniteFLewAlgebra
 )
-    return collatetruth(c, (convert(FiniteTruth, α), convert(FiniteTruth, β)), a)
+    return SoleLogics.collatetruth(c, (convert(FiniteTruth, α), convert(FiniteTruth, β)), a)
 end
 
-function simplify(
+function SoleLogics.simplify(
     c::Connective,
     (α, β)::Tuple{FiniteTruth,FiniteTruth},
     a::FiniteFLewAlgebra
 )
-    return collatetruth(c, (α, β), a)
+    return SoleLogics.collatetruth(c, (α, β), a)
 end
 
-    function simplify(
+    function SoleLogics.simplify(
     c::Connective,
     (α, β)::Tuple{FiniteTruth,BooleanTruth},
     a::FiniteFLewAlgebra
 )
-    return collatetruth(c, (α, convert(FiniteTruth, β)), a)
+    return SoleLogics.collatetruth(c, (α, convert(FiniteTruth, β)), a)
 end
 
-    function simplify(
+    function SoleLogics.simplify(
     c::Connective,
     (α, β)::Tuple{BooleanTruth,FiniteTruth},
     a::FiniteFLewAlgebra
 )
-    return collatetruth(c, (convert(FiniteTruth, α), β), a)
+    return SoleLogics.collatetruth(c, (convert(FiniteTruth, α), β), a)
 end
 
-    function simplify(
+function SoleLogics.simplify(
     c::Connective,
     (α, β)::Tuple{BooleanTruth,BooleanTruth},
     a::FiniteFLewAlgebra
 )
-    return collatetruth(c, (convert(FiniteTruth, α), convert(FiniteTruth, β)), a)
+    return SoleLogics.collatetruth(c, (convert(FiniteTruth, α), convert(FiniteTruth, β)), a)
 end
 
-function collatetruth(::typeof(¬), (α,)::Tuple{FiniteTruth}, a::FiniteFLewAlgebra)
+function SoleLogics.collatetruth(::typeof(¬), (α,)::Tuple{FiniteTruth}, a::FiniteFLewAlgebra)
     if isboolean(a)
         if istop(α)
             return ⊥
@@ -99,14 +99,62 @@ function collatetruth(::typeof(¬), (α,)::Tuple{FiniteTruth}, a::FiniteFLewAlge
     end
 end
 
-function collatetruth(c::Connective, (α,)::Tuple{BooleanTruth}, a::FiniteFLewAlgebra)
-    return collatetruth(c, convert(FiniteTruth, α), a)
+function SoleLogics.collatetruth(c::Connective, (α,)::Tuple{BooleanTruth}, a::FiniteFLewAlgebra)
+    return SoleLogics.collatetruth(c, convert(FiniteTruth, α), a)
 end
 
-function simplify(c::Connective, (α,)::Tuple{FiniteTruth}, a::FiniteFLewAlgebra)
-    return collatetruth(c, (α,), a)
+function SoleLogics.simplify(c::Connective, (α,)::Tuple{FiniteTruth}, a::FiniteFLewAlgebra)
+    return SoleLogics.collatetruth(c, (α,), a)
 end
 
-function simplify(c::Connective, (α,)::Tuple{BooleanTruth}, a::FiniteFLewAlgebra)
-    return simplify(c, convert(FiniteTruth, α), a)
+function SoleLogics.simplify(c::Connective, (α,)::Tuple{BooleanTruth}, a::FiniteFLewAlgebra)
+    return SoleLogics.simplify(c, convert(FiniteTruth, α), a)
+end
+
+function SoleLogics.simplify(
+    c::Connective,
+    (α, β)::Tuple{FiniteTruth, BooleanTruth},
+    a::FiniteFLewAlgebra
+)
+    return SoleLogics.simplify(c, (α, convert(FiniteTruth, β)), a)
+end
+
+function SoleLogics.simplify(
+    c::Connective,
+    (α, β)::Tuple{BooleanTruth, FiniteTruth},
+    a::FiniteFLewAlgebra
+)
+    return SoleLogics.simplify(c, (convert(FiniteTruth, α), β), a)
+end
+
+function SoleLogics.simplify(
+    c::Connective,
+    (α, β)::Tuple{BooleanTruth, BooleanTruth},
+    a::FiniteFLewAlgebra
+)
+    return SoleLogics.simplify(c, (convert(FiniteTruth, α), convert(FiniteTruth, β)), a)
+end
+
+function SoleLogics.simplify(
+    ::typeof(∧),
+    (α, β)::Tuple{FiniteTruth,FiniteTruth},
+    a::FiniteFLewAlgebra
+)
+    return SoleLogics.collatetruth(∧, (α, β), a)
+end
+
+function SoleLogics.simplify(
+    ::typeof(∨),
+    (α, β)::Tuple{FiniteTruth,FiniteTruth},
+    a::FiniteFLewAlgebra
+)
+    return SoleLogics.collatetruth(∨, (α, β), a)
+end
+
+function SoleLogics.simplify(
+    ::typeof(→),
+    (α, β)::Tuple{FiniteTruth,FiniteTruth},
+    a::FiniteFLewAlgebra
+)
+    return SoleLogics.collatetruth(→, (α, β), a)
 end
