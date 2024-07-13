@@ -1,31 +1,32 @@
 """
-    collatetruth(c::Connective, ts::NTuple{N,T where T<:Truth})::Truth where {N}
+    collatetruth(c::Connective, ts::NTuple{N,T where T<:Truth}, args...)::Truth where {N}
 
 Return the truth value for a composed formula `c(t1, ..., tN)`, given the `N`
 with t1, ..., tN being `Truth` values.
 
 See also [`simplify`](@ref), [`Connective`](@ref), [`Truth`](@ref).
 """
-function collatetruth(
-    c::Connective,
-    ts::NTuple{N,T where T<:Truth}
-)::Truth where {N}
-    if arity(c) != length(ts)
-        return error("Cannot collate $(length(ts)) truth values for " *
-                     "connective $(typeof(c)) with arity $(arity(c))).")
-    else
-        return error("Please, provide method collatetruth(::$(typeof(c)), " *
-                     "::NTuple{$(arity(c)),$(T)}).")
-    end
+function collatetruth
+#     c::Connective,
+#     ts::NTuple{N,T where T<:Truth},
+#     args...
+# )::Truth where {N}
+#     if arity(c) != length(ts)
+#         return error("Cannot collate $(length(ts)) truth values for " *
+#                      "connective $(typeof(c)) with arity $(arity(c))).")
+#     else
+#         return error("Please, provide method collatetruth(::$(typeof(c)), " *
+#                      "::NTuple{$(arity(c)),$(eltype(ts))}).")
+#     end
 end
 
 # Helper (so that collatetruth work for all operators)
-collatetruth(t::Truth, ::Tuple{}) = t
+collatetruth(t::Truth, ::Tuple{}, args...) = t
 
 
 # With generic formulas, it composes formula
 """
-    simplify(c::Connective, ts::NTuple{N,F where F<:Formula})::Truth where {N}
+    simplify(c::Connective, ts::NTuple{N,F where F<:Formula}, args...)::Truth where {N}
 
 Return a formula with the same semantics of a composed formula `c(φ1, ..., φN)`,
 given the `N`
@@ -33,12 +34,12 @@ immediate sub-formulas.
 
 See also [`collatetruth`](@ref), [`Connective`](@ref), [`Formula`](@ref).
 """
-function simplify(c::Connective, φs::NTuple{N,T where T<:Formula}) where {N}
-    c(φs)
+function simplify(c::Connective, φs::NTuple{N,T where T<:Formula}, args...) where {N}
+    c(φs, args...)
 end
 
-function simplify(c::Connective, φs::NTuple{N,T where T<:Truth}) where {N}
-    collatetruth(c, φs)
+function simplify(c::Connective, φs::NTuple{N,T where T<:Truth}, args...) where {N}
+    collatetruth(c, φs, args...)
 end
 
 ############################################################################################
@@ -273,27 +274,27 @@ bot(::BooleanAlgebra) = BOT
 ############################################################################################
 
 # Standard semantics for NOT, AND, OR, IMPLIES
-collatetruth(::typeof(¬), (ts,)::Tuple{BooleanTruth}) = istop(ts) ? BOT : TOP
-collatetruth(::typeof(∧), (t1, t2)::NTuple{N,T where T<:BooleanTruth}) where {N} = truthmeet(t1, t2)
-collatetruth(::typeof(∨), (t1, t2)::NTuple{N,T where T<:BooleanTruth}) where {N} = truthjoin(t1, t2)
+collatetruth(::typeof(¬), (ts,)::Tuple{BooleanTruth}, args...) = istop(ts) ? BOT : TOP
+collatetruth(::typeof(∧), (t1, t2)::NTuple{N,T where T<:BooleanTruth}, args...) where {N} = truthmeet(t1, t2)
+collatetruth(::typeof(∨), (t1, t2)::NTuple{N,T where T<:BooleanTruth}, args...) where {N} = truthjoin(t1, t2)
 
 # Incomplete information
-function simplify(::typeof(∧), (t1, t2)::Tuple{BooleanTruth,BooleanTruth})
+function simplify(::typeof(∧), (t1, t2)::Tuple{BooleanTruth,BooleanTruth}, args...)
     istop(t1) && istop(t2) ? TOP : BOT
 end
-simplify(::typeof(∧), (t1, t2)::Tuple{BooleanTruth,Formula}) = istop(t1) ? t2 : t1
-simplify(::typeof(∧), (t1, t2)::Tuple{Formula,BooleanTruth}) = istop(t2) ? t1 : t2
+simplify(::typeof(∧), (t1, t2)::Tuple{BooleanTruth,Formula}, args...) = istop(t1) ? t2 : t1
+simplify(::typeof(∧), (t1, t2)::Tuple{Formula,BooleanTruth}, args...) = istop(t2) ? t1 : t2
 
 
-function simplify(::typeof(∨), (t1, t2)::Tuple{BooleanTruth,BooleanTruth})
+function simplify(::typeof(∨), (t1, t2)::Tuple{BooleanTruth,BooleanTruth}, args...)
     isbot(t1) && isbot(t2) ? BOT : TOP
 end
-simplify(::typeof(∨), (t1, t2)::Tuple{BooleanTruth,Formula}) = isbot(t1) ? t2 : t1
-simplify(::typeof(∨), (t1, t2)::Tuple{Formula,BooleanTruth}) = isbot(t2) ? t1 : t2
+simplify(::typeof(∨), (t1, t2)::Tuple{BooleanTruth,Formula}, args...) = isbot(t1) ? t2 : t1
+simplify(::typeof(∨), (t1, t2)::Tuple{Formula,BooleanTruth}, args...) = isbot(t2) ? t1 : t2
 
 # The IMPLIES operator, →, falls back to using ¬ and ∨
-function collatetruth(::typeof(→), (t1, t2)::NTuple{2,BooleanTruth})
-    return collatetruth(∨, (collatetruth(¬, (t1,)), t2))
+function collatetruth(::typeof(→), (t1, t2)::NTuple{2,BooleanTruth}, args...)
+    return collatetruth(∨, (collatetruth(¬, (t1,), args...), t2), args...)
 end
 
 ############################################################################################

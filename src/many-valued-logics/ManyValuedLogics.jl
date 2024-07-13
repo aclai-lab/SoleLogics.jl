@@ -26,4 +26,6 @@ include("many-valued-formulas.jl")
 
 include("algebras/algebras.jl")
 
+include("check.jl")
+
 end

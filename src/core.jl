@@ -1026,8 +1026,6 @@ function interpret(
         "kwargs...::$(typeof(kwargs))).")
 end
 
-
-
 function interpret(
     φ::SyntaxBranch,
     i::AbstractInterpretation,
