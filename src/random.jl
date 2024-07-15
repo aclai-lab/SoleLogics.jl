@@ -288,6 +288,14 @@ Return a pseudo-randomic `SyntaxBranch`.
 - `atompicker::Function` = method used to pick a random element. For example, this could be
     Base.rand or StatsBase.sample.
 - `opweights::AbstractWeights` = weight vector over the set of operators (see `StatsBase`).
+- `basecase::Function` = method to specify the base case of the recursion; if not specified,
+    it returns `atompicker`.
+[!WARNING]
+The basecase is applied at the end of the recustion (i.e., when height = 0). If introducting
+a basecase which produces a subformula, please adjust the `height` parameter value
+accordingly (e.g., when producing a subformula of the type o(p,q), where `o` is a connective
+and `p,q` are atoms, to generate a formula of height `n` provide a value of `n-1` for the
+`height` parameter).
 
 # Examples
 
@@ -308,6 +316,7 @@ function randformula(
     modaldepth::Integer = height,
     atompicker::Union{Function,AbstractWeights,AbstractVector{<:Real},Nothing} = sample,
     opweights::Union{AbstractWeights,AbstractVector{<:Real},Nothing} = nothing,
+    basecase::Union{Function,Nothing} = nothing,
 )::SyntaxTree
     rng = initrng(rng)
     alphabet = convert(AbstractAlphabet, alphabet)
@@ -344,8 +353,12 @@ function randformula(
         modaldepth::Integer
     )::SyntaxTree
         if height == 0
-            # Sample atom from alphabet
-            return atompicker(rng, atoms(alphabet))
+            if isnothing(basecase)
+                # Sample atom from alphabet
+                return atompicker(rng, atoms(alphabet))
+            else
+                return basecase(rng)
+            end
         else
             # Sample operator and generate children (modal connectives only if modaldepth > 0)
             ops, ops_w = begin
@@ -356,7 +369,6 @@ function randformula(
                 end
             end
 
-            # op = rand(rng, ops)
             op = sample(rng, ops, ops_w)
             ch = Tuple([
                     _randformula(rng, height-1, modaldepth-(ismodal(op) ? 1 : 0))
