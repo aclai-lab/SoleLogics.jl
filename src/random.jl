@@ -263,14 +263,14 @@ end
 # TODO @Mauro implement this method.
 doc_randformula = """
     randformula(
-        height::Integer,
+        maxheight::Integer,
         alphabet,
         operators::AbstractVector;
         rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG
     )::SyntaxTree
 
     function randformula(
-        height::Integer,
+        maxheight::Integer,
         g::AbstractGrammar;
         rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG
     )::SyntaxTree
@@ -278,7 +278,7 @@ doc_randformula = """
 Return a pseudo-randomic `SyntaxBranch`.
 
 # Arguments
-- `height::Integer`: height of the generated structure;
+- `maxheight::Integer`: max height of the generated structure;
 - `alphabet::AbstractAlphabet`: collection from which atoms are chosen randomly;
 - `operators::AbstractVector`: vector from which legal operators are chosen;
 - `g::AbstractGrammar`: alternative to passing alphabet and operators separately. (TODO explain?)
@@ -292,10 +292,13 @@ Return a pseudo-randomic `SyntaxBranch`.
     it returns `atompicker`.
 [!WARNING]
 The basecase is applied at the end of the recustion (i.e., when height = 0). If introducting
-a basecase which produces a subformula, please adjust the `height` parameter value
+a basecase which produces a subformula, please adjust the `maxheight` parameter value
 accordingly (e.g., when producing a subformula of the type o(p,q), where `o` is a connective
-and `p,q` are atoms, to generate a formula of height `n` provide a value of `n-1` for the
-`height` parameter).
+and `p,q` are atoms, to generate a formula of maxheight `n` provide a value of `n-1` for the
+`maxheight` parameter).
+- `balanced::Bool` = if true, generate a syntax balanced tree of height exactly `maxheight``
+- `earlystoppingtreshold::Float` = probability of calling the basecase before reaching
+  height = 0 
 
 # Examples
 
@@ -310,13 +313,15 @@ See also [`AbstractAlphabet`](@ref), [`SyntaxBranch`](@ref).
 """$(doc_randformula)"""
 function randformula(
     rng::Union{Integer,AbstractRNG},
-    height::Integer,
+    maxheight::Integer,
     alphabet,
     operators::AbstractVector;
-    modaldepth::Integer = height,
+    modaldepth::Integer = maxheight,
     atompicker::Union{Function,AbstractWeights,AbstractVector{<:Real},Nothing} = sample,
     opweights::Union{AbstractWeights,AbstractVector{<:Real},Nothing} = nothing,
     basecase::Union{Function,Nothing} = nothing,
+    balanced::Bool = false,
+    earlystoppingtreshold::AbstractFloat = 0.5,
 )::SyntaxTree
     rng = initrng(rng)
     alphabet = convert(AbstractAlphabet, alphabet)
@@ -349,10 +354,10 @@ function randformula(
 
     function _randformula(
         rng::AbstractRNG,
-        height::Integer,
+        maxheight::Integer,
         modaldepth::Integer
     )::SyntaxTree
-        if height == 0
+        if maxheight == 0 || (!balanced && rand(rng, Float16) < earlystoppingtreshold)
             if isnothing(basecase)
                 # Sample atom from alphabet
                 return atompicker(rng, atoms(alphabet))
@@ -371,7 +376,7 @@ function randformula(
 
             op = sample(rng, ops, ops_w)
             ch = Tuple([
-                    _randformula(rng, height-1, modaldepth-(ismodal(op) ? 1 : 0))
+                    _randformula(rng, maxheight-1, modaldepth-(ismodal(op) ? 1 : 0))
                     for _ in 1:arity(op)])
             return SyntaxTree(op, ch)
         end
@@ -383,7 +388,7 @@ function randformula(
             "(infinite) alphabet of type $(typeof(alphabet))!"
     end
 
-    return _randformula(rng, height, modaldepth)
+    return _randformula(rng, maxheight, modaldepth)
 end
 
 function randformula(
