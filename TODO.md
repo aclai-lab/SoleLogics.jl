@@ -1,8 +1,12 @@
 # MAIN TODOS
 
 
+Utils:
+  ☐ iscnf(::Formula)/isdnf(::Formula)
+
 Connectives:
   ☐ Change DiamondRelationalConnective and BoxRelationalConnective from singletons to structs wrapping a relation.
+    In theory, not all relations are singletons; some might be parametric (e.g., a relation leading to the world w). Therefore, the Diamond and Box relational connectives (e.g., DiamondRelationalConnective) should be structs containing a relation, rather than singletons with the relation encoded only as a type parameter.
 
 Interpretations:
   ☐ Create a SupportedInterpretation
@@ -32,8 +36,9 @@ Random:
 
 Readability:
   ☐ Add parameters to syntaxstring:
-    ☐ parenthesize_unary_modals = false (force <G>phi becomes <G>(phi))
-    ☐ parenthesize_operators 
+    ☐ syntaxstring.parenthesize_unary_modals = false, but force parentheses in cases like <G>φ -> <G>(φ).
+    ☐ syntaxstring.parenthesize_operators = [list of unary/binary operators for which you want to force parentheses...]/function that decides whether to parenthesize or not
+
   ☐ meaningful names for relations: - IA_L -> After/Right - IA_A -> RightAfter
 
 Tests:
@@ -41,6 +46,79 @@ Tests:
 
 PAndQ:
   ☐ Recognize if a formula is satisfiable, is a contingency, a tautology or a contraddiction.
+
+# OTHER SPARSE NOTES
+
+
+- That is, the user provides a callback, or a set of callbacks to cover additional cases beyond the defaults. To test it, try simplifying normalize(parseformula("((¬q v p) ∧ ¬q)")) to parseformula("¬q") by providing a function that applies a specific rule. First, study how normalize works: it's divided into steps, and it's not obvious in which step these callbacks should be applied.
+
+- normalize: again, (always assuming a Boolean algebra) cases like "((¬q v p) ∧ ¬q)" could be simplified to "¬q", but... even without providing callbacks: can we add simple logic that understands what to remove?
+
+- Increase the package "coverage" by checking the results from codecov via GitHub Actions, and adding tests.
+
+- Check everywhere we have assumed that ismodal(x) implies isunary(x), because, in general, it's not true. Soon we will have binary modal operators and I don't want to be embarrassed :P i.e., I don't want something to break or, worse, silently not break.
+
+Three cases I noted where there might be redundant parentheses. They might be obsolete checks, dating back at least 3 months. Check:
+- f = parseformula("⟨G⟩p → [G]q"); syntaxstring(f) == "(⟨G⟩p) → ([G]q)" != "⟨G⟩p → [G]q"
+- syntaxstring(parseformula("¬1→0"; atom_parser = (x -> Atom{Float64}(parse(Float64, x))))) == "(¬1.0) → 0.0"
+- syntaxstring(parseformula("¬a → b ∧ c")) == "(¬a) → (b ∧ c)"
+
+- Relation -> Relation{A}
+- composeformulas(::Connective, ::Tuple{}) = TODO to resolve ambiguities
+- SoleLogics: TODO note that IA_A for time series (and not for words) does not reflect what it should. Everything is shifted by one.
+- SoleLogics add tests for `simplify`
+- simple minimize
+
+
+    function collatetruth(c::typeof(∧), (φ1, φ2)::NTuple{N,Formula})
+        if     isbot(φ1)  ⊥           # ⊥ ∧ φ ≡ ⊥
+        elseif isbot(φ2)  ⊥           # φ ∧ ⊥ ≡ ⊥
+        elseif istop(φ1)  φ2          # ⊤ ∧ φ ≡ φ
+        elseif istop(φ2)  φ1          # φ ∧ ⊤ ≡ φ
+        else   c((φ1, φ2))
+        end
+    end
+
+    function collatetruth(c::typeof(∧), chs::NTuple{N,Formula})
+        if     any(isbot, chs) ⊥
+        elseif all(istop, chs) ⊤
+        else
+            chs = filter(!istop, chs)
+            if length(...)
+                chs
+            else
+                c(chs)
+            end
+        end
+    end
+
+- (PAndQ.jl) Algorithm that produces truth tables of propositional logic formulas, and that determines whether a formula is satisfiable, contingent, a tautology, or a contradiction.
+- function normalize: simplify the function using the two new traits dual/hasdual.
+- Adjust normalize rules
+- SoleLogics documentation: sections, examples of random generation, parsing, formula enumeration,
+- separate dual/negation returns an abstractformula representing the negated one.
+- LeftmostDisjunctiveForm -> Disjunction
+- default value for allow_atom_flipping?
+- @Mauro expand and improve the definition of dual_op into booleandual. ⊤/\bottom \land/\lor
+- @Mauro OneWorldFrame where accessibles and representatives are defined on globalrel/identityrel only: _frame(X::Union{UniformDimensionalDataset{T,2},AbstractArray{T,2}}) where {T} = OneWorldFrame()
+- frame-specific formula normalization!!!
+- Examples with the definition of xor: composing formulas also with infix notation if: https://stackoverflow.com/a/60321302/5646732
+- parts of formulas that are nested <G> can probably come out.
+- Modal formulas simplification examples:
+    ⟨G⟩(p ∧ ⟨G⟩(q ∧ ⟨A̅∨O̅⟩p))
+    ⟨G⟩p ∧ ⟨G⟩(q ∧ ⟨A̅∨O̅⟩p)
+    ⟨G⟩p ∧ ⟨G⟩(q ∧ ⟨A̅∨O̅⟩p) ∧ ⟨G⟩⟨A̅∨O̅⟩p
+
+    ⟨G⟩(p ∧ ⟨G⟩(q ∧ ⟨A̅∨O̅⟩p)) -> ⟨G⟩p
+    ⟨G⟩(p ∧ ⟨G⟩(q ∧ ⟨A̅∨O̅⟩p)) -> ⟨G⟩(q ∧ ⟨A̅∨O̅⟩p)
+
+    ⟨G⟩p ∧ ⟨G⟩(q ∧ ⟨A̅∨O̅⟩p) -> ⟨G⟩⟨A̅∨O̅⟩p
+    ⟨G⟩⟨A̅∨O̅⟩p -> ⟨G⟩p
+    
+- In README.md add:
+1) Checks of propositional and modal formulas (maybe take from NOTE or pluto-demo.jl?)
+2) Next to the list of similar packages, explain what SoleLogics offers and doesn't offer.
+
 
 # DONE
 
