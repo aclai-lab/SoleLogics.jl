@@ -1,4 +1,4 @@
-########## MAIN TODOS ####################################################################################
+# MAIN TODOS
 
 
 Connectives:
@@ -20,7 +20,7 @@ Random:
     ☐ Fuzzy formulas (algebra is an argument)
     ☐ Logger for offline formulas (in a log file, i can load and retrieve already generated formulas)
     ☐ Generator for complete collection of formulas generator (all possible combinations of formulas are considered)
-  
+
   ☐ Add the following utility dispatches:
     ☐ rand(connectives, atom leaves array, algebra from which infer truth values)
     ☐ rand(connectives, atom leaves array, truth values with common supertype)
@@ -28,7 +28,7 @@ Random:
     ☐ sample(..., probability distribution)
     
   ✔ Write random models generation (see pluto-demo.jl and exploit Graphs.SimpleGraphs generation) @done(23-12-20 17:52)
-  ☐ Expand the models generator, giving the possibility to use a generic SimpleGraphs method to shape a kripke frame 
+  ☐ Expand the model generator with the possibility of using a generic SimpleGraphs method to shape a kripke frame 
 
 Readability:
   ☐ Add parameters to syntaxstring:
@@ -42,7 +42,7 @@ Tests:
 PAndQ:
   ☐ Recognize if a formula is satisfiable, is a contingency, a tautology or a contraddiction.
 
-########## DONE ##########################################################################################
+# DONE
 
 Documentation:
   ✔ In the documentation, show how to create a custom operator (maybe a Xor/⊻/⊕) starting from scratch. @done(23-12-06 12:05)

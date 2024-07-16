@@ -234,6 +234,9 @@ The package is developed by the [ACLAI Lab](https://aclai.unife.it/en/) @ Univer
 
 Thanks to Jakob Peters (author of [PAndQ.jl](https://github.com/jakobjpeters/PAndQ.jl/)) for the interesting discussions and ideas.
 
+## Want to contribute?
+We have some [TODOs](TODO.md)
+
 ## More on Sole
 - [SoleData.jl](https://github.com/aclai-lab/SoleData.jl)
 - [SoleFeatures.jl](https://github.com/aclai-lab/SoleFeatures.jl) 
