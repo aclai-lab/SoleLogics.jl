@@ -52,3 +52,51 @@ function SoleLogics.collatetruth(
 }
     a.implication(α, β)
 end
+
+"""
+    alphacheck(
+        α::FiniteTruth,
+        φ::Formula,
+        i::AbstractInterpretation,
+        a::FiniteAlgebra
+        args...;
+        kwargs...
+    )::Bool
+
+Check a formula on a logical interpretation (or model), returning `true` if the truth value
+for the formula is at least `α`` in the algebra `a`.
+
+# Examples
+```julia-repl
+julia> @atoms String p q
+2-element Vector{Atom{String}}:
+ Atom{String}("p")
+ Atom{String}("q")
+
+julia> td = TruthDict([p => TOP, q => BOT])
+TruthDict with values:
+┌────────┬────────┐
+│      q │      p │
+│ String │ String │
+├────────┼────────┤
+│      ⊥ │      ⊤ │
+└────────┴────────┘
+
+julia> check(CONJUNCTION(p,q), td)
+false
+```
+
+See also [`check`](@ref), [`FiniteTruth`](@ref), [`Formula`](@ref),
+[`AbstractInterpretation`](@ref), [`TruthDict`](@ref), [`FiniteAlgebra`](@ref).
+"""
+function alphacheck(
+    α::Truth,
+    φ::Formula,
+    i::SoleLogics.AbstractInterpretation,
+    a::FiniteAlgebra,
+    args...;
+    kwargs...
+)::Bool
+    if !isa(α, FiniteTruth) α = convert(FiniteTruth, α) end
+    precedeq(a, α, interpret(φ, i, a, args...; kwargs...))
+end
