@@ -30,4 +30,6 @@ export alphacheck
 
 include("check.jl")
 
+include("finite-index-algebras.jl")
+
 end
