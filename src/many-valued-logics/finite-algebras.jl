@@ -47,11 +47,11 @@ abstract type FiniteAlgebra{T<:Truth, D<:AbstractVector{T}} <: AbstractAlgebra{T
 
 """
     function checkmonoidaxioms(
-        o::BinaryOperation{T,D},
+        o::O,
         e::T
     ) where {
-        T<:Truth,
-        D<:AbstractVector{T}
+        O<:AbstractBinaryOperation,
+        T<:Truth
     }
 
 Check if given domain, operation and identity element form a monoid.
@@ -68,11 +68,11 @@ See also [`BinaryOperation`](@ref), [`Axiom`](@ref), [`checkaxiom`](@ref),
 [`Associativity`](@ref), [`IdentityElement`](@ref).
 """
 function checkmonoidaxioms(
-    o::BinaryOperation{T,D},
+    o::O,
     e::T
 ) where {
-    T<:Truth,
-    D<:AbstractVector{T}
+    O<:AbstractBinaryOperation,
+    T<:Truth
 }
     @assert checkaxiom(Associativity, o) "Defined an operation for the monoid which " *
         "is not associative."
@@ -226,11 +226,10 @@ end
 
 """
     function checklatticeaxioms(
-        join::BinaryOperation{T,D},
-        meet::BinaryOperation{T,D}
+        join::O,
+        meet::O
     ) where {
-        T<:Truth,
-        D<:AbstractVector{T}
+        O<:AbstractBinaryOperation
     }
 
 Check if given domain, join and meet form a finite lattice.
@@ -245,11 +244,10 @@ See also [`FiniteLattice`](@ref), [`BinaryOperation`](@ref), [`Commutativity`](@
 [`Associativity`](@ref), [`AbsorptionLaw`](@ref),
 """
 function checklatticeaxioms(
-    join::BinaryOperation{T,D},
-    meet::BinaryOperation{T,D}
+    join::O,
+    meet::O
 ) where {
-    T<:Truth,
-    D<:AbstractVector{T}
+    O<:AbstractBinaryOperation
 }
     @assert checkaxiom(Commutativity, join) "Defined a join operation which is not " *
         "commutative."

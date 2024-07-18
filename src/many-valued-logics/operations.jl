@@ -9,6 +9,8 @@ See also [`BinaryOperation`](@ref), [`arity`](@ref).
 """
 abstract type Operation end
 
+abstract type AbstractBinaryOperation end
+
 """
     function Base.show(io::IO, o::O) where {O<:Operation}
 
@@ -45,7 +47,7 @@ on all elements of S × S.
 
 See also [`Operation`](@ref), [`arity`](@ref).
 """
-struct BinaryOperation{T<:Truth, D<:AbstractVector{T}} <: Operation
+struct BinaryOperation{T<:Truth, D<:AbstractVector{T}} <: AbstractBinaryOperation
     domain::D
     truthtable::AbstractDict{Tuple{T, T}, T}
 
