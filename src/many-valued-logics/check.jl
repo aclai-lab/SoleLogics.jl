@@ -100,3 +100,51 @@ function alphacheck(
     if !isa(α, FiniteTruth) α = convert(FiniteTruth, α) end
     precedeq(a, α, interpret(φ, i, a, args...; kwargs...))
 end
+
+############################################################################################
+
+# Meet (greatest lower bound) between values α and β
+function SoleLogics.collatetruth(
+    ::typeof(∧),
+    (α, β)::NTuple{2, FiniteIndexTruth},
+    a::FiniteIndexFLewAlgebra{N}
+) where {
+    N
+}
+    a.meet(α, β)
+end
+
+# Join (least upper bound) between values α and β
+function SoleLogics.collatetruth(
+    ::typeof(∨),
+    (α, β)::NTuple{2, FiniteIndexTruth},
+    a::FiniteIndexFLewAlgebra{N}
+) where {
+    N
+}
+    a.join(α, β)
+end
+
+# Implication/pseudo-complement α → β = join(γ | meet(α, γ) ⪯ β)
+function SoleLogics.collatetruth(
+    ::typeof(→),
+    (α, β)::NTuple{2, FiniteIndexTruth},
+    a::FiniteIndexFLewAlgebra{N}
+) where {
+    N
+}
+    a.implication(α, β)
+end
+
+function alphacheck(
+    α::FiniteIndexTruth,
+    φ::Formula,
+    i::SoleLogics.AbstractInterpretation,
+    a::FiniteIndexFLewAlgebra{N},
+    args...;
+    kwargs...
+) where {
+    N
+}
+    precedeq(a, α, interpret(φ, i, a, args...; kwargs...))
+end

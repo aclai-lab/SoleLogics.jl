@@ -354,13 +354,13 @@ end
 
 """
     function checkboundedlatticeaxioms(
-        join::BinaryOperation{T,D},
-        meet::BinaryOperation{T,D},
+        join::O,
+        meet::O,
         bot::T,
         top::T
     ) where {
-        T<:Truth,
-        D<:AbstractVector{T}
+        O<:AbstractBinaryOperation,
+        T<:Truth
     }
 
 Check if given domain, join, meet, bot and top form a bounded lattice.
@@ -374,13 +374,13 @@ element ⊤ is the identity element for the meet operation ∧:
 See also [`FiniteBoundedLattice`](@ref), [`checklatticeaxioms`](@ref).
 """
 function checkboundedlatticeaxioms(
-    join::BinaryOperation{T,D},
-    meet::BinaryOperation{T,D},
+    join::O,
+    meet::O,
     bot::T,
     top::T
 ) where {
-    T<:Truth,
-    D<:AbstractVector{T}
+    O<:AbstractBinaryOperation,
+    T<:Truth
 }
     checklatticeaxioms(join, meet)
     @assert checkaxiom(IdentityElement, join, bot) "$bot is not a valid identity element " *
@@ -499,12 +499,12 @@ See also [`Axiom`](@ref), [`Monoid`](@ref).
 """
 function checkaxiom(
     ::typeof(RightResidual),
-    meet::BinaryOperation{T,D},
+    meet::O,
     monoid::M
 ) where {
+    O<:AbstractBinaryOperation,
     T<:Truth,
-    D<:AbstractVector{T},
-    M<:FiniteAlgebra{T,D}
+    M<:AbstractAlgebra{T}
 }
     !ismonoid(monoid) && error("Cannot convert an object of type $(typeof(monoid)) to an "*
         "object of type Monoid.")
@@ -558,12 +558,12 @@ See also [`Axiom`](@ref), [`Monoid`](@ref).
 """
 function checkaxiom(
     ::typeof(LeftResidual),
-    meet::BinaryOperation{T,D},
+    meet::O,
     monoid::M
 ) where {
+    O<:AbstractBinaryOperation,
     T<:Truth,
-    D<:AbstractVector{T},
-    M<:FiniteAlgebra{T,D}
+    M<:AbstractAlgebra{T}
 }
     !ismonoid(monoid) && error("Cannot convert an object of type $(typeof(monoid)) to an "*
         "object of type Monoid.")
@@ -619,12 +619,12 @@ See also [`Axiom`](@ref), [`Monoid`](@ref).
 """
 function checkaxiom(
     ::typeof(ResiduationProperty),
-    meet::BinaryOperation{T,D},
+    meet::O,
     monoid::M
 ) where {
+    O<:AbstractBinaryOperation,
     T<:Truth,
-    D<:AbstractVector{T},
-    M<:FiniteAlgebra{T,D}
+    M<:AbstractAlgebra{T}
 }
     !ismonoid(monoid) && error("Cannot convert an object of type $(typeof(monoid)) to an "*
         "object of type Monoid.")

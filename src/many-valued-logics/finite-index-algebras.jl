@@ -55,6 +55,7 @@ function Base.convert(::Type{FiniteIndexTruth}, c::Char)
         error("Please, provide a character between α and ҭ, ⊤ and ⊥")
     end
 end
+Base.convert(::Type{FiniteIndexTruth}, index::UInt8) = FiniteIndexTruth(index)
 
 ############################################################################################
 #### Finite algebra ########################################################################
@@ -85,9 +86,19 @@ arity(o::BinaryIndexOperation{N}) where {N} = 2
 
 getdomain(o::BinaryIndexOperation{N}) where {N} = o.domain
 
-function (o::BinaryIndexOperation{N})(t1::T1, t2::T2) where {N, T1<:Truth, T2<:Truth}
-    if !isa(t1, FiniteIndexTruth) t1 = convert(FiniteIndexTruth, t1) end
-    if !isa(t2, FiniteIndexTruth) t2 = convert(FiniteIndexTruth, t2) end
+function (o::BinaryIndexOperation{N})(t1::UInt8, t2::UInt8) where {N}
+    return o.truthtable[t1, t2]
+end
+
+function (o::BinaryIndexOperation{N})(t1::FiniteIndexTruth, t2::UInt8) where {N}
+    return o.truthtable[t1.index, t2]
+end
+
+function (o::BinaryIndexOperation{N})(t1::UInt8, t2::FiniteIndexTruth) where {N}
+    return o.truthtable[t1, t2.index]
+end
+
+function (o::BinaryIndexOperation{N})(t1::FiniteIndexTruth, t2::FiniteIndexTruth) where {N}
     return o.truthtable[t1.index, t2.index]
 end
 
@@ -134,7 +145,12 @@ function checkaxiom(a::Axiom, m::IndexMonoid{N}) where {N}
     return checkaxiom(typeof(a), m.operation)
 end
 
-(m::IndexMonoid{N})(t1::T1, t2::T2) where {N, T1<:Truth, T2<:Truth} = m.operation(t1, t2)
+(m::IndexMonoid{N})(t1::UInt8, t2::UInt8) where {N} = m.operation(t1, t2)
+(m::IndexMonoid{N})(t1::UInt8, t2::FiniteIndexTruth) where {N} = m.operation(t1, t2.index)
+(m::IndexMonoid{N})(t1::FiniteIndexTruth, t2::UInt8) where {N} = m.operation(t1.index, t2)
+function (m::IndexMonoid{N})(t1::FiniteIndexTruth, t2::FiniteIndexTruth) where {N}
+    return m.operation(t1.index, t2.index)
+end
 
 ############################################################################################
 #### Commutative index monoid ##############################################################
@@ -163,8 +179,15 @@ end
 
 ismonoid(::CommutativeIndexMonoid{N}) where {N} = true
 
-function (m::CommutativeIndexMonoid{N})(t1::T1, t2::T2) where {N, T1<:Truth, T2<:Truth}
-    return m.operation(t1, t2)
+(m::CommutativeIndexMonoid{N})(t1::UInt8, t2::UInt8) where {N} = m.operation(t1, t2)
+function (m::CommutativeIndexMonoid{N})(t1::UInt8, t2::FiniteIndexTruth) where {N}
+    return m.operation(t1, t2.index)
+end
+function (m::CommutativeIndexMonoid{N})(t1::FiniteIndexTruth, t2::UInt8) where {N}
+    return m.operation(t1.index, t2)
+end
+function (m::CommutativeIndexMonoid{N})(t1::FiniteIndexTruth, t2::FiniteIndexTruth) where {N}
+    return m.operation(t1.index, t2.index)
 end
 
 ############################################################################################
@@ -202,13 +225,250 @@ function convert(
     end
 end
 
+function getdomain(a::A) where {N, A<:FiniteIndexAlgebra{N}}
+    if ismonoid(a)
+        return getdomain(a.operation)
+    elseif islattice(a)
+        return getdomain(a.join)
+    else
+        error("Cannot resolve the domain of $a.")
+    end
+end
+
+############################################################################################
+#### Finite index bounded lattice ##########################################################
+############################################################################################
+
+struct FiniteIndexBoundedLattice{N} <: FiniteIndexAlgebra{N}
+    join::BinaryIndexOperation{N}
+    meet::BinaryIndexOperation{N}
+    bot::FiniteIndexTruth
+    top::FiniteIndexTruth
+
+    function FiniteIndexBoundedLattice{N}(
+        join::BinaryIndexOperation{N},
+        meet::BinaryIndexOperation{N},
+        bot::T1,
+        top::T2
+    ) where {
+        N,
+        T1<:Truth,
+        T2<:Truth
+    }
+        if !isa(bot, FiniteIndexTruth) bot = convert(FiniteIndexTruth, bot) end
+        if !isa(top, FiniteIndexTruth) top = convert(FiniteIndexTruth, top) end
+        checkboundedlatticeaxioms(join, meet, bot, top)
+        return new{N}(join, meet, bot, top)
+    end
+end
+
+islattice(::FiniteIndexBoundedLattice{N}) where {N} = true
+isboundedlattice(::FiniteIndexBoundedLattice{N}) where {N} = true
+
+function convert(
+    ::Type{FiniteIndexBoundedLattice{N}},
+    l::L
+) where {
+    N,
+    L<:FiniteIndexAlgebra{N}
+}
+    if isboundedlattice(l)
+        return FiniteIndexBoundedLattice{N}(l.join, l.meet, l.bot, l.top)
+    else
+        error("Cannot convert object of type $(typeof(l)) to a value of type Lattice.")
+    end
+end
+
+############################################################################################
+#### Finite index FLew algebra #############################################################
+############################################################################################
+
+struct FiniteIndexFLewAlgebra{N} <: FiniteIndexAlgebra{N}
+    join::BinaryIndexOperation{N}
+    meet::BinaryIndexOperation{N}
+    monoid::CommutativeIndexMonoid{N}
+    implication::BinaryIndexOperation{N}
+    bot::FiniteIndexTruth
+    top::FiniteIndexTruth
+
+    function FiniteIndexFLewAlgebra{N}(
+        join::BinaryIndexOperation{N},
+        meet::BinaryIndexOperation{N},
+        monoid::CommutativeIndexMonoid{N},
+        bot::T1,
+        top::T2
+    ) where {
+        N,
+        T1<:Truth,
+        T2<:Truth
+    }
+        if !isa(bot, FiniteIndexTruth) bot = convert(FiniteIndexTruth, bot) end
+        if !isa(top, FiniteIndexTruth) top = convert(FiniteIndexTruth, top) end
+        checkboundedlatticeaxioms(join, meet, bot, top)
+        @assert checkaxiom(RightResidual, meet, monoid) "Residuation property does not " *
+            "hold for the defined monoid operation."
+
+        implicationtruthtable = Array{FiniteIndexTruth}(undef, N, N)
+        for z ∈ UInt8(1):UInt8(N)
+            for x ∈ UInt8(1):UInt8(N)
+                candidates = Vector{FiniteIndexTruth}()
+                for y ∈ UInt8(1):UInt8(N)
+                    meet(monoid(x, y), z) == monoid(x, y) && push!(candidates, y)
+                end
+                for y ∈ candidates
+                    isgreatest = true
+                    for w ∈ candidates
+                        if meet(w, y) != w
+                            isgreatest = false
+                            break
+                        end
+                    end
+                    if isgreatest
+                        implicationtruthtable[x,z] = y
+                        break
+                    end
+                end
+            end
+        end
+        implication = BinaryIndexOperation{N}(getdomain(join), SMatrix{3, 3, FiniteIndexTruth}(implicationtruthtable))
+        return new{N}(join, meet, monoid, implication, bot, top)
+    end
+
+    function FiniteIndexFLewAlgebra{N}(
+        join::BinaryIndexOperation{N},
+        meet::BinaryIndexOperation{N},
+        monoidoperation::BinaryIndexOperation{N},
+        bot::T1,
+        top::T2
+    ) where {
+        N,
+        T1<:Truth,
+        T2<:Truth
+    }
+        return FiniteIndexFLewAlgebra{N}(
+            join,
+            meet,
+            CommutativeIndexMonoid{3}(monoidoperation, top),
+            bot,
+            top
+        )
+    end
+end
+
+islattice(::FiniteIndexFLewAlgebra{N}) where {N} = true
+isboundedlattice(::FiniteIndexFLewAlgebra{N}) where {N} = true
+
+function Base.show(io::IO, a::FiniteIndexFLewAlgebra{N}) where {N}
+    println(io, string(typeof(a)))
+    println(io, "Domain: " * string(getdomain(a)))
+    println(io, "Bot: " * string(a.bot))
+    println(io, "Top: " * string(a.top))
+    println(io, "Join: " * string(a.join))
+    println(io, "Meet: " * string(a.meet))
+    println(io, "T-norm: " * string(a.monoid))
+    println(io, "Implication: " * string(a.implication))
+end
+
+############################################################################################
+#### Order utilities #######################################################################
+############################################################################################
+
+function precedeq(
+    l::L,
+    t1::FiniteIndexTruth,
+    t2::FiniteIndexTruth
+) where {
+    N,
+    L<:FiniteIndexAlgebra{N}
+}
+    !islattice(l) && error("Cannot convert object of type $(typeof(l)) to an object of " *
+        "type FiniteLattice.")
+    if l.meet(t1, t2) == t1
+        return true
+    else
+        return false
+    end
+end
+
+function precedes(
+    l::L,
+    t1::FiniteIndexTruth,
+    t2::FiniteIndexTruth
+) where {
+    N,
+    L<:FiniteIndexAlgebra{N}
+}
+    return t1 != t2 && precedeq(l, t1, t2)
+end
+
+function succeedeq(
+    l::L,
+    t1::FiniteIndexTruth,
+    t2::FiniteIndexTruth
+) where {
+    N,
+    L<:FiniteIndexAlgebra{N}
+}
+    return precedeq(l, t2, t1)
+end
+
+function succeedes(
+    l::L,
+    t1::FiniteIndexTruth,
+    t2::FiniteIndexTruth
+) where {
+    N,
+    L<:FiniteIndexAlgebra{N}
+}
+    return precedes(l, t2, t1)
+end
+
+function lesservalues(
+    l::L,
+    t::FiniteIndexTruth
+) where {
+    N,
+    L<:FiniteIndexAlgebra{N},
+}
+    return filter(ti->precedes(l, ti, t), getdomain(l))
+end
+
+function maximalmembers(
+    l::L,
+    t::FiniteIndexTruth
+) where {
+    N,
+    L<:FiniteIndexAlgebra{N},
+}
+    candidates = filter(ti->!succeedeq(l, ti, t), getdomain(l))
+    mm = D()
+    for c in candidates
+        if isempty(filter(ti->succeedes(l, ti, c), candidates)) push!(mm, c) end
+    end
+    return mm
+end
+
+function minimalmembers(
+    l::L,
+    t::FiniteIndexTruth
+) where {
+    N,
+    L<:FiniteIndexAlgebra{N},
+}
+    candidates = filter(ti->!precedeq(l, ti, t), getdomain(l))
+    mm = D()
+    for c in candidates
+        if isempty(filter(ti->precedes(l, ti, c), candidates)) push!(mm, c) end
+    end
+    return mm
+end
+
 
 # julia> using SoleLogics
-# [ Info: Precompiling SoleLogics [b002da8f-3cb3-4d91-bbe3-2953433912b5]
 
 # julia> using SoleLogics.ManyValuedLogics
 
-# julia> using SoleLogics.ManyValuedLogics: FiniteIndexTruth, BinaryIndexOperation, IndexMonoid, CommutativeIndexMonoid, FiniteIndexLattice
+# julia> using SoleLogics.ManyValuedLogics: FiniteIndexTruth, BinaryIndexOperation, IndexMonoid, CommutativeIndexMonoid, FiniteIndexLattice, FiniteIndexFLewAlgebra
 
 # julia> using StaticArrays
 
@@ -216,34 +476,13 @@ end
 # α
 
 # julia> domain = SVector{3, FiniteIndexTruth}([⊤, ⊥, α])
-# 3-element SVector{3, FiniteIndexTruth} with indices SOneTo(3):
-#  ⊤
-#  ⊥
-#  α
 
 # julia> meettruthtable = SMatrix{3, 3, FiniteIndexTruth}([⊤, ⊥, α, ⊥, ⊥, ⊥, α, ⊥, α])
-# 3×3 SMatrix{3, 3, FiniteIndexTruth, 9} with indices SOneTo(3)×SOneTo(3):
-#  ⊤  ⊥  α
-#  ⊥  ⊥  ⊥
-#  α  ⊥  α
 
 # julia> jointruthtable = SMatrix{3, 3, FiniteIndexTruth}([⊤, ⊤, ⊤, ⊤, ⊥, α, ⊤, α, α])
-# 3×3 SMatrix{3, 3, FiniteIndexTruth, 9} with indices SOneTo(3)×SOneTo(3):
-#  ⊤  ⊤  ⊤
-#  ⊤  ⊥  α
-#  ⊤  α  α
-
-# julia> ∧ = BinaryIndexOperation{3}(domain, meettruthtable)
-# FiniteIndexTruth[⊤ ⊥ α; ⊥ ⊥ ⊥; α ⊥ α]
 
 # julia> ∨ = BinaryIndexOperation{3}(domain, jointruthtable)
-# FiniteIndexTruth[⊤ ⊤ ⊤; ⊤ ⊥ α; ⊤ α α]
 
-# julia> L = FiniteIndexLattice(∨, ∧)
-# ERROR: MethodError: no method matching FiniteIndexLattice(::BinaryIndexOperation{3}, ::BinaryIndexOperation{3})
-# Stacktrace:
-#  [1] top-level scope
-#    @ REPL[11]:1
+# julia> ∧ = BinaryIndexOperation{3}(domain, meettruthtable)
 
 # julia> L = FiniteIndexLattice{3}(∨, ∧)
-# FiniteIndexLattice{3}(FiniteIndexTruth[⊤ ⊤ ⊤; ⊤ ⊥ α; ⊤ α α], FiniteIndexTruth[⊤ ⊥ α; ⊥ ⊥ ⊥; α ⊥ α])
