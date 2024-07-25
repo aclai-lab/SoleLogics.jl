@@ -26,6 +26,8 @@ end
 
 istop(t::FiniteIndexTruth) = t.index == UInt8(1)
 isbot(t::FiniteIndexTruth) = t.index == UInt8(2)
+istop(t::UInt8) = t == UInt8(1)
+isbot(t::UInt8) = t == UInt8(2)
 
 function syntaxstring(t::FiniteIndexTruth)
     if t.index < UInt8(3)
@@ -58,33 +60,27 @@ end
 Base.convert(::Type{FiniteIndexTruth}, index::UInt8) = FiniteIndexTruth(index)
 
 ############################################################################################
-#### Finite algebra ########################################################################
-############################################################################################
-
-abstract type FiniteIndexAlgebra{N} <: AbstractAlgebra{FiniteIndexTruth} end
-
-############################################################################################
 #### Binary index operation ################################################################
 ############################################################################################
 
 struct BinaryIndexOperation{N} <: AbstractBinaryOperation
-    domain::SVector{N, FiniteIndexTruth}
     truthtable::SMatrix{N, N, FiniteIndexTruth}
 
-    function BinaryIndexOperation{N}(
-        domain::SVector{N, FiniteIndexTruth},
-        truthtable::SMatrix{N, N, FiniteIndexTruth}
-    ) where {
-        N
-    }
-        return new{N}(domain, truthtable)
+    function BinaryIndexOperation{N}(truthtable::SMatrix{N, N, FiniteIndexTruth}) where {N}
+        return new{N}(truthtable)
+    end
+
+    function BinaryIndexOperation{N}(truthtable::Array{FiniteIndexTruth, 1}) where {N}
+        return BinaryIndexOperation{N}(SMatrix{N, N, FiniteIndexTruth}(truthtable))
     end
 end
 
 Base.show(io::IO, o::BinaryIndexOperation{N}) where {N} = print(io, "$(o.truthtable)")
 arity(o::BinaryIndexOperation{N}) where {N} = 2
 
-getdomain(o::BinaryIndexOperation{N}) where {N} = o.domain
+function getdomain(::BinaryIndexOperation{N}) where {N}
+    return SVector{N,FiniteIndexTruth}(FiniteIndexTruth.([1:N]...))
+end
 
 function (o::BinaryIndexOperation{N})(t1::UInt8, t2::UInt8) where {N}
     return o.truthtable[t1, t2]
@@ -100,6 +96,16 @@ end
 
 function (o::BinaryIndexOperation{N})(t1::FiniteIndexTruth, t2::FiniteIndexTruth) where {N}
     return o.truthtable[t1.index, t2.index]
+end
+
+############################################################################################
+#### Finite algebra ########################################################################
+############################################################################################
+
+abstract type FiniteIndexAlgebra{N} <: AbstractAlgebra{FiniteIndexTruth} end
+
+function getdomain(::A) where {N, A<:FiniteIndexAlgebra{N}}
+    return SVector{N,FiniteIndexTruth}(FiniteIndexTruth.([1:N]...))
 end
 
 ############################################################################################
@@ -225,16 +231,6 @@ function convert(
     end
 end
 
-function getdomain(a::A) where {N, A<:FiniteIndexAlgebra{N}}
-    if ismonoid(a)
-        return getdomain(a.operation)
-    elseif islattice(a)
-        return getdomain(a.join)
-    else
-        error("Cannot resolve the domain of $a.")
-    end
-end
-
 ############################################################################################
 #### Finite index bounded lattice ##########################################################
 ############################################################################################
@@ -330,7 +326,7 @@ struct FiniteIndexFLewAlgebra{N} <: FiniteIndexAlgebra{N}
                 end
             end
         end
-        implication = BinaryIndexOperation{N}(getdomain(join), SMatrix{3, 3, FiniteIndexTruth}(implicationtruthtable))
+        implication = BinaryIndexOperation{N}(SMatrix{3, 3, FiniteIndexTruth}(implicationtruthtable))
         return new{N}(join, meet, monoid, implication, bot, top)
     end
 
@@ -462,27 +458,3 @@ function minimalmembers(
     end
     return mm
 end
-
-
-# julia> using SoleLogics
-
-# julia> using SoleLogics.ManyValuedLogics
-
-# julia> using SoleLogics.ManyValuedLogics: FiniteIndexTruth, BinaryIndexOperation, IndexMonoid, CommutativeIndexMonoid, FiniteIndexLattice, FiniteIndexFLewAlgebra
-
-# julia> using StaticArrays
-
-# julia> α = FiniteIndexTruth(3)
-# α
-
-# julia> domain = SVector{3, FiniteIndexTruth}([⊤, ⊥, α])
-
-# julia> meettruthtable = SMatrix{3, 3, FiniteIndexTruth}([⊤, ⊥, α, ⊥, ⊥, ⊥, α, ⊥, α])
-
-# julia> jointruthtable = SMatrix{3, 3, FiniteIndexTruth}([⊤, ⊤, ⊤, ⊤, ⊥, α, ⊤, α, α])
-
-# julia> ∨ = BinaryIndexOperation{3}(domain, jointruthtable)
-
-# julia> ∧ = BinaryIndexOperation{3}(domain, meettruthtable)
-
-# julia> L = FiniteIndexLattice{3}(∨, ∧)
