@@ -37,7 +37,7 @@ end
 """
     struct BinaryOperation{T<:Truth, D<:AbstractVector{T}} <: Operation
         domain::D
-        truthtable::AbstractDict{Tuple{T, T}, T}
+        truthtable::Dict{Tuple{T, T}, T}
     end
 
 A binary operation on a set S is a mapping of the elements of the Cartesian product
@@ -49,7 +49,7 @@ See also [`Operation`](@ref), [`arity`](@ref).
 """
 struct BinaryOperation{T<:Truth, D<:AbstractVector{T}} <: AbstractBinaryOperation
     domain::D
-    truthtable::AbstractDict{Tuple{T, T}, T}
+    truthtable::Dict{Tuple{T, T}, T}
 
     function BinaryOperation(
         domain::D,

@@ -1,3 +1,4 @@
+using Test
 using SoleLogics
 using SoleLogics.ManyValuedLogics
 using SoleLogics.ManyValuedLogics: Operation

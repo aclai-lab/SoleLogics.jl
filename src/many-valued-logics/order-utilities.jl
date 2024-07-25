@@ -5,8 +5,7 @@
         t2::T
     ) where {
         T<:Truth,
-        D<:AbstractVector{T},
-        L<:FiniteAlgebra{T,D}
+        L<:FiniteAlgebra{T}
     }
 
 Return true if `t1` ≤ `t2` in `l`. Given an algebraically defined lattice (L, ∨, ∧), one can
@@ -20,8 +19,7 @@ function precedeq(
     t2::T2
 ) where {
     T<:Truth,
-    D<:AbstractVector{T},
-    L<:FiniteAlgebra{T,D},
+    L<:FiniteAlgebra{T},
     T1<:Truth,
     T2<:Truth
 }
@@ -43,8 +41,7 @@ end
         t2::T
     ) where {
         T<:Truth,
-        D<:AbstractVector{T},
-        L<:FiniteAlgebra{T,D}
+        L<:FiniteAlgebra{T}
     }
 
 Return true if `t1` < `t2` in `l`. Given an algebraically defined lattice (L, ∨, ∧), one can
@@ -58,8 +55,7 @@ function precedes(
     t2::T
 ) where {
     T<:Truth,
-    D<:AbstractVector{T},
-    L<:FiniteAlgebra{T,D}
+    L<:FiniteAlgebra{T}
 }
     return t1 != t2 && precedeq(l, t1, t2)
 end
@@ -71,8 +67,7 @@ end
         t2::T
     ) where {
         T<:Truth,
-        D<:AbstractVector{T},
-        L<:FiniteAlgebra{T,D}
+        L<:FiniteAlgebra{T}
     }
 
 Return true if `t1` ≥ `t2` in `l`. Given an algebraically defined lattice (L, ∨, ∧), one can
@@ -86,8 +81,7 @@ function succeedeq(
     t2::T
 ) where {
     T<:Truth,
-    D<:AbstractVector{T},
-    L<:FiniteAlgebra{T,D}
+    L<:FiniteAlgebra{T}
 }
     return precedeq(l, t2, t1)
 end
@@ -99,8 +93,7 @@ end
         t2::T
     ) where {
         T<:Truth,
-        D<:AbstractVector{T},
-        L<:FiniteAlgebra{T,D}
+        L<:FiniteAlgebra{T}
     }
 
 Return true if `t1` > `t2` in `l`. Given an algebraically defined lattice (L, ∨, ∧), one can
@@ -114,8 +107,7 @@ function succeedes(
     t2::T
 ) where {
     T<:Truth,
-    D<:AbstractVector{T},
-    L<:FiniteAlgebra{T,D}
+    L<:FiniteAlgebra{T}
 }
     return precedes(l, t2, t1)
 end
@@ -126,13 +118,9 @@ end
         t::T1
     ) where {
         T<:Truth,
-        D<:AbstractVector{T},
-        L<:FiniteAlgebra{T,D},
+        L<:FiniteAlgebra{T},
         T1<:Truth
     }
-        if !isa(t, T) t = convert(T, t)::T end
-        return filter(ti->precedes(l, ti, t), getdomain(l))
-    end
 
 Return all members of l below t.
 
@@ -143,8 +131,7 @@ function lesservalues(
     t::T1
 ) where {
     T<:Truth,
-    D<:AbstractVector{T},
-    L<:FiniteAlgebra{T,D},
+    L<:FiniteAlgebra{T},
     T1<:Truth
 }
     if !isa(t, T) t = convert(T, t)::T end
@@ -157,8 +144,7 @@ end
         t::T1
     ) where {
         T<:Truth,
-        D<:AbstractVector{T},
-        L<:FiniteAlgebra{T,D},
+        L<:FiniteAlgebra{T},
         T1<:Truth
     }
 
@@ -171,13 +157,13 @@ function maximalmembers(
     t::T1
 ) where {
     T<:Truth,
-    D<:AbstractVector{T},
-    L<:FiniteAlgebra{T,D},
+    L<:FiniteAlgebra{T},
     T1<:Truth
 }
     if !isa(t, T) t = convert(T, t)::T end
-    candidates = filter(ti->!succeedeq(l, ti, t), getdomain(l))
-    mm = D()
+    d = getdomain(l)
+    candidates = filter(ti->!succeedeq(l, ti, t), d)
+    mm = empty(d)
     for c in candidates
         if isempty(filter(ti->succeedes(l, ti, c), candidates)) push!(mm, c) end
     end
@@ -190,8 +176,7 @@ end
         t::T1
     ) where {
         T<:Truth,
-        D<:AbstractVector{T},
-        L<:FiniteAlgebra{T,D},
+        L<:FiniteAlgebra{T},
         T1<:Truth
     }
 
@@ -204,13 +189,13 @@ function minimalmembers(
     t::T1
 ) where {
     T<:Truth,
-    D<:AbstractVector{T},
-    L<:FiniteAlgebra{T,D},
+    L<:FiniteAlgebra{T},
     T1<:Truth
 }
     if !isa(t, T) t = convert(T, t)::T end
-    candidates = filter(ti->!precedeq(l, ti, t), getdomain(l))
-    mm = D()
+    d = getdomain(l)
+    candidates = filter(ti->!precedeq(l, ti, t), d)
+    mm = empty(d)
     for c in candidates
         if isempty(filter(ti->precedes(l, ti, c), candidates)) push!(mm, c) end
     end

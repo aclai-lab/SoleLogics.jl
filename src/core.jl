@@ -46,7 +46,7 @@ abstract type Syntactical end
 
 """$(doc_syntaxstring)"""
 function syntaxstring(s::Syntactical; kwargs...)::String
-    return error("Please, provide method syntaxstring(::$(typeof(s)); kwargs...).")
+    return error("Please, provide method syntaxstring(::$(typeof(s)); kwargs...::$(typeof(kwargs))).")
 end
 
 function Base.show(io::IO, φ::Syntactical)
@@ -393,6 +393,10 @@ function composeformulas(c::Connective, φs::NTuple{N,SyntaxTree}) where {N}
     return SyntaxBranch(c, φs)
 end
 
+
+function syntaxstring(φ::SyntaxTree; kwargs...)
+    return error("Please, provide method syntaxstring(::$(typeof(φ)); kwargs...::$(typeof(kwargs))).")
+end
 
 function Base.show(io::IO, φ::SyntaxTree)
     # print(io, "$(typeof(φ))($(syntaxstring(φ)))")
