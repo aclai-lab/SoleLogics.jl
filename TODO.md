@@ -92,6 +92,8 @@ Three cases I noted where there might be redundant parentheses. They might be ob
         end
     end
 
+- TODO: some types like Union{AbstractString,Number,AbstractChar} can be passively used as atoms? e.g. "a" in \varphi ?
+
 - (PAndQ.jl) Algorithm that produces truth tables of propositional logic formulas, and that determines whether a formula is satisfiable, contingent, a tautology, or a contradiction.
 - function normalize: simplify the function using the two new traits dual/hasdual.
 - Adjust normalize rules
