@@ -31,6 +31,9 @@ _G3_domain = getdomain(G3)
 @code_warntype G3.meet(α, ⊤)
 @code_warntype IG3.meet(a, t)
 
+Test.@inferred G3.meet(α, ⊤)
+Test.@inferred IG3.meet(a, t)
+
 ############################################################################################
 
 problems_naivedict = begin
