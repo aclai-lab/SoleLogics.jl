@@ -659,6 +659,10 @@ Base.convert(::Type{Truth}, t::Truth) = t
 # Helper: composeformulas actually works for operators as well
 composeformulas(c::Truth, ::Tuple{}) = c
 
+# Note: Extend istop to formulas. TODO find correct place for this.
+function istop(φ::Formula)
+    false
+end
 ############################################################################################
 #### Operator ##############################################################################
 ############################################################################################
@@ -703,7 +707,7 @@ function (op::Operator)(φs::NTuple{N,Formula}) where {N}
             φs = (op(φs[1:end-1]), φs[end])
         end
     end
-    
+
     if AbstractSyntaxStructure <: typejoin(typeof.(φs)...)
         φs = Base.promote(φs...)
     end
