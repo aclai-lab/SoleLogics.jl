@@ -659,6 +659,10 @@ Base.convert(::Type{Truth}, t::Truth) = t
 # Helper: composeformulas actually works for operators as well
 composeformulas(c::Truth, ::Tuple{}) = c
 
+# Note: Extend istop to formulas. TODO find correct place for this.
+function istop(φ::Formula)
+    false
+end
 ############################################################################################
 #### Operator ##############################################################################
 ############################################################################################
@@ -703,7 +707,7 @@ function (op::Operator)(φs::NTuple{N,Formula}) where {N}
             φs = (op(φs[1:end-1]), φs[end])
         end
     end
-    
+
     if AbstractSyntaxStructure <: typejoin(typeof.(φs)...)
         φs = Base.promote(φs...)
     end
@@ -778,20 +782,6 @@ struct SyntaxBranch <: SyntaxTree
         return nothing
     end
 
-    # function SyntaxBranch{T}(
-    #     token::T,
-    #     children::NTuple{N,SyntaxTree} = (),
-    # ) where {T<:Connective,N}
-    #     _aritycheck(N, token, children)
-    #     return new{T}(token, children)
-    # end
-
-    # function SyntaxBranch{T}(
-    #     φ::SyntaxBranch{T},
-    # ) where {T<:Connective}
-    #     return SyntaxBranch{T}(token(φ), children(φ))
-    # end
-
     function SyntaxBranch(
         token::Connective,
         children::NTuple{N,SyntaxTree} = (),
@@ -801,9 +791,6 @@ struct SyntaxBranch <: SyntaxTree
     end
 
     # Helpers
-    # function SyntaxBranch{T}(token::T, children...) where {T<:Connective}
-    #     return SyntaxBranch{T}(token, children)
-    # end
     function SyntaxBranch(token::Connective, children...)
         return SyntaxBranch(token, children)
     end

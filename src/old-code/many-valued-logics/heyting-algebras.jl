@@ -91,7 +91,7 @@ end
 
 A Heyting algebra, represented explicitly
 as a domain of truth values, and a graph over them encoding a partial order with
-specific constraints (see [here](https://en.m.wikipedia.org/wiki/Heyting_algebra)).
+specific constraints (see [here](https://en.wikipedia.org/wiki/Heyting_algebra)).
 ⊤ and ⊥ are always the first and the second element of each algebra, respectively.
 A copy of the graph under transitive closure is also stored for optimization purposes.
 

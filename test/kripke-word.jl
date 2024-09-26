@@ -9,7 +9,7 @@ end
 frame(i::KripkeWord) = FullDimensionalFrame((length(i.word),), Point{1,Int})
 
 function interpret(a::Atom{Char}, i::KripkeWord, w::Point)
-    ch = value(a)
+    ch = SoleLogics.value(a)
     wordch = i.word[w[1]]
     return (wordch == ch) ? TOP : BOT
 end

@@ -118,8 +118,6 @@ The internal nodes in a [`SyntaxTree`](@ref) definitely have [`ariety`](@ref) gr
 ```@docs
 SyntaxBranch
 ```
-<!-- children(φ::SyntaxBranch) -->
-<!-- token(φ::SyntaxBranch) -->
 
 ## [Semantics Basics](@id semantics-base-definitions)
 ```@docs
