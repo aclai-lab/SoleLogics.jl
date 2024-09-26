@@ -1,6 +1,6 @@
 using SoleLogics
 using SoleLogics.ManyValuedLogics
-using SoleLogics.ManyValuedLogics: G3
+using SoleLogics.ManyValuedLogics: G3, FiniteIndexFLewAlgebra
 using StatsBase
 using Random
 
@@ -22,13 +22,7 @@ aotpicker = (rng)->StatsBase.sample(rng, aot, aotweights)
     )
 end
 
-using SoleLogics.ManyValuedLogics: FiniteIndexTruth, BinaryIndexOperation, IndexMonoid, CommutativeIndexMonoid, FiniteIndexLattice, FiniteIndexFLewAlgebra
-⊤, ⊥, α = FiniteIndexTruth.([1:3]...)
-jointruthtable = [⊤, ⊤, ⊤, ⊤, ⊥, α, ⊤, α, α]
-meettruthtable = [⊤, ⊥, α, ⊥, ⊥, ⊥, α, ⊥, α]
-idxjoin = BinaryIndexOperation{3}(jointruthtable)
-idxmeet = BinaryIndexOperation{3}(meettruthtable)
-IG3 = FiniteIndexFLewAlgebra{3}(idxjoin, idxmeet, idxmeet, ⊥, ⊤)
+IG3 = convert(FiniteIndexFLewAlgebra, G3)
 
 rng = MersenneTwister(1)
 
