@@ -29,7 +29,7 @@ isbot(t::FiniteIndexTruth) = t.index == UInt8(2)
 istop(t::UInt8) = t == UInt8(1)
 isbot(t::UInt8) = t == UInt8(2)
 
-function syntaxstring(t::FiniteIndexTruth)
+function syntaxstring(t::FiniteIndexTruth; kwargs...)
     if t.index < UInt8(3)
         return Char(UInt16(8867) + t.index)
     else
