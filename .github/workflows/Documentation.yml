@@ -1,23 +1,19 @@
-name: Documentation
+name: Documenter
 on:
   push:
-    branches:
-      - main
-      - dev
-    tags: '*'
+    branches: [main, master]
+    tags: [v*]
   pull_request:
 
 jobs:
-  build:
+  Documenter:
+    permissions:
+      contents: write
+      statuses: write
+    name: Documentation
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: julia-actions/setup-julia@latest
-        with:
-          version: '1.9'
-      - name: Install dependencies
-        run: julia --project=docs/ -e 'using Pkg; Pkg.develop(PackageSpec(path=pwd())); Pkg.instantiate()'
-      - name: Build and deploy
+      - uses: actions/checkout@v4
+      - uses: julia-actions/julia-docdeploy@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # For authentication with GitHub Actions token
-        run: julia --project=docs/ docs/make.jl
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
