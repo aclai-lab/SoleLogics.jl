@@ -391,16 +391,16 @@ end
     struct TruthTable{A,T<:Truth}
 
 Dictionary which associates an [`AbstractAssignment`](@ref)s to the truth value of the
-assignment itself on a [`AbstractSyntaxStructure`](@ref).
+assignment itself on a [`SyntaxStructure`](@ref).
 
-See also [`AbstractAssignment`](@ref), [`AbstractSyntaxStructure`](@ref),
+See also [`AbstractAssignment`](@ref), [`SyntaxStructure`](@ref),
 [`Truth`](@ref).
 """
 struct TruthTable{
     A,
     T<:Truth
 } <: Formula # TODO is this correct? Remove?
-    truth::Dict{<:AbstractAssignment,Vector{Pair{AbstractSyntaxStructure,T}}}
+    truth::Dict{<:AbstractAssignment,Vector{Pair{SyntaxStructure,T}}}
 end
 
 ############################################################################################

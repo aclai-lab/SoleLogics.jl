@@ -16,7 +16,7 @@ Please, feel free to use the following tree structures to orient yourself in the
 - [`Syntactical`](@ref)
     - [`Connective`](@ref)                      (e.g., ∧, ∨, ¬, →)
     - [`Formula`](@ref)
-        - [`AbstractSyntaxStructure`](@ref)
+        - [`SyntaxStructure`](@ref)
             - [`SyntaxTree`](@ref)              (e.g., ¬p ∧ q → s)
                 - [`SyntaxLeaf`](@ref)
                     - [`Atom`](@ref)            (e.g., p, q)
@@ -52,7 +52,7 @@ Later, we will see some interesting example about how to equip these symbols wit
 arity(φ::SyntaxTree)
 ```
 
-The vast majority of data structures involved in encoding a logical formula, are children of the [`Formula`](@ref) abstract type. When such data structures purely represents tree-shaped data structures (or single nodes in them), then they are also children of the [`AbstractSyntaxStructure`](@ref) abstract type.
+The vast majority of data structures involved in encoding a logical formula, are children of the [`Formula`](@ref) abstract type. When such data structures purely represents tree-shaped data structures (or single nodes in them), then they are also children of the [`SyntaxStructure`](@ref) abstract type.
 
 ```@docs
 Formula
@@ -75,7 +75,7 @@ composeformulas(c::Connective, φs::NTuple{N,F}) where {N,F<:Formula}
 We are ready to see how logical formulas are represented using syntax trees
 
 ```@docs
-AbstractSyntaxStructure
+SyntaxStructure
 SyntaxTree
 children(φ::SyntaxTree)
 token(φ::SyntaxTree)

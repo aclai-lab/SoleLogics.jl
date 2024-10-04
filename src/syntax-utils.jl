@@ -2,7 +2,7 @@ import Base: show, promote_rule, length, getindex
 using SoleBase
 
 doc_lmlf = """
-    struct LeftmostLinearForm{C<:Connective,SS<:AbstractSyntaxStructure} <: AbstractSyntaxStructure
+    struct LeftmostLinearForm{C<:Connective,SS<:SyntaxStructure} <: SyntaxStructure
         children::Vector{<:SS}
     end
 
@@ -11,11 +11,11 @@ of a set of other syntax structure of type `SS` by means of a connective `C`.
 This structure enables a structured instantiation of formulas in conjuctive/disjunctive forms, and
 conjuctive normal form (CNF) or disjunctive normal form (DNF), defined as:
 
-    const LeftmostConjunctiveForm{SS<:AbstractSyntaxStructure} = LeftmostLinearForm{typeof(∧),SS}
-    const LeftmostDisjunctiveForm{SS<:AbstractSyntaxStructure} = LeftmostLinearForm{typeof(∨),SS}
+    const LeftmostConjunctiveForm{SS<:SyntaxStructure} = LeftmostLinearForm{typeof(∧),SS}
+    const LeftmostDisjunctiveForm{SS<:SyntaxStructure} = LeftmostLinearForm{typeof(∨),SS}
 
-    const CNF{SS<:AbstractSyntaxStructure} = LeftmostLinearForm{typeof(∧),LeftmostLinearForm{typeof(∨),SS}}
-    const DNF{SS<:AbstractSyntaxStructure} = LeftmostLinearForm{typeof(∨),LeftmostLinearForm{typeof(∧),SS}}
+    const CNF{SS<:SyntaxStructure} = LeftmostLinearForm{typeof(∧),LeftmostLinearForm{typeof(∨),SS}}
+    const DNF{SS<:SyntaxStructure} = LeftmostLinearForm{typeof(∨),LeftmostLinearForm{typeof(∧),SS}}
 
 # Examples
 ```julia-repl
@@ -56,16 +56,16 @@ SyntaxBranch: ¬(p ∧ q) ∧ ¬(p ∧ q)
 
 """$(doc_lmlf)
 
-See also [`AbstractSyntaxStructure`](@ref), [`SyntaxTree`](@ref),
+See also [`SyntaxStructure`](@ref), [`SyntaxTree`](@ref),
 [`LeftmostConjunctiveForm`](@ref), [`LeftmostDisjunctiveForm`](@ref),
 [`Literal`](@ref).
 """
-struct LeftmostLinearForm{C<:Connective,SS<:AbstractSyntaxStructure} <: AbstractSyntaxStructure
+struct LeftmostLinearForm{C<:Connective,SS<:SyntaxStructure} <: SyntaxStructure
     children::Vector{SS}
 
     function LeftmostLinearForm{C,SS}(
         children::Vector,
-    ) where {C<:Connective,SS<:AbstractSyntaxStructure}
+    ) where {C<:Connective,SS<:SyntaxStructure}
         a = arity(C()) # TODO maybe add member connective::C and use that instead of C()
         n_children = length(children)
 
@@ -84,7 +84,7 @@ struct LeftmostLinearForm{C<:Connective,SS<:AbstractSyntaxStructure} <: Abstract
         new{C,SS}(children)
     end
 
-    function LeftmostLinearForm{C}(children::AbstractVector{SS}) where {C<:Connective,SS<:AbstractSyntaxStructure}
+    function LeftmostLinearForm{C}(children::AbstractVector{SS}) where {C<:Connective,SS<:SyntaxStructure}
         # SS = SoleBase._typejoin(typeof.(children)...)
         LeftmostLinearForm{C,SS}(children)
     end
@@ -128,7 +128,7 @@ struct LeftmostLinearForm{C<:Connective,SS<:AbstractSyntaxStructure} <: Abstract
 
         # Get a vector of `SyntaxTree`s, having `c` as common ancestor, then,
         # call LeftmostLinearForm constructor.
-        _children = AbstractSyntaxStructure[]
+        _children = SyntaxStructure[]
 
         function _dig_and_retrieve(tree::SyntaxTree, c::SoleLogics.Connective)
             token(tree) != c ?
@@ -249,7 +249,7 @@ function Base.show(io::IO, lf::LeftmostLinearForm{C,SS}) where {C,SS}
         else
             print(io, "LeftmostLinearForm with connective $(syntaxstring(connective(lf))) and")
         end
-        println(io, " $(nchildren(lf)) $((SS == AbstractSyntaxStructure ? "" : "$(SS) "))children:")
+        println(io, " $(nchildren(lf)) $((SS == SyntaxStructure ? "" : "$(SS) "))children:")
     end
     # println(io, "\t$(join(syntaxstring.(children(lf)), " $(syntaxstring(connective(lf))) \n\t"))")
     println(io, "\t$(join(syntaxstring.(children(lf)), "\n\t"))")
@@ -257,8 +257,8 @@ end
 
 # TODO fix
 Base.promote_rule(::Type{<:LeftmostLinearForm}, ::Type{<:LeftmostLinearForm}) = SyntaxTree
-Base.promote_rule(::Type{SS}, ::Type{LF}) where {SS<:AbstractSyntaxStructure,LF<:LeftmostLinearForm} = SyntaxTree
-Base.promote_rule(::Type{LF}, ::Type{SS}) where {LF<:LeftmostLinearForm,SS<:AbstractSyntaxStructure} = SyntaxTree
+Base.promote_rule(::Type{SS}, ::Type{LF}) where {SS<:SyntaxStructure,LF<:LeftmostLinearForm} = SyntaxTree
+Base.promote_rule(::Type{LF}, ::Type{SS}) where {LF<:LeftmostLinearForm,SS<:SyntaxStructure} = SyntaxTree
 
 function Base.in(tok::SyntaxToken, φ::LeftmostLinearForm)::Bool
     return (tok isa Connective && connective(φ) == tok) ||
@@ -322,19 +322,19 @@ Base.promote_rule(::Type{SS}, ::Type{LF}) where {LF<:LeftmostLinearForm,SS<:Synt
 ############################################################################################
 
 # TODO actually:
-# const CNF{SS<:AbstractSyntaxStructure} = Union{LeftmostLinearForm{typeof(∧),LeftmostLinearForm{typeof(∨),SS}},LeftmostLinearForm{typeof(∨),SS}}
-# const DNF{SS<:AbstractSyntaxStructure} = Union{LeftmostLinearForm{typeof(∨),LeftmostLinearForm{typeof(∧),SS}},LeftmostLinearForm{typeof(∧),SS}}
+# const CNF{SS<:SyntaxStructure} = Union{LeftmostLinearForm{typeof(∧),LeftmostLinearForm{typeof(∨),SS}},LeftmostLinearForm{typeof(∨),SS}}
+# const DNF{SS<:SyntaxStructure} = Union{LeftmostLinearForm{typeof(∨),LeftmostLinearForm{typeof(∧),SS}},LeftmostLinearForm{typeof(∧),SS}}
 
 """
-    LeftmostConjunctiveForm{SS<:AbstractSyntaxStructure} = LeftmostLinearForm{typeof(∧),SS}
+    LeftmostConjunctiveForm{SS<:SyntaxStructure} = LeftmostLinearForm{typeof(∧),SS}
 
 Specific instantiation of a [`LeftmostLinearForm`](@ref), where [`Connective`](@ref)s are
 all [`CONJUNCTION`](@ref)s.
 
-See also [`AbstractSyntaxStructure`](@ref), [`Connective`](@ref), [`LeftmostLinearForm`](@ref),
+See also [`SyntaxStructure`](@ref), [`Connective`](@ref), [`LeftmostLinearForm`](@ref),
 [`CONJUNCTION`](@ref).
 """
-const LeftmostConjunctiveForm{SS<:AbstractSyntaxStructure} = LeftmostLinearForm{typeof(∧),SS}
+const LeftmostConjunctiveForm{SS<:SyntaxStructure} = LeftmostLinearForm{typeof(∧),SS}
 
 function check(
     φ::LeftmostConjunctiveForm,
@@ -354,15 +354,15 @@ function check(
 end
 
 """
-    LeftmostDisjunctiveForm{SS<:AbstractSyntaxStructure} = LeftmostLinearForm{typeof(∨),SS}
+    LeftmostDisjunctiveForm{SS<:SyntaxStructure} = LeftmostLinearForm{typeof(∨),SS}
 
 Specific instantiation of a [`LeftmostLinearForm`](@ref), where [`Connective`](@ref)s are
 all [`DISJUNCTION`](@ref)s.
 
-See also [`AbstractSyntaxStructure`](@ref), [`Connective`](@ref),
+See also [`SyntaxStructure`](@ref), [`Connective`](@ref),
 [`LeftmostLinearForm`](@ref), [`DISJUNCTION`](@ref).
 """
-const LeftmostDisjunctiveForm{SS<:AbstractSyntaxStructure} = LeftmostLinearForm{typeof(∨),SS}
+const LeftmostDisjunctiveForm{SS<:SyntaxStructure} = LeftmostLinearForm{typeof(∨),SS}
 
 function check(
     φ::LeftmostDisjunctiveForm,
@@ -382,14 +382,14 @@ function check(
 end
 
 """
-    CNF{SS<:AbstractSyntaxStructure} = LeftmostConjunctiveForm{LeftmostDisjunctiveForm{SS}}
+    CNF{SS<:SyntaxStructure} = LeftmostConjunctiveForm{LeftmostDisjunctiveForm{SS}}
 
-Conjunctive Normal Form of an [`AbstractSyntaxStructure`](@ref).
+Conjunctive Normal Form of an [`SyntaxStructure`](@ref).
 
-See also [`AbstractSyntaxStructure`](@ref), [`LeftmostConjunctiveForm`](@ref),
+See also [`SyntaxStructure`](@ref), [`LeftmostConjunctiveForm`](@ref),
 [`LeftmostDisjunctiveForm`](@ref), [`CONJUNCTION`](@ref), [`DISJUNCTION`](@ref).
 """
-const CNF{SS<:AbstractSyntaxStructure} = LeftmostConjunctiveForm{LeftmostDisjunctiveForm{SS}}
+const CNF{SS<:SyntaxStructure} = LeftmostConjunctiveForm{LeftmostDisjunctiveForm{SS}}
 
 function check(
     φ::CNF,
@@ -409,14 +409,14 @@ function check(
 end
 
 """
-    DNF{SS<:AbstractSyntaxStructure} = LeftmostConjunctiveForm{LeftmostConjunctiveForm{SS}}
+    DNF{SS<:SyntaxStructure} = LeftmostConjunctiveForm{LeftmostConjunctiveForm{SS}}
 
-Disjunctive Normal Form of an [`AbstractSyntaxStructure`](@ref).
+Disjunctive Normal Form of an [`SyntaxStructure`](@ref).
 
-See also [`AbstractSyntaxStructure`](@ref), [`LeftmostConjunctiveForm`](@ref),
+See also [`SyntaxStructure`](@ref), [`LeftmostConjunctiveForm`](@ref),
 [`LeftmostDisjunctiveForm`](@ref), [`CONJUNCTION`](@ref), [`DISJUNCTION`](@ref).
 """
-const DNF{SS<:AbstractSyntaxStructure} = LeftmostDisjunctiveForm{LeftmostConjunctiveForm{SS}}
+const DNF{SS<:SyntaxStructure} = LeftmostDisjunctiveForm{LeftmostConjunctiveForm{SS}}
 
 function check(
     φ::DNF,
@@ -468,8 +468,8 @@ function DNF(φ::SyntaxBranch)
 end
 
 
-literaltype(::CNF{SS}) where {SS<:AbstractSyntaxStructure} = SS
-literaltype(::DNF{SS}) where {SS<:AbstractSyntaxStructure} = SS
+literaltype(::CNF{SS}) where {SS<:SyntaxStructure} = SS
+literaltype(::DNF{SS}) where {SS<:SyntaxStructure} = SS
 
 # # TODO maybe not needed?
 # Base.promote_rule(::Type{<:LeftmostConjunctiveForm}, ::Type{<:LeftmostConjunctiveForm}) = LeftmostConjunctiveForm
@@ -493,16 +493,16 @@ pushdisjunct(φ::LeftmostDisjunctiveForm, el) = Base.push!(children(φ), el)
 ############################################################################################
 
 """
-    struct Literal{T<:SyntaxLeaf} <: AbstractSyntaxStructure
+    struct Literal{T<:SyntaxLeaf} <: SyntaxStructure
         ispos::Bool
         prop::T
     end
 
 An atom, or its negation.
 
-See also [`CNF`](@ref), [`DNF`](@ref), [`AbstractSyntaxStructure`](@ref).
+See also [`CNF`](@ref), [`DNF`](@ref), [`SyntaxStructure`](@ref).
 """
-struct Literal{T<:SyntaxLeaf} <: AbstractSyntaxStructure
+struct Literal{T<:SyntaxLeaf} <: SyntaxStructure
     ispos::Bool
     prop::T
 
@@ -562,7 +562,7 @@ function cnf(φ::Formula, literaltype = Literal; kwargs...)
     return _cnf(normalize(φ; profile = :nnf, kwargs...), literaltype)
 end
 
-function cnf(φ::CNF{T}, literaltype = Literal; kwargs...) where {T<:AbstractSyntaxStructure}
+function cnf(φ::CNF{T}, literaltype = Literal; kwargs...) where {T<:SyntaxStructure}
     if T == literaltype
         return φ
     else

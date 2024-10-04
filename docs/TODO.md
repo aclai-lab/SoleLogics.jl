@@ -23,7 +23,7 @@
 #     Notes for Giovanni; 
 #     1) many important definitions are introduced here: is this the correct place to explain them or it's better to just link the documentation? 
 #     2) I'm still working on putting a modal_depth parameter in both randbaseformula and randformula 
-#     3) As stated in AbstractSyntaxStructure docstring, classically a logical formula is implemented using a tree structure (an AST) but other representations may exist: I guess we could add a "randnormalform" method
+#     3) As stated in SyntaxStructure docstring, classically a logical formula is implemented using a tree structure (an AST) but other representations may exist: I guess we could add a "randnormalform" method
 #     ## Generating random interpretations
 #     Kripke structures generation is provided by gen_kstructure interface. As you can see from the documentation, internally it builds up a random directed graph structure (using some, possibly custom algorithm). The adjacency list obtained is enriched with informations to obtain a so called Kripke frame; this is done by taking each vertex in the list and
 #     - converting it into a World structure;

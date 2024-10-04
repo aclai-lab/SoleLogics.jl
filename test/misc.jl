@@ -32,8 +32,8 @@ interp2             = TruthDict(1:4, BOT)
 ############################################################################################
 
 @test Formula           <: Syntactical
-@test AbstractSyntaxStructure   <: Formula
-@test SyntaxLeaf              <: AbstractSyntaxStructure
+@test SyntaxStructure   <: Formula
+@test SyntaxLeaf              <: SyntaxStructure
 @test Truth                     <: SyntaxLeaf
 
 @test TOP               isa Truth
@@ -49,7 +49,7 @@ interp2             = TruthDict(1:4, BOT)
 @test Connective        <: SyntaxToken
 @test SyntaxLeaf        <: SyntaxToken
 
-@test SyntaxTree        <: AbstractSyntaxStructure
+@test SyntaxTree        <: SyntaxStructure
 @test SyntaxBranch      <: SyntaxTree
 
 @test NEGATION          isa NamedConnective

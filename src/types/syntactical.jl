@@ -1,29 +1,15 @@
 #=
-    Syntactical Type Hierarchy
+    Syntactical Types Hierarchy
 
     Syntactical
-    ├── Formula
-    │   ├── AbstractSyntaxStructure
-    │   │   ├── SyntaxTree
-    │   │   │   ├── SyntaxLeaf
-    │   │   │   │   ├── Atom
-    │   │   │   │   └── Truth
-    │   │   │   │       ├── BooleanTruth (⊤ and ⊥)
-    │   │   │   │       └── ...
-    │   │   │   └── SyntaxBranch (e.g., p ∧ q)
-    │   │   ├── LeftmostLinearForm (e.g., conjunctions, disjunctions, DNFs, CNFs)
-    │   │   ├── Literal (e.g., p, ¬p)
-    │   │   └── ...
-    │   ├── TruthTable
-    │   ├── AnchoredFormula
-    │   └── ...
-    └── Connective
-        ├── NamedConnective (e.g., ∧, ∨, →, ¬, □, ◊)
-        ├── AbstractRelationalConnective
-        │   ├── DiamondRelationalConnective (e.g., ⟨G⟩)
-        │   ├── BoxRelationalConnective (e.g., [G])
-        │   └── ...
-        └── ...
+    ├── Connective (e.g, ∧, ¬, □, ◊, ⟨G⟩)
+    └── Formula
+        └── SyntaxStructure
+            └── SyntaxTree
+                ├── SyntaxLeaf
+                │   ├── AbstractAtom (e.g., p)
+                │   └── Truth (e.g, ⊤, ⊥)
+                └── AbstractSyntaxBranch (e.g., p ∧ q)
 
     Also:
     const Operator = Union{Connective,Truth}
@@ -39,6 +25,9 @@ include("docstrings.jl")
     abstract type Syntactical end
 
 Master abstract type for all syntactical objects (e.g., formulas, connectives).
+
+# Interface
+- `syntaxstring(s::Syntactical; kwargs...)::String`
 
 See also [`Formula`](@ref), [`Connective`](@ref).
 """
@@ -64,6 +53,17 @@ end
 Abstract type for [logical connectives](https://en.wikipedia.org/wiki/Logical_connective),
 that are used to express non-atomic statements;
 for example, CONJUNCTION, DISJUNCTION, NEGATION and IMPLICATION (stylized as ∧, ∨, ¬ and →).
+
+# Interface
+- `arity(::Connective)::Int`
+- `iscommutative(::Connective)::Bool`
+- `precedence(::Connective)::Int`
+- `associativity(::Connective)::Symbol`
+- `collatetruth(::Connective, ::NTuple{N,Truth})::Truth`
+- `simplify(::Connective, ::NTuple{N,Truth})::SyntaxTree`
+- `dual(s::Connective)::Connective`
+- `hasdual(s::Connective)::Bool`
+- See also [`Syntactical`](@ref)
 
 # Implementation
 
@@ -130,7 +130,9 @@ isternary(c) = arity(c) == 3
 
 """$(doc_iscommutative)"""
 function iscommutative(c::Connective)
-    return arity(c) <= 1 # Unless otherwise specified
+    # Unless otherwise specified
+    return arity(c) <= 1 ? true :
+        error("Please, provide method iscommutative(::$(typeof(c))).")
 end
 
 """$(doc_precedence)"""
@@ -150,7 +152,7 @@ associativity(::Connective) = :left
 
 Abstract type for logical formulas.
 Examples of `Formula`s are `SyntaxLeaf`s (for example, `Atom`s and
-`Truth` values), `AbstractSyntaxStructure`s (for example, `SyntaxTree`s and
+`Truth` values), `SyntaxStructure`s (for example, `SyntaxTree`s and
 `LeftmostLinearForm`s) and `TruthTable`s (
 enriched representation, which associates a syntactic structure with
 additional [memoization](https://en.wikipedia.org/wiki/Memoization) structures,
@@ -162,7 +164,28 @@ representation via [`tree`](@ref); its [`height`](@ref) can be computed,
 and it can be queried for its syntax [`tokens`](@ref), [`atoms`](@ref), etc...
 It can be parsed from its [`syntaxstring`](@ref) representation via [`parseformula`](@ref).
 
-See also [`tree`](@ref), [`AbstractSyntaxStructure`](@ref), [`SyntaxLeaf`](@ref).
+# Interface
+- `tree(φ::Formula)::SyntaxTree`
+- `composeformulas(c::Connective, φs::NTuple{N,F})::F where {N,F<:Formula}`
+- See also [`Syntactical`](@ref)
+
+# Utility functions (requiring a walk of the tree)
+- `Base.in(tok::SyntaxToken, φ::Formula)::Bool`
+- `height(φ::Formula)::Int`
+- `tokens(φ::Formula)::AbstractVector{<:SyntaxToken}`
+- `atoms(φ::Formula)::AbstractVector{<:AbstractAtom}`
+- `truths(φ::Formula)::AbstractVector{<:Truth}`
+- `leaves(φ::Formula)::AbstractVector{<:SyntaxLeaf}`
+- `connectives(φ::Formula)::AbstractVector{<:Connective}`
+- `operators(φ::Formula)::AbstractVector{<:Operator}`
+- `ntokens(φ::Formula)::Int`
+- `natoms(φ::Formula)::Int`
+- `ntruths(φ::Formula)::Int`
+- `nleaves(φ::Formula)::Int`
+- `nconnectives(φ::Formula)::Int`
+- `noperators(φ::Formula)::Int`
+
+See also [`tree`](@ref), [`SyntaxStructure`](@ref), [`SyntaxLeaf`](@ref).
 """
 abstract type Formula <: Syntactical end
 
@@ -179,13 +202,13 @@ function tree(φ::Formula)
 end
 
 """
-    height(φ::Formula)::Integer
+    height(φ::Formula)::Int
 
 Return the height of a formula, in its syntax tree representation.
 
 See also [`SyntaxTree`](@ref).
 """
-function height(φ::Formula)::Integer
+function height(φ::Formula)::Int
     return height(tree(φ))
 end
 
@@ -194,7 +217,7 @@ function tokens(φ::Formula) # ::AbstractVector{<:SyntaxToken}
     return tokens(tree(φ))
 end
 """$(doc_tokopprop)"""
-function atoms(φ::Formula) # ::AbstractVector{<:Atom}
+function atoms(φ::Formula) # ::AbstractVector{<:AbstractAtom}
     return atoms(tree(φ))
 end
 """$(doc_tokopprop)"""
@@ -214,27 +237,27 @@ function operators(φ::Formula) # ::AbstractVector{<:Operator}
     return operators(tree(φ))
 end
 """$(doc_tokopprop)"""
-function ntokens(φ::Formula)::Integer
+function ntokens(φ::Formula)::Int
     return ntokens(tree(φ))
 end
 """$(doc_tokopprop)"""
-function natoms(φ::Formula)::Integer
+function natoms(φ::Formula)::Int
     return natoms(tree(φ))
 end
 """$(doc_tokopprop)"""
-function ntruths(φ::Formula)::Integer
+function ntruths(φ::Formula)::Int
     return ntruths(tree(φ));
 end
 """$(doc_tokopprop)"""
-function nleaves(φ::Formula)::Integer
+function nleaves(φ::Formula)::Int
     return nleaves(tree(φ));
 end
 """$(doc_tokopprop)"""
-function nconnectives(φ::Formula)::Integer
+function nconnectives(φ::Formula)::Int
     return nconnectives(tree(φ));
 end
 """$(doc_tokopprop)"""
-function noperators(φ::Formula)::Integer
+function noperators(φ::Formula)::Int
     return noperators(tree(φ));
 end
 
@@ -254,17 +277,18 @@ function composeformulas(c::Connective, φs::NTuple{N,F})::F where {N,F<:Formula
         "composeformulas(c::Connective, φs::NTuple{N,$(F)}) where {N}.")
 end
 
+# Helper (?)
 # Note: don't type the output as F
 function composeformulas(c::Connective, φs::Vararg{Formula,N}) where {N}
     return composeformulas(c, φs)
 end
 
 ############################################################################################
-#### AbstractSyntaxStructure ###############################################################
+#### SyntaxStructure ###############################################################
 ############################################################################################
 
 """
-    abstract type AbstractSyntaxStructure <: Formula end
+    abstract type SyntaxStructure <: Formula end
 
 Abstract type for the purely-syntactic component of a logical formula (e.g.,
 no fancy memoization structure associated). The typical representation is the
@@ -272,12 +296,15 @@ no fancy memoization structure associated). The typical representation is the
 (e.g., [conjunctive](https://en.wikipedia.org/wiki/Conjunctive_normal_form) or
 [disjunctive](https://en.wikipedia.org/wiki/Disjunctive_normal_form) normal forms).
 
+# Interface
+- See also [`Formula`](@ref)
+
 See also [`Formula`](@ref), [`AbstractLogic`](@ref), [`SyntaxTree`](@ref),
 [`tree`](@ref).
 """
-abstract type AbstractSyntaxStructure <: Formula end
+abstract type SyntaxStructure <: Formula end
 
-function composeformulas(c::Connective, φs::NTuple{N,AbstractSyntaxStructure}) where {N}
+function composeformulas(c::Connective, φs::NTuple{N,SyntaxStructure}) where {N}
     return composeformulas(c, tree.(φs))
 end
 
@@ -288,21 +315,52 @@ end
 import AbstractTrees: children
 
 """
-    abstract type SyntaxTree <: AbstractSyntaxStructure end
+    abstract type SyntaxTree <: SyntaxStructure end
 
 Abstract type for
 [syntax trees](https://en.wikipedia.org/wiki/Abstract_syntax_tree); that is,
 syntax leaves (see `SyntaxLeaf`, such as `Truth` values and `Atom`s),
 and their composition via `Connective`s (i.e., `SyntaxBranch`).
 
-!!! note
-    Note that `SyntaxTree`s are *ranked trees*,
-    and (should) adhere to the `AbstractTrees` interface.
+Note that `SyntaxTree` are *ranked trees*,
+and (should) implement `AbstractTrees` interface.
+
+# Interface
+- `children(φ::SyntaxTree)::NTuple{N,SyntaxTree} where N`
+- `token(φ::SyntaxTree)::Connective`
+- See also [`SyntaxStructure`](@ref)
+
+# Utility functions
+- `tokentype(φ::SyntaxTree)`
+- `arity(φ::SyntaxTree)::Int`
+
+# Other utility functions (requiring a walk of the tree)
+- `Base.in(tok::SyntaxToken, φ::SyntaxTree)::Bool`
+- `height(φ::SyntaxTree)::Int`
+- `tokens(φ::SyntaxTree)::AbstractVector{<:SyntaxToken}`
+- `atoms(φ::SyntaxTree)::AbstractVector{<:AbstractAtom}`
+- `truths(φ::SyntaxTree)::AbstractVector{<:Truth}`
+- `leaves(φ::SyntaxTree)::AbstractVector{<:SyntaxLeaf}`
+- `connectives(φ::SyntaxTree)::AbstractVector{<:Connective}`
+- `operators(φ::SyntaxTree)::AbstractVector{<:Operator}`
+- `ntokens(φ::SyntaxTree)::Int`
+- `natoms(φ::SyntaxTree)::Int`
+- `ntruths(φ::SyntaxTree)::Int`
+- `nleaves(φ::SyntaxTree)::Int`
+- `nconnectives(φ::SyntaxTree)::Int`
+- `noperators(φ::SyntaxTree)::Int`
+- `tokenstype(φ::SyntaxTree)`
+- `atomstype(φ::SyntaxTree)`
+- `truthstype(φ::SyntaxTree)`
+- `leavestype(φ::SyntaxTree)`
+- `connectivestype(φ::SyntaxTree)`
+- `operatorstype(φ::SyntaxTree)`
+- `composeformulas(c::Connective, φs::NTuple{N,SyntaxTree})`
 
 See also [`SyntaxLeaf`](@ref), [`SyntaxBranch`](@ref),
-[`AbstractSyntaxStructure`](@ref), [`Formula`](@ref).
+[`SyntaxStructure`](@ref), [`Formula`](@ref).
 """
-abstract type SyntaxTree <: AbstractSyntaxStructure end
+abstract type SyntaxTree <: SyntaxStructure end
 
 tree(φ::SyntaxTree) = φ
 
@@ -316,17 +374,16 @@ function token(φ::SyntaxTree)
     return error("Please, provide method token(::$(typeof(φ))).")
 end
 
-"""$(doc_arity)"""
 arity(φ::SyntaxTree) = length(children(φ))
 
-function height(φ::SyntaxTree)
+function height(φ::SyntaxTree)::Int
     return length(children(φ)) == 0 ? 0 : 1 + maximum(height(c) for c in children(φ))
 end
 function tokens(φ::SyntaxTree) # ::AbstractVector{<:SyntaxToken}
     return SyntaxToken[vcat(tokens.(children(φ))...)..., token(φ)]
 end
-function atoms(φ::SyntaxTree) # ::AbstractVector{<:Atom}
-    a = token(φ) isa Atom ? [token(φ)] : []
+function atoms(φ::SyntaxTree) # ::AbstractVector{<:AbstractAtom}
+    a = token(φ) isa AbstractAtom ? [token(φ)] : []
     return Atom[vcat(atoms.(children(φ))...)..., a...]
 end
 function truths(φ::SyntaxTree) # ::AbstractVector{<:Truth}
@@ -345,26 +402,26 @@ function operators(φ::SyntaxTree) # ::AbstractVector{<:Operator}
     c = token(φ) isa Operator ? [token(φ)] : []
     return Operator[vcat(operators.(children(φ))...)..., c...]
 end
-function ntokens(φ::SyntaxTree)::Integer
+function ntokens(φ::SyntaxTree)::Int
     return length(children(φ)) == 0 ? 1 : 1 + sum(ntokens(c) for c in children(φ))
 end
-function natoms(φ::SyntaxTree)::Integer
-    a = token(φ) isa Atom ? 1 : 0
+function natoms(φ::SyntaxTree)::Int
+    a = token(φ) isa AbstractAtom ? 1 : 0
     return length(children(φ)) == 0 ? a : a + sum(natoms(c) for c in children(φ))
 end
-function ntruths(φ::SyntaxTree)::Integer
+function ntruths(φ::SyntaxTree)::Int
     t = token(φ) isa Truth ? 1 : 0
     return length(children(φ)) == 0 ? t : t + sum(ntruths(c) for c in children(φ))
 end
-function nleaves(φ::SyntaxTree)::Integer
+function nleaves(φ::SyntaxTree)::Int
     op = token(φ) isa SyntaxLeaf ? 1 : 0
     return length(children(φ)) == 0 ? op : op + sum(nleaves(c) for c in children(φ))
 end
-function nconnectives(φ::SyntaxTree)::Integer
+function nconnectives(φ::SyntaxTree)::Int
     c = token(φ) isa Connective ? 1 : 0
     return length(children(φ)) == 0 ? c : c + sum(nconnectives(c) for c in children(φ))
 end
-function noperators(φ::SyntaxTree)::Integer
+function noperators(φ::SyntaxTree)::Int
     op = token(φ) isa Operator ? 1 : 0
     return length(children(φ)) == 0 ? op : op + sum(noperators(c) for c in children(φ))
 end
@@ -383,7 +440,7 @@ Base.hash(φ::SyntaxTree) = Base.hash(token(φ), Base.hash(children(φ)))
 # Helpers
 tokentype(φ::SyntaxTree) = typeof(token(φ))
 tokenstype(φ::SyntaxTree) = Union{tokentype(φ),tokenstype.(children(φ))...}
-atomstype(φ::SyntaxTree) = typeintersect(Atom, tokenstype(φ))
+atomstype(φ::SyntaxTree) = typeintersect(AbstractAtom, tokenstype(φ))
 truthstype(φ::SyntaxTree) = typeintersect(Truth, tokenstype(φ))
 leavestype(φ::SyntaxTree) = typeintersect(SyntaxLeaf, tokenstype(φ))
 connectivestype(φ::SyntaxTree) = typeintersect(Connective, tokenstype(φ))
@@ -403,8 +460,8 @@ end
 # Syntax tree, the universal syntax structure representation,
 # wins when promoted with syntax structures/tokens and syntax trees.
 Base.promote_rule(::Type{<:SyntaxTree}, ::Type{<:SyntaxTree}) = SyntaxTree
-Base.promote_rule(::Type{<:AbstractSyntaxStructure}, ::Type{S}) where {S<:SyntaxTree} = S
-Base.promote_rule(::Type{S}, ::Type{<:AbstractSyntaxStructure}) where {S<:SyntaxTree} = S
+Base.promote_rule(::Type{<:SyntaxStructure}, ::Type{S}) where {S<:SyntaxTree} = S
+Base.promote_rule(::Type{S}, ::Type{<:SyntaxStructure}) where {S<:SyntaxTree} = S
 
 # TODO figure out: are both of these needed? Maybe one of the two is enough
 SyntaxTree(φ::Formula) = tree(φ)
@@ -429,18 +486,22 @@ end
 ############################################################################################
 
 """
-    abstract type SyntaxLeaf <: AbstractSyntaxStructure end
+    abstract type SyntaxLeaf <: SyntaxStructure end
 
 An atomic logical element, like a `Truth` value or an `Atom`.
 `SyntaxLeaf`s have `arity` equal to zero, meaning that they are not
 allowed to have children in tree-like syntactic structures.
 
-See also [`AbstractSyntaxStructure`](@ref),  [`arity`](@ref), [`SyntaxBranch`](@ref).
+# Interface
+- `syntaxstring(s::SyntaxLeaf; kwargs...)::String`
+- `dual(s::SyntaxLeaf)::SyntaxLeaf`
+- `hasdual(s::SyntaxLeaf)::Bool`
+
+See also [`SyntaxStructure`](@ref),  [`arity`](@ref), [`SyntaxBranch`](@ref).
 """
 abstract type SyntaxLeaf <: SyntaxTree end
 
 children(::SyntaxLeaf) = ()
-
 token(φ::SyntaxLeaf) = φ
 
 ############################################################################################
@@ -459,84 +520,199 @@ const SyntaxToken = Union{Connective,SyntaxLeaf}
 """$(doc_dual)"""
 dual(t::SyntaxToken) = error("Please, provide method dual(::$(typeof(t))).")
 
-"""$(doc_dual)"""
+"""See [`dual`](@ref)"""
 hasdual(t::SyntaxToken) = false
 
-"""$(doc_formula_basein)"""
-function Base.in(tok::SyntaxToken, φ::SyntaxTree)::Bool # TODO Note that this is interface for SyntaxTree's
-    return error("Please, provide method Base.in(tok::$(typeof(tok)), φ::$(typeof(φ))).")
-end
-
-function Base.in(tok::SyntaxToken, φ::Formula)::Bool
-    return Base.in(tok, tree(φ))
-end
-
-function Base.in(tok::SyntaxToken, φ::SyntaxLeaf)::Bool
-    return tok == φ
-end
-
 ############################################################################################
-#### Atom ##################################################################################
+#### AbstractAtom ##########################################################################
 ############################################################################################
 
 """
-    struct Atom{V} <: SyntaxLeaf
-        value::V
-    end
+    abstract type AbstractAtom <: SyntaxLeaf end
 
 An atom, sometimes called an atomic proposition,
-propositional letter (or simply *letter*), of type
-`Atom{V}` wraps a `value::V` representing a fact which truth can be assessed on
+propositional letter (or simply *letter*),
+representing a fact which truth can be assessed on
 a logical interpretation.
 
 Atoms are nullary tokens (i.e, they are at the leaves of a syntax tree);
 note that their atoms cannot be `Atom`s.
 
+# Interface
+- `syntaxstring(s::AbstractAtom; kwargs...)::String`
+- `dual(s::AbstractAtom)::AbstractAtom`
+- `hasdual(s::AbstractAtom)::Bool`
+
 See also [`AbstractInterpretation`](@ref), [`atoms`](@ref), [`check`](@ref),
 [`SyntaxToken`](@ref).
 """
-struct Atom{V} <: SyntaxLeaf
-    value::V
+abstract type AbstractAtom <: SyntaxLeaf end
 
-    function Atom{V}(value::V) where {V}
-        @assert !(value isa Union{Formula,Connective}) "Illegal nesting. " *
-            "Cannot instantiate Atom with value of type $(typeof(value))"
-        new{V}(value)
+############################################################################################
+#### AbstractSyntaxBranch ##################################################################
+############################################################################################
+
+"""
+    abstract type AbstractSyntaxBranch <: SyntaxTree end
+
+An internal node of a syntax tree encoding a logical formula.
+Such a node holds a syntax `token` (a `Connective`),
+and has as many children as the `arity` of the token.
+
+# Interface
+- `children(φ::SyntaxTree)::NTuple{N,SyntaxTree} where N`
+- `token(φ::SyntaxTree)::Connective`
+- See also [`Syntactical`](@ref)
+
+See also
+[`token`](@ref), [`children`](@ref),
+[`arity`](@ref),
+[`Connective`](@ref),
+[`height`](@ref),
+[`atoms`](@ref), [`natoms`](@ref),
+[`operators`](@ref), [`noperators`](@ref),
+[`tokens`](@ref), [`ntokens`](@ref),
+"""
+abstract type AbstractSyntaxBranch <: SyntaxTree end
+
+function syntaxstring(
+    φ::AbstractSyntaxBranch;
+    function_notation = false,
+    remove_redundant_parentheses = true,
+    parenthesize_atoms = !remove_redundant_parentheses,
+    parenthesization_level = 1,
+    parenthesize_commutatives = false,
+    kwargs...,
+)::String
+    ch_kwargs = merge((; kwargs...),
+        (;
+            function_notation = function_notation,
+            remove_redundant_parentheses = remove_redundant_parentheses,
+            parenthesize_atoms = parenthesize_atoms,
+            parenthesization_level = parenthesization_level,
+            parenthesize_commutatives = parenthesize_commutatives,
+        ),)
+
+    # Parenthesization rules for binary operators in infix notation
+    function _binary_infix_syntaxstring(
+            ptok::SyntaxToken,
+            ch::SyntaxTree,
+            childtype::Symbol,
+    )
+        chtok = token(ch)
+        chtokstring = syntaxstring(ch; ch_kwargs...)
+
+        parenthesize = begin
+            if !remove_redundant_parentheses
+                true
+            elseif arity(chtok) == 0
+                if chtok isa Atom && parenthesize_atoms
+                    true
+                else
+                    false
+                end
+            elseif arity(chtok) == 2 # My child is infix
+                tprec = precedence(ptok)
+                chprec = precedence(chtok)
+                if ptok == chtok
+                    if !parenthesize_commutatives && iscommutative(ptok)
+                        false
+                    elseif associativity(ptok) == :left && childtype == :left
+                        false # a ∧ b ∧ c = (a ∧ b) ∧ c
+                    elseif associativity(ptok) == :right && childtype == :right
+                        false # a → b → c = a → (b → c)
+                    else
+                        true
+                    end
+                elseif tprec == chprec # Read left to right
+                    if childtype == :left
+                        false
+                    elseif childtype == :right
+                        true
+                    end
+                elseif tprec < chprec
+                    if chprec - tprec <= parenthesization_level
+                        true
+                    else
+                        false
+                    end
+                elseif tprec > chprec
+                    true
+                    # # 1st condition, before "||" -> "◊¬p ∧ ¬q" instead of "(◊¬p) ∧ (¬q)"
+                    # # 2nd condition, after  "||" -> "(q → p) → ¬q" instead of "q → p → ¬q" <- Not sure: wrong?
+                    # # 3nd condition
+                    # @show !(tprec <= chprec)
+                    # @show ((chprec-tprec) <= parenthesization_level)
+                    # @show tprec <= chprec
+                    # @show chprec-tprec
+                    # @show chprec-tprec <= parenthesization_level
+                    # @show iscommutative(ptok)
+                    # @show ptok, chtok, iscommutative(ptok), tprec, chprec
+                    # @show ((!iscommutative(ptok) || ptok != chtok) && (tprec > chprec))
+                    # @show (!iscommutative(ptok) && tprec <= chprec)
+
+                    # if (
+                    #     (tprec > chprec  && (!iscommutative(ptok) || ptok != chtok)) || # 1
+                    #     (tprec <= chprec && (!iscommutative(ptok))) # 2
+                    # )
+                    #     true
+                    # else
+                    #     false
+                    # end
+                end
+            else
+                false
+            end
+        end
+        lpar, rpar = parenthesize ? ["(", ")"] : ["", ""]
+        return "$(lpar)$(chtokstring)$(rpar)"
     end
-    function Atom(value::V) where {V}
-        Atom{V}(value)
-    end
-    function Atom{V}(p::Atom) where {V}
-        Atom{V}(value(p))
-    end
-    function Atom(p::Atom)
-        p
+
+    tok = token(φ)
+    tokstr = syntaxstring(tok; ch_kwargs...)
+
+    if arity(tok) == 0
+        # Leaf nodes parenthesization is parent's respsonsability
+        return tokstr
+    elseif arity(tok) == 2 && !function_notation
+        # Infix notation for binary operators
+
+        "$(_binary_infix_syntaxstring(tok, children(φ)[1], :left)) " *
+        "$tokstr $(_binary_infix_syntaxstring(tok, children(φ)[2], :right))"
+    else
+        # Infix notation with arity != 2, or function notation
+        lpar, rpar = "(", ")"
+        ch = token(children(φ)[1])
+        charity = arity(ch)
+        if !function_notation && arity(tok) == 1 &&
+           (charity == 1 || (ch isa Atom && !parenthesize_atoms))
+            # When not in function notation, print "¬p" instead of "¬(p)";
+            # note that "◊((p ∧ q) → s)" must not be simplified as "◊(p ∧ q) → s".
+            lpar, rpar = "", ""
+        end
+
+        if length(children(φ)) == 0
+            tokstr
+        else
+            tokstr * "$(lpar)" *
+            join(
+                [syntaxstring(c; ch_kwargs...) for c in children(φ)], ", ",) * "$(rpar)"
+        end
     end
 end
 
-value(p::Atom) = p.value
+"""$(doc_formula_basein)"""
+function Base.in(tok::SyntaxToken, φ::Formula)::Bool
+    return Base.in(tok, tree(φ))
+end
 
-dual(p::Atom) = Atom(dual(value(p)))
-hasdual(p::Atom) = hasdual(value(p))
-hasdual(value) = false
-dual(value) = error("Please, provide method SoleLogics.dual(::$(typeof(value))).") # TODO explain why?
+function Base.in(tok::SyntaxToken, tree::AbstractSyntaxBranch)::Bool
+    return tok == token(tree) || any([Base.in(tok, c) for c in children(tree)])
+end
 
-valuetype(::Atom{V}) where {V} = V
-valuetype(::Type{Atom{V}}) where {V} = V
-
-Base.convert(::Type{A}, p::Atom) where {A<:Atom} = A(p)
-Base.convert(::Type{A}, a) where {A<:Atom} = A(a)
-
-Base.isequal(a::Atom, b::Atom) = Base.isequal(value(a), value(b)) # Needed to avoid infinite recursion
-Base.isequal(a::Atom, b) = Base.isequal(value(a), b)
-Base.isequal(a, b::Atom) = Base.isequal(a, value(b))
-Base.isequal(a::Atom, b::SyntaxTree) = (a == b) # Needed for resolving ambiguities
-Base.isequal(a::SyntaxTree, b::Atom) = (a == b) # Needed for resolving ambiguities
-Base.hash(a::Atom) = Base.hash(value(a))
-
-syntaxstring(a::Atom; kwargs...)::String = syntaxstring(value(a); kwargs...)
-
-syntaxstring(value; kwargs...) = string(value)
+function Base.in(tok::SyntaxToken, φ::SyntaxLeaf)::Bool
+    return tok == φ
+end
 
 ############################################################################################
 #### Truth #################################################################################
@@ -550,6 +726,16 @@ Abstract type for syntax leaves representing values of a
 In Boolean logic, the two [`BooleanTruth`](@ref) values TOP (⊤) and BOT (⊥) are used.
 
 See also [`BooleanTruth`](@ref).
+
+# Interface
+- `syntaxstring(s::Truth; kwargs...)::String`
+- `dual(s::Truth)::Truth`
+- `hasdual(s::Truth)::Bool`
+- `istop(t::Truth)::Bool`
+- `isbot(t::Truth)::Bool`
+- `precedes(t1::Truth, t2::Truth)::Bool`
+- `truthmeet(t1::Truth, t2::Truth)::Truth`
+- `truthjoin(t1::Truth, t2::Truth)::Truth`
 
 # Implementation
 A [three-valued algebra](https://en.wikipedia.org/wiki/Three-valued_logic),
@@ -616,9 +802,20 @@ See also [`istop`](@ref), [`Truth`](@ref).
 isbot(t::Truth)::Bool = false
 
 """
-TODO docstring.
+    precedes(t1::Truth, t2::Truth)::Bool
+
+Encodes the order relation (also denoted as `≺`) between truth values.
+
+# Examples
+```
+julia> using SoleLogics
+
+
+julia> SoleLogics.precedes(⊥, ⊤)
+true
+```
 """
-function precedes(t1::Truth, t2::Truth)
+function precedes(t1::Truth, t2::Truth)::Bool
     if Base.isequal(t1, t2)
         return false
     else
@@ -626,13 +823,12 @@ function precedes(t1::Truth, t2::Truth)
     end
 end
 
-function truthmeet(t1::Truth, t2::Truth)
+function truthmeet(t1::Truth, t2::Truth)::Truth
     error("Please, provide method truthmeet(::$(typeof(t1)), ::$(typeof(t2))).")
 end
-function truthjoin(t1::Truth, t2::Truth)
+function truthjoin(t1::Truth, t2::Truth)::Truth
     error("Please, provide method truthjoin(::$(typeof(t1)), ::$(typeof(t2))).")
 end
-
 
 # Alias
 """Alias for [`precedes`](@ref)."""
@@ -663,6 +859,7 @@ composeformulas(c::Truth, ::Tuple{}) = c
 function istop(φ::Formula)
     false
 end
+
 ############################################################################################
 #### Operator ##############################################################################
 ############################################################################################
@@ -708,387 +905,10 @@ function (op::Operator)(φs::NTuple{N,Formula}) where {N}
         end
     end
 
-    if AbstractSyntaxStructure <: typejoin(typeof.(φs)...)
+    if SyntaxStructure <: typejoin(typeof.(φs)...)
         φs = Base.promote(φs...)
     end
     return composeformulas(op, φs)
 end
 
 (c::Truth)(::Tuple{}) = c
-
-############################################################################################
-#### SyntaxBranch ##########################################################################
-############################################################################################
-
-"""
-    struct SyntaxBranch <: SyntaxTree
-        token::Connective
-        children::NTuple{N,SyntaxTree} where {N}
-    end
-
-An internal node of a syntax tree encoding a logical formula.
-Such a node holds a syntax `token` (a `Connective`,
-and has as many children as the `arity` of the token.
-
-This implementation is *arity-compliant*, in that, upon construction,
-the arity of the token is checked against the number of children provided.
-
-# Examples
-```julia-repl
-julia> p,q = Atom.([p, q])
-2-element Vector{Atom{String}}:
- Atom{String}: p
- Atom{String}: q
-
-julia> branch = SyntaxBranch(CONJUNCTION, p, q)
-SyntaxBranch: p ∧ q
-
-julia> token(branch)
-∧
-
-julia> syntaxstring.(children(branch))
-(p, q)
-
-julia> ntokens(a) == nconnectives(a) + nleaves(a)
-true
-
-julia> arity(a)
-2
-
-julia> height(a)
-1
-```
-
-See also
-[`token`](@ref), [`children`](@ref),
-[`arity`](@ref),
-[`Connective`](@ref),
-[`height`](@ref),
-[`atoms`](@ref), [`natoms`](@ref),
-[`operators`](@ref), [`noperators`](@ref),
-[`tokens`](@ref), [`ntokens`](@ref),
-"""
-struct SyntaxBranch <: SyntaxTree
-
-    # The syntax token at the current node
-    token::Connective
-
-    # The child nodes of the current node
-    children::NTuple{N,SyntaxTree} where {N}
-
-    function _aritycheck(N, token, children)
-        @assert arity(token) == N "Cannot instantiate SyntaxBranch with token " *
-                                  "$(token) of arity $(arity(token)) and $(N) children."
-        return nothing
-    end
-
-    function SyntaxBranch(
-        token::Connective,
-        children::NTuple{N,SyntaxTree} = (),
-    ) where {N}
-        _aritycheck(N, token, children)
-        return new(token, children)
-    end
-
-    # Helpers
-    function SyntaxBranch(token::Connective, children...)
-        return SyntaxBranch(token, children)
-    end
-
-end
-
-children(φ::SyntaxBranch) = φ.children
-token(φ::SyntaxBranch) = φ.token
-
-function syntaxstring(
-    φ::SyntaxBranch;
-    function_notation = false,
-    remove_redundant_parentheses = true,
-    parenthesize_atoms = !remove_redundant_parentheses,
-    parenthesization_level = 1,
-    parenthesize_commutatives = false,
-    kwargs...
-)::String
-    ch_kwargs = merge((; kwargs...), (;
-        function_notation = function_notation,
-        remove_redundant_parentheses = remove_redundant_parentheses,
-        parenthesize_atoms = parenthesize_atoms,
-        parenthesization_level = parenthesization_level,
-        parenthesize_commutatives = parenthesize_commutatives,
-    ))
-
-    # Parenthesization rules for binary operators in infix notation
-    function _binary_infix_syntaxstring(
-        ptok::SyntaxToken,
-        ch::SyntaxTree,
-        childtype::Symbol
-    )
-        chtok = token(ch)
-        chtokstring = syntaxstring(ch; ch_kwargs...)
-
-        parenthesize = begin
-            if !remove_redundant_parentheses
-                true
-            elseif arity(chtok) == 0
-                if chtok isa Atom && parenthesize_atoms
-                    true
-                else
-                    false
-                end
-            elseif arity(chtok) == 2 # My child is infix
-                tprec = precedence(ptok)
-                chprec = precedence(chtok)
-                if ptok == chtok
-                    if !parenthesize_commutatives && iscommutative(ptok)
-                        false
-                    elseif associativity(ptok) == :left && childtype == :left
-                        false # a ∧ b ∧ c = (a ∧ b) ∧ c
-                    elseif associativity(ptok) == :right && childtype == :right
-                        false # a → b → c = a → (b → c)
-                    else
-                        true
-                    end
-                elseif tprec == chprec # Read left to right
-                    if childtype == :left
-                        false
-                    elseif childtype == :right
-                        true
-                    end
-                elseif tprec < chprec
-                    if chprec-tprec <= parenthesization_level
-                        true
-                    else
-                        false
-                    end
-                elseif tprec > chprec
-                    true
-                    # # 1st condition, before "||" -> "◊¬p ∧ ¬q" instead of "(◊¬p) ∧ (¬q)"
-                    # # 2nd condition, after  "||" -> "(q → p) → ¬q" instead of "q → p → ¬q" <- Not sure: wrong?
-                    # # 3nd condition
-                    # @show !(tprec <= chprec)
-                    # @show ((chprec-tprec) <= parenthesization_level)
-                    # @show tprec <= chprec
-                    # @show chprec-tprec
-                    # @show chprec-tprec <= parenthesization_level
-                    # @show iscommutative(ptok)
-                    # @show ptok, chtok, iscommutative(ptok), tprec, chprec
-                    # @show ((!iscommutative(ptok) || ptok != chtok) && (tprec > chprec))
-                    # @show (!iscommutative(ptok) && tprec <= chprec)
-
-
-                    # if (
-                    #     (tprec > chprec  && (!iscommutative(ptok) || ptok != chtok)) || # 1
-                    #     (tprec <= chprec && (!iscommutative(ptok))) # 2
-                    # )
-                    #     true
-                    # else
-                    #     false
-                    # end
-                end
-            else
-                false
-            end
-        end
-        lpar, rpar = parenthesize ? ["(", ")"] : ["", ""]
-        return "$(lpar)$(chtokstring)$(rpar)"
-    end
-
-    tok = token(φ)
-    tokstr = syntaxstring(tok; ch_kwargs...)
-
-    if arity(tok) == 0
-        # Leaf nodes parenthesization is parent's respsonsability
-        return tokstr
-    elseif arity(tok) == 2 && !function_notation
-        # Infix notation for binary operators
-
-        "$(_binary_infix_syntaxstring(tok, children(φ)[1], :left)) " *
-        "$tokstr $(_binary_infix_syntaxstring(tok, children(φ)[2], :right))"
-    else
-        # Infix notation with arity != 2, or function notation
-        lpar, rpar = "(", ")"
-        ch = token(children(φ)[1])
-        charity = arity(ch)
-        if !function_notation && arity(tok) == 1 &&
-            (charity == 1 || (ch isa Atom && !parenthesize_atoms))
-            # When not in function notation, print "¬p" instead of "¬(p)";
-            # note that "◊((p ∧ q) → s)" must not be simplified as "◊(p ∧ q) → s".
-            lpar, rpar = "", ""
-        end
-
-        if length(children(φ)) == 0
-            tokstr
-        else
-            tokstr * "$(lpar)" * join(
-                [syntaxstring(c; ch_kwargs...) for c in children(φ)], ", ") * "$(rpar)"
-        end
-    end
-end
-
-function Base.in(tok::SyntaxToken, tree::SyntaxBranch)::Bool
-    return tok == token(tree) || any([Base.in(tok, c) for c in children(tree)])
-end
-
-############################################################################################
-#### AbstractInterpretation ################################################################
-############################################################################################
-
-"""
-    abstract type AbstractInterpretation end
-
-Abstract type for representing a [logical
-interpretation](https://en.wikipedia.org/wiki/Interpretation_(logic)).
-In the case of
-[propositional logic](https://simple.wikipedia.org/wiki/Propositional_logic),
-is essentially a map *atom → truth value*.
-
-Properties expressed via logical formulas can be `check`ed on logical interpretations.
-
-See also [`check`](@ref), [`AbstractAssignment`](@ref), [`AbstractKripkeStructure`](@ref).
-"""
-abstract type AbstractInterpretation end
-
-function valuetype(i::AbstractInterpretation)
-    return error("Please, provide method valuetype(::$(typeof(i))).")
-end
-function truthtype(i::AbstractInterpretation)
-    return error("Please, provide method truthtype(::$(typeof(i))).")
-end
-
-############################################################################################
-#### Interpret & Check #####################################################################
-############################################################################################
-
-"""
-    interpret(
-        φ::Formula,
-        i::AbstractInterpretation,
-        args...;
-        kwargs...
-    )::Formula
-
-Return the truth value for a formula on a logical interpretation (or model).
-
-# Examples
-```julia-repl
-julia> @atoms p q
-2-element Vector{Atom{String}}:
- p
- q
-
-julia> td = TruthDict([p => true, q => false])
-TruthDict with values:
-┌────────┬────────┐
-│      q │      p │
-│ String │ String │
-├────────┼────────┤
-│      ⊥ │      ⊤ │
-└────────┴────────┘
-
-julia> interpret(CONJUNCTION(p,q), td)
-⊥
-```
-
-See also [`check`](@ref), [`Formula`](@ref), [`AbstractInterpretation`](@ref),
-[`AbstractAlgebra`](@ref).
-"""
-function interpret(
-    φ::Formula,
-    i::AbstractInterpretation,
-    args...;
-    kwargs...
-)::Formula
-    interpret(tree(φ), i, args...; kwargs...)
-end
-
-function interpret(
-    φ::Atom,
-    i::AbstractInterpretation,
-    args...;
-    kwargs...
-)::Formula
-    return error("Please, provide method " *
-        "interpret(φ::Atom, i::$(typeof(i)), " *
-        "args...::$(typeof(args)); " *
-        "kwargs...::$(typeof(kwargs))).")
-end
-
-
-
-function interpret(
-    φ::SyntaxBranch,
-    i::AbstractInterpretation,
-    args...;
-    kwargs...,
-)
-    connective = token(φ)
-    ts = Tuple(
-        [interpret(ch, i, args...; kwargs...) for ch in children(φ)]
-    )
-    return simplify(connective, ts, args...; kwargs...)
-end
-
-interpret(t::Truth, i::AbstractInterpretation, args...; kwargs...) = t
-
-"""
-    check(
-        φ::Formula,
-        i::AbstractInterpretation,
-        args...;
-        kwargs...
-    )::Bool
-
-Check a formula on a logical interpretation (or model), returning `true` if the truth value
-for the formula `istop`.
-This process is referred to as (finite)
-[model checking](https://en.wikipedia.org/wiki/Model_checking), and there are many
-algorithms for it, typically depending on the complexity of the logic.
-
-# Examples
-```julia-repl
-julia> @atoms String p q
-2-element Vector{Atom{String}}:
- Atom{String}("p")
- Atom{String}("q")
-
-julia> td = TruthDict([p => TOP, q => BOT])
-TruthDict with values:
-┌────────┬────────┐
-│      q │      p │
-│ String │ String │
-├────────┼────────┤
-│      ⊥ │      ⊤ │
-└────────┴────────┘
-
-julia> check(CONJUNCTION(p,q), td)
-false
-```
-
-See also [`interpret`](@ref), [`Formula`](@ref), [`AbstractInterpretation`](@ref),
-[`TruthDict`](@ref).
-"""
-function check(
-    φ::Formula,
-    i::AbstractInterpretation,
-    args...;
-    kwargs...
-)::Bool
-    istop(interpret(φ, i, args...; kwargs...))
-end
-
-############################################################################################
-#### Utilities #############################################################################
-############################################################################################
-
-# Formula interpretation via i[φ] -> φ
-Base.getindex(i::AbstractInterpretation, φ::Formula, args...; kwargs...) =
-    interpret(φ, i, args...; kwargs...)
-
-# Helper
-function Base.getindex(i::AbstractInterpretation, v, args...; kwargs...)
-    Base.getindex(i, Atom(v), args...; kwargs...)
-end
-
-# Formula interpretation via φ(i) -> φ
-(φ::Formula)(i::AbstractInterpretation, args...; kwargs...) =
-    interpret(φ, i, args...; kwargs...)

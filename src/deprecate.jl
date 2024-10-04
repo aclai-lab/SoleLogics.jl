@@ -2,6 +2,13 @@
 export atom, Proposition, NamedOperator
 
 const NamedOperator = NamedConnective
+const AbstractSyntaxStructure = SyntaxStructure
+
+# Helper
+function Base.getindex(i::AbstractInterpretation, v, args...; kwargs...)
+    Base.getindex(i, Atom(v), args...; kwargs...)
+end
+
 
 const Proposition = Atom
 Base.@deprecate atom(p::Proposition) value(p)

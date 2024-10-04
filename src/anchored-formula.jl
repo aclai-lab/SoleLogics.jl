@@ -2,7 +2,7 @@
 """
     struct AnchoredFormula{L<:AbstractLogic} <: Formula
         _logic::Base.RefValue{L}
-        synstruct::AbstractSyntaxStructure
+        synstruct::SyntaxStructure
     end
 
 A formula anchored to a logic of type `L`, and wrapping a syntax structure.
@@ -46,14 +46,14 @@ See also [`AbstractLogic`](@ref), [`logic`](@ref), [`SyntaxToken`](@ref),
 """
 struct AnchoredFormula{L<:AbstractLogic} <: Formula
     _logic::Base.RefValue{L}
-    synstruct::AbstractSyntaxStructure
+    synstruct::SyntaxStructure
 
     _l(l::AbstractLogic) = Base.RefValue(l)
     _l(l::Base.RefValue) = l
 
     function AnchoredFormula{L}(
         l::Union{L,Base.RefValue{L}},
-        synstruct::AbstractSyntaxStructure;
+        synstruct::SyntaxStructure;
         check_atoms::Bool = false,
         check_tree::Bool = false,
     ) where {L<:AbstractLogic}
@@ -83,7 +83,7 @@ struct AnchoredFormula{L<:AbstractLogic} <: Formula
 
     # function AnchoredFormula{L}(
     #     l::Union{L,Base.RefValue{L}},
-    #     synstruct::AbstractSyntaxStructure;
+    #     synstruct::SyntaxStructure;
     #     kwargs...
     # ) where {L<:AbstractLogic}
     #     t = convert(SyntaxTree, synstruct)
@@ -111,7 +111,7 @@ See [`AnchoredFormula`](@ref).
 logic(φ::AnchoredFormula) = φ._logic[]
 
 """
-    synstruct(φ::AnchoredFormula)::AbstractSyntaxStructure
+    synstruct(φ::AnchoredFormula)::SyntaxStructure
 
 Return the syntactic component of an anchored formula.
 
@@ -140,17 +140,17 @@ function composeformulas(c::Connective, φs::NTuple{N,AnchoredFormula}) where {N
 end
 
 # When constructing a new formula from a syntax tree, the logic is passed by reference.
-(φ::AnchoredFormula)(t::AbstractSyntaxStructure, args...) = AnchoredFormula(_logic(φ), t, args...)
+(φ::AnchoredFormula)(t::SyntaxStructure, args...) = AnchoredFormula(_logic(φ), t, args...)
 
 # A logic can be used to instantiate `AnchoredFormula`s out of syntax trees.
-(l::AbstractLogic)(t::AbstractSyntaxStructure, args...) = AnchoredFormula(Base.RefValue(l), t; args...)
+(l::AbstractLogic)(t::SyntaxStructure, args...) = AnchoredFormula(Base.RefValue(l), t; args...)
 
 # Adapted from https://github.com/JuliaLang/julia/blob/master/base/promotion.jl
-function Base._promote(x::AnchoredFormula, y::AbstractSyntaxStructure)
+function Base._promote(x::AnchoredFormula, y::SyntaxStructure)
     @inline
     return (x, x(y))
 end
-Base._promote(x::AbstractSyntaxStructure, y::AnchoredFormula) = reverse(Base._promote(y, x))
+Base._promote(x::SyntaxStructure, y::AnchoredFormula) = reverse(Base._promote(y, x))
 
 iscrisp(φ::AnchoredFormula) = iscrisp(logic(φ))
 grammar(φ::AnchoredFormula) = grammar(logic(φ))

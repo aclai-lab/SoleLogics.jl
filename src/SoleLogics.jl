@@ -17,7 +17,7 @@ using SoleBase: initrng
 export iscrisp, isfinite, isnullary, isunary, isbinary
 
 export Syntactical, Connective,
-    Formula, AbstractSyntaxStructure, SyntaxTree, SyntaxLeaf,
+    Formula, SyntaxStructure, SyntaxTree, SyntaxLeaf,
     Atom, Truth, SyntaxBranch
 
 export Operator, SyntaxToken
@@ -36,9 +36,13 @@ export tokens, ntokens, atoms, natoms, truths, ntruths, leaves, nleaves,
         connectives, nconnectives, operators, noperators, height
 export composeformulas
 
+include("types/syntactical.jl")
+
+############################################################################################
+
 export interpret, check
 
-include("core.jl")
+include("types/interpretation.jl")
 
 ############################################################################################
 
@@ -47,7 +51,7 @@ export AlphabetOfAny, ExplicitAlphabet, UnionAlphabet
 export alphabet, alphabets
 export domain, top, bot, grammar, algebra, logic
 
-include("logics.jl")
+include("types/logic.jl")
 
 ############################################################################################
 
@@ -63,7 +67,7 @@ export BooleanAlgebra
 
 export BaseLogic
 
-include("base-logic.jl")
+include("utils.jl")
 
 ############################################################################################
 
@@ -154,8 +158,32 @@ include("experimentals.jl")
 include("deprecate.jl")
 
 ############################################################################################
+# Fast isempty(intersect(u, v))
+function intersects(u, v)
+    for x in u
+        if x in v
+            return true
+        end
+    end
+    false
+end
 
-include("utils.jl")
+function inittruthvalues(truthvalues::Union{Vector{<:Truth}, AbstractAlgebra})
+    return (truthvalues isa AbstractAlgebra) ? domain(truthvalues) : truthvalues
+end
+
+function displaysyntaxvector(a, maxnum = 8; quotes = true)
+    q = e -> (quotes ? "\"$(e)\"" : "$(e)")
+    els = begin
+        if length(a) > maxnum
+            [(q.(syntaxstring.(a)[1:div(maxnum, 2)]))..., "...",
+                (q.(syntaxstring.(a)[(end - div(maxnum, 2)):end]))...,]
+        else
+            q.(syntaxstring.(a))
+        end
+    end
+    "$(eltype(a))[$(join(els, ", "))]"
+end
 
 ############################################################################################
 

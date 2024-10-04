@@ -41,7 +41,7 @@ When implementing a new alphabet type `MyAlphabet`, you should provide a method 
 establishing whether an atom belongs to it or not;
 while, in general, this method should be:
 
-    function Base.in(p::Atom, a::MyAlphabet)::Bool
+    function Base.in(p::AbstractAtom, a::MyAlphabet)::Bool
 
 in the case of *finite* alphabets, it suffices to define a method:
 
@@ -51,9 +51,9 @@ By default, an alphabet is considered finite:
 
     Base.isfinite(::Type{<:AbstractAlphabet}) = true
     Base.isfinite(a::AbstractAlphabet) = Base.isfinite(typeof(a))
-    Base.in(p::Atom, a::AbstractAlphabet) = Base.isfinite(a) ? Base.in(p, atoms(a)) : error(...)
+    Base.in(p::AbstractAtom, a::AbstractAlphabet) = Base.isfinite(a) ? Base.in(p, atoms(a)) : error(...)
 
-See also [`AbstractGrammar`](@ref), [`AlphabetOfAny`](@ref), [`Atom`](@ref),
+See also [`AbstractGrammar`](@ref), [`AlphabetOfAny`](@ref), [`AbstractAtom`](@ref),
 [`ExplicitAlphabet`](@ref).
 """
 abstract type AbstractAlphabet{V} end
@@ -96,13 +96,13 @@ function atoms(a::AbstractAlphabet)::AbstractVector{atomstype(a)}
 end
 
 """
-    Base.in(p::Atom, a::AbstractAlphabet)::Bool
+    Base.in(p::AbstractAtom, a::AbstractAlphabet)::Bool
 
 Return whether an atom belongs to an alphabet.
 
-See also [`AbstractAlphabet`](@ref), [`Atom`](@ref).
+See also [`AbstractAlphabet`](@ref), [`AbstractAtom`](@ref).
 """
-function Base.in(p::Atom, a::AbstractAlphabet)::Bool
+function Base.in(p::AbstractAtom, a::AbstractAlphabet)::Bool
     if Base.isfinite(a)
         Base.in(p, atoms(a))
     else
@@ -168,7 +168,7 @@ end
 
 Return an iterator to the next element in an alhabet.
 
-See also [`AbstractAlphabet`](@ref), [`SyntaxBranch`](@ref).
+See also [`AbstractAlphabet`](@ref), [`AbstractSyntaxBranch`](@ref).
 """
 function Base.iterate(a::AbstractAlphabet)
     if isfinite(a)
@@ -188,154 +188,6 @@ end
 # [Iteration interface](https://docs.julialang.org/en/v1/manual/interfaces/#man-interface-iteration) util.
 function Base.IteratorSize(::Type{V}) where {V<:AbstractAlphabet}
     return Base.isfinite(V) ? Base.HasLength() : Base.IsInfinite()
-end
-
-############################################################################################
-#### ExplicitAlphabet ######################################################################
-############################################################################################
-
-"""
-    struct ExplicitAlphabet{V} <: AbstractAlphabet{V}
-        atoms::Vector{Atom{V}}
-    end
-
-An alphabet wrapping atoms in a (finite) `Vector`.
-
-See also [`AbstractAlphabet`](@ref), [`atoms`](@ref).
-"""
-struct ExplicitAlphabet{V} <: AbstractAlphabet{V}
-    atoms::Vector{Atom{V}}
-
-    function ExplicitAlphabet{V}(atoms) where {V}
-        return new{V}(collect(atoms))
-    end
-
-    function ExplicitAlphabet(atoms::AbstractVector{Atom{V}}) where {V}
-        return ExplicitAlphabet{V}(collect(atoms))
-    end
-
-    function ExplicitAlphabet(atoms::AbstractVector{V}) where {V}
-        return ExplicitAlphabet{V}(Atom.(collect(atoms)))
-    end
-end
-atoms(a::ExplicitAlphabet) = a.atoms
-natoms(a::ExplicitAlphabet) = length(atoms(a))
-
-Base.convert(::Type{AbstractAlphabet}, alphabet::Vector{<:Atom}) =
-    ExplicitAlphabet(alphabet)
-
-############################################################################################
-#### AlphabetOfAny #########################################################################
-############################################################################################
-
-"""
-    struct AlphabetOfAny{V} <: AbstractAlphabet{V} end
-
-An implicit, infinite alphabet that includes all atoms with values of a subtype of V.
-
-See also [`AbstractAlphabet`](@ref).
-"""
-struct AlphabetOfAny{V} <: AbstractAlphabet{V} end
-Base.isfinite(::Type{<:AlphabetOfAny}) = false
-Base.in(::Atom{PV}, ::AlphabetOfAny{VV}) where {PV,VV} = (PV <: VV)
-
-############################################################################################
-#### UnionAlphabet #########################################################################
-############################################################################################
-
-# Finite alphabet of conditions induced from a set of metaconditions
-"""
-Alphabet given by the *union* of a number of (sub-)alphabets.
-
-See also
-[`UnboundedScalarAlphabet`](@ref),
-[`ScalarCondition`](@ref),
-[`ScalarMetaCondition`](@ref).
-"""
-
-struct UnionAlphabet{C,A<:AbstractAlphabet{C}} <: AbstractAlphabet{C}
-    subalphabets::Vector{A}
-end
-
-subalphabets(a::UnionAlphabet) = a.subalphabets
-nsubalphabets(a::UnionAlphabet) = length(subalphabets(a))
-
-
-
-function Base.show(io::IO, a::UnionAlphabet)
-    println(io, "$(typeof(a)):")
-    for sa in subalphabets(a)
-        Base.show(io, sa)
-    end
-end
-
-
-
-function atoms(a::UnionAlphabet)
-    return Iterators.flatten(Iterators.map(atoms, subalphabets(a)))
-end
-
-natoms(a::UnionAlphabet) = sum(natoms, subalphabets(a))
-
-function Base.in(p::Atom, a::UnionAlphabet)
-    return any(sa -> Base.in(p, sa), subalphabets(a))
-end
-
-
-"""
-    randatom(
-        rng::Union{Integer,AbstractRNG},
-        a::UnionAlphabet;
-        atompicking_mode::Symbol=:uniform,
-        subalphabets_weights::Union{AbstractWeights,AbstractVector{<:Real},Nothing} = nothing
-    )::Atom
-
-Sample an atom from a `UnionAlphabet`. By default, the sampling is uniform with respect to the atoms.
-However, by setting `atompicking_mode = :uniform_subalphabets` one can force
-a uniform sampling with respect to the sub-alphabets.
-Moreover, one can specify a `:weighted` `atompicking_mode`,
-together with a `subalphabets_weights` vector.
-
-See also [`UnionAlphabet`](@ref).
-"""
-function randatom(
-    rng::Union{Integer,AbstractRNG},
-    a::UnionAlphabet;
-    atompicking_mode::Symbol=:uniform,
-    subalphabets_weights::Union{AbstractWeights,AbstractVector{<:Real},Nothing} = nothing
-)::Atom
-
-    # @show a
-    @assert atompicking_mode in [:uniform, :uniform_subalphabets, :weighted] "Value for `atompicking_mode` not..."
-    rng = initrng(rng)
-    alphs = subalphabets(a)
-
-    if atompicking_mode == :weighted
-        if isnothing(subalphabets_weights)
-            error("`:weighted` picking_mode requires weights in `subalphabets_weights` ")
-        end
-        @assert length(subalphabets_weights) == length(alphs) "Mismatching numbers of alphabets " *
-            "($(length(alphs))) and weights ($(length(subalphabets_weights)))."
-        subalphabets_weights = StatsBase.weights(subalphabets_weights)
-        pickedalphabet = StatsBase.sample(rng, alphs, subalphabets_weights)
-    else
-        subalphabets_weights = begin
-            # This atomatically excludes subalphabets with empty threshold vector
-            if atompicking_mode == :uniform_subalphabets
-                # set the weight of the empty alphabets to zero
-                weights = Weights(ones(Int, length(alphs)))
-                weights[natoms.(alphs) == 0] .= 0
-            elseif atompicking_mode == :uniform
-                weights = Weights(natoms.(alphs))
-            end
-            weights
-        end
-        pickedalphabet = sample(rng, alphs, subalphabets_weights)
-    end
-    # @show a
-    # @show subalphabets_weights
-    # @show pickedalphabet
-    return randatom(rng, pickedalphabet)
 end
 
 ############################################################################################
@@ -389,7 +241,7 @@ end
 
 # TODO actually differentiate Connective's and SyntaxLeaves, and define+use leaves(g)
 # Note: when using this file's syntax tokens, these methods suffice:
-Base.in(a::Atom, g::AbstractGrammar) = Base.in(a, alphabet(g))
+Base.in(a::AbstractAtom, g::AbstractGrammar) = Base.in(a, alphabet(g))
 Base.in(op::Truth, g::AbstractGrammar) = (op <: operatorstype(g))
 Base.in(op::Connective, g::AbstractGrammar) = (op <: operatorstype(g))
 
@@ -399,7 +251,7 @@ Base.in(op::Connective, g::AbstractGrammar) = (op <: operatorstype(g))
         maxdepth::Integer,
         nformulas::Union{Nothing,Integer} = nothing,
         args...
-    )::Vector{<:SyntaxBranch}
+    )::Vector{<:AbstractSyntaxBranch}
 
 Enumerate the formulas produced by a given grammar with a finite and iterable alphabet.
 
@@ -411,14 +263,14 @@ At least these two arguments should be covered:
 - a `maxdepth` argument can be used to limit the syntactic component, represented as a syntax tree,
 to a given maximum depth;
 
-See also [`AbstractGrammar`](@ref), [`SyntaxBranch`](@ref).
+See also [`AbstractGrammar`](@ref), [`AbstractSyntaxBranch`](@ref).
 """
 function formulas(
     g::AbstractGrammar{V,O} where {V,O};
     maxdepth::Integer,
     nformulas::Union{Nothing,Integer} = nothing,
     args...
-)::Vector{<:SyntaxBranch}
+)::Vector{<:AbstractSyntaxBranch}
     @assert maxdepth >= 0
     @assert nformulas > 0
     if isfinite(alphabet(g))
@@ -435,152 +287,6 @@ function Base.isequal(a::AbstractGrammar, b::AbstractGrammar)
     Base.isequal(operatorstype(a), operatorstype(b))
 end
 Base.hash(a::AbstractGrammar) = Base.hash(alphabet(a), Base.hash(operatorstype(a)))
-
-############################################################################################
-#### CompleteFlatGrammar ###################################################################
-############################################################################################
-
-"""
-    struct CompleteFlatGrammar{V<:AbstractAlphabet,O<:Operator} <: AbstractGrammar{V,O}
-        alphabet::V
-        operators::Vector{<:O}
-    end
-
-V grammar of all well-formed formulas obtained by the arity-complying composition
-of atoms of an alphabet of type `V`, and all operators in `operators`.
-With n operators, this grammar has exactly n+1 production rules.
-For example, with `operators = [∧,∨]`, the grammar (in Backus-Naur form) is:
-
-    φ ::= p | φ ∧ φ | φ ∨ φ
-
-with p ∈ alphabet. Note: it is *flat* in the sense that all rules substitute the same
-(unique and starting) non-terminal symbol φ.
-
-See also [`AbstractGrammar`](@ref), [`Operator`](@ref), [`alphabet`](@ref),
-[`formulas`](@ref), [`connectives`](@ref), [`operators`](@ref), [`leaves`](@ref).
-"""
-struct CompleteFlatGrammar{V<:AbstractAlphabet,O<:Operator} <: AbstractGrammar{V,O}
-    alphabet::V
-    operators::Vector{<:O}
-
-    function CompleteFlatGrammar{V,O}(
-        alphabet::V,
-        operators::Vector{<:O},
-    ) where {V<:AbstractAlphabet,O<:Operator}
-        return new{V,O}(alphabet, operators)
-    end
-
-    function CompleteFlatGrammar{V}(
-        alphabet::V,
-        operators::Vector{<:Operator},
-    ) where {V<:AbstractAlphabet}
-        return new{V,Union{typeof.(operators)...}}(
-            alphabet,
-            Vector{Union{typeof.(operators)...}}(operators)
-        )
-    end
-
-    function CompleteFlatGrammar(
-        alphabet::V,
-        operators::Vector{<:Operator},
-    ) where {V<:AbstractAlphabet}
-        return new{V,Union{typeof.(operators)...}}(
-            alphabet,
-            Vector{Union{typeof.(operators)...}}(operators)
-        )
-    end
-end
-
-alphabet(g::CompleteFlatGrammar) = g.alphabet
-operators(g::CompleteFlatGrammar) = g.operators
-
-"""
-    connectives(g::AbstractGrammar)
-
-List all connectives appearing in a grammar.
-
-See also [`Connective`](@ref), [`nconnectives`](@ref).
-"""
-function connectives(g::AbstractGrammar)::AbstractVector{Connective}
-    return filter(!isnullary, operators(g))
-end
-
-"""
-    leaves(g::AbstractGrammar)
-
-List all leaves appearing in a grammar.
-
-See also [`SyntaxLeaf`](@ref), [`nleaves`](@ref).
-"""
-function leaves(g::AbstractGrammar)
-    return [atoms(alphabet(g))..., filter(isnullary, operators(g))...]
-end
-
-# V complete grammar includes any *safe* syntax tree that can be built with
-#  the grammar token types.
-function Base.in(φ::SyntaxTree, g::CompleteFlatGrammar)::Bool
-    return if token(φ) isa Atom
-        token(φ) in alphabet(g)
-    elseif token(φ) isa Operator
-        if operatorstype(φ) <: operatorstype(g)
-            true
-        else
-            all([Base.in(c, g) for c in children(φ)])
-        end
-    else
-        false
-    end
-end
-
-"""
-    formulas(
-        g::CompleteFlatGrammar{V,O} where {V,O};
-        maxdepth::Integer,
-        nformulas::Union{Nothing,Integer} = nothing
-    )::Vector{SyntaxBranch}
-
-Generate all formulas whose `SyntaxBranch`s that are not taller than a given `maxdepth`.
-
-See also [`AbstractGrammar`](@ref), [`SyntaxBranch`](@ref).
-"""
-function formulas(
-    g::CompleteFlatGrammar{V,O} where {V,O};
-    maxdepth::Integer,
-    nformulas::Union{Nothing,Integer} = nothing,
-)::Vector{SyntaxTree}
-    @assert maxdepth >= 0
-    @assert isnothing(nformulas) || nformulas > 0
-    # With increasing `depth`, accumulate all formulas of length `depth` by combining all
-    # formulas of `depth-1` using all non-terminal symbols.
-    # Stop as soon as `maxdepth` is reached or `nformulas` have been generated.
-    depth = 0
-    cur_formulas = Vector{SyntaxTree}(leaves(g))
-    all_formulas = SyntaxTree[cur_formulas...]
-    while depth < maxdepth && (isnothing(nformulas) || length(all_formulas) < nformulas)
-        _nformulas = length(all_formulas)
-        cur_formulas = []
-        for op in connectives(g)
-            for children in Iterators.product(fill(all_formulas, arity(op))...)
-                if !isnothing(nformulas) && nformulas == _nformulas + length(cur_formulas)
-                    break
-                end
-                push!(cur_formulas, SyntaxTree(op, Tuple(children)))
-            end
-            if !isnothing(nformulas) && nformulas == _nformulas + length(cur_formulas)
-                break
-            end
-        end
-        append!(all_formulas, cur_formulas)
-        depth += 1
-    end
-    return all_formulas
-end
-
-# This dispatches are needed, since ambiguities might arise when choosing between
-#   in(φ::SyntaxTree, g::SoleLogics.CompleteFlatGrammar) and
-#   in(p::Atom, g::SoleLogics.AbstractGrammar)
-Base.in(p::Atom, g::CompleteFlatGrammar) = Base.in(p, alphabet(g))
-Base.in(op::Truth, g::CompleteFlatGrammar) = (op <: operatorstype(g))
 
 ############################################################################################
 #### AbstractAlgebra, semantics ############################################################
@@ -705,8 +411,8 @@ tokenstype(l::AbstractLogic) = tokenstype(grammar(l))
 formulas(l::AbstractLogic, args...; kwargs...) = formulas(grammar(l), args...; kwargs...)
 
 Base.in(op::Operator, l::AbstractLogic) = Base.in(op, grammar(l))
-Base.in(φ::SyntaxBranch, l::AbstractLogic) = Base.in(φ, grammar(l))
-Base.in(p::Atom, l::AbstractLogic) = Base.in(p, alphabet(l))
+Base.in(φ::AbstractSyntaxBranch, l::AbstractLogic) = Base.in(φ, grammar(l))
+Base.in(p::AbstractAtom, l::AbstractLogic) = Base.in(p, alphabet(l))
 
 """
     algebra(l::AbstractLogic{G,V})::V where {G,V}
