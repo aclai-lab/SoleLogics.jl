@@ -35,6 +35,19 @@ julia> "mystring" in AlphabetOfAny{String}()
 true
 ```
 
+# Interface
+- `atoms(a::AbstractAlphabet)::Bool`
+- `Base.isfinite(::Type{<:AbstractAlphabet})::Bool`
+- `randatom(rng::Union{Random.AbstractRNG, Integer}, a::AbstractAlphabet, args...; kwargs...)::AbstractAtom`
+
+# Utility functions
+- `natoms(a::AbstractAlphabet)::Bool`
+- `Base.in(p::AbstractAtom, a::AbstractAlphabet)::Bool`
+- `Base.eltype(a::AbstractAlphabet)`
+- `randatom(a::AbstractAlphabet, args...; kwargs...)::AbstractAtom`
+- `atomstype(a::AbstractAlphabet)`
+- `valuetype(a::AbstractAlphabet)`
+
 # Implementation
 
 When implementing a new alphabet type `MyAlphabet`, you should provide a method for
@@ -134,8 +147,8 @@ function natoms(a::AbstractAlphabet)::Integer
 end
 
 """
-    randatom(a::AbstractAlphabet)
-    randatom(rng, a::AbstractAlphabet)
+    randatom(a::AbstractAlphabet, args...; kwargs...)
+    randatom(rng::Union{Random.AbstractRNG, Integer}, a::AbstractAlphabet, args...; kwargs...)
 
 Return a random atom from a *finite* alphabet.
 
@@ -203,6 +216,18 @@ based on a *single* alphabet of type `V`, and a set of operators
 that consists of all the (singleton) child types of `O`.
 V context-free grammar is a simple structure for defining formulas inductively.
 
+# Interface
+- `alphabet(g::AbstractGrammar)::AbstractAlphabet`
+- `Base.in(::SyntaxTree, g::AbstractGrammar)::Bool`
+- `formulas(g::AbstractGrammar; kwargs...)::Vector{<:SyntaxTree}`
+
+# Utility functions
+- `Base.in(a::AbstractAtom, g::AbstractGrammar)`
+- `atomstype(g::AbstractGrammar)`
+- `tokenstype(g::AbstractGrammar)`
+- `operatorstype(g::AbstractGrammar)`
+- `alphabettype(g::AbstractGrammar)`
+
 See also [`alphabet`](@ref),
 [`AbstractAlphabet`](@ref), [`Operator`](@ref).
 """
@@ -251,7 +276,7 @@ Base.in(op::Connective, g::AbstractGrammar) = (op <: operatorstype(g))
         maxdepth::Integer,
         nformulas::Union{Nothing,Integer} = nothing,
         args...
-    )::Vector{<:AbstractSyntaxBranch}
+    )::Vector{<:SyntaxTree}
 
 Enumerate the formulas produced by a given grammar with a finite and iterable alphabet.
 
@@ -270,7 +295,7 @@ function formulas(
     maxdepth::Integer,
     nformulas::Union{Nothing,Integer} = nothing,
     args...
-)::Vector{<:AbstractSyntaxBranch}
+)::Vector{<:SyntaxTreeo}
     @assert maxdepth >= 0
     @assert nformulas > 0
     if isfinite(alphabet(g))
@@ -302,6 +327,16 @@ elements(or nodes) *⊤* and *⊥* are referred to as *TOP* (or maximum)
 and *bot* (or minimum). Each node in the lattice represents a truth value
 that an atom or a formula can have on an interpretation, and the
 semantics of operators is given in terms of operations between truth values.
+
+# Interface
+
+- `truthtype(a::AbstractAlgebra)`
+- `domain(a::AbstractAlgebra)`
+- `top(a::AbstractAlgebra)`
+- `bot(a::AbstractAlgebra)`
+
+# Utility functions
+- `iscrisp(a::AbstractAlgebra)`
 
 # Implementation
 
@@ -379,6 +414,15 @@ iscrisp(a::AbstractAlgebra) = (length(domain(a)) == 2)
 
 Abstract type of a logic, which comprehends a context-free grammar (*syntax*) and
 an algebra (*semantics*).
+
+# Interface
+
+- `grammar(l::AbstractLogic)::AbstractGrammar`
+- `algebra(l::AbstractLogic)::AbstractAlgebra`
+
+# Utility functions
+- See also [`AbstractGrammar`](@ref)
+- See also [`AbstractAlgebra`](@ref)
 
 # Implementation
 
