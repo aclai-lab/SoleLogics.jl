@@ -65,14 +65,14 @@ See also [`AbstractInterpretation`](@ref).
 abstract type AbstractAssignment <: AbstractInterpretation end
 
 """
-    Base.haskey(i::AbstractAssignment, ::Atom)::Bool
+    Base.haskey(i::AbstractAssignment, ::AbstractAtom)::Bool
 
 Return whether an assigment has a truth value for a given atom.
 
 See also [`AbstractInterpretation`](@ref).
 """
-function Base.haskey(i::AbstractAssignment, ::Atom)::Bool
-    return error("Please, provide method Base.haskey(::$(typeof(i)), ::Atom)::Bool.")
+function Base.haskey(i::AbstractAssignment, ::AbstractAtom)::Bool
+    return error("Please, provide method Base.haskey(::$(typeof(i)), ::AbstractAtom)::Bool.")
 end
 
 # Helper
@@ -85,7 +85,7 @@ function inlinedisplay(i::AbstractAssignment)
 end
 
 # When interpreting a single atom, if the lookup fails, then return the atom itself
-function interpret(a::Atom, i::AbstractAssignment, args...; kwargs...)::SyntaxLeaf
+function interpret(a::AbstractAtom, i::AbstractAssignment, args...; kwargs...)::SyntaxLeaf
     if Base.haskey(i, a)
         Base.getindex(i, a, args...; kwargs...)
     else

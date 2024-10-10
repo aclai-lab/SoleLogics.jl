@@ -76,7 +76,8 @@ export propositionallogic
 export TruthDict, DefaultedTruthDict
 export truth_table
 
-include("propositional-logic.jl")
+include("types/propositional-logic.jl")
+include("utils/propositional-logic.jl")
 
 ############################################################################################
 
