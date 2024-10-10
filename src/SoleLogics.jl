@@ -122,7 +122,9 @@ include("syntax-utils.jl")
 
 ############################################################################################
 
-include("interpretation-sets.jl")
+include("types/interpretation-sets.jl")
+
+include("utils/interpretation-sets.jl")
 
 ############################################################################################
 
