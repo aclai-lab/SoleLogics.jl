@@ -133,10 +133,11 @@ include("parse.jl")
 ############################################################################################
 
 export randatom
-export randbaseformula, randformula
-export randframe, randmodel
+export randformula, randbaseformula
 
 include("generation/formula.jl")
+
+export randframe, randmodel
 include("generation/models.jl")
 
 ############################################################################################

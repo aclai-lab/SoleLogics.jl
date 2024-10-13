@@ -4,30 +4,53 @@ using StatsBase
 import Random: rand
 import StatsBase: sample
 
-"""
-    randatom(
-        [rng::Union{Random.AbstractRNG,Integer},]
-        a::AbstractAlphabet,
-        args...;
-        kwargs...)
+include("docstrings.jl")
 
-Return a random atom from a *finite* alphabet.
+macro __rng_dispatch(ex, docstr)
+    if ex.head != :function
+        throw(ArgumentError("Expected a function definition"))
+    end
 
-# Examples
-```julia-repl
-julia> alphabet = ExplicitAlphabet(1:5)
-ExplicitAlphabet{Int64}(Atom{Int64}[Atom{Int64}: 1, Atom{Int64}: 2, Atom{Int64}: 3, Atom{Int64}: 4, Atom{Int64}: 5])
+    # Extract the function signature, its name and arguments
+    func_signature = ex.args[1]
+    func_name = func_signature.args[1]
+    args = func_signature.args[2:end]
 
-julia> randatom(42, alphabet)
-Atom{Int64}: 4
-```
+    # Extract the arguments after the first one;
+    # the first one must be an Union{Random.AbstractRNG,Integer},
+    # otherwise, this macro makes no sense.
+    if length(args) > 0
+        quote
+            if !isa($args[1], Union{Random.AbstractRNG,Integer})
+                throw(ArgumentError("Expected function's first argument to be of type " *
+                    "Union{Random.AbstractRNG,Integer}.")
+                )
+            end
+        end
 
-See also [`natoms`](@ref), [`AbstractAlphabet`](@ref).
-"""
-function randatom(a::AbstractAlphabet, args...; kwargs...)
-    randatom(Random.GLOBAL_RNG, a, args...; kwargs...)
+        new_args = args[2:end]
+    else
+        throw(ArgumentError("Expected function's argument to be atleast 2, the first of " *
+            "which of type Union{Random.AbstractRNG,Integer}."))
+    end
+
+    # Prepare the new dispatch logic
+    new_body = quote
+        $func_name(Random.GLOBAL_RNG, $(new_args...))
+    end
+
+    # Define both old and new dispatch (their name is the same);
+    # for the second dispatch (those with less arguments), also include docstring.
+    quote
+        @eval @doc $docstr function $func_name($(new_args...))
+            $new_body
+        end
+    end
 end
-function randatom(
+
+
+
+@__rng_dispatch function randatom(
     rng::Union{Random.AbstractRNG,Integer},
     a::AbstractAlphabet,
     args...;
@@ -44,59 +67,24 @@ function randatom(
         error("Please provide method randatom(rng::$(typeof(rng)), " *
             "alphabet::$(typeof(a)), args...; kwargs...)")
     end
-end
+end $(randatom_docstring)
 
-"""
-    randatom(
-        rng::Union{Integer,AbstractRNG},
-        a::UnionAlphabet;
-        atompicking_mode::Symbol=:uniform,
-        subalphabets_weights::Union{AbstractWeights,AbstractVector{<:Real},Nothing} = nothing
-    )::Atom
+# TODO - remove this dispatch if test works
+# function randatom(a::AbstractAlphabet, args...; kwargs...)
+#     randatom(Random.GLOBAL_RNG, a, args...; kwargs...)
+# end
 
-Sample an atom from a `UnionAlphabet`.
-By default, the sampling is uniform with respect to the atoms.
-
-By setting `atompicking_mode = :uniform_subalphabets` one can force a uniform sampling with
-respect to the sub-alphabets.
-
-Moreover, one can specify a `:weighted` `atompicking_mode`, together with a
-`subalphabets_weights` vector.
-
-# Examples
-```julia-repl
-julia> alphabet1 = ExplicitAlphabet(Atom.(1:10));
-julia> alphabet2 = ExplicitAlphabet(Atom.(11:20));
-julia> union_alphabet = UnionAlphabet([alphabet1, alphabet2]);
-
-julia> randatom(42, union_alphabet)
-Atom{Int64}: 11
-
-julia> randatom(42, union_alphabet; atompicking_mode=:uniform_subalphabets)
-Atom{Int64}: 11
-
-julia> for i in 1:10
-            randatom(
-                union_alphabet;
-                atompicking_mode=:weighted,
-                subalphabets_weights=[0.8,0.2]
-            ) |> syntaxstring |> vcat |> print
-        end
-["6"]["3"]["10"]["7"]["2"]["2"]["6"]["9"]["20"]["16"]
-```
-
-See also [`UnionAlphabet`](@ref).
-"""
-function randatom(
+@__rng_dispatch function randatom(
         rng::Union{Integer,AbstractRNG},
         a::UnionAlphabet;
         atompicking_mode::Symbol = :uniform,
         subalphabets_weights::Union{
             Nothing,AbstractWeights,AbstractVector{<:Real}} = nothing,
 )::Atom
+    _atompicking_modes = [:uniform, :uniform_subalphabets, :weighted]
+    @assert atompicking_mode in _atompicking_modes "Invalid value for `atompicking_mode` " *
+        "($(atompicking_mode)). Chosee between $(atompicking_modes)."
 
-    # @show a
-    @assert atompicking_mode in [:uniform, :uniform_subalphabets, :weighted] "Value for `atompicking_mode` not..."
     rng = initrng(rng)
     alphs = subalphabets(a)
 
@@ -104,8 +92,8 @@ function randatom(
         if isnothing(subalphabets_weights)
             error("`:weighted` picking_mode requires weights in `subalphabets_weights` ")
         end
-        @assert length(subalphabets_weights)==length(alphs) "Mismatching numbers of alphabets "*
-        "($(length(alphs))) and weights ($(length(subalphabets_weights)))."
+        @assert length(subalphabets_weights)==length(alphs) "Mismatching numbers of "*
+        "alphabets ($(length(alphs))) and weights ($(length(subalphabets_weights)))."
         subalphabets_weights = StatsBase.weights(subalphabets_weights)
         pickedalphabet = StatsBase.sample(rng, alphs, subalphabets_weights)
     else
@@ -122,108 +110,77 @@ function randatom(
         end
         pickedalphabet = sample(rng, alphs, subalphabets_weights)
     end
-    # @show a
-    # @show subalphabets_weights
-    # @show pickedalphabet
+
     return randatom(rng, pickedalphabet)
-end
+end $(randatom_unionalphabet_docstring)
 
-doc_rand = """
-    Base.rand(
-        [rng::AbstractRNG = Random.GLOBAL_RNG],
-        height::Integer,
-        l::AbstractLogic,
-        args...;
-        kwargs...
-    )::Formula
 
-    Base.rand(
-        [rng::AbstractRNG = Random.GLOBAL_RNG,]
-        height::Integer,
-        g::CompleteFlatGrammar,
-        args...
-    )::Formula
 
-    Base.rand(
-        height::Integer,
-        connectives::Union{AbstractVector{<:Operator},AbstractVector{<:Connective}},
-        atoms::Union{AbstractVector{<:Atom},AbstractAlphabet},
-        truthvalues::Union{Nothing,AbstractAlgebra,AbstractVector{<:Truth}} = nothing,
-        args...;
-        rng::AbstractRNG = Random.GLOBAL_RNG,
-        kwargs...
-    )::Formula
-
-If a [`CompleteFlatGrammar`](@ref) is provided together with an
-`height` a [`Formula`](@ref) could also be generated.
-
-# Implementation
-If the `alphabet` is finite, the function defaults to `rand(rng, atoms(alphabet))`;
-otherwise, it must be implemented, and additional keyword arguments should be provided
-in order to limit the (otherwise infinite) sampling domain.
-
-See also
-[`AbstractAlphabet`](@ref), [`Atom`](@ref), [`CompleteFlatGrammar`](@ref),
-[`Formula`](@ref), [`randformula`](@ref).
-"""
-
-"""
-    Base.rand(
-        [rng::AbstractRNG = Random.GLOBAL_RNG,]
-        alphabet::AbstractAlphabet,
-        args...;
-        kwargs...
-    )::Atom
-
-Randomly generate an [`Atom`](@ref) from an [`AbstractAlphabet`](@ref) according to a
-uniform distribution.
-"""
-function Base.rand(a::AbstractAlphabet, args...; kwargs...)
-    Base.rand(Random.GLOBAL_RNG, a, args...; kwargs...)
-end
-function Base.rand(
+# TODO - remove this dispatch if test works
+# function Base.rand(a::AbstractAlphabet, args...; kwargs...)
+#     Base.rand(Random.GLOBAL_RNG, a, args...; kwargs...)
+# end
+@__rng_dispatch function Base.rand(
     rng::AbstractRNG,
     a::AbstractAlphabet,
     args...;
     kwargs...
 )
-    randatom(rng, a, args...; kwargs...)
-end
+    randatom(initrng(rng), a, args...; kwargs...)
+end $(rand_abstractalphabet_docstring)
 
-function Base.rand(height::Integer, l::AbstractLogic, args...; kwargs...)
-    Base.rand(Random.GLOBAL_RNG, height, l, args...; kwargs...)
-end
 
-function Base.rand(
-    rng::AbstractRNG,
+# TODO - remove this dispatch if test works
+# function Base.rand(height::Integer, l::AbstractLogic, args...; kwargs...)
+#     Base.rand(Random.GLOBAL_RNG, height, l, args...; kwargs...)
+# end
+@__rng_dispatch function Base.rand(
+    rng::Union{Integer,AbstractRNG},
     height::Integer,
     l::AbstractLogic,
     args...;
     kwargs...
 )
-    Base.rand(rng, grammar(l), args...; kwargs...)
-end
+    Base.rand(initrng(rng), height, grammar(l), args...; kwargs...)
+end $(rand_abstractlogic_docstring)
 
-# For the case of a CompleteFlatGrammar, the alphabet and the operators suffice.
-function Base.rand(
-    height::Integer,
-    g::CompleteFlatGrammar,
-    args...
-)
-    Base.rand(Random.GLOBAL_RNG, height, g, args...)
-end
 
-function Base.rand(
-    rng::AbstractRNG,
+
+
+# TODO - remove this dispatch if test works
+# function Base.rand(
+#     height::Integer,
+#     g::CompleteFlatGrammar,
+#     args...
+# )
+#     Base.rand(Random.GLOBAL_RNG, height, g, args...)
+# end
+@__rng_dispatch function Base.rand(
+    rng::Union{Integer,AbstractRNG},
     height::Integer,
     g::CompleteFlatGrammar,
     args...;
     kwargs...
 )
-    randformula(rng, height, alphabet(g), operators(g), args...; kwargs...)
-end
+    randformula(initrng(rng), height, alphabet(g), operators(g), args...; kwargs...)
+end $(rand_completeflatgrammar_docstring)
 
-function Base.rand(
+
+
+# TODO - remove this dispatch if test works
+# function Base.rand(
+#     height::Integer,
+#     atoms::Union{AbstractVector{<:Atom},AbstractAlphabet},
+#     connectives::Union{AbstractVector{<:Operator},AbstractVector{<:Connective}},
+#     truthvalues::Union{Nothing,AbstractAlgebra,AbstractVector{<:Truth}} = nothing,
+#     args...;
+#     kwargs...
+# )
+#     Base.rand(
+#         Random.GLOBAL_RNG, height, atoms, connectives, truthvalues, args...; kwargs...)
+# end
+@__rng_dispatch function Base.rand(
+    rng::Union{Integer,AbstractRNG},
     height::Integer,
     atoms::Union{AbstractVector{<:Atom},AbstractAlphabet},
     connectives::Union{AbstractVector{<:Operator},AbstractVector{<:Connective}},
@@ -231,19 +188,8 @@ function Base.rand(
     args...;
     kwargs...
 )
-    Base.rand(Random.GLOBAL_RNG, height, atoms, connectives, truthvalues, args...;
-        kwargs...)
-end
+    rng = initrng(rng)
 
-function Base.rand(
-    rng::AbstractRNG,
-    height::Integer,
-    atoms::Union{AbstractVector{<:Atom},AbstractAlphabet},
-    connectives::Union{AbstractVector{<:Operator},AbstractVector{<:Connective}},
-    truthvalues::Union{Nothing,AbstractAlgebra,AbstractVector{<:Truth}} = nothing,
-    args...;
-    kwargs...
-)
     # If Truth's are specified as `operators`, then they cannot be simultaneously
     #  provided as `truthvalues`
     @assert (connectives isa AbstractVector{<:Connective} ||
@@ -261,7 +207,7 @@ function Base.rand(
     end
 
     randformula(height, ops, atoms, args...; rng=rng, kwargs...)
-end
+end $(rand_granular_docstring)
 
 doc_sample = """
     function StatsBase.sample(
