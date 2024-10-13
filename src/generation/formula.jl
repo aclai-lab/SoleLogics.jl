@@ -5,21 +5,40 @@ import Random: rand
 import StatsBase: sample
 
 """
-    randatom(a::AbstractAlphabet, args...; kwargs...)
-    randatom(rng::Union{Random.AbstractRNG, Integer}, a::AbstractAlphabet, args...; kwargs...)
+    randatom(
+        [rng::Union{Random.AbstractRNG,Integer},]
+        a::AbstractAlphabet,
+        args...;
+        kwargs...)
 
 Return a random atom from a *finite* alphabet.
+
+# Examples
+```julia-repl
+julia> alphabet = ExplicitAlphabet(1:5)
+ExplicitAlphabet{Int64}(Atom{Int64}[Atom{Int64}: 1, Atom{Int64}: 2, Atom{Int64}: 3, Atom{Int64}: 4, Atom{Int64}: 5])
+
+julia> randatom(42, alphabet)
+Atom{Int64}: 4
+```
 
 See also [`natoms`](@ref), [`AbstractAlphabet`](@ref).
 """
 function randatom(a::AbstractAlphabet, args...; kwargs...)
     randatom(Random.GLOBAL_RNG, a, args...; kwargs...)
 end
-
-function randatom(rng::Union{Random.AbstractRNG, Integer}, a::AbstractAlphabet, args...; kwargs...)
+function randatom(
+    rng::Union{Random.AbstractRNG,Integer},
+    a::AbstractAlphabet,
+    args...;
+    kwargs...
+)
     if isfinite(a)
-        # TODO: note that `atoms(a)` can lead to brutal reduction in performance,
-        #  if one forgets to implement specific methods for `randatom` for custom alphabets!
+        # Commented because otherwise this is getting spammed
+        # @warn "Consider implementing a specific `randatom` dispatch for your alphabet " *
+        #     "type ($(typeof(a))) to increase performances."
+
+        rng = initrng(rng)
         return Base.rand(rng, atoms(a), args...; kwargs...)
     else
         error("Please provide method randatom(rng::$(typeof(rng)), " *
@@ -46,15 +65,30 @@ Moreover, one can specify a `:weighted` `atompicking_mode`, together with a
 
 # Examples
 ```julia-repl
-julia>alphabet = ExplicitAlphabet(1:5)
-ExplicitAlphabet{Int64}(Atom{Int64}[Atom{Int64}: 1, Atom{Int64}: 2, Atom{Int64}: 3, Atom{Int64}: 4, Atom{Int64}: 5])
-julia>randatom(alphabet)
+julia> alphabet1 = ExplicitAlphabet(Atom.(1:10));
+julia> alphabet2 = ExplicitAlphabet(Atom.(11:20));
+julia> union_alphabet = UnionAlphabet([alphabet1, alphabet2]);
+
+julia> randatom(42, union_alphabet)
+Atom{Int64}: 11
+
+julia> randatom(42, union_alphabet; atompicking_mode=:uniform_subalphabets)
+Atom{Int64}: 11
+
+julia> for i in 1:10
+            randatom(
+                union_alphabet;
+                atompicking_mode=:weighted,
+                subalphabets_weights=[0.8,0.2]
+            ) |> syntaxstring |> vcat |> print
+        end
+["6"]["3"]["10"]["7"]["2"]["2"]["6"]["9"]["20"]["16"]
 ```
 
 See also [`UnionAlphabet`](@ref).
 """
 function randatom(
-        rng::Union{Integer, AbstractRNG},
+        rng::Union{Integer,AbstractRNG},
         a::UnionAlphabet;
         atompicking_mode::Symbol = :uniform,
         subalphabets_weights::Union{AbstractWeights, AbstractVector{<:Real}, Nothing} = nothing,
@@ -79,7 +113,7 @@ function randatom(
             if atompicking_mode == :uniform_subalphabets
                 # set the weight of the empty alphabets to zero
                 weights = Weights(ones(Int, length(alphs)))
-                weights[natoms.(alphs) == 0] .= 0
+                weights[natoms.(alphs) .== 0] .= 0
             elseif atompicking_mode == :uniform
                 weights = Weights(natoms.(alphs))
             end
