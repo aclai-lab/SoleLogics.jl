@@ -5,6 +5,29 @@ import Random: rand
 import StatsBase: sample
 
 """
+    randatom(a::AbstractAlphabet, args...; kwargs...)
+    randatom(rng::Union{Random.AbstractRNG, Integer}, a::AbstractAlphabet, args...; kwargs...)
+
+Return a random atom from a *finite* alphabet.
+
+See also [`natoms`](@ref), [`AbstractAlphabet`](@ref).
+"""
+function randatom(a::AbstractAlphabet, args...; kwargs...)
+    randatom(Random.GLOBAL_RNG, a, args...; kwargs...)
+end
+
+function randatom(rng::Union{Random.AbstractRNG, Integer}, a::AbstractAlphabet, args...; kwargs...)
+    if isfinite(a)
+        # TODO: note that `atoms(a)` can lead to brutal reduction in performance,
+        #  if one forgets to implement specific methods for `randatom` for custom alphabets!
+        return Base.rand(rng, atoms(a), args...; kwargs...)
+    else
+        error("Please provide method randatom(rng::$(typeof(rng)), " *
+            "alphabet::$(typeof(a)), args...; kwargs...)")
+    end
+end
+
+"""
     randatom(
         rng::Union{Integer,AbstractRNG},
         a::UnionAlphabet;
@@ -12,14 +35,21 @@ import StatsBase: sample
         subalphabets_weights::Union{AbstractWeights,AbstractVector{<:Real},Nothing} = nothing
     )::Atom
 
-Sample an atom from a `UnionAlphabet`. By default, the sampling is uniform with respect to
-the atoms.
+Sample an atom from a `UnionAlphabet`.
+By default, the sampling is uniform with respect to the atoms.
 
 By setting `atompicking_mode = :uniform_subalphabets` one can force a uniform sampling with
 respect to the sub-alphabets.
 
 Moreover, one can specify a `:weighted` `atompicking_mode`, together with a
 `subalphabets_weights` vector.
+
+# Examples
+```julia-repl
+julia>alphabet = ExplicitAlphabet(1:5)
+ExplicitAlphabet{Int64}(Atom{Int64}[Atom{Int64}: 1, Atom{Int64}: 2, Atom{Int64}: 3, Atom{Int64}: 4, Atom{Int64}: 5])
+julia>randatom(alphabet)
+```
 
 See also [`UnionAlphabet`](@ref).
 """
