@@ -1,20 +1,69 @@
-using Graphs
 using Random
 using StatsBase
 
 import Random: rand
 import StatsBase: sample
 
-#= ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Formulas ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ =#
-
-doc_rand = """
-    Base.rand(
-        [rng::AbstractRNG = Random.GLOBAL_RNG,]
-        alphabet::AbstractAlphabet,
-        args...;
-        kwargs...
+"""
+    randatom(
+        rng::Union{Integer,AbstractRNG},
+        a::UnionAlphabet;
+        atompicking_mode::Symbol=:uniform,
+        subalphabets_weights::Union{AbstractWeights,AbstractVector{<:Real},Nothing} = nothing
     )::Atom
 
+Sample an atom from a `UnionAlphabet`. By default, the sampling is uniform with respect to
+the atoms.
+
+By setting `atompicking_mode = :uniform_subalphabets` one can force a uniform sampling with
+respect to the sub-alphabets.
+
+Moreover, one can specify a `:weighted` `atompicking_mode`, together with a
+`subalphabets_weights` vector.
+
+See also [`UnionAlphabet`](@ref).
+"""
+function randatom(
+        rng::Union{Integer, AbstractRNG},
+        a::UnionAlphabet;
+        atompicking_mode::Symbol = :uniform,
+        subalphabets_weights::Union{AbstractWeights, AbstractVector{<:Real}, Nothing} = nothing,
+)::Atom
+
+    # @show a
+    @assert atompicking_mode in [:uniform, :uniform_subalphabets, :weighted] "Value for `atompicking_mode` not..."
+    rng = initrng(rng)
+    alphs = subalphabets(a)
+
+    if atompicking_mode == :weighted
+        if isnothing(subalphabets_weights)
+            error("`:weighted` picking_mode requires weights in `subalphabets_weights` ")
+        end
+        @assert length(subalphabets_weights)==length(alphs) "Mismatching numbers of alphabets "*
+        "($(length(alphs))) and weights ($(length(subalphabets_weights)))."
+        subalphabets_weights = StatsBase.weights(subalphabets_weights)
+        pickedalphabet = StatsBase.sample(rng, alphs, subalphabets_weights)
+    else
+        subalphabets_weights = begin
+            # This atomatically excludes subalphabets with empty threshold vector
+            if atompicking_mode == :uniform_subalphabets
+                # set the weight of the empty alphabets to zero
+                weights = Weights(ones(Int, length(alphs)))
+                weights[natoms.(alphs) == 0] .= 0
+            elseif atompicking_mode == :uniform
+                weights = Weights(natoms.(alphs))
+            end
+            weights
+        end
+        pickedalphabet = sample(rng, alphs, subalphabets_weights)
+    end
+    # @show a
+    # @show subalphabets_weights
+    # @show pickedalphabet
+    return randatom(rng, pickedalphabet)
+end
+
+doc_rand = """
     Base.rand(
         [rng::AbstractRNG = Random.GLOBAL_RNG],
         height::Integer,
@@ -40,8 +89,7 @@ doc_rand = """
         kwargs...
     )::Formula
 
-Randomly generate an [`Atom`](@ref) from an [`AbstractAlphabet`](@ref) according to a
-uniform distribution. If a [`CompleteFlatGrammar`](@ref) is provided together with an
+If a [`CompleteFlatGrammar`](@ref) is provided together with an
 `height` a [`Formula`](@ref) could also be generated.
 
 # Implementation
@@ -54,11 +102,20 @@ See also
 [`Formula`](@ref), [`randformula`](@ref).
 """
 
-"""$(doc_rand)"""
+"""
+    Base.rand(
+        [rng::AbstractRNG = Random.GLOBAL_RNG,]
+        alphabet::AbstractAlphabet,
+        args...;
+        kwargs...
+    )::Atom
+
+Randomly generate an [`Atom`](@ref) from an [`AbstractAlphabet`](@ref) according to a
+uniform distribution.
+"""
 function Base.rand(a::AbstractAlphabet, args...; kwargs...)
     Base.rand(Random.GLOBAL_RNG, a, args...; kwargs...)
 end
-
 function Base.rand(
     rng::AbstractRNG,
     a::AbstractAlphabet,
@@ -248,7 +305,7 @@ function StatsBase.sample(
         atompicker = atomweights, opweights = opweights, kwargs...)
 end
 
-#= ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ CompleteFlatGrammar ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ =#
+
 
 # TODO
 # - make rng first (optional) argument of randformula (see above)
@@ -390,81 +447,4 @@ function randformula(
     kwargs...
 )
     randformula(initrng(rng), height, args...; kwargs...)
-end
-
-#= ~~~~~~~~~~~~~~~~~~~~~~~~~~ Kripke Models generation ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ =#
-"""
-    function randframe(
-        [rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG,]
-        nworlds::Int64,
-        nedges::Int64,
-        facts::Vector{SyntaxLeaf}
-    end
-
-Return a random Kripke Frame, which is a directed graph interpreted as a
-[`SoleLogics.ExplicitCrispUniModalFrame`](@ref). The underlying graph is generated using
-[`Graphs.SimpleGraphs.SimpleDiGraph`](@ref).
-
-# Arguments:
-* `rng` is a random number generator, or the seed used to create one;
-* `nworld` is the number of worlds (nodes) in the frame. Worlds are numbered from `1`
-    to `nworld` included.
-* `nedges` is the number of relations (edges) in the frame;
-* `facts` is a vector of generic [`SyntaxLeaf`](@ref).
-
-See also [`SyntaxLeaf`](@ref), [`Graphs.SimpleGraphs.SimpleDiGraph`](@ref),
-[`SoleLogics.ExplicitCrispUniModalFrame`](@ref).
-"""
-function randframe(
-    nworlds::Int64,
-    nedges::Int64;
-    rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG
-)
-    randframe(rng, nworlds, nedges)
-end
-
-function randframe(
-    rng::Union{Integer,AbstractRNG},
-    nworlds::Int64,
-    nedges::Int64
-)
-    worlds = World.(1:nworlds)
-    graph = Graphs.SimpleDiGraph(nworlds, nedges, rng=initrng(rng))
-    return SoleLogics.ExplicitCrispUniModalFrame(worlds, graph)
-end
-
-"""
-    function randmodel(
-        [rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG,]
-        nworlds::Int64,
-        nedges::Int64,
-        facts::Vector{SyntaxLeaf};
-        truthvalues::Union{AbstractAlgebra,AbstractVector{<:Truth}} = BooleanAlgebra();
-        rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG
-    )
-"""
-function randmodel(
-    nworlds::Int64,
-    nedges::Int64,
-    facts::Vector{<:SyntaxLeaf},
-    truthvalues::Union{AbstractAlgebra,AbstractVector{<:Truth}} = BooleanAlgebra();
-    rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG
-)
-    truthvalues = inittruthvalues(truthvalues)
-    randmodel(initrng(rng), nworlds, nedges, facts, truthvalues)
-end
-
-function randmodel(
-    rng::AbstractRNG,
-    nworlds::Int64,
-    nedges::Int64,
-    facts::Vector{<:SyntaxLeaf},
-    truthvalues::AbstractVector{<:Truth}
-)
-    fr = randframe(rng, nworlds, nedges)
-    valuation = Dict(
-        [w => TruthDict([f => rand(truthvalues) for f in facts]) for w in fr.worlds]
-    )
-
-    return KripkeStructure(fr, valuation)
 end
