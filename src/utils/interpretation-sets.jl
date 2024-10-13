@@ -2,7 +2,7 @@
 """
     struct LogicalInstance{S<:AbstractInterpretationSet}
         s::S
-        i_instance::Int64
+        i_instance::Int
     end
 
 Object representing the i-th interpretation of an interpretation set.
@@ -15,7 +15,7 @@ set structures.
 struct LogicalInstance{S<:AbstractInterpretationSet} <: AbstractInterpretation
 
     s::S
-    i_instance::Int64
+    i_instance::Int
 
     function LogicalInstance{S}(
         s::S,
@@ -220,9 +220,9 @@ end
         instances::Vector{M}
     end
 
-A dataset of interpretations instantiated as a vector.
+A dataset of interpretations, instantiated as a vector.
 
-[`AbstractInterpretationSet`](@ref).
+See also [`AbstractInterpretationSet`](@ref).
 """
 struct InterpretationVector{M<:AbstractInterpretation} <: AbstractInterpretationSet
     instances::Vector{M}
@@ -234,49 +234,3 @@ end
 
 Base.getindex(s::InterpretationVector, i_instance::Integer) = Base.getindex(s.instances, i_instance)
 getinstance(s::InterpretationVector, i_instance::Integer) = Base.getindex(s, i_instance)
-
-############################################################################################
-
-# TODO
-# abstract type AbstractFrameSet{FR<:AbstractFrame} end
-
-# function Base.getindex(::AbstractFrameSet{FR}, i_instance::Integer)::FR where {FR<:AbstractFrame}
-#     return error("Please, provide ...")
-# end
-
-# struct FrameSet{FR<:AbstractFrame} <: AbstractFrameSet{FR}
-#     frames::Vector{FR}
-# end
-
-# Base.getindex(ks::FrameSet, i_instance::Integer) = Base.getindex(ks.frames, i_instance::Integer)
-
-# struct UniqueFrameSet{FR<:AbstractFrame} <: AbstractFrameSet{FR}
-#     frame::FR
-# end
-
-# Base.getindex(ks::UniqueFrameSet, i_instance::Integer) = ks.frame
-
-############################################################################################
-############################# Helpers for (Multi-)modal logics #############################
-############################################################################################
-
-worldtype(S::Type{AbstractInterpretationSet}) = worldtype(interpretationtype(S))
-worldtype(s::AbstractInterpretationSet) = worldtype(typeof(s))
-
-frametype(S::Type{AbstractInterpretationSet}) = frametype(interpretationtype(S))
-frametype(s::AbstractInterpretationSet) = frametype(typeof(s))
-
-# function relations(s::AbstractInterpretationSet)
-#     return error("Please, provide method relations(::$(typeof(s))).")
-# end
-
-# function frame(s::AbstractInterpretationSet, i_instance::Integer)
-#     return frame(getinstance(s, i_instance))
-# end
-
-function frame(s::AbstractInterpretationSet, i_instance::Integer)
-    return error("Please, provide method frame(::$(typeof(s)), ::$(typeof(i_instance))).")
-end
-accessibles(s::AbstractInterpretationSet, i_instance::Integer, args...) = accessibles(frame(s, i_instance), args...)
-allworlds(s::AbstractInterpretationSet, i_instance::Integer, args...) = allworlds(frame(s, i_instance), args...)
-nworlds(s::AbstractInterpretationSet, i_instance::Integer) = nworlds(frame(s, i_instance))

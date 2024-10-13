@@ -396,8 +396,8 @@ end
 """
     function randframe(
         [rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG,]
-        nworlds::Int64,
-        nedges::Int64,
+        nworlds::Int,
+        nedges::Int,
         facts::Vector{SyntaxLeaf}
     end
 
@@ -416,8 +416,8 @@ See also [`SyntaxLeaf`](@ref), [`Graphs.SimpleGraphs.SimpleDiGraph`](@ref),
 [`SoleLogics.ExplicitCrispUniModalFrame`](@ref).
 """
 function randframe(
-    nworlds::Int64,
-    nedges::Int64;
+    nworlds::Int,
+    nedges::Int;
     rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG
 )
     randframe(rng, nworlds, nedges)
@@ -425,8 +425,8 @@ end
 
 function randframe(
     rng::Union{Integer,AbstractRNG},
-    nworlds::Int64,
-    nedges::Int64
+    nworlds::Int,
+    nedges::Int
 )
     worlds = World.(1:nworlds)
     graph = Graphs.SimpleDiGraph(nworlds, nedges, rng=initrng(rng))
@@ -436,16 +436,16 @@ end
 """
     function randmodel(
         [rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG,]
-        nworlds::Int64,
-        nedges::Int64,
+        nworlds::Int,
+        nedges::Int,
         facts::Vector{SyntaxLeaf};
         truthvalues::Union{AbstractAlgebra,AbstractVector{<:Truth}} = BooleanAlgebra();
         rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG
     )
 """
 function randmodel(
-    nworlds::Int64,
-    nedges::Int64,
+    nworlds::Int,
+    nedges::Int,
     facts::Vector{<:SyntaxLeaf},
     truthvalues::Union{AbstractAlgebra,AbstractVector{<:Truth}} = BooleanAlgebra();
     rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG
@@ -456,8 +456,8 @@ end
 
 function randmodel(
     rng::AbstractRNG,
-    nworlds::Int64,
-    nedges::Int64,
+    nworlds::Int,
+    nedges::Int,
     facts::Vector{<:SyntaxLeaf},
     truthvalues::AbstractVector{<:Truth}
 )

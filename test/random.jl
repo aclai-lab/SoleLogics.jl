@@ -1,6 +1,5 @@
 using StatsBase
 import SoleLogics: arity
-using SoleLogics: parsebaseformula
 using Random
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ random logic ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -47,12 +46,12 @@ w = [5,1,1,1,1,1,1]
                 function_notation = true)
     end for i in 1:1000])
 
-@test all([begin
-        f = randbaseformula(i%5, _alphabet, _operators)
-        s = syntaxstring(f; function_notation = true)
-        s == syntaxstring(parsebaseformula(s; function_notation = true);
-            function_notation = true)
-    end for i in 1:1000])
+# @test all([begin
+#         f = randbaseformula(i%5, _alphabet, _operators)
+#         s = syntaxstring(f; function_notation = true)
+#         s == syntaxstring(parsebaseformula(s; function_notation = true);
+#             function_notation = true)
+#     end for i in 1:1000])
 
 end
 

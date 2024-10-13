@@ -141,9 +141,9 @@ include("random.jl")
 
 ############################################################################################
 
-export AnchoredFormula
+# export AnchoredFormula
 
-include("anchored-formula.jl")
+# include("anchored-formula.jl")
 
 ############################################################################################
 

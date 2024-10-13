@@ -298,7 +298,7 @@ function parseformula(
 end
 
 """$(doc_randformula)"""
-function randbaseformula(
+function randformula(
     height::Integer,
     g::AbstractGrammar;
     kwargs...

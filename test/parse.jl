@@ -1,6 +1,6 @@
 import SoleLogics: arity
 
-using SoleLogics: parsebaseformula, relation
+using SoleLogics: relation
 
 # testing utilities ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -27,28 +27,12 @@ end
 @test parseformula("¬p∧q") == parseformula("¬(p)∧q")
 @test parseformula("¬p∧q") != parseformula("¬(p∧q)")
 
-@test_nowarn parsebaseformula("p")
-
-@test_nowarn ¬ parsebaseformula("p")
-@test_nowarn ¬ parseformula("p")
-@test_nowarn ¬ parseformula("(s∧z)", propositionallogic())
-@test_nowarn ¬ parsebaseformula("p", propositionallogic())
-
 @test_nowarn parseformula("¬p∧q∧(¬s∧¬z)", [NEGATION, CONJUNCTION])
 @test_nowarn parseformula("¬p∧q∧(¬s∧¬z)", [NEGATION])
 @test_nowarn parseformula("¬p∧q∧{¬s∧¬z}",
     opening_parenthesis="{", closing_parenthesis="}")
 @test_nowarn parseformula("¬p∧q∧ A ¬s∧¬z    B",
     opening_parenthesis="A", closing_parenthesis="B")
-
-@test operatorstype(
-        logic(parsebaseformula("¬p∧q∧(¬s∧¬z)", [BOX]))) <: SoleLogics.BaseModalConnectives
-@test !(operatorstype(
-    logic(parsebaseformula("¬p∧q∧(¬s∧¬z)", [BOX]))) <: SoleLogics.BasePropositionalConnectives)
-@test !(operatorstype(logic(
-    parsebaseformula("¬p∧q∧(¬s∧¬z)", modallogic()))) <: SoleLogics.BasePropositionalConnectives)
-@test (@test_nowarn operatorstype(
-    logic(parsebaseformula("¬p∧q∧(¬s∧¬z)"))) <: SoleLogics.BasePropositionalConnectives)
 
 @test_nowarn parseformula("¬p∧q→(¬s∧¬z)")
 
@@ -59,8 +43,6 @@ end
 @test syntaxstring(parseformula("[G]p"); remove_redundant_parentheses = false) == "[G](p)"
 
 @test_nowarn parseformula("⟨G⟩p")
-
-@test alphabet(logic(parsebaseformula("p→q"))) == AlphabetOfAny{String}()
 
 @test syntaxstring(parseformula("(◊¬p) ∧ (¬q)")) == "◊¬p ∧ ¬q"
 @test syntaxstring(parseformula("q → p → ¬q"), remove_redundant_parentheses=false) == "(q) → ((p) → (¬(q)))"
@@ -260,16 +242,38 @@ _f = parseformula("{Gp ∧ ¬{G}q", [CurlyRelationalConnective(globalrel)])
     [BoxRelationalConnective(testrel), DiamondRelationalConnective(testrel)]
 )
 
-# parsebaseformula ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# # parseba#= seformula ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-@test_throws ErrorException parsebaseformula("")
-@test_broken parsebaseformula("⊤")
-@test_broken parsebaseformula("⊤ ∧ ⊤")
-@test_broken parsebaseformula("⊤ ∧ p")
-@test_broken parsebaseformula("⊥ ∧ □¬((p∧¬q)→r)")
-@test_broken parsebaseformula("□¬((p∧¬q)→r) ∧ ⊤")
-@test_broken parsebaseformula("⊤ ∧ (⊥∧¬⊤→⊤)")
-@test_nowarn parsebaseformula("□¬((p∧¬q)→r)")
+# using SoleLogics: parsebaseformula
+
+# @test_throws ErrorException parsebaseformula("")
+# @test_broken parsebaseformula("⊤")
+# @test_broken parsebaseformula("⊤ ∧ ⊤")
+# @test_broken parsebaseformula("⊤ ∧ p")
+# @test_broken parsebaseformula("⊥ ∧ □¬((p∧¬q)→r)")
+# @test_broken parsebaseformula("□¬((p∧¬q)→r) ∧ ⊤")
+# @test_broken parsebaseformula("⊤ ∧ (⊥∧¬⊤→⊤)")
+# @test_nowarn parsebaseformula("□¬((p∧¬q)→r)")
+
+# @test_nowarn parsebaseformula("p")
+
+# @test_nowarn ¬parsebaseformula("p")
+# @test_nowarn ¬parseformula("p")
+# @test_nowarn ¬parseformula("(s∧z)", propositionallogic())
+# @test_nowarn ¬parsebaseformula("p", propositionallogic())
+
+# @test operatorstype(
+#     logic(parsebaseformula("¬p∧q∧(¬s∧¬z)", [BOX]))) <: SoleLogics.BaseModalConnectives
+# @test !(operatorstype(
+#     logic(parsebaseformula("¬p∧q∧(¬s∧¬z)", [BOX]))) <:
+#         SoleLogics.BasePropositionalConnectives)
+# @test !(operatorstype(logic(
+#     parsebaseformula("¬p∧q∧(¬s∧¬z)", modallogic()))) <:
+#         SoleLogics.BasePropositionalConnectives)
+# @test (@test_nowarn operatorstype(
+#     logic(parsebaseformula("¬p∧q∧(¬s∧¬z)"))) <: SoleLogics.BasePropositionalConnectives)
+
+# @test alphabet(logi =#c(parsebaseformula("p→q"))) == AlphabetOfAny{String}()
 
 # stress test ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
