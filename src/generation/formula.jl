@@ -91,7 +91,8 @@ function randatom(
         rng::Union{Integer,AbstractRNG},
         a::UnionAlphabet;
         atompicking_mode::Symbol = :uniform,
-        subalphabets_weights::Union{AbstractWeights, AbstractVector{<:Real}, Nothing} = nothing,
+        subalphabets_weights::Union{
+            Nothing,AbstractWeights,AbstractVector{<:Real}} = nothing,
 )::Atom
 
     # @show a
