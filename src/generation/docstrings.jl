@@ -22,7 +22,7 @@ See also [`natoms`](@ref), [`AbstractAlphabet`](@ref).
 
 randatom_unionalphabet_docstring = """
     randatom(
-        rng::Union{Integer,AbstractRNG},
+        [rng::Union{Random.AbstractRNG,Integer},]
         a::UnionAlphabet;
         atompicking_mode::Symbol=:uniform,
         subalphabets_weights::Union{AbstractWeights,AbstractVector{<:Real},Nothing} = nothing

@@ -6,50 +6,56 @@ import StatsBase: sample
 
 include("docstrings.jl")
 
-macro __rng_dispatch(ex, docstr)
+macro __rng_dispatch(ex)
     if ex.head != :function
         throw(ArgumentError("Expected a function definition"))
     end
 
-    # Extract the function signature, its name and arguments
-    func_signature = ex.args[1]
-    func_name = func_signature.args[1]
-    args = func_signature.args[2:end]
+    fsignature = ex.args[1]
+    fname = fsignature.args[1]
+
+    @show fsignature.args
+
+    fargs = fsignature.args[2:end]
+    # At this point, fargs is shaped similar to:
+    # Any[
+    #   :($(Expr(:parameters, :(kwargs...)))),
+    #   :(rng::Union{Random.AbstractRNG, Integer}), :(a::AbstractAlphabet), :(args...)
+    # ]
 
     # Extract the arguments after the first one;
     # the first one must be an Union{Random.AbstractRNG,Integer},
     # otherwise, this macro makes no sense.
-    if length(args) > 0
+    if length(fargs) > 0
         quote
-            if !isa($args[1], Union{Random.AbstractRNG,Integer})
+            if !isa($fargs[1], Union{Random.AbstractRNG,Integer})
                 throw(ArgumentError("Expected function's first argument to be of type " *
                     "Union{Random.AbstractRNG,Integer}.")
                 )
             end
         end
 
-        new_args = args[2:end]
+        # From fargs, we would like to isolate the first field (kwargs),
+        # skip the second field (rng), and go on.
+        newargs = Any[fargs[1], fargs[3:end]...]
     else
         throw(ArgumentError("Expected function's argument to be atleast 2, the first of " *
             "which of type Union{Random.AbstractRNG,Integer}."))
     end
 
-    # Prepare the new dispatch logic
-    new_body = quote
-        $func_name(Random.GLOBAL_RNG, $(new_args...))
-    end
-
-    # Define both old and new dispatch (their name is the same);
-    # for the second dispatch (those with less arguments), also include docstring.
+    # Define both dispatches;
+    # the names are the same, and the new dispatches (the one without rng)
+    # also gets the docstring written just before the macro invocation.
     quote
-        @eval @doc $docstr function $func_name($(new_args...))
-            $new_body
+        Core.@__doc__ function $(esc(fname))($(newargs...))
+            $fname(Random.GLOBAL_RNG, $(newargs))
         end
+
+        $(esc(ex))
     end
 end
 
-
-
+"""$(randatom_docstring)"""
 @__rng_dispatch function randatom(
     rng::Union{Random.AbstractRNG,Integer},
     a::AbstractAlphabet,
@@ -57,7 +63,7 @@ end
     kwargs...
 )
     if isfinite(a)
-        # Commented because otherwise this is getting spammed
+        # commented because otherwise this is getting spammed
         # @warn "Consider implementing a specific `randatom` dispatch for your alphabet " *
         #     "type ($(typeof(a))) to increase performances."
 
@@ -67,20 +73,25 @@ end
         error("Please provide method randatom(rng::$(typeof(rng)), " *
             "alphabet::$(typeof(a)), args...; kwargs...)")
     end
-end $(randatom_docstring)
+end
 
 # TODO - remove this dispatch if test works
 # function randatom(a::AbstractAlphabet, args...; kwargs...)
 #     randatom(Random.GLOBAL_RNG, a, args...; kwargs...)
 # end
 
+# @__rng_dispatch
+
+"""$(randatom_unionalphabet_docstring)"""
 @__rng_dispatch function randatom(
         rng::Union{Integer,AbstractRNG},
-        a::UnionAlphabet;
-        atompicking_mode::Symbol = :uniform,
+        a::UnionAlphabet,
+        args...;
+        atompicking_mode::Symbol=:uniform,
         subalphabets_weights::Union{
-            Nothing,AbstractWeights,AbstractVector{<:Real}} = nothing,
-)::Atom
+            Nothing,AbstractWeights,AbstractVector{<:Real}}=nothing,
+        kwargs...
+)
     _atompicking_modes = [:uniform, :uniform_subalphabets, :weighted]
     @assert atompicking_mode in _atompicking_modes "Invalid value for `atompicking_mode` " *
         "($(atompicking_mode)). Chosee between $(atompicking_modes)."
@@ -98,7 +109,7 @@ end $(randatom_docstring)
         pickedalphabet = StatsBase.sample(rng, alphs, subalphabets_weights)
     else
         subalphabets_weights = begin
-            # This atomatically excludes subalphabets with empty threshold vector
+            # this atomatically excludes subalphabets with empty threshold vector
             if atompicking_mode == :uniform_subalphabets
                 # set the weight of the empty alphabets to zero
                 weights = Weights(ones(Int, length(alphs)))
@@ -112,7 +123,7 @@ end $(randatom_docstring)
     end
 
     return randatom(rng, pickedalphabet)
-end $(randatom_unionalphabet_docstring)
+end
 
 
 
@@ -120,20 +131,22 @@ end $(randatom_unionalphabet_docstring)
 # function Base.rand(a::AbstractAlphabet, args...; kwargs...)
 #     Base.rand(Random.GLOBAL_RNG, a, args...; kwargs...)
 # end
+"""$(rand_abstractalphabet_docstring)"""
 @__rng_dispatch function Base.rand(
-    rng::AbstractRNG,
+    rng::Union{Integer,AbstractRNG},
     a::AbstractAlphabet,
     args...;
     kwargs...
 )
     randatom(initrng(rng), a, args...; kwargs...)
-end $(rand_abstractalphabet_docstring)
+end
 
 
 # TODO - remove this dispatch if test works
 # function Base.rand(height::Integer, l::AbstractLogic, args...; kwargs...)
 #     Base.rand(Random.GLOBAL_RNG, height, l, args...; kwargs...)
 # end
+"""$(rand_abstractlogic_docstring)"""
 @__rng_dispatch function Base.rand(
     rng::Union{Integer,AbstractRNG},
     height::Integer,
@@ -142,7 +155,7 @@ end $(rand_abstractalphabet_docstring)
     kwargs...
 )
     Base.rand(initrng(rng), height, grammar(l), args...; kwargs...)
-end $(rand_abstractlogic_docstring)
+end
 
 
 
@@ -155,6 +168,7 @@ end $(rand_abstractlogic_docstring)
 # )
 #     Base.rand(Random.GLOBAL_RNG, height, g, args...)
 # end
+"""$(rand_completeflatgrammar_docstring)"""
 @__rng_dispatch function Base.rand(
     rng::Union{Integer,AbstractRNG},
     height::Integer,
@@ -163,7 +177,7 @@ end $(rand_abstractlogic_docstring)
     kwargs...
 )
     randformula(initrng(rng), height, alphabet(g), operators(g), args...; kwargs...)
-end $(rand_completeflatgrammar_docstring)
+end
 
 
 
@@ -179,13 +193,14 @@ end $(rand_completeflatgrammar_docstring)
 #     Base.rand(
 #         Random.GLOBAL_RNG, height, atoms, connectives, truthvalues, args...; kwargs...)
 # end
+"""$(rand_granular_docstring)"""
 @__rng_dispatch function Base.rand(
     rng::Union{Integer,AbstractRNG},
     height::Integer,
     atoms::Union{AbstractVector{<:Atom},AbstractAlphabet},
     connectives::Union{AbstractVector{<:Operator},AbstractVector{<:Connective}},
-    truthvalues::Union{Nothing,AbstractAlgebra,AbstractVector{<:Truth}} = nothing,
     args...;
+    truthvalues::Union{Nothing,AbstractAlgebra,AbstractVector{<:Truth}}=nothing,
     kwargs...
 )
     rng = initrng(rng)
@@ -207,7 +222,8 @@ end $(rand_completeflatgrammar_docstring)
     end
 
     randformula(height, ops, atoms, args...; rng=rng, kwargs...)
-end $(rand_granular_docstring)
+end
+
 
 doc_sample = """
     function StatsBase.sample(
