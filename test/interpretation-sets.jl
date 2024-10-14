@@ -10,5 +10,5 @@ s = SoleLogics.InterpretationVector([TruthDict((1,false)), TruthDict((1,true)), 
 @test_nowarn check(Atom(1), s)
 @test !all(check(Atom(1), s, 1))
 
-@test_nowarn check.(Atom(1), eachinstance(s))
-@test check.(Atom(1), eachinstance(s)) == [false, true, true]
+@test_nowarn [check(Atom(1), i) for i in SoleLogics.eachinstance(s)]
+@test [check(Atom(1), i) for i in SoleLogics.eachinstance(s)] == [false, true, true]

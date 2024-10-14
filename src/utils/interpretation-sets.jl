@@ -1,4 +1,4 @@
-import SoleBase: ninstances, getinstance
+import SoleBase: ninstances
 
 """
     struct LogicalInstance{S<:AbstractInterpretationSet}
@@ -234,5 +234,5 @@ function interpretationtype(::Type{S}) where {M<:AbstractInterpretation,S<:Inter
 end
 
 Base.getindex(s::InterpretationVector, i_instance::Integer) = Base.getindex(s.instances, i_instance)
-SoleBase.ninstances(s::InterpretationVector) = Base.length(s)
-SoleBase.getinstance(s::InterpretationVector, i_instance::Integer) = Base.getindex(s, i_instance)
+getinstance(s::InterpretationVector, i_instance::Integer) = Base.getindex(s, i_instance)
+SoleBase.ninstances(s::InterpretationVector) = Base.length(s.instances)
