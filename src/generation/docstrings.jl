@@ -6,7 +6,8 @@ randatom_docstring = """
         kwargs...
     )
 
-Return a random atom from a *finite* alphabet.
+Randomly generate an [`Atom`](@ref) from a *finite* [`AbstractAlphabet`](@ref) according to
+a uniform distribution.
 
 # Examples
 ```julia-repl
@@ -70,17 +71,12 @@ rand_abstractalphabet_docstring = """
         kwargs...
     )::Atom
 
-Randomly generate an [`Atom`](@ref) from an [`AbstractAlphabet`](@ref) according to a
-uniform distribution.
+Synonym for [`randatom(::AbstractAlphabet)`](@ref).
 
-!!! details
-If the `alphabet` is finite, the function defaults to `randatom(rng, alphabet)`, which
-internally calls `Base.rand(rng, atoms(alphabet)`;
-To limit the (otherwise infinite) sampling domain, a new dispatch must be implemented,
-and additional keyword arguments should be provided: those will be forwarded to the innter
-`randatom` call.
+Randomly generate an [`Atom`](@ref) from a *finite* [`AbstractAlphabet`](@ref) according to
+a uniform distribution.
 
-See also [`AbstractAlphabet`], [`randatom`](@ref).
+See also [`AbstractAlphabet`], [`randatom(::AbstractAlphabet)`](@ref).
 """
 
 rand_abstractlogic_docstring = """

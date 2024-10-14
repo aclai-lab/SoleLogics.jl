@@ -5,55 +5,7 @@ import Random: rand
 import StatsBase: sample
 
 include("docstrings.jl")
-
-macro __rng_dispatch(ex)
-    if ex.head != :function
-        throw(ArgumentError("Expected a function definition"))
-    end
-
-    fsignature = ex.args[1]
-    fname = fsignature.args[1]
-
-    @show fsignature.args
-
-    fargs = fsignature.args[2:end]
-    # At this point, fargs is shaped similar to:
-    # Any[
-    #   :($(Expr(:parameters, :(kwargs...)))),
-    #   :(rng::Union{Random.AbstractRNG, Integer}), :(a::AbstractAlphabet), :(args...)
-    # ]
-
-    # Extract the arguments after the first one;
-    # the first one must be an Union{Random.AbstractRNG,Integer},
-    # otherwise, this macro makes no sense.
-    if length(fargs) > 0
-        quote
-            if !isa($fargs[1], Union{Random.AbstractRNG,Integer})
-                throw(ArgumentError("Expected function's first argument to be of type " *
-                    "Union{Random.AbstractRNG,Integer}.")
-                )
-            end
-        end
-
-        # From fargs, we would like to isolate the first field (kwargs),
-        # skip the second field (rng), and go on.
-        newargs = Any[fargs[1], fargs[3:end]...]
-    else
-        throw(ArgumentError("Expected function's argument to be atleast 2, the first of " *
-            "which of type Union{Random.AbstractRNG,Integer}."))
-    end
-
-    # Define both dispatches;
-    # the names are the same, and the new dispatches (the one without rng)
-    # also gets the docstring written just before the macro invocation.
-    quote
-        Core.@__doc__ function $(esc(fname))($(newargs...))
-            $fname(Random.GLOBAL_RNG, $(newargs))
-        end
-
-        $(esc(ex))
-    end
-end
+include("utils.jl")
 
 """$(randatom_docstring)"""
 @__rng_dispatch function randatom(
@@ -67,20 +19,12 @@ end
         # @warn "Consider implementing a specific `randatom` dispatch for your alphabet " *
         #     "type ($(typeof(a))) to increase performances."
 
-        rng = initrng(rng)
-        return Base.rand(rng, atoms(a), args...; kwargs...)
+        return Base.rand(initrng(rng), atoms(a), args...; kwargs...)
     else
         error("Please provide method randatom(rng::$(typeof(rng)), " *
             "alphabet::$(typeof(a)), args...; kwargs...)")
     end
 end
-
-# TODO - remove this dispatch if test works
-# function randatom(a::AbstractAlphabet, args...; kwargs...)
-#     randatom(Random.GLOBAL_RNG, a, args...; kwargs...)
-# end
-
-# @__rng_dispatch
 
 """$(randatom_unionalphabet_docstring)"""
 @__rng_dispatch function randatom(
@@ -93,19 +37,26 @@ end
         kwargs...
 )
     _atompicking_modes = [:uniform, :uniform_subalphabets, :weighted]
-    @assert atompicking_mode in _atompicking_modes "Invalid value for `atompicking_mode` " *
-        "($(atompicking_mode)). Chosee between $(atompicking_modes)."
+    if !(atompicking_mode in _atompicking_modes)
+        throw(ArgumentError("Invalid value for `atompicking_mode` ($(atompicking_mode))." *
+                "Chosee between $(atompicking_modes)."))
+    end
 
     rng = initrng(rng)
     alphs = subalphabets(a)
 
     if atompicking_mode == :weighted
         if isnothing(subalphabets_weights)
-            error("`:weighted` picking_mode requires weights in `subalphabets_weights` ")
+            throw(ArgumentError("`:weighted` picking_mode requires weights in " *
+                "`subalphabets_weights` "))
         end
-        @assert length(subalphabets_weights)==length(alphs) "Mismatching numbers of "*
-        "alphabets ($(length(alphs))) and weights ($(length(subalphabets_weights)))."
-        subalphabets_weights = StatsBase.weights(subalphabets_weights)
+
+        if length(subalphabets_weights) != length(alphs)
+            throw(ArgumentError("Mismatching numbers of alphabets " *
+                "($(length(alphs))) and weights ($(length(subalphabets_weights)))."))
+        end
+
+            subalphabets_weights = StatsBase.weights(subalphabets_weights)
         pickedalphabet = StatsBase.sample(rng, alphs, subalphabets_weights)
     else
         subalphabets_weights = begin
@@ -127,10 +78,6 @@ end
 
 
 
-# TODO - remove this dispatch if test works
-# function Base.rand(a::AbstractAlphabet, args...; kwargs...)
-#     Base.rand(Random.GLOBAL_RNG, a, args...; kwargs...)
-# end
 """$(rand_abstractalphabet_docstring)"""
 @__rng_dispatch function Base.rand(
     rng::Union{Integer,AbstractRNG},
@@ -142,10 +89,6 @@ end
 end
 
 
-# TODO - remove this dispatch if test works
-# function Base.rand(height::Integer, l::AbstractLogic, args...; kwargs...)
-#     Base.rand(Random.GLOBAL_RNG, height, l, args...; kwargs...)
-# end
 """$(rand_abstractlogic_docstring)"""
 @__rng_dispatch function Base.rand(
     rng::Union{Integer,AbstractRNG},
@@ -157,17 +100,6 @@ end
     Base.rand(initrng(rng), height, grammar(l), args...; kwargs...)
 end
 
-
-
-
-# TODO - remove this dispatch if test works
-# function Base.rand(
-#     height::Integer,
-#     g::CompleteFlatGrammar,
-#     args...
-# )
-#     Base.rand(Random.GLOBAL_RNG, height, g, args...)
-# end
 """$(rand_completeflatgrammar_docstring)"""
 @__rng_dispatch function Base.rand(
     rng::Union{Integer,AbstractRNG},
@@ -179,20 +111,6 @@ end
     randformula(initrng(rng), height, alphabet(g), operators(g), args...; kwargs...)
 end
 
-
-
-# TODO - remove this dispatch if test works
-# function Base.rand(
-#     height::Integer,
-#     atoms::Union{AbstractVector{<:Atom},AbstractAlphabet},
-#     connectives::Union{AbstractVector{<:Operator},AbstractVector{<:Connective}},
-#     truthvalues::Union{Nothing,AbstractAlgebra,AbstractVector{<:Truth}} = nothing,
-#     args...;
-#     kwargs...
-# )
-#     Base.rand(
-#         Random.GLOBAL_RNG, height, atoms, connectives, truthvalues, args...; kwargs...)
-# end
 """$(rand_granular_docstring)"""
 @__rng_dispatch function Base.rand(
     rng::Union{Integer,AbstractRNG},
@@ -203,26 +121,31 @@ end
     truthvalues::Union{Nothing,AbstractAlgebra,AbstractVector{<:Truth}}=nothing,
     kwargs...
 )
-    rng = initrng(rng)
-
     # If Truth's are specified as `operators`, then they cannot be simultaneously
     #  provided as `truthvalues`
-    @assert (connectives isa AbstractVector{<:Connective} ||
+    if !(connectives isa AbstractVector{<:Connective} ||
             !(truthvalues isa AbstractVector{<:Truth})
-        ) "Unexpected connectives and truth values: $(connectives) and $(truthvalues)."
+        )
+        thorw(ArgumentError("Unexpected connectives and truth values: " *
+            "$(connectives) and $(truthvalues)."))
+    end
 
     atoms = atoms isa AbstractAlphabet ? SoleLogics.atoms(atoms) : atoms
     ops = connectives
     if !isnothing(truthvalues)
         truthvalues = inittruthvalues(truthvalues)
-        @assert typejoin(typeof.(truthvalues)...) != Truth "Truth values " *
-            "$(truthvalues) must belong to the same algebra " *
-            "(and have a common supertype that is not Truth)."
+        if typejoin(typeof.(truthvalues)...) == Truth
+            throw(ArgumentError("Truth values " *
+                "$(truthvalues) must belong to the same algebra " *
+                "(and have a common supertype that is not Truth)."))
+        end
+
         ops = vcat(ops, truthvalues)
     end
 
-    randformula(height, ops, atoms, args...; rng=rng, kwargs...)
+    randformula(height, ops, atoms, args...; rng=initrng(rng), kwargs...)
 end
+
 
 
 doc_sample = """
@@ -393,22 +316,30 @@ function randformula(
 
     rng = initrng(rng)
     alphabet = convert(AbstractAlphabet, alphabet)
-    @assert all(x->x isa Operator, operators) "Unexpected object(s) passed as" *
-        " operator:" * " $(filter(x->!(x isa Operator), operators))"
+    if !(all(x->x isa Operator, operators))
+        throw(ArgumentError("Unexpected object(s) passed as" *
+            " operator:" * " $(filter(x->!(x isa Operator), operators))"))
+    end
 
     if (isnothing(opweights))
         opweights = StatsBase.uweights(length(operators))
     elseif (opweights isa AbstractVector)
-        @assert length(opweights) == length(operators) "Mismatching numbers of operators " *
-                "($(length(operators))) and opweights ($(length(opweights)))."
+        if !(length(opweights) == length(operators))
+            throw(ArgumentError("Mismatching numbers of operators " *
+                "($(length(operators))) and opweights ($(length(opweights)))."))
+        end
+
         opweights = StatsBase.weights(opweights)
     end
 
     if (isnothing(atompicker))
         atompicker = StatsBase.uweights(natoms(alphabet))
     elseif (atompicker isa AbstractVector)
-        @assert length(atompicker) == natoms(alphabet) "Mismatching numbers of atoms " *
-                "($(natoms(alphabet))) and atompicker ($(length(atompicker)))."
+        if !(length(atompicker) == natoms(alphabet))
+            throw(ArgumentError("Mismatching numbers of atoms " *
+                "($(natoms(alphabet))) and atompicker ($(length(atompicker)))."))
+        end
+
         atompicker = StatsBase.weights(atompicker)
     end
 
