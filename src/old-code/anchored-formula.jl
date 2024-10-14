@@ -142,9 +142,6 @@ end
 # When constructing a new formula from a syntax tree, the logic is passed by reference.
 (φ::AnchoredFormula)(t::SyntaxStructure, args...) = AnchoredFormula(_logic(φ), t, args...)
 
-# A logic can be used to instantiate `AnchoredFormula`s out of syntax trees.
-(l::AbstractLogic)(t::SyntaxStructure, args...) = AnchoredFormula(Base.RefValue(l), t; args...)
-
 # Adapted from https://github.com/JuliaLang/julia/blob/master/base/promotion.jl
 function Base._promote(x::AnchoredFormula, y::SyntaxStructure)
     @inline
@@ -157,6 +154,11 @@ grammar(φ::AnchoredFormula) = grammar(logic(φ))
 algebra(φ::AnchoredFormula) = algebra(logic(φ))
 
 syntaxstring(φ::AnchoredFormula; kwargs...) = syntaxstring(φ.synstruct; kwargs...)
+
+# A logic can be used to instantiate `AnchoredFormula`s out of syntax trees.
+function (l::AbstractLogic)(t::SyntaxStructure, args...)
+    AnchoredFormula(Base.RefValue(l), t; args...)
+end
 
 ############################################################################################
 
