@@ -10,8 +10,7 @@ _alphabet = ExplicitAlphabet(["p", "q", "r", "s"])
 _operators = [NEGATION, CONJUNCTION, IMPLICATION]
 w = [10,1,1]
 
-@test_nowarn [randbaseformula(i, _alphabet, _operators) for i in 1:15]
-@test_nowarn [randbaseformula(i, _alphabet, _operators, opweights=w) for i in 1:2]
+@test_nowarn [randformula(i, _alphabet, _operators) for i in 1:15]
 @test_nowarn [randformula(i, _alphabet, _operators, opweights=w) for i in 1:10]
 
 end
@@ -30,7 +29,7 @@ _operators = [NEGATION, CONJUNCTION, IMPLICATION,
 w = [5,1,1,1,1,1,1]
 
 @test all([begin
-        f = randbaseformula(3, _alphabet, _operators)
+        f = randformula(3, _alphabet, _operators)
         s = syntaxstring(f)
         s == syntaxstring(parseformula(s))
     end for i in 1:1000])
@@ -47,7 +46,7 @@ w = [5,1,1,1,1,1,1]
     end for i in 1:1000])
 
 # @test all([begin
-#         f = randbaseformula(i%5, _alphabet, _operators)
+#         f = randformula(i%5, _alphabet, _operators)
 #         s = syntaxstring(f; function_notation = true)
 #         s == syntaxstring(parsebaseformula(s; function_notation = true);
 #             function_notation = true)
@@ -65,8 +64,8 @@ g = SoleLogics.CompleteFlatGrammar(alph, ops)
 
 @test_nowarn Base.rand(4, g)
 @test_nowarn Base.rand(Random.MersenneTwister(1), 4, g)
-@test_nowarn randbaseformula(4, g)
-@test_nowarn randbaseformula(4, g; rng = Random.MersenneTwister(1))
+@test_nowarn randformula(4, g)
+@test_nowarn randformula(4, g; rng = Random.MersenneTwister(1))
 
 @test_nowarn StatsBase.sample(4, g)
 @test_nowarn StatsBase.sample(Random.MersenneTwister(1), 4, g)

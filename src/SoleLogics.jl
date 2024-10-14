@@ -134,7 +134,7 @@ include("parse.jl")
 
 ############################################################################################
 
-export randbaseformula, randformula
+export randformula
 export randframe, randmodel
 
 include("random.jl")
