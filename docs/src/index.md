@@ -50,7 +50,6 @@ Here is a map of SoleLogics' most important types and structures. Feels overwhel
         - [`DiamondRelationalConnective`](@ref)
         - [`BoxRelationalConnective`](@ref)         
     - [`Formula`](@ref)
-        - [`AnchoredFormula`](@ref) 
         - [`SyntaxStructure`](@ref)
             - [`SyntaxTree`](@ref)              
                 - [`SyntaxLeaf`](@ref)

@@ -18,7 +18,6 @@
     │   │   ├── Literal (e.g., p, ¬p)
     │   │   └── ...
     │   ├── TruthTable
-    │   ├── AnchoredFormula
     │   └── ...
     └── Connective
         ├── NamedConnective (e.g., ∧, ∨, →, ¬, □, ◊)

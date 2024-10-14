@@ -124,12 +124,12 @@ logic_int = BaseLogic(grammar_int, SoleLogics.BooleanAlgebra())
 @test Atom("aoeu") in propositionallogic()
 @test ! (Atom(1) in propositionallogic())
 
-@test_nowarn AnchoredFormula(Base.RefValue(logic_int), t1_int)
-f_int = @test_nowarn AnchoredFormula(logic_int, t1_int)
-@test_nowarn AnchoredFormula(logic_int, p1)
-@test_nowarn AnchoredFormula(logic_int, p1; check_atoms = true)
-@test_nowarn AnchoredFormula(logic_int, p100)
-@test_throws AssertionError AnchoredFormula(logic_int, p100; check_atoms = true)
+# @test_nowarn AnchoredFormula(Base.RefValue(logic_int), t1_int)
+# f_int = @test_nowarn AnchoredFormula(logic_int, t1_int)
+# @test_nowarn AnchoredFormula(logic_int, p1)
+# @test_nowarn AnchoredFormula(logic_int, p1; check_atoms = true)
+# @test_nowarn AnchoredFormula(logic_int, p100)
+# @test_throws AssertionError AnchoredFormula(logic_int, p100; check_atoms = true)
 
 @test_throws MethodError 1 in f_int
 @test p1 in f_int
@@ -212,7 +212,7 @@ f_conj_int = @test_nowarn CONJUNCTION(f_int, f_int, f_int)
 @test_nowarn ∧((t2_int, ¬(f_int)),)
 
 @test_nowarn f_int(p1 ∧ p100)
-@test f_int(p1 ∧ p100) isa AnchoredFormula
+# @test f_int(p1 ∧ p100) isa AnchoredFormula
 @test_throws ErrorException f_int(p1 ∧ p100 ∧ p1_float)
 @test_throws ErrorException f_int(⊥ ∨ (p1 ∧ p100 ∧ p2 ∧ ⊤))
 
