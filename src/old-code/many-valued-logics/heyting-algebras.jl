@@ -756,7 +756,7 @@ function collatetruth(
 end
 
 function collatetruth(
-    c::Connective,
+    c::AbstractConnective,
     (α, β)::Tuple{HeytingTruth, BooleanTruth},
     h::HeytingAlgebra
 )
@@ -764,7 +764,7 @@ function collatetruth(
 end
 
 function collatetruth(
-    c::Connective,
+    c::AbstractConnective,
     (α, β)::Tuple{BooleanTruth, HeytingTruth},
     h::HeytingAlgebra
 )
@@ -772,7 +772,7 @@ function collatetruth(
 end
 
 function collatetruth(
-    c::Connective,
+    c::AbstractConnective,
     (α, β)::Tuple{BooleanTruth, BooleanTruth},
     h::HeytingAlgebra
 )
@@ -780,7 +780,7 @@ function collatetruth(
 end
 
 function simplify(
-    c::Connective,
+    c::AbstractConnective,
     (α, β)::Tuple{HeytingTruth,HeytingTruth},
     h::HeytingAlgebra
 )
@@ -788,7 +788,7 @@ function simplify(
 end
 
     function simplify(
-    c::Connective,
+    c::AbstractConnective,
     (α, β)::Tuple{HeytingTruth,BooleanTruth},
     h::HeytingAlgebra
 )
@@ -796,7 +796,7 @@ end
 end
 
     function simplify(
-    c::Connective,
+    c::AbstractConnective,
     (α, β)::Tuple{BooleanTruth,HeytingTruth},
     h::HeytingAlgebra
 )
@@ -804,7 +804,7 @@ end
 end
 
     function simplify(
-    c::Connective,
+    c::AbstractConnective,
     (α, β)::Tuple{BooleanTruth,BooleanTruth},
     h::HeytingAlgebra
 )
@@ -824,14 +824,14 @@ function collatetruth(::typeof(¬), (α,)::Tuple{HeytingTruth}, h::HeytingAlgebr
     end
 end
 
-function collatetruth(c::Connective, (α,)::Tuple{BooleanTruth}, h::HeytingAlgebra)
+function collatetruth(c::AbstractConnective, (α,)::Tuple{BooleanTruth}, h::HeytingAlgebra)
     return collatetruth(c, convert(HeytingTruth, α), h)
 end
 
-function simplify(c::Connective, (α,)::Tuple{HeytingTruth}, h::HeytingAlgebra)
+function simplify(c::AbstractConnective, (α,)::Tuple{HeytingTruth}, h::HeytingAlgebra)
     return collatetruth(c, (α,), h)
 end
 
-    function simplify(c::Connective, (α,)::Tuple{BooleanTruth}, h::HeytingAlgebra)
+    function simplify(c::AbstractConnective, (α,)::Tuple{BooleanTruth}, h::HeytingAlgebra)
     return simplify(c, (convert(HeytingTruth, α),), h)
 end

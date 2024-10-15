@@ -2,7 +2,7 @@ import Base: show, promote_rule, length, getindex
 using SoleBase
 
 doc_lmlf = """
-    struct LeftmostLinearForm{C<:Connective,SS<:SyntaxStructure} <: SyntaxStructure
+    struct LeftmostLinearForm{C<:AbstractConnective,SS<:SyntaxStructure} <: SyntaxStructure
         children::Vector{<:SS}
     end
 
@@ -60,12 +60,12 @@ See also [`SyntaxStructure`](@ref), [`SyntaxTree`](@ref),
 [`LeftmostConjunctiveForm`](@ref), [`LeftmostDisjunctiveForm`](@ref),
 [`Literal`](@ref).
 """
-struct LeftmostLinearForm{C<:Connective,SS<:SyntaxStructure} <: SyntaxStructure
+struct LeftmostLinearForm{C<:AbstractConnective,SS<:SyntaxStructure} <: SyntaxStructure
     children::Vector{SS}
 
     function LeftmostLinearForm{C,SS}(
         children::Vector,
-    ) where {C<:Connective,SS<:SyntaxStructure}
+    ) where {C<:AbstractConnective,SS<:SyntaxStructure}
         a = arity(C()) # TODO maybe add member connective::C and use that instead of C()
         n_children = length(children)
 
@@ -84,26 +84,26 @@ struct LeftmostLinearForm{C<:Connective,SS<:SyntaxStructure} <: SyntaxStructure
         new{C,SS}(children)
     end
 
-    function LeftmostLinearForm{C}(children::AbstractVector{SS}) where {C<:Connective,SS<:SyntaxStructure}
+    function LeftmostLinearForm{C}(children::AbstractVector{SS}) where {C<:AbstractConnective,SS<:SyntaxStructure}
         # SS = SoleBase._typejoin(typeof.(children)...)
         LeftmostLinearForm{C,SS}(children)
     end
 
     # Ugly!!
-    function LeftmostLinearForm{C}(children::AbstractVector) where {C<:Connective}
+    function LeftmostLinearForm{C}(children::AbstractVector) where {C<:AbstractConnective}
         SS = SoleBase._typejoin(typeof.(children)...)
         LeftmostLinearForm{C,SS}(children)
     end
 
     function LeftmostLinearForm(
-        C::Type{<:SoleLogics.Connective},
+        C::Type{<:SoleLogics.AbstractConnective},
         children::Vector,
     )
         LeftmostLinearForm{C}(children)
     end
 
     function LeftmostLinearForm(
-        op::Connective,
+        op::AbstractConnective,
         children::Vector,
     )
         LeftmostLinearForm(typeof(op), children)
@@ -111,11 +111,11 @@ struct LeftmostLinearForm{C<:Connective,SS<:SyntaxStructure} <: SyntaxStructure
 
     function LeftmostLinearForm(
         tree::SyntaxTree,
-        c::Union{<:SoleLogics.Connective,Nothing} = nothing
+        c::Union{<:SoleLogics.AbstractConnective,Nothing} = nothing
     )
         # Check c correctness; it should not be nothing (thus, auto inferred) if
         # tree root contains something that is not a connective
-        if (!(token(tree) isa Connective) && !isnothing(c))
+        if (!(token(tree) isa AbstractConnective) && !isnothing(c))
             error("Syntax tree cannot be converted to a LeftmostLinearForm. " *
                 "tree root is $(token(tree)). " *
                 "Try specifying a connective as a second argument."
@@ -130,7 +130,7 @@ struct LeftmostLinearForm{C<:Connective,SS<:SyntaxStructure} <: SyntaxStructure
         # call LeftmostLinearForm constructor.
         _children = SyntaxStructure[]
 
-        function _dig_and_retrieve(tree::SyntaxTree, c::SoleLogics.Connective)
+        function _dig_and_retrieve(tree::SyntaxTree, c::SoleLogics.AbstractConnective)
             token(tree) != c ?
             push!(_children, tree) :    # Lexical scope
             for chs in children(tree)
@@ -142,7 +142,7 @@ struct LeftmostLinearForm{C<:Connective,SS<:SyntaxStructure} <: SyntaxStructure
         LeftmostLinearForm(c, _children)
     end
 
-    function LeftmostLinearForm{C}(tree::SyntaxTree) where {C<:Connective}
+    function LeftmostLinearForm{C}(tree::SyntaxTree) where {C<:AbstractConnective}
         LeftmostLinearForm(tree, C()) # TODO avoid
     end
 end
@@ -175,7 +175,7 @@ end
 Base.getindex(lf::LeftmostLinearForm, idx::Integer) = Base.getindex(children(lf),idx)
 Base.push!(lf::LeftmostLinearForm, el) = Base.push!(children(lf), el)
 
-function composeformulas(c::Connective, φs::NTuple{N,LeftmostLinearForm}) where {N}
+function composeformulas(c::AbstractConnective, φs::NTuple{N,LeftmostLinearForm}) where {N}
     # @show φs
     if all(_c->_c == c, connective.(φs)) # If operator is the same, collapse children TODO and operator is ... associative?
         return LeftmostLinearForm(c, collect(Iterators.flatten(children.(φs))))
@@ -261,11 +261,11 @@ Base.promote_rule(::Type{SS}, ::Type{LF}) where {SS<:SyntaxStructure,LF<:Leftmos
 Base.promote_rule(::Type{LF}, ::Type{SS}) where {LF<:LeftmostLinearForm,SS<:SyntaxStructure} = SyntaxTree
 
 function Base.in(tok::SyntaxToken, φ::LeftmostLinearForm)::Bool
-    return (tok isa Connective && connective(φ) == tok) ||
+    return (tok isa AbstractConnective && connective(φ) == tok) ||
         any(c->Base.in(tok, c), children(φ))
 end
 
-function Base.in(tok::SyntaxLeaf, φ::LeftmostLinearForm{C,<:SyntaxLeaf})::Bool where {C<:Connective}
+function Base.in(tok::SyntaxLeaf, φ::LeftmostLinearForm{C,<:SyntaxLeaf})::Bool where {C<:AbstractConnective}
     return Base.in(tok, children(φ))
 end
 
@@ -280,39 +280,39 @@ nleaves(φ::LeftmostLinearForm) = sum(nleaves, children(φ))
 #     # return TODO
 # end
 
-function atoms(φ::LeftmostLinearForm{C,<:Atom})::Vector{Atom} where {C<:Connective}
+function atoms(φ::LeftmostLinearForm{C,<:Atom})::Vector{Atom} where {C<:AbstractConnective}
     return children(φ)
 end
 
-# function connectives(φ::LeftmostLinearForm{C,<:Atom})::Bool where {C<:Connective}
+# function connectives(φ::LeftmostLinearForm{C,<:Atom})::Bool where {C<:AbstractConnective}
 #     # return TODO
 # end
 
-# function operators(φ::LeftmostLinearForm{C,<:Atom})::Bool where {C<:Connective}
+# function operators(φ::LeftmostLinearForm{C,<:Atom})::Bool where {C<:AbstractConnective}
 #     # return TODO
 # end
 
-function leaves(φ::LeftmostLinearForm{C,<:SyntaxLeaf})::SyntaxLeaf where {C<:Connective}
+function leaves(φ::LeftmostLinearForm{C,<:SyntaxLeaf})::SyntaxLeaf where {C<:AbstractConnective}
     return children(φ)
 end
 
-# function ntokens(φ::LeftmostLinearForm{C,<:Atom})::Bool where {C<:Connective}
+# function ntokens(φ::LeftmostLinearForm{C,<:Atom})::Bool where {C<:AbstractConnective}
 #     # return TODO
 # end
 
-function natoms(φ::LeftmostLinearForm{C,<:Atom})::Integer where {C<:Connective}
+function natoms(φ::LeftmostLinearForm{C,<:Atom})::Integer where {C<:AbstractConnective}
     return nchildren(φ)
 end
 
-# function nconnectives(φ::LeftmostLinearForm{C,<:Atom})::Bool where {C<:Connective}
+# function nconnectives(φ::LeftmostLinearForm{C,<:Atom})::Bool where {C<:AbstractConnective}
 #     # return TODO
 # end
 
-# function noperators(φ::LeftmostLinearForm{C,<:Atom})::Bool where {C<:Connective}
+# function noperators(φ::LeftmostLinearForm{C,<:Atom})::Bool where {C<:AbstractConnective}
 #     # return TODO
 # end
 
-function nleaves(φ::LeftmostLinearForm{C,<:SyntaxLeaf})::Integer where {C<:Connective}
+function nleaves(φ::LeftmostLinearForm{C,<:SyntaxLeaf})::Integer where {C<:AbstractConnective}
     return nchildren(φ)
 end
 
@@ -328,10 +328,10 @@ Base.promote_rule(::Type{SS}, ::Type{LF}) where {LF<:LeftmostLinearForm,SS<:Synt
 """
     LeftmostConjunctiveForm{SS<:SyntaxStructure} = LeftmostLinearForm{typeof(∧),SS}
 
-Specific instantiation of a [`LeftmostLinearForm`](@ref), where [`Connective`](@ref)s are
+Specific instantiation of a [`LeftmostLinearForm`](@ref), where [`AbstractConnective`](@ref)s are
 all [`CONJUNCTION`](@ref)s.
 
-See also [`SyntaxStructure`](@ref), [`Connective`](@ref), [`LeftmostLinearForm`](@ref),
+See also [`SyntaxStructure`](@ref), [`AbstractConnective`](@ref), [`LeftmostLinearForm`](@ref),
 [`CONJUNCTION`](@ref).
 """
 const LeftmostConjunctiveForm{SS<:SyntaxStructure} = LeftmostLinearForm{typeof(∧),SS}
@@ -356,10 +356,10 @@ end
 """
     LeftmostDisjunctiveForm{SS<:SyntaxStructure} = LeftmostLinearForm{typeof(∨),SS}
 
-Specific instantiation of a [`LeftmostLinearForm`](@ref), where [`Connective`](@ref)s are
+Specific instantiation of a [`LeftmostLinearForm`](@ref), where [`AbstractConnective`](@ref)s are
 all [`DISJUNCTION`](@ref)s.
 
-See also [`SyntaxStructure`](@ref), [`Connective`](@ref),
+See also [`SyntaxStructure`](@ref), [`AbstractConnective`](@ref),
 [`LeftmostLinearForm`](@ref), [`DISJUNCTION`](@ref).
 """
 const LeftmostDisjunctiveForm{SS<:SyntaxStructure} = LeftmostLinearForm{typeof(∨),SS}
@@ -953,7 +953,7 @@ function normalize(
     # Simplify constants
     newt = begin
         tok, chs = token(newt), children(newt)
-        if simplify_constants && tok isa Connective
+        if simplify_constants && tok isa AbstractConnective
             if (tok == ∨) && arity(tok) == 2 # TODO maybe use istop, isbot?
                 if     token(chs[1]) == ⊥  chs[2]          # ⊥ ∨ φ ≡ φ
                 elseif token(chs[2]) == ⊥  chs[1]          # φ ∨ ⊥ ≡ φ
@@ -1020,7 +1020,7 @@ function normalize(
 
     newt = begin
         tok, chs = token(newt), children(newt)
-        if remove_boxes && tok isa Connective && SoleLogics.isbox(tok) && arity(tok) == 1
+        if remove_boxes && tok isa AbstractConnective && SoleLogics.isbox(tok) && arity(tok) == 1
             # remove_boxes -> substitute every [X]φ with ¬⟨X⟩¬φ
             child = chs[1]
             dual_op = dual(tok)
@@ -1045,7 +1045,7 @@ function normalize(
     if rotate_commutatives
         newt = begin
             tok, chs = token(newt), children(newt)
-            if tok isa Connective && iscommutative(tok) && arity(tok) > 1
+            if tok isa AbstractConnective && iscommutative(tok) && arity(tok) > 1
                 chs = children(LeftmostLinearForm(newt, tok))
                 chs = Vector(sort(collect(_normalize.(chs)), lt=_isless))
                 if tok in [∧,∨] # TODO create trait for this behavior: p ∧ p ∧ p ∧ q   -> p ∧ q
@@ -1087,5 +1087,5 @@ function isgrounded(t::SyntaxTree)::Bool
     # (println(token(t)); println(children(t)); true) &&
     return (token(t) isa SoleLogics.AbstractRelationalConnective && isgrounding(relation(token(t)))) ||
     # (token(t) in [◊,□]) ||
-    (token(t) isa Connective && all(c->isgrounded(c), children(t)))
+    (token(t) isa AbstractConnective && all(c->isgrounded(c), children(t)))
 end

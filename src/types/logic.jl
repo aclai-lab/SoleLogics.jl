@@ -264,11 +264,11 @@ function Base.in(φ::Formula, g::AbstractGrammar)::Bool
     return Base.in(tree(φ), g)
 end
 
-# TODO actually differentiate Connective's and SyntaxLeaves, and define+use leaves(g)
+# TODO actually differentiate AbstractConnective's and SyntaxLeaves, and define+use leaves(g)
 # Note: when using this file's syntax tokens, these methods suffice:
 Base.in(a::AbstractAtom, g::AbstractGrammar) = Base.in(a, alphabet(g))
 Base.in(op::Truth, g::AbstractGrammar) = (op <: operatorstype(g))
-Base.in(op::Connective, g::AbstractGrammar) = (op <: operatorstype(g))
+Base.in(op::AbstractConnective, g::AbstractGrammar) = (op <: operatorstype(g))
 
 """
     formulas(

@@ -128,7 +128,7 @@ end
 
 # Note that, since `c` might not be in the logic of the child formulas,
 #  the resulting formula may be of a different logic.
-function composeformulas(c::Connective, φs::NTuple{N,AnchoredFormula}) where {N}
+function composeformulas(c::AbstractConnective, φs::NTuple{N,AnchoredFormula}) where {N}
     ls = unique(logic.(φs)) # Uses Base.isequal
     @assert length(ls) == 1 "Cannot " *
                 "compose an anchored formula from formulas anchored to different logics: $(ls)."
@@ -207,7 +207,7 @@ function baseformula(
 
     ops = isnothing(additional_operators) ? SoleLogics.operators(t) : additional_operators
     ops = unique(ops)
-    conns = filter(o->o isa Connective, ops)
+    conns = filter(o->o isa AbstractConnective, ops)
     # operators = unique([additional_operators..., ops...])
     # props = atoms(t)
 

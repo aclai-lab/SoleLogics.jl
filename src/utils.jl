@@ -20,7 +20,7 @@
     │   ├── TruthTable
     │   ├── AnchoredFormula
     │   └── ...
-    └── Connective
+    └── AbstractConnective
         ├── NamedConnective (e.g., ∧, ∨, →, ¬, □, ◊)
         ├── AbstractRelationalConnective
         │   ├── DiamondRelationalConnective (e.g., ⟨G⟩)
@@ -29,10 +29,9 @@
         └── ...
 =#
 
-############################################################################################
-#### Atom ##################################################################################
-############################################################################################
-
+# ---------------------------------------------------------------------------------------- #
+#                                        struct Atom                                       #
+# ---------------------------------------------------------------------------------------- #
 """
     struct Atom{V} <: AbstractAtom
         value::V
@@ -47,8 +46,7 @@ struct Atom{V} <: AbstractAtom
     value::V
 
     function Atom{V}(value::V) where {V}
-        @assert !(value isa Union{Formula, Connective}) "Illegal nesting. "*
-        "Cannot instantiate Atom with value of type $(typeof(value))"
+        value isa Union{Formula, AbstractConnective} || throw(ArgumentError("Illegal nesting. " * "Cannot instantiate Atom with value of type $(typeof(value))"))
         new{V}(value)
     end
     function Atom(value::V) where {V}
@@ -86,13 +84,12 @@ syntaxstring(a::Atom; kwargs...)::String = syntaxstring(value(a); kwargs...)
 
 syntaxstring(value; kwargs...) = string(value)
 
-############################################################################################
-#### SyntaxBranch ##########################################################################
-############################################################################################
-
+# ---------------------------------------------------------------------------------------- #
+#                                    struct SyntaxBranch                                   #
+# ---------------------------------------------------------------------------------------- #
 """
     struct SyntaxBranch <: AbstractSyntaxBranch
-        token::Connective
+        token::AbstractConnective
         children::NTuple{N,SyntaxTree} where {N}
     end
 
@@ -129,36 +126,28 @@ julia> height(a)
 See also
 [`token`](@ref), [`children`](@ref),
 [`arity`](@ref),
-[`Connective`](@ref),
+[`AbstractConnective`](@ref),
 [`height`](@ref),
 [`atoms`](@ref), [`natoms`](@ref),
 [`operators`](@ref), [`noperators`](@ref),
 [`tokens`](@ref), [`ntokens`](@ref),
 """
 struct SyntaxBranch <: AbstractSyntaxBranch
-
     # The syntax token at the current node
-    token::Connective
-
+    token::AbstractConnective
     # The child nodes of the current node
     children::NTuple{N, SyntaxTree} where {N}
 
     function _aritycheck(N, token, children)
-        @assert arity(token)==N "Cannot instantiate SyntaxBranch with token "*
-        "$(token) of arity $(arity(token)) and $(N) children."
+        arity(token)!=N || throwerror(ArgumentError("Cannot instantiate SyntaxBranch with token " * "$(token) of arity $(arity(token)) and $(N) children."))
         return nothing
     end
-
-    function SyntaxBranch(
-            token::Connective,
-            children::NTuple{N, SyntaxTree} = (),
-    ) where {N}
+    function SyntaxBranch(token::AbstractConnective, children::NTuple{N, SyntaxTree} = ()) where {N}
         _aritycheck(N, token, children)
         return new(token, children)
     end
-
     # Helpers
-    function SyntaxBranch(token::Connective, children...)
+    function SyntaxBranch(token::AbstractConnective, children...)
         return SyntaxBranch(token, children)
     end
 end
@@ -166,57 +155,11 @@ end
 children(φ::SyntaxBranch) = φ.children
 token(φ::SyntaxBranch) = φ.token
 
-################################################################################
-################################################################################
-
+# ---------------------------------------------------------------------------------------- #
+#                                  struct NamedConnective                                  #
+# ---------------------------------------------------------------------------------------- #
 """
-    collatetruth(c::Connective, ts::NTuple{N,T where T<:Truth})::Truth where {N}
-
-Return the truth value for a composed formula `c(t1, ..., tN)`, given the `N`
-with t1, ..., tN being `Truth` values.
-
-See also [`simplify`](@ref), [`Connective`](@ref), [`Truth`](@ref).
-"""
-function collatetruth(
-        c::Connective,
-        ts::NTuple{N, T where T <: Truth},
-)::Truth where {N}
-    if arity(c) != length(ts)
-        return error("Cannot collate $(length(ts)) truth values for " *
-                     "connective $(typeof(c)) with arity $(arity(c))).")
-    else
-        return error("Please, provide method collatetruth(::$(typeof(c)), " *
-                     "::NTuple{$(arity(c)),$(T)}).")
-    end
-end
-
-# Helper (so that collatetruth work for all operators)
-collatetruth(t::Truth, ::Tuple{}) = t
-
-# With generic formulas, it composes formula
-"""
-    simplify(c::Connective, ts::NTuple{N,F where F<:Formula})::Truth where {N}
-
-Return a formula with the same semantics of a composed formula `c(φ1, ..., φN)`,
-given the `N`
-immediate sub-formulas.
-
-See also [`collatetruth`](@ref), [`Connective`](@ref), [`Formula`](@ref).
-"""
-function simplify(c::Connective, φs::NTuple{N, T where T <: Formula}) where {N}
-    c(φs)
-end
-
-function simplify(c::Connective, φs::NTuple{N, T where T <: Truth}) where {N}
-    collatetruth(c, φs)
-end
-
-############################################################################################
-##################################### BASE CONNECTIVES #####################################
-############################################################################################
-
-"""
-    struct NamedConnective{Symbol} <: Connective end
+    struct NamedConnective{Symbol} <: AbstractConnective end
 
 A singleton type for representing connectives defined by a name or a symbol.
 
@@ -228,16 +171,17 @@ The AND connective (i.e., the logical conjunction) is defined as the subtype:
     arity(::typeof(∧)) = 2
 
 See also [`NEGATION`](@ref), [`CONJUNCTION`](@ref), [`DISJUNCTION`](@ref),
-[`IMPLICATION`](@ref), [`Connective`](@ref).
+[`IMPLICATION`](@ref), [`AbstractConnective`](@ref).
 """
-struct NamedConnective{Symbol} <: Connective end
+struct NamedConnective{Symbol} <: AbstractConnective end
 
 name(::NamedConnective{S}) where {S} = S
-
 Base.show(io::IO, c::NamedConnective) = print(io, "$(syntaxstring(c))")
-
 syntaxstring(c::NamedConnective; kwargs...) = string(name(c))
 
+# ---------------------------------------------------------------------------------------- #
+#                              NamedConnective: precedence                                 #
+# ---------------------------------------------------------------------------------------- #
 function precedence(c::NamedConnective)
     op = SoleLogics.name(c)
     # Using default Base.operator_precedence is risky. For example,
@@ -250,6 +194,9 @@ function precedence(c::NamedConnective)
     end
 end
 
+# ---------------------------------------------------------------------------------------- #
+#                              NamedConnective: associativity                              #
+# ---------------------------------------------------------------------------------------- #
 function associativity(c::NamedConnective)
     op = SoleLogics.name(c)
     # Base.isoperator(:(++)) is true, but Base.operator_precedence(:(++)) is :none
@@ -260,6 +207,9 @@ function associativity(c::NamedConnective)
     end
 end
 
+# ---------------------------------------------------------------------------------------- #
+#                                 NamedConnective: negation                                #
+# ---------------------------------------------------------------------------------------- #
 doc_NEGATION = """
     const NEGATION = NamedConnective{:¬}()
     const ¬ = NEGATION
@@ -268,7 +218,7 @@ doc_NEGATION = """
 Logical negation (also referred to as complement).
 It can be typed by `\\neg<tab>`.
 
-See also [`NamedConnective`](@ref), [`Connective`](@ref).
+See also [`NamedConnective`](@ref), [`AbstractConnective`](@ref).
 """
 """$(doc_NEGATION)"""
 const NEGATION = NamedConnective{:¬}()
@@ -280,6 +230,9 @@ arity(::typeof(¬)) = 1
 # Because of this, we override Base.operator_precedence.
 precedence(::typeof(¬)) = Base.operator_precedence(:∧) + 1
 
+# ---------------------------------------------------------------------------------------- #
+#                               NamedConnective: conjunction                               #
+# ---------------------------------------------------------------------------------------- #
 doc_CONJUNCTION = """
     const CONJUNCTION = NamedConnective{:∧}()
     const ∧ = CONJUNCTION
@@ -288,7 +241,7 @@ doc_CONJUNCTION = """
 Logical conjunction.
 It can be typed by `\\wedge<tab>`.
 
-See also [`NamedConnective`](@ref), [`Connective`](@ref).
+See also [`NamedConnective`](@ref), [`AbstractConnective`](@ref).
 """
 """$(doc_CONJUNCTION)"""
 const CONJUNCTION = NamedConnective{:∧}()
@@ -296,6 +249,9 @@ const CONJUNCTION = NamedConnective{:∧}()
 const ∧ = CONJUNCTION
 arity(::typeof(∧)) = 2
 
+# ---------------------------------------------------------------------------------------- #
+#                                NamedConnective: disjunction                              #
+# ---------------------------------------------------------------------------------------- #
 doc_DISJUNCTION = """
     const DISJUNCTION = NamedConnective{:∨}()
     const ∨ = DISJUNCTION
@@ -304,7 +260,7 @@ doc_DISJUNCTION = """
 Logical disjunction.
 It can be typed by `\\vee<tab>`.
 
-See also [`NamedConnective`](@ref), [`Connective`](@ref).
+See also [`NamedConnective`](@ref), [`AbstractConnective`](@ref).
 """
 """$(doc_DISJUNCTION)"""
 const DISJUNCTION = NamedConnective{:∨}()
@@ -312,6 +268,9 @@ const DISJUNCTION = NamedConnective{:∨}()
 const ∨ = DISJUNCTION
 arity(::typeof(∨)) = 2
 
+# ---------------------------------------------------------------------------------------- #
+#                                 NamedConnective: implication                             #
+# ---------------------------------------------------------------------------------------- #
 doc_IMPLICATION = """
     const IMPLICATION = NamedConnective{:→}()
     const → = IMPLICATION
@@ -320,7 +279,7 @@ doc_IMPLICATION = """
 Logical implication.
 It can be typed by `\\to<tab>`.
 
-See also [`NamedConnective`](@ref), [`Connective`](@ref).
+See also [`NamedConnective`](@ref), [`AbstractConnective`](@ref).
 """
 """$(doc_IMPLICATION)"""
 const IMPLICATION = NamedConnective{:→}()
@@ -337,10 +296,9 @@ dual(c::typeof(∧)) = typeof(∨)
 hasdual(::typeof(∨)) = true
 dual(c::typeof(∨)) = typeof(∧)
 
-############################################################################################
-###################################### BOOLEAN ALGEBRA #####################################
-############################################################################################
-
+# ---------------------------------------------------------------------------------------- #
+#                                    struct BooleanTruth                                   #
+# ---------------------------------------------------------------------------------------- #
 """
     struct BooleanTruth <: Truth
         flag::Bool
@@ -401,18 +359,18 @@ Base.promote_rule(::Type{<:BooleanTruth}, ::Type{<:BooleanTruth}) = BooleanTruth
 function Base.convert(::Type{BooleanTruth}, t::Bool)::BooleanTruth
     return (t ? TOP : BOT)
 end
-function Base.convert(::Type{BooleanTruth}, t::Integer)::BooleanTruth
+function Base.convert(::Type{BooleanTruth}, t::Int)::BooleanTruth
     if isone(t)
         return TOP
     elseif iszero(t)
         return BOT
     else
-        return error("Cannot interpret Integer value $t as BooleanTruth.")
+        return error("Cannot interpret Int value $t as BooleanTruth.")
     end
 end
 
 Base.convert(::Type{Truth}, t::Bool) = Base.convert(BooleanTruth, t)
-Base.convert(::Type{Truth}, t::Integer) = Base.convert(BooleanTruth, t)
+Base.convert(::Type{Truth}, t::Int) = Base.convert(BooleanTruth, t)
 
 # NOTE: are these useful?
 hasdual(::BooleanTruth) = true
@@ -422,33 +380,19 @@ precedes(t1::BooleanTruth, t2::BooleanTruth) = istop(t1) < istop(t2)
 truthmeet(t1::BooleanTruth, t2::BooleanTruth) = precedes(t1, t2) ? t1 : t2
 truthjoin(t1::BooleanTruth, t2::BooleanTruth) = precedes(t1, t2) ? t2 : t1
 
-"""
-    struct BooleanAlgebra <: AbstractAlgebra{Bool} end
-
-A [Boolean algebra](https://en.wikipedia.org/wiki/Boolean_algebra), defined on the values
-TOP (representing *truth*) and BOT (for bottom, representing *falsehood*).
-For this algebra, the basic operators negation,
-conjunction and disjunction (stylized as ¬, ∧, ∨) can be defined as the complement, minimum
-and maximum, of the integer cast of `true` and `false`, respectively.
-
-See also [`Truth`](@ref).
-"""
-struct BooleanAlgebra <: AbstractAlgebra{BooleanTruth} end
-
-domain(::BooleanAlgebra) = [TOP, BOT]
-
-top(::BooleanAlgebra) = TOP
-bot(::BooleanAlgebra) = BOT
-
-############################################################################################
-
-# Standard semantics for NOT, AND, OR, IMPLIES
+# ---------------------------------------------------------------------------------------- #
+#                      Standard semantics for NOT, AND, OR, IMPLIES                        #
+# ---------------------------------------------------------------------------------------- #
 collatetruth(::typeof(¬), (ts,)::Tuple{BooleanTruth}) = istop(ts) ? BOT : TOP
 function collatetruth(::typeof(∧), (t1, t2)::NTuple{N, T where T <: BooleanTruth}) where {N}
     truthmeet(t1, t2)
 end
 function collatetruth(::typeof(∨), (t1, t2)::NTuple{N, T where T <: BooleanTruth}) where {N}
     truthjoin(t1, t2)
+end
+# The IMPLIES operator, →, falls back to using ¬ and ∨
+function collatetruth(::typeof(→), (t1, t2)::NTuple{2, BooleanTruth})
+    return collatetruth(∨, (collatetruth(¬, (t1,)), t2))
 end
 
 # Incomplete information
@@ -464,10 +408,26 @@ end
 simplify(::typeof(∨), (t1, t2)::Tuple{BooleanTruth, Formula}) = isbot(t1) ? t2 : t1
 simplify(::typeof(∨), (t1, t2)::Tuple{Formula, BooleanTruth}) = isbot(t2) ? t1 : t2
 
-# The IMPLIES operator, →, falls back to using ¬ and ∨
-function collatetruth(::typeof(→), (t1, t2)::NTuple{2, BooleanTruth})
-    return collatetruth(∨, (collatetruth(¬, (t1,)), t2))
-end
+# ---------------------------------------------------------------------------------------- #
+#                                  struct BooleanAlgebra                                  #
+# ---------------------------------------------------------------------------------------- #
+"""
+    struct BooleanAlgebra <: AbstractAlgebra{Bool} end
+
+A [Boolean algebra](https://en.wikipedia.org/wiki/Boolean_algebra), defined on the values
+TOP (representing *truth*) and BOT (for bottom, representing *falsehood*).
+For this algebra, the basic operators negation,
+conjunction and disjunction (stylized as ¬, ∧, ∨) can be defined as the complement, minimum
+and maximum, of the Int cast of `true` and `false`, respectively.
+
+See also [`Truth`](@ref).
+"""
+struct BooleanAlgebra <: AbstractAlgebra{BooleanTruth} end
+
+domain(::BooleanAlgebra) = [TOP, BOT]
+
+top(::BooleanAlgebra) = TOP
+bot(::BooleanAlgebra) = BOT
 
 ############################################################################################
 
@@ -479,8 +439,8 @@ end
 # # TODO idea: use full range for numbers!
 # # istop(ts::AbstractFloat)::Bool = ts == typemax(typeof(ts))
 # # isbot(ts::AbstractFloat)::Bool = ts == typemin(typeof(ts))
-# istop(ts::Integer)::Bool = ts == typemax(typeof(ts))
-# isbot(ts::Integer)::Bool = ts == typemin(typeof(ts))
+# istop(ts::Int)::Bool = ts == typemax(typeof(ts))
+# isbot(ts::Int)::Bool = ts == typemin(typeof(ts))
 
 # TODO:
 # struct DiscreteChainAlgebra{T} <: AbstractAlgebra{T} domain::Vector{T} end
@@ -490,76 +450,9 @@ end
 # struct HeytingNode{T} end
 # struct HeytingAlgebra{T} <: AbstractAlgebra{HeytingNode{T}} ... end
 
-############################################################################################
-########################################### LOGIC ##########################################
-############################################################################################
-
-"""
-    struct BaseLogic{G<:AbstractGrammar,A<:AbstractAlgebra} <: AbstractLogic{G,A}
-        grammar::G
-        algebra::A
-    end
-
-A basic logic based on a grammar and an algebra, where both the grammar and the algebra
-are instantiated.
-
-See also [`grammar`](@ref), [`algebra`](@ref),
-[`AbstractGrammar`](@ref), [`AbstractAlgebra`](@ref), [`AbstractLogic`](@ref).
-"""
-struct BaseLogic{G <: AbstractGrammar, A <: AbstractAlgebra} <: AbstractLogic{G, A}
-    grammar::G
-    algebra::A
-
-    function BaseLogic{G, A}(
-            grammar::G = BASE_GRAMMAR,
-            algebra::A = BooleanAlgebra(),
-    ) where {G <: AbstractGrammar, A <: AbstractAlgebra}
-        # @assert all([goeswith(c, algebra) for c in operators(grammar)]) "Cannot instantiate BaseLogic{$(G),$(A)}: operators $(operators(grammar)[[goeswith(c, algebra) for c in operators(grammar)]]) cannot be interpreted on $(algebra)." # requires `goeswith` trait
-        return new{G, A}(grammar, algebra)
-    end
-
-    function BaseLogic{G}(
-            grammar::G = BASE_GRAMMAR,
-            algebra::A = BooleanAlgebra(),
-    ) where {G <: AbstractGrammar, A <: AbstractAlgebra}
-        return BaseLogic{G, A}(grammar, algebra)
-    end
-
-    function BaseLogic(
-            grammar::G = BASE_GRAMMAR,
-            algebra::A = BooleanAlgebra(),
-    ) where {G <: AbstractGrammar, A <: AbstractAlgebra}
-        return BaseLogic{G, A}(grammar, algebra)
-    end
-end
-
-grammar(l::BaseLogic) = l.grammar
-algebra(l::BaseLogic) = l.algebra
-
-function Base.isequal(a::BaseLogic, b::BaseLogic)
-    return Base.isequal(grammar(a), grammar(b)) && Base.isequal(algebra(a), algebra(b))
-end
-
-Base.hash(a::BaseLogic) = Base.hash(algebra(a), Base.hash(grammar(a)))
-
-function Base.show(
-        io::IO, l::BaseLogic{G, A},) where {G <: AbstractGrammar, A <: AbstractAlgebra}
-    if G <: CompleteFlatGrammar
-        print(io,
-            "BaseLogic with:\n\t- operators = [$(join(syntaxstring.(operators(l)), ", "))];\n\t- alphabet: $(alphabet(l));\n\t- algebra: $(algebra(l)).",)
-    else
-        print(io,
-            "BaseLogic{$(G),$(A)}(\n\t- grammar: $(grammar(l));\n\t- algebra: $(algebra(l))\n)",)
-    end
-end
-
-
-
-
-############################################################################################
-#### ExplicitAlphabet ######################################################################
-############################################################################################
-
+# ---------------------------------------------------------------------------------------- #
+#                                  struct ExplicitAlphabet                                 #
+# ---------------------------------------------------------------------------------------- #
 """
     struct ExplicitAlphabet{V} <: AbstractAlphabet{V}
         atoms::Vector{Atom{V}}
@@ -575,11 +468,9 @@ struct ExplicitAlphabet{V} <: AbstractAlphabet{V}
     function ExplicitAlphabet{V}(atoms) where {V}
         return new{V}(collect(atoms))
     end
-
     function ExplicitAlphabet(atoms::AbstractVector{Atom{V}}) where {V}
         return ExplicitAlphabet{V}(collect(atoms))
     end
-
     function ExplicitAlphabet(atoms::AbstractVector{V}) where {V}
         return ExplicitAlphabet{V}(Atom.(collect(atoms)))
     end
@@ -591,10 +482,9 @@ function Base.convert(::Type{AbstractAlphabet}, alphabet::Vector{<:Atom})
     ExplicitAlphabet(alphabet)
 end
 
-############################################################################################
-#### AlphabetOfAny #########################################################################
-############################################################################################
-
+# ---------------------------------------------------------------------------------------- #
+#                                   struct AlphabetOfAny                                   #
+# ---------------------------------------------------------------------------------------- #
 """
     struct AlphabetOfAny{V} <: AbstractAlphabet{V} end
 
@@ -606,10 +496,9 @@ struct AlphabetOfAny{V} <: AbstractAlphabet{V} end
 Base.isfinite(::Type{<:AlphabetOfAny}) = false
 Base.in(::Atom{PV}, ::AlphabetOfAny{VV}) where {PV, VV} = (PV <: VV)
 
-############################################################################################
-#### UnionAlphabet #########################################################################
-############################################################################################
-
+# ---------------------------------------------------------------------------------------- #
+#                                   struct UnionAlphabet                                   #
+# ---------------------------------------------------------------------------------------- #
 # Finite alphabet of conditions induced from a set of metaconditions
 """
 Alphabet given by the *union* of a number of (sub-)alphabets.
@@ -619,7 +508,6 @@ See also
 [`ScalarCondition`](@ref),
 [`ScalarMetaCondition`](@ref).
 """
-
 struct UnionAlphabet{C, A <: AbstractAlphabet{C}} <: AbstractAlphabet{C}
     subalphabets::Vector{A}
 end
@@ -644,9 +532,12 @@ function Base.in(p::Atom, a::UnionAlphabet)
     return any(sa -> Base.in(p, sa), subalphabets(a))
 end
 
+# ---------------------------------------------------------------------------------------- #
+#                      function randatom for struct UnionAlphabet                          #
+# ---------------------------------------------------------------------------------------- #
 """
     randatom(
-        rng::Union{Integer,AbstractRNG},
+        rng::Union{Int,AbstractRNG},
         a::UnionAlphabet;
         atompicking_mode::Symbol=:uniform,
         subalphabets_weights::Union{AbstractWeights,AbstractVector{<:Real},Nothing} = nothing
@@ -661,12 +552,11 @@ together with a `subalphabets_weights` vector.
 See also [`UnionAlphabet`](@ref).
 """
 function randatom(
-        rng::Union{Integer, AbstractRNG},
+        rng::Union{Int, AbstractRNG},
         a::UnionAlphabet;
         atompicking_mode::Symbol = :uniform,
         subalphabets_weights::Union{AbstractWeights, AbstractVector{<:Real}, Nothing} = nothing,
 )::Atom
-
     # @show a
     @assert atompicking_mode in [:uniform, :uniform_subalphabets, :weighted] "Value for `atompicking_mode` not..."
     rng = initrng(rng)
@@ -676,8 +566,7 @@ function randatom(
         if isnothing(subalphabets_weights)
             error("`:weighted` picking_mode requires weights in `subalphabets_weights` ")
         end
-        @assert length(subalphabets_weights)==length(alphs) "Mismatching numbers of alphabets "*
-        "($(length(alphs))) and weights ($(length(subalphabets_weights)))."
+        @assert length(subalphabets_weights)==length(alphs) "Mismatching numbers of alphabets " * "($(length(alphs))) and weights ($(length(subalphabets_weights)))."
         subalphabets_weights = StatsBase.weights(subalphabets_weights)
         pickedalphabet = StatsBase.sample(rng, alphs, subalphabets_weights)
     else
@@ -700,10 +589,9 @@ function randatom(
     return randatom(rng, pickedalphabet)
 end
 
-############################################################################################
-#### CompleteFlatGrammar ###################################################################
-############################################################################################
-
+# ---------------------------------------------------------------------------------------- #
+#                                struct CompleteFlatGrammar                                #
+# ---------------------------------------------------------------------------------------- #
 """
     struct CompleteFlatGrammar{V<:AbstractAlphabet,O<:Operator} <: AbstractGrammar{V,O}
         alphabet::V
@@ -727,58 +615,19 @@ struct CompleteFlatGrammar{V <: AbstractAlphabet, O <: Operator} <: AbstractGram
     alphabet::V
     operators::Vector{<:O}
 
-    function CompleteFlatGrammar{V, O}(
-            alphabet::V,
-            operators::Vector{<:O},
-    ) where {V <: AbstractAlphabet, O <: Operator}
+    function CompleteFlatGrammar{V, O}(alphabet::V, operators::Vector{<:O}) where {V <: AbstractAlphabet, O <: Operator}
         return new{V, O}(alphabet, operators)
     end
-
-    function CompleteFlatGrammar{V}(
-            alphabet::V,
-            operators::Vector{<:Operator},
-    ) where {V <: AbstractAlphabet}
-        return new{V, Union{typeof.(operators)...}}(
-            alphabet,
-            Vector{Union{typeof.(operators)...}}(operators),
-        )
+    function CompleteFlatGrammar{V}(alphabet::V, operators::Vector{<:Operator}) where {V <: AbstractAlphabet}
+        return new{V, Union{typeof.(operators)...}}(alphabet, Vector{Union{typeof.(operators)...}}(operators))
     end
-
-    function CompleteFlatGrammar(
-            alphabet::V,
-            operators::Vector{<:Operator},
-    ) where {V <: AbstractAlphabet}
-        return new{V, Union{typeof.(operators)...}}(
-            alphabet,
-            Vector{Union{typeof.(operators)...}}(operators),
-        )
+    function CompleteFlatGrammar(alphabet::V, operators::Vector{<:Operator}) where {V <: AbstractAlphabet}
+        return new{V, Union{typeof.(operators)...}}(alphabet, Vector{Union{typeof.(operators)...}}(operators))
     end
 end
 
 alphabet(g::CompleteFlatGrammar) = g.alphabet
 operators(g::CompleteFlatGrammar) = g.operators
-
-"""
-    connectives(g::AbstractGrammar)
-
-List all connectives appearing in a grammar.
-
-See also [`Connective`](@ref), [`nconnectives`](@ref).
-"""
-function connectives(g::AbstractGrammar)::AbstractVector{Connective}
-    return filter(!isnullary, operators(g))
-end
-
-"""
-    leaves(g::AbstractGrammar)
-
-List all leaves appearing in a grammar.
-
-See also [`SyntaxLeaf`](@ref), [`nleaves`](@ref).
-"""
-function leaves(g::AbstractGrammar)
-    return [atoms(alphabet(g))..., filter(isnullary, operators(g))...]
-end
 
 # V complete grammar includes any *safe* syntax tree that can be built with
 #  the grammar token types.
@@ -796,11 +645,14 @@ function Base.in(φ::SyntaxTree, g::CompleteFlatGrammar)::Bool
     end
 end
 
+# ---------------------------------------------------------------------------------------- #
+#                                          formulas                                        #
+# ---------------------------------------------------------------------------------------- #
 """
     formulas(
         g::CompleteFlatGrammar{V,O} where {V,O};
-        maxdepth::Integer,
-        nformulas::Union{Nothing,Integer} = nothing
+        maxdepth::Int,
+        nformulas::Union{Nothing,Int} = nothing
     )::Vector{SyntaxBranch}
 
 Generate all formulas whose `SyntaxBranch`s that are not taller than a given `maxdepth`.
@@ -809,8 +661,8 @@ See also [`AbstractGrammar`](@ref), [`SyntaxBranch`](@ref).
 """
 function formulas(
         g::CompleteFlatGrammar{V, O} where {V, O};
-        maxdepth::Integer,
-        nformulas::Union{Nothing, Integer} = nothing,
+        maxdepth::Int,
+        nformulas::Union{Nothing, Int} = nothing,
 )::Vector{SyntaxTree}
     @assert maxdepth >= 0
     @assert isnothing(nformulas) || nformulas > 0
@@ -846,12 +698,62 @@ end
 Base.in(p::Atom, g::CompleteFlatGrammar) = Base.in(p, alphabet(g))
 Base.in(op::Truth, g::CompleteFlatGrammar) = (op <: operatorstype(g))
 
-############################################################################################
-########################################### BASE ###########################################
-############################################################################################
+# ---------------------------------------------------------------------------------------- #
+#                                     struct BaseLogic                                     #
+# ---------------------------------------------------------------------------------------- #
+"""
+    struct BaseLogic{G<:AbstractGrammar,A<:AbstractAlgebra} <: AbstractLogic{G,A}
+        grammar::G
+        algebra::A
+    end
 
+A basic logic based on a grammar and an algebra, where both the grammar and the algebra
+are instantiated.
+
+See also [`grammar`](@ref), [`algebra`](@ref),
+[`AbstractGrammar`](@ref), [`AbstractAlgebra`](@ref), [`AbstractLogic`](@ref).
+"""
+struct BaseLogic{G <: AbstractGrammar, A <: AbstractAlgebra} <: AbstractLogic{G, A}
+    grammar::G
+    algebra::A
+
+    function BaseLogic{G, A}(grammar::G = BASE_GRAMMAR, algebra::A = BooleanAlgebra()) where {G <: AbstractGrammar, A <: AbstractAlgebra}
+        # @assert all([goeswith(c, algebra) for c in operators(grammar)]) "Cannot instantiate BaseLogic{$(G),$(A)}: 
+        # operators $(operators(grammar)[[goeswith(c, algebra) for c in operators(grammar)]]) cannot be interpreted on $(algebra)." 
+        # requires `goeswith` trait
+        return new{G, A}(grammar, algebra)
+    end
+    function BaseLogic{G}(grammar::G = BASE_GRAMMAR, algebra::A = BooleanAlgebra()) where {G <: AbstractGrammar, A <: AbstractAlgebra}
+        return BaseLogic{G, A}(grammar, algebra)
+    end
+    function BaseLogic(grammar::G = BASE_GRAMMAR, algebra::A = BooleanAlgebra()) where {G <: AbstractGrammar, A <: AbstractAlgebra}
+        return BaseLogic{G, A}(grammar, algebra)
+    end
+end
+
+grammar(l::BaseLogic) = l.grammar
+algebra(l::BaseLogic) = l.algebra
+
+function Base.isequal(a::BaseLogic, b::BaseLogic)
+    return Base.isequal(grammar(a), grammar(b)) && Base.isequal(algebra(a), algebra(b))
+end
+
+Base.hash(a::BaseLogic) = Base.hash(algebra(a), Base.hash(grammar(a)))
+
+function Base.show(io::IO, l::BaseLogic{G, A},) where {G <: AbstractGrammar, A <: AbstractAlgebra}
+    if G <: CompleteFlatGrammar
+        print(io,
+            "BaseLogic with:\n\t- operators = [$(join(syntaxstring.(operators(l)), ", "))];\n\t- alphabet: $(alphabet(l));\n\t- algebra: $(algebra(l)).",)
+    else
+        print(io,
+            "BaseLogic{$(G),$(A)}(\n\t- grammar: $(grammar(l));\n\t- algebra: $(algebra(l))\n)",)
+    end
+end
+
+# ---------------------------------------------------------------------------------------- #
+#                                        Base Logic                                        #
+# ---------------------------------------------------------------------------------------- #
 # This can be useful for standard phrasing of propositional formulas with string atoms.
-
 """
     const BASE_CONNECTIVES = [¬, ∧, ∨, →]
 
@@ -861,7 +763,7 @@ See also [`NEGATION`](@ref),
 [`CONJUNCTION`](@ref),
 [`DISJUNCTION`](@ref),
 [`IMPLICATION`](@ref),
-[`Connective`](@ref).
+[`AbstractConnective`](@ref).
 """
 const BASE_CONNECTIVES = [¬, ∧, ∨, →]
 const BaseConnectives = Union{typeof.(BASE_CONNECTIVES)...}
@@ -874,58 +776,57 @@ const BASE_ALGEBRA = BooleanAlgebra()
 const BASE_LOGIC = BaseLogic(BASE_GRAMMAR, BASE_ALGEBRA)
 
 function _baselogic(;
-        alphabet::Union{Nothing, Vector, AbstractAlphabet} = nothing,
-        operators::Union{Nothing, Vector{<:Operator}} = nothing,
-        grammar::Union{Nothing, AbstractGrammar} = nothing,
-        algebra::Union{Nothing, AbstractAlgebra} = nothing,
-        default_operators::Vector{<:Operator},
-        logictypename::String,
+    alphabet::Union{Nothing, Vector, AbstractAlphabet} = nothing,
+    operators::Union{Nothing, Vector{<:Operator}} = nothing,
+    grammar::Union{Nothing, AbstractGrammar} = nothing,
+    algebra::Union{Nothing, AbstractAlgebra} = nothing,
+    default_operators::Vector{<:Operator},
+    logictypename::String,
 )
-    if !(isnothing(grammar) || (isnothing(alphabet) && isnothing(operators)))
-        error("Cannot instantiate $(logictypename) by specifing a grammar " *
-              "together with argument(s): " *
-              join(
-                  [
-                      (!isnothing(alphabet) ? ["alphabet"] : [])...,
-                      (!isnothing(operators) ? ["operators"] : [])...,
-                      (!isnothing(grammar) ? ["grammar"] : [])...,
-                  ],
-                  ", ",) * ".")
-    end
-    grammar = begin
-        if isnothing(grammar)
-            # @show alphabet
-            # @show operators
-            # @show BASE_GRAMMAR
-            # if isnothing(alphabet) && isnothing(operators)
-            # BASE_GRAMMAR
-            # else
-            alphabet = isnothing(alphabet) ? BASE_ALPHABET : alphabet
-            operators = begin
-                if isnothing(operators)
-                    default_operators
-                else
-                    if length(setdiff(operators, default_operators)) > 0
-                        @warn "Instantiating $(logictypename) with operators not in " *
-                              "$(default_operators): " *
-                              join(", ", setdiff(operators, default_operators)) * "."
-                    end
-                    operators
+if !(isnothing(grammar) || (isnothing(alphabet) && isnothing(operators)))
+    error("Cannot instantiate $(logictypename) by specifing a grammar " *
+          "together with argument(s): " *
+          join(
+              [
+                  (!isnothing(alphabet) ? ["alphabet"] : [])...,
+                  (!isnothing(operators) ? ["operators"] : [])...,
+                  (!isnothing(grammar) ? ["grammar"] : [])...,
+              ],
+              ", ",) * ".")
+end
+grammar = begin
+    if isnothing(grammar)
+        # @show alphabet
+        # @show operators
+        # @show BASE_GRAMMAR
+        # if isnothing(alphabet) && isnothing(operators)
+        # BASE_GRAMMAR
+        # else
+        alphabet = isnothing(alphabet) ? BASE_ALPHABET : alphabet
+        operators = begin
+            if isnothing(operators)
+                default_operators
+            else
+                if length(setdiff(operators, default_operators)) > 0
+                    @warn "Instantiating $(logictypename) with operators not in " *
+                          "$(default_operators): " *
+                          join(", ", setdiff(operators, default_operators)) * "."
                 end
+                operators
             end
-            if alphabet isa Vector
-                alphabet = ExplicitAlphabet(map(Atom, alphabet))
-            end
-            CompleteFlatGrammar(alphabet, operators)
-            # end
-        else
-            @assert isnothing(alphabet) && isnothing(operators)
-            grammar
         end
+        if alphabet isa Vector
+            alphabet = ExplicitAlphabet(map(Atom, alphabet))
+        end
+        CompleteFlatGrammar(alphabet, operators)
+        # end
+    else
+        @assert isnothing(alphabet) && isnothing(operators)
+        grammar
     end
-
-    algebra = isnothing(algebra) ? BASE_ALGEBRA : algebra
-
-    return BaseLogic(grammar, algebra)
 end
 
+algebra = isnothing(algebra) ? BASE_ALGEBRA : algebra
+
+return BaseLogic(grammar, algebra)
+end

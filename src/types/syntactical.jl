@@ -2,7 +2,7 @@
     Syntactical Types Hierarchy
 
     Syntactical
-    ├── Connective (e.g, ∧, ¬, □, ◊, ⟨G⟩)
+    ├── AbstractConnective (e.g, ∧, ¬, □, ◊, ⟨G⟩)
     └── Formula
         └── SyntaxStructure
             └── SyntaxTree
@@ -12,8 +12,8 @@
                 └── AbstractSyntaxBranch (e.g., p ∧ q)
 
     Also:
-    const Operator = Union{Connective,Truth}
-    const SyntaxToken = Union{Connective,SyntaxLeaf}
+    const Operator = Union{AbstractConnective,Truth}
+    const SyntaxToken = Union{AbstractConnective,SyntaxLeaf}
 =#
 
 include("docstrings.jl")
@@ -29,7 +29,7 @@ Master abstract type for all syntactical objects (e.g., formulas, connectives).
 # Interface
 - `syntaxstring(s::Syntactical; kwargs...)::String`
 
-See also [`Formula`](@ref), [`Connective`](@ref).
+See also [`Formula`](@ref), [`AbstractConnective`](@ref).
 """
 abstract type Syntactical end
 
@@ -44,25 +44,25 @@ function Base.show(io::IO, φ::Syntactical)
 end
 
 ############################################################################################
-#### Connective ############################################################################
+#### AbstractConnective ############################################################################
 ############################################################################################
 
 """
-    abstract type Connective <: Syntactical end
+    abstract type AbstractConnective <: Syntactical end
 
 Abstract type for [logical connectives](https://en.wikipedia.org/wiki/Logical_connective),
 that are used to express non-atomic statements;
 for example, CONJUNCTION, DISJUNCTION, NEGATION and IMPLICATION (stylized as ∧, ∨, ¬ and →).
 
 # Interface
-- `arity(::Connective)::Int`
-- `iscommutative(::Connective)::Bool`
-- `precedence(::Connective)::Int`
-- `associativity(::Connective)::Symbol`
-- `collatetruth(::Connective, ::NTuple{N,Truth})::Truth`
-- `simplify(::Connective, ::NTuple{N,Truth})::SyntaxTree`
-- `dual(s::Connective)::Connective`
-- `hasdual(s::Connective)::Bool`
+- `arity(::AbstractConnective)::Int`
+- `iscommutative(::AbstractConnective)::Bool`
+- `precedence(::AbstractConnective)::Int`
+- `associativity(::AbstractConnective)::Symbol`
+- `collatetruth(::AbstractConnective, ::NTuple{N,Truth})::Truth`
+- `simplify(::AbstractConnective, ::NTuple{N,Truth})::SyntaxTree`
+- `dual(s::AbstractConnective)::AbstractConnective`
+- `hasdual(s::AbstractConnective)::Bool`
 - See also [`Syntactical`](@ref)
 
 # Implementation
@@ -117,10 +117,10 @@ See also [`arity`](@ref),
 [`iscommutative`](@ref), [`NamedConnective`](@ref),
 [`Syntactical`](@ref).
 """
-abstract type Connective <: Syntactical end
+abstract type AbstractConnective <: Syntactical end
 
 """$(doc_arity)"""
-arity(c::Connective)::Integer = error("Please, provide method arity(::$(typeof(c))).")
+arity(c::AbstractConnective)::Integer = error("Please, provide method arity(::$(typeof(c))).")
 
 # Helpers
 isnullary(c) = arity(c) == 0
@@ -129,19 +129,19 @@ isbinary(c)  = arity(c) == 2
 isternary(c) = arity(c) == 3
 
 """$(doc_iscommutative)"""
-function iscommutative(c::Connective)
+function iscommutative(c::AbstractConnective)
     # Unless otherwise specified
     return arity(c) <= 1 ? true :
         error("Please, provide method iscommutative(::$(typeof(c))).")
 end
 
 """$(doc_precedence)"""
-function precedence(c::Connective)
+function precedence(c::AbstractConnective)
     return error("Please, provide method precedence(c::$(typeof(c))).")
 end
 
 """$(doc_associativity)"""
-associativity(::Connective) = :left
+associativity(::AbstractConnective) = :left
 
 ############################################################################################
 #### Formula ###############################################################################
@@ -166,7 +166,7 @@ It can be parsed from its [`syntaxstring`](@ref) representation via [`parseformu
 
 # Interface
 - `tree(φ::Formula)::SyntaxTree`
-- `composeformulas(c::Connective, φs::NTuple{N,F})::F where {N,F<:Formula}`
+- `composeformulas(c::AbstractConnective, φs::NTuple{N,F})::F where {N,F<:Formula}`
 - See also [`Syntactical`](@ref)
 
 # Utility functions (requiring a walk of the tree)
@@ -176,7 +176,7 @@ It can be parsed from its [`syntaxstring`](@ref) representation via [`parseformu
 - `atoms(φ::Formula)::AbstractVector{<:AbstractAtom}`
 - `truths(φ::Formula)::AbstractVector{<:Truth}`
 - `leaves(φ::Formula)::AbstractVector{<:SyntaxLeaf}`
-- `connectives(φ::Formula)::AbstractVector{<:Connective}`
+- `connectives(φ::Formula)::AbstractVector{<:AbstractConnective}`
 - `operators(φ::Formula)::AbstractVector{<:Operator}`
 - `ntokens(φ::Formula)::Int`
 - `natoms(φ::Formula)::Int`
@@ -229,7 +229,7 @@ function leaves(φ::Formula) # ::AbstractVector{<:SyntaxLeaf}
     return leaves(tree(φ))
 end
 """$(doc_tokopprop)"""
-function connectives(φ::Formula) # ::AbstractVector{<:Connective}
+function connectives(φ::Formula) # ::AbstractVector{<:AbstractConnective}
     return connectives(tree(φ))
 end
 """$(doc_tokopprop)"""
@@ -272,14 +272,14 @@ function syntaxstring(φ::Formula; kwargs...)
 end
 
 """$(doc_composeformulas)"""
-function composeformulas(c::Connective, φs::NTuple{N,F})::F where {N,F<:Formula}
+function composeformulas(c::AbstractConnective, φs::NTuple{N,F})::F where {N,F<:Formula}
     return error("Please, provide method " *
-        "composeformulas(c::Connective, φs::NTuple{N,$(F)}) where {N}.")
+        "composeformulas(c::AbstractConnective, φs::NTuple{N,$(F)}) where {N}.")
 end
 
 # Helper (?)
 # Note: don't type the output as F
-function composeformulas(c::Connective, φs::Vararg{Formula,N}) where {N}
+function composeformulas(c::AbstractConnective, φs::Vararg{Formula,N}) where {N}
     return composeformulas(c, φs)
 end
 
@@ -304,7 +304,7 @@ See also [`Formula`](@ref), [`AbstractLogic`](@ref), [`SyntaxTree`](@ref),
 """
 abstract type SyntaxStructure <: Formula end
 
-function composeformulas(c::Connective, φs::NTuple{N,SyntaxStructure}) where {N}
+function composeformulas(c::AbstractConnective, φs::NTuple{N,SyntaxStructure}) where {N}
     return composeformulas(c, tree.(φs))
 end
 
@@ -320,14 +320,14 @@ import AbstractTrees: children
 Abstract type for
 [syntax trees](https://en.wikipedia.org/wiki/Abstract_syntax_tree); that is,
 syntax leaves (see `SyntaxLeaf`, such as `Truth` values and `Atom`s),
-and their composition via `Connective`s (i.e., `SyntaxBranch`).
+and their composition via `AbstractConnective`s (i.e., `SyntaxBranch`).
 
 Note that `SyntaxTree` are *ranked trees*,
 and (should) implement `AbstractTrees` interface.
 
 # Interface
 - `children(φ::SyntaxTree)::NTuple{N,SyntaxTree} where N`
-- `token(φ::SyntaxTree)::Connective`
+- `token(φ::SyntaxTree)::AbstractConnective`
 - See also [`SyntaxStructure`](@ref)
 
 # Utility functions
@@ -341,7 +341,7 @@ and (should) implement `AbstractTrees` interface.
 - `atoms(φ::SyntaxTree)::AbstractVector{<:AbstractAtom}`
 - `truths(φ::SyntaxTree)::AbstractVector{<:Truth}`
 - `leaves(φ::SyntaxTree)::AbstractVector{<:SyntaxLeaf}`
-- `connectives(φ::SyntaxTree)::AbstractVector{<:Connective}`
+- `connectives(φ::SyntaxTree)::AbstractVector{<:AbstractConnective}`
 - `operators(φ::SyntaxTree)::AbstractVector{<:Operator}`
 - `ntokens(φ::SyntaxTree)::Int`
 - `natoms(φ::SyntaxTree)::Int`
@@ -355,7 +355,7 @@ and (should) implement `AbstractTrees` interface.
 - `leavestype(φ::SyntaxTree)`
 - `connectivestype(φ::SyntaxTree)`
 - `operatorstype(φ::SyntaxTree)`
-- `composeformulas(c::Connective, φs::NTuple{N,SyntaxTree})`
+- `composeformulas(c::AbstractConnective, φs::NTuple{N,SyntaxTree})`
 
 See also [`SyntaxLeaf`](@ref), [`SyntaxBranch`](@ref),
 [`SyntaxStructure`](@ref), [`Formula`](@ref).
@@ -394,9 +394,9 @@ function leaves(φ::SyntaxTree) # ::AbstractVector{<:SyntaxLeaf}
     l = token(φ) isa SyntaxLeaf ? [token(φ)] : []
     return SyntaxLeaf[vcat(leaves.(children(φ))...)..., l...]
 end
-function connectives(φ::SyntaxTree) # ::AbstractVector{<:Connective}
-    c = token(φ) isa Connective ? [token(φ)] : []
-    return Connective[vcat(connectives.(children(φ))...)..., c...]
+function connectives(φ::SyntaxTree) # ::AbstractVector{<:AbstractConnective}
+    c = token(φ) isa AbstractConnective ? [token(φ)] : []
+    return AbstractConnective[vcat(connectives.(children(φ))...)..., c...]
 end
 function operators(φ::SyntaxTree) # ::AbstractVector{<:Operator}
     c = token(φ) isa Operator ? [token(φ)] : []
@@ -418,7 +418,7 @@ function nleaves(φ::SyntaxTree)::Int
     return length(children(φ)) == 0 ? op : op + sum(nleaves(c) for c in children(φ))
 end
 function nconnectives(φ::SyntaxTree)::Int
-    c = token(φ) isa Connective ? 1 : 0
+    c = token(φ) isa AbstractConnective ? 1 : 0
     return length(children(φ)) == 0 ? c : c + sum(nconnectives(c) for c in children(φ))
 end
 function noperators(φ::SyntaxTree)::Int
@@ -443,10 +443,10 @@ tokenstype(φ::SyntaxTree) = Union{tokentype(φ),tokenstype.(children(φ))...}
 atomstype(φ::SyntaxTree) = typeintersect(AbstractAtom, tokenstype(φ))
 truthstype(φ::SyntaxTree) = typeintersect(Truth, tokenstype(φ))
 leavestype(φ::SyntaxTree) = typeintersect(SyntaxLeaf, tokenstype(φ))
-connectivestype(φ::SyntaxTree) = typeintersect(Connective, tokenstype(φ))
+connectivestype(φ::SyntaxTree) = typeintersect(AbstractConnective, tokenstype(φ))
 operatorstype(φ::SyntaxTree) = typeintersect(Operator, tokenstype(φ))
 
-function composeformulas(c::Connective, φs::NTuple{N,SyntaxTree}) where {N}
+function composeformulas(c::AbstractConnective, φs::NTuple{N,SyntaxTree}) where {N}
     return SyntaxBranch(c, φs)
 end
 
@@ -474,10 +474,10 @@ end
 function SyntaxTree(φ::SyntaxTree)
     return φ
 end
-function SyntaxTree(c::Connective, φs::NTuple{N,SyntaxTree}) where {N}
+function SyntaxTree(c::AbstractConnective, φs::NTuple{N,SyntaxTree}) where {N}
     return composeformulas(c, φs)
 end
-function SyntaxTree(c::Connective, φs::Vararg{SyntaxTree,N}) where {N}
+function SyntaxTree(c::AbstractConnective, φs::Vararg{SyntaxTree,N}) where {N}
     return composeformulas(c, φs)
 end
 
@@ -509,13 +509,13 @@ token(φ::SyntaxLeaf) = φ
 ############################################################################################
 
 """
-    const SyntaxToken = Union{Connective,SyntaxLeaf}
+    const SyntaxToken = Union{AbstractConnective,SyntaxLeaf}
 
 Union type for values wrapped in `SyntaxTree` nodes.
 
-See also [`SyntaxTree`](@ref), [`SyntaxLeaf`](@ref), [`Connective`](@ref).
+See also [`SyntaxTree`](@ref), [`SyntaxLeaf`](@ref), [`AbstractConnective`](@ref).
 """
-const SyntaxToken = Union{Connective,SyntaxLeaf}
+const SyntaxToken = Union{AbstractConnective,SyntaxLeaf}
 
 """$(doc_dual)"""
 dual(t::SyntaxToken) = error("Please, provide method dual(::$(typeof(t))).")
@@ -556,18 +556,18 @@ abstract type AbstractAtom <: SyntaxLeaf end
     abstract type AbstractSyntaxBranch <: SyntaxTree end
 
 An internal node of a syntax tree encoding a logical formula.
-Such a node holds a syntax `token` (a `Connective`),
+Such a node holds a syntax `token` (a `AbstractConnective`),
 and has as many children as the `arity` of the token.
 
 # Interface
 - `children(φ::SyntaxTree)::NTuple{N,SyntaxTree} where N`
-- `token(φ::SyntaxTree)::Connective`
+- `token(φ::SyntaxTree)::AbstractConnective`
 - See also [`Syntactical`](@ref)
 
 See also
 [`token`](@ref), [`children`](@ref),
 [`arity`](@ref),
-[`Connective`](@ref),
+[`AbstractConnective`](@ref),
 [`height`](@ref),
 [`atoms`](@ref), [`natoms`](@ref),
 [`operators`](@ref), [`noperators`](@ref),
@@ -773,7 +773,7 @@ precedes(::ThreeTop, ::ThreeUnknown) = false
 
 Note that `precedes` is used to define the (partial) order between `Truth` values.
 
-See also [`Connective`](@ref), [`BooleanTruth`](@ref).
+See also [`AbstractConnective`](@ref), [`BooleanTruth`](@ref).
 """
 abstract type Truth <: SyntaxLeaf end
 
@@ -865,14 +865,14 @@ end
 ############################################################################################
 
 """
-    const Operator = Union{Connective,Truth}
+    const Operator = Union{AbstractConnective,Truth}
 
 Union type for logical constants of any ariety (zero for `Truth` values, non-zero for
-`Connective`s).
+`AbstractConnective`s).
 
-See also [`Connective`](@ref), [`Truth`](@ref).
+See also [`AbstractConnective`](@ref), [`Truth`](@ref).
 """
-const Operator = Union{Connective,Truth}
+const Operator = Union{AbstractConnective,Truth}
 
 """
     (op::Operator)(o::Any)
