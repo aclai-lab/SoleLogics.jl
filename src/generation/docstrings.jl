@@ -229,3 +229,20 @@ generated [`SyntaxTree`](@ref).
 See also [`AbstractGrammar`](@ref),
 [`randformula(::Integer, ::Union{AbstractVector,AbstractAlphabet}, ::AbstractVector)`](@ref).
 """
+
+randbaseformula_docstring = """
+    function randbaseformula(
+        rng::Union{Integer,AbstractRNG},
+        height::Integer,
+        alphabet::Union{AbstractVector,AbstractAlphabet},
+        operators::AbstractVector{<:Operator},
+        args...;
+        kwargs...
+    )::AnchoredFormula
+
+Similar to `randformula`, but generates an [`AnchoredFormula`](@ref) anchored to the logic
+that includes [`Atom`](@ref)s in `alphabet` and [`Operator`](@ref)s in `operators`.
+
+See also [`AnchoredFormula`](@ref), [`Atom`](@ref), [`Operator`](@ref),
+[`randformula(::Integer, ::Union{AbstractVector,AbstractAlphabet}, ::AbstractVector)`](@ref)
+"""

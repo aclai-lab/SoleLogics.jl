@@ -301,41 +301,29 @@ end
 end
 
 
-function randbaseformula(
+"""$(randbaseformula_docstring)"""
+@__rng_dispatch function randbaseformula(
+    rng::Union{Integer,AbstractRNG},
     height::Integer,
-    g::AbstractGrammar;
+    alphabet::Union{AbstractVector,AbstractAlphabet},
+    operators::AbstractVector{<:Operator},
+    args...;
     kwargs...
-)::AnchoredFormula
-    _alphabet = alphabet(g)
-    _operators = operators(g)
-    baseformula(
-        randformula(height, _alphabet, _operators; kwargs...);
-        alphabet = _alphabet,
-        additional_operators = _operators
-    )
-end
-
-""""""
-function randbaseformula(
-    height::Integer,
-    alphabet,
-    operators::AbstractVector{<:Operator};
-    kwargs...
-)::AnchoredFormula
+)
     alphabet = convert(AbstractAlphabet, alphabet)
     baseformula(
-        randformula(height, alphabet, operators; kwargs...);
-        alphabet = alphabet,
-        additional_operators = operators,
+        randformula(height, alphabet, operators, args...; kwargs...);
+        alphabet=alphabet,
+        additional_operators=operators,
     )
 end
 
-function randbaseformula(
+@__rng_dispatch function randbaseformula(
+    rng::Union{Integer,AbstractRNG},
     height::Integer,
     g::AbstractGrammar,
     args...;
-    rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG,
     kwargs...
 )::AnchoredFormula
-    randbaseformula(height, alphabet(g), operators(g), args...; rng=rng, kwargs...)
+    randbaseformula(rng, height, alphabet(g), operators(g), args...; kwargs...)
 end
