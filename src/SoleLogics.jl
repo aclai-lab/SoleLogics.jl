@@ -67,7 +67,7 @@ export BooleanAlgebra
 
 export BaseLogic
 
-include("utils.jl")
+include("utils/syntactical.jl")
 
 ############################################################################################
 
