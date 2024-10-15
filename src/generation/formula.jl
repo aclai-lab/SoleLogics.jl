@@ -198,58 +198,20 @@ end
 # - in randformula, keyword argument alphabet_sample_kwargs that are unpacked upon sampling atoms, as in: Base.rand(rng, a; alphabet_sample_kwargs...). This would allow to sample from infinite alphabets, so when this parameter, !isfinite(alphabet) is allowed!
 
 # TODO @Mauro implement this method.
-doc_randformula = """
-    randformula(
-        [rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG, ]
-        height::Integer,
-        alphabet,
-        operators::AbstractVector;
-        kwargs...
-    )::SyntaxTree
 
-    randformula(
-        [rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG, ]
-        height::Integer,
-        g::AbstractGrammar;
-        kwargs...
-    )::SyntaxTree
 
-Return a pseudo-randomic `SyntaxTree`.
-
-# Arguments
-- `rng::Union{Intger,AbstractRNG} = Random.GLOBAL_RNG`: random number generator;
-- `height::Integer`: height of the generated structure;
-- `alphabet::AbstractAlphabet`: collection from which atoms are chosen randomly;
-- `operators::AbstractVector`: vector from which legal operators are chosen;
-- `g::AbstractGrammar`: alternative to passing alphabet and operators separately. (TODO explain?)
-
-# Keyword Arguments
-- `modaldepth::Integer`: maximum modal depth
-- `atompicker::Function`: method used to pick a random element. For example, this could be
-    Base.rand or StatsBase.sample.
-- `opweights::AbstractWeights`: weight vector over the set of operators (see `StatsBase`).
-
-# Examples
-
-```julia-repl
-julia> syntaxstring(randformula(4, ExplicitAlphabet([1,2]), [NEGATION, CONJUNCTION, IMPLICATION]))
-"¬((¬(¬(2))) → ((1 → 2) → (1 → 2)))"
-```
-
-See also [`AbstractAlphabet`](@ref), [`SyntaxBranch`](@ref).
-"""
-
-"""$(doc_randformula)"""
-function randformula(
+"""$(randformula_docstring)"""
+@__rng_dispatch function randformula(
     rng::Union{Integer,AbstractRNG},
     height::Integer,
     alphabet::Union{AbstractVector,AbstractAlphabet},
-    operators::AbstractVector;
-    modaldepth::Integer = height,
-    atompicker::Union{Function,AbstractWeights,AbstractVector{<:Real},Nothing} = randatom,
-    opweights::Union{AbstractWeights,AbstractVector{<:Real},Nothing} = nothing
-)::SyntaxTree
-
+    operators::AbstractVector,
+    args...;
+    modaldepth::Integer=height,
+    atompicker::Union{Function,AbstractWeights,AbstractVector{<:Real},Nothing}=randatom,
+    opweights::Union{AbstractWeights,AbstractVector{<:Real},Nothing}=nothing,
+    kwargs...
+)
     rng = initrng(rng)
     alphabet = convert(AbstractAlphabet, alphabet)
     if !(all(x->x isa Operator, operators))
@@ -296,7 +258,8 @@ function randformula(
         if height == 0
             return atompicker(rng, alphabet)
         else
-            # Sample operator and generate children (modal connectives only if modaldepth > 0)
+            # sample operator and generate children
+            # (modal connectives only if modaldepth is set > 0)
             ops, ops_w = begin
                 if modaldepth > 0
                     operators, opweights
@@ -314,7 +277,7 @@ function randformula(
         end
     end
 
-    # If the alphabet is not iterable, this function should not work.
+    # if the alphabet is not iterable, this function should not work.
     if !isfinite(alphabet)
         @warn "Attempting to generate random formulas from " *
             "(infinite) alphabet of type $(typeof(alphabet))!"
@@ -323,8 +286,9 @@ function randformula(
     return _randformula(rng, height, modaldepth)
 end
 
-function randformula(
-    rng::AbstractRNG,
+"""$(randformula_hg_docstring)"""
+@__rng_dispatch function randformula(
+    rng::Union{Integer,AbstractRNG},
     height::Integer,
     g::AbstractGrammar,
     args...;
@@ -333,11 +297,10 @@ function randformula(
     randformula(rng, height, alphabet(g), operators(g), args...; kwargs...)
 end
 
-# Helper
-function randformula(
+@__rng_dispatch function randformula(
+    rng::Union{Integer,AbstractRNG},
     height::Integer,
     args...;
-    rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG,
     kwargs...
 )
     randformula(initrng(rng), height, args...; kwargs...)
