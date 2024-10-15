@@ -208,9 +208,9 @@ end
     operators::AbstractVector,
     args...;
     modaldepth::Integer=height,
-    atompicker::Union{Function,AbstractWeights,AbstractVector{<:Real},Nothing}=randatom,
-    opweights::Union{AbstractWeights,AbstractVector{<:Real},Nothing}=nothing,
-    # alphabet_sample_kwargs
+    atompicker::Union{Nothing,Function,AbstractWeights,AbstractVector{<:Real}}=randatom,
+    opweights::Union{Nothing,AbstractWeights,AbstractVector{<:Real}}=nothing,
+    alphabet_sample_kwargs::Union{Nothing,AbstractVector},
     kwargs...
 )
     rng = initrng(rng)

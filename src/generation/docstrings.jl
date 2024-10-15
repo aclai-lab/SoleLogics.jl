@@ -26,7 +26,7 @@ randatom_unionalphabet_docstring = """
         [rng::Union{Random.AbstractRNG,Integer},]
         a::UnionAlphabet;
         atompicking_mode::Symbol=:uniform,
-        subalphabets_weights::Union{AbstractWeights,AbstractVector{<:Real},Nothing}=nothing
+        subalphabets_weights::Union{Nothing,AbstractWeights,AbstractVector{<:Real}}=nothing
     )::Atom
 
 Sample an atom from a `UnionAlphabet`.
@@ -180,8 +180,8 @@ randformula_docstring = """
         operators::AbstractVector,
         args...;
         modaldepth::Integer=height,
-        atompicker::Union{Function,AbstractWeights,AbstractVector{<:Real},Nothing}=randatom,
-        opweights::Union{AbstractWeights,AbstractVector{<:Real},Nothing}=nothing,
+        atompicker::Union{Nothing,Function,AbstractWeights,AbstractVector{<:Real}}=randatom,
+        opweights::Union{Nothing,AbstractWeights,AbstractVector{<:Real}}=nothing,
         kwargs...
     )
 
