@@ -32,7 +32,7 @@ doc_rand = """
 
     Base.rand(
         height::Integer,
-        connectives::Union{AbstractVector{<:Operator},AbstractVector{<:Connective}},
+        connectives::Union{AbstractVector{<:Operator},AbstractVector{<:AbstractConnective}},
         atoms::Union{AbstractVector{<:Atom},AbstractAlphabet},
         truthvalues::Union{Nothing,AbstractAlgebra,AbstractVector{<:Truth}} = nothing,
         args...;
@@ -104,7 +104,7 @@ end
 function Base.rand(
     height::Integer,
     atoms::Union{AbstractVector{<:Atom},AbstractAlphabet},
-    connectives::Union{AbstractVector{<:Operator},AbstractVector{<:Connective}},
+    connectives::Union{AbstractVector{<:Operator},AbstractVector{<:AbstractConnective}},
     truthvalues::Union{Nothing,AbstractAlgebra,AbstractVector{<:Truth}} = nothing,
     args...;
     kwargs...
@@ -117,14 +117,14 @@ function Base.rand(
     rng::AbstractRNG,
     height::Integer,
     atoms::Union{AbstractVector{<:Atom},AbstractAlphabet},
-    connectives::Union{AbstractVector{<:Operator},AbstractVector{<:Connective}},
+    connectives::Union{AbstractVector{<:Operator},AbstractVector{<:AbstractConnective}},
     truthvalues::Union{Nothing,AbstractAlgebra,AbstractVector{<:Truth}} = nothing,
     args...;
     kwargs...
 )
     # If Truth's are specified as `operators`, then they cannot be simultaneously
     #  provided as `truthvalues`
-    @assert (connectives isa AbstractVector{<:Connective} ||
+    @assert (connectives isa AbstractVector{<:AbstractConnective} ||
             !(truthvalues isa AbstractVector{<:Truth})
         ) "Unexpected connectives and truth values: $(connectives) and $(truthvalues)."
 

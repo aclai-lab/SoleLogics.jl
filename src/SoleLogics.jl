@@ -16,7 +16,7 @@ using SoleBase: initrng
 
 export iscrisp, isfinite, isnullary, isunary, isbinary
 
-export Syntactical, Connective,
+export Syntactical, AbstractConnective,
     Formula, SyntaxStructure, SyntaxTree, SyntaxLeaf,
     Atom, Truth, SyntaxBranch
 
@@ -67,6 +67,7 @@ export BooleanAlgebra
 
 export BaseLogic
 
+include("types/utils.jl")
 include("utils.jl")
 
 ############################################################################################

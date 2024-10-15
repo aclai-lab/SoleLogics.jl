@@ -801,7 +801,7 @@ function check(
                 tok = token(ψ)
 
                 worldset = begin
-                    if tok isa Connective
+                    if tok isa AbstractConnective
                         _c(collateworlds(fr, tok, map(f->readformula(memo_structure, f), children(ψ))))
                     elseif tok isa SyntaxLeaf
                         _f(_w->begin
@@ -877,10 +877,10 @@ end
 ############################################################################################
 
 """
-    ismodal(::Type{<:Connective})::Bool = false
-    ismodal(c::Connective)::Bool = ismodal(typeof(c))
+    ismodal(::Type{<:AbstractConnective})::Bool = false
+    ismodal(c::AbstractConnective)::Bool = ismodal(typeof(c))
 
-Return whether it is known that an `Connective` is modal.
+Return whether it is known that an `AbstractConnective` is modal.
 
 # Examples
 ```julia-repl
@@ -891,15 +891,15 @@ julia> ismodal(∧)
 false
 ```
 """
-ismodal(::Type{<:Connective})::Bool = false
-ismodal(c::Connective)::Bool = ismodal(typeof(c))
+ismodal(::Type{<:AbstractConnective})::Bool = false
+ismodal(c::AbstractConnective)::Bool = ismodal(typeof(c))
 ismodal(::Truth)::Bool = false
 
 """
-    isbox(::Type{<:Connective})::Bool = false
-    isbox(c::Connective)::Bool = isbox(typeof(c))
+    isbox(::Type{<:AbstractConnective})::Bool = false
+    isbox(c::AbstractConnective)::Bool = isbox(typeof(c))
 
-Return whether it is known that an `Connective` is a box (i.e., universal) connective.
+Return whether it is known that an `AbstractConnective` is a box (i.e., universal) connective.
 
 # Examples
 ```julia-repl
@@ -914,13 +914,13 @@ true
 ```
 """
 isbox(::Any)::Bool = false
-isbox(::Type{<:Connective})::Bool = false
-isbox(c::Connective)::Bool = isbox(typeof(c))
+isbox(::Type{<:AbstractConnective})::Bool = false
+isbox(c::AbstractConnective)::Bool = isbox(typeof(c))
 isbox(::Truth)::Bool = false
 
 isdiamond(::Any)::Bool = false
-isdiamond(C::Type{<:Connective})::Bool = ismodal(C) && !isbox(C)
-isdiamond(c::Connective)::Bool = isdiamond(typeof(c))
+isdiamond(C::Type{<:AbstractConnective})::Bool = ismodal(C) && !isbox(C)
+isdiamond(c::AbstractConnective)::Bool = isdiamond(typeof(c))
 isdiamond(::Truth)::Bool = false
 
 doc_DIAMOND = """
@@ -932,7 +932,7 @@ doc_DIAMOND = """
 Logical diamond connective, typically interpreted as the modal existential quantifier.
 See [here](https://en.wikipedia.org/wiki/Modal_operator).
 
-See also [`BOX`](@ref), [`NamedConnective`](@ref), [`Connective`](@ref).
+See also [`BOX`](@ref), [`NamedConnective`](@ref), [`AbstractConnective`](@ref).
 """
 """$(doc_DIAMOND)"""
 const DIAMOND = NamedConnective{:◊}()
@@ -952,7 +952,7 @@ doc_BOX = """
 Logical box connective, typically interpreted as the modal universal quantifier.
 See [here](https://en.wikipedia.org/wiki/Modal_operator).
 
-See also [`DIAMOND`](@ref), [`NamedConnective`](@ref), [`Connective`](@ref).
+See also [`DIAMOND`](@ref), [`NamedConnective`](@ref), [`AbstractConnective`](@ref).
 """
 """$(doc_BOX)"""
 const BOX = NamedConnective{:□}()
@@ -1009,7 +1009,7 @@ See also [`propositionallogic`](@ref), [`AbstractAlphabet`](@ref), [`AbstractAlg
 """
 function modallogic(;
     alphabet::Union{Nothing,Vector,AbstractAlphabet} = nothing,
-    operators::Union{Nothing,Vector{<:Connective}} = nothing,
+    operators::Union{Nothing,Vector{<:AbstractConnective}} = nothing,
     grammar::Union{Nothing,AbstractGrammar} = nothing,
     algebra::Union{Nothing,AbstractAlgebra} = nothing,
     default_operators = BASE_MODAL_CONNECTIVES
@@ -1034,7 +1034,7 @@ const BaseModalLogic = AbstractLogic{G,A} where {ALP,G<:AbstractGrammar{ALP,<:Ba
 ############################################################################################
 
 """
-    abstract type AbstractRelationalConnective{R<:AbstractRelation} <: Connective end
+    abstract type AbstractRelationalConnective{R<:AbstractRelation} <: AbstractConnective end
 
 Abstract type for relational logical connectives. A relational connective
 allows for semantic quantification across relational structures (e.g., Kripke structures).
@@ -1045,7 +1045,7 @@ See, for example [temporal modal logic](https://en.wikipedia.org/wiki/Temporal_l
 See also [`DiamondRelationalConnective`](@ref), [`BoxRelationalConnective`](@ref),
 [`AbstractKripkeStructure`](@ref), [`AbstractFrame`](@ref).
 """
-abstract type AbstractRelationalConnective{R<:AbstractRelation} <: Connective end
+abstract type AbstractRelationalConnective{R<:AbstractRelation} <: AbstractConnective end
 
 doc_op_rel = """
     relationtype(::AbstractRelationalConnective{R}) where {R<:AbstractRelation} = R

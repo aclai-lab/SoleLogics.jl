@@ -75,18 +75,18 @@ See also [`SyntaxLeaf`](@ref), [`Operator`](@ref), [`parseformula`](@ref).
 
 doc_arity = """
     arity(φ::SyntaxTree)::Integer
-    arity(tok::Connective)::Integer
+    arity(tok::AbstractConnective)::Integer
 
-Return the `arity` of a `Connective` or a `SyntaxTree`. The `arity` is an integer
-representing the number of allowed children for a node in a tree. `Connective`s with `arity`
+Return the `arity` of a `AbstractConnective` or a `SyntaxTree`. The `arity` is an integer
+representing the number of allowed children for a node in a tree. `AbstractConnective`s with `arity`
 equal to 0, 1 or 2 are called `nullary`, `unary` and `binary`, respectively.
 `SyntaxLeaf`s (`Atom`s and `Truth` values) are always nullary.
 
-See also [`SyntaxLeaf`](@ref), [`Connective`](@ref), [`SyntaxBranch`](@ref).
+See also [`SyntaxLeaf`](@ref), [`AbstractConnective`](@ref), [`SyntaxBranch`](@ref).
 """
 
 doc_precedence = """
-    precedence(c::Connective)
+    precedence(c::AbstractConnective)
 
 Return the precedence of a binary connective.
 
@@ -123,11 +123,11 @@ julia> syntaxstring(parseformula("a ∧ b → c ∧ d"))
 "(a ∧ b) → (c ∧ d)"
 ```
 
-See also [`associativity`](@ref), [`Connective`](@ref).
+See also [`associativity`](@ref), [`AbstractConnective`](@ref).
 """
 
 doc_iscommutative = """
-    iscommutative(c::Connective)
+    iscommutative(c::AbstractConnective)
 
 Return whether a connective is known to be commutative.
 
@@ -142,18 +142,18 @@ false
 
 Note that nullary and unary connectives are considered commutative.
 
-See also [`Connective`](@ref).
+See also [`AbstractConnective`](@ref).
 
 # Implementation
 
 When implementing a new type for a *commutative* connective `C` with arity higher than 1,
 please provide a method `iscommutative(::C)`. This can help model checking operations.
 
-See also [`Connective`](@ref).
+See also [`AbstractConnective`](@ref).
 """
 
 doc_associativity = """
-    associativity(::Connective)
+    associativity(::AbstractConnective)
 
 Return whether a (binary) connective is right-associative.
 
@@ -183,12 +183,12 @@ julia> syntaxstring(parseformula("p ∧ q ∨ r"); remove_redundant_parentheses 
 "(p ∧ q) ∨ r"
 ```
 
-See also [`Connective`](@ref), [`parseformula`](@ref), [`precedence`](@ref),
+See also [`AbstractConnective`](@ref), [`parseformula`](@ref), [`precedence`](@ref),
 [`syntaxstring`](@ref).
 """
 
 doc_composeformulas = """
-    composeformulas(c::Connective, φs::NTuple{N,F})::F where {N,F<:Formula}
+    composeformulas(c::AbstractConnective, φs::NTuple{N,F})::F where {N,F<:Formula}
 
 Return a new formula of type `F` by composing `N` formulas of the same type
 via a connective `c`. This function allows one to use connectives for flexibly composing
@@ -215,7 +215,7 @@ SyntaxBranch: ◊(p → q) ∧ p ∧ ¬p
 Upon `composeformulas` lies a flexible way of using connectives for composing
 formulas and syntax tokens (e.g., atoms), given by methods like the following:
 
-    function (c::Connective)(φs::NTuple{N,Formula}) where {N}
+    function (c::AbstractConnective)(φs::NTuple{N,Formula}) where {N}
         ...
     end
 
@@ -256,7 +256,7 @@ thanks to the following two methods that were defined in SoleLogics:
     To allow for the composition of `Formula`s of different types,
     promotion rules should be provided.
 
-See also [`Formula`](@ref), [`Connective`](@ref).
+See also [`Formula`](@ref), [`AbstractConnective`](@ref).
 """
 
 # TODO this piece of doc will be useful when we define simplify(φ), to explain
@@ -272,7 +272,7 @@ doc_tokopprop = """
     atoms(φ::Formula)::AbstractVector{<:Atom}
     truths(φ::Formula)::AbstractVector{<:Truth}
     leaves(φ::Formula)::AbstractVector{<:SyntaxLeaf}
-    connectives(φ::Formula)::AbstractVector{<:Connective}
+    connectives(φ::Formula)::AbstractVector{<:AbstractConnective}
     operators(φ::Formula)::AbstractVector{<:Operator}
     ntokens(φ::Formula)::Integer
     natoms(φ::Formula)::Integer

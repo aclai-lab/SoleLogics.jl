@@ -362,11 +362,11 @@ function parseformula(
                 end
             elseif tok isa SyntaxLeaf
                 push!(postfix, tok)
-            elseif tok isa Connective
+            elseif tok isa AbstractConnective
                 # If tok is an operator, something must be done until another operator
                 #  is placed at the top of the stack.
                 while !isempty(tokstack) &&
-                    tokstack[end] isa Connective && (
+                    tokstack[end] isa AbstractConnective && (
                         precedence(tokstack[end]) > precedence(tok) ||
                         (precedence(tokstack[end]) == precedence(tok) && associativity(tokstack[end]) == :left)
                     )
@@ -401,7 +401,7 @@ function parseformula(
         stack = SyntaxTree[]
         for tok in postfix
             # Stack collapses, composing a new part of the syntax tree
-            if tok isa Connective
+            if tok isa AbstractConnective
                 try
                     children = [pop!(stack) for _ in 1:arity(tok)]
                     push!(stack, SyntaxTree(tok, Tuple(reverse(children))))
@@ -410,7 +410,7 @@ function parseformula(
                         error("Parsing failed. " *
                         "Possible solution is to implement `precedence` for all the " *
                         "connectives. To know more about custom connectives interface, " *
-                        "read the Connective documentation.")
+                        "read the AbstractConnective documentation.")
                     else
                         rethrow(e)
                     end
@@ -459,7 +459,7 @@ function parseformula(
         for tok in reverse(prefix)
             if tok isa Symbol || tok isa SyntaxLeaf
                 push!(stack, tok)
-            elseif tok isa Connective
+            elseif tok isa AbstractConnective
                 if (arity(tok) == 1 && stack[end] isa SyntaxTree)
                     # If operator arity is 1, then what follows could be a single AST
                     newtok = SyntaxTree(tok, stack[end])
