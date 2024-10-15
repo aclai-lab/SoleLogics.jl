@@ -71,36 +71,36 @@ tdict = TruthDict(Dict([p => false for p in unique(atoms(anch_φ_int))]))
 
 
 
-using SoleLogics: parsebaseformula
+using SoleLogics: AnchoredFormula
 
-@test_throws ErrorException parsebaseformula("")
-@test_broken parsebaseformula("⊤")
-@test_broken parsebaseformula("⊤ ∧ ⊤")
-@test_broken parsebaseformula("⊤ ∧ p")
-@test_broken parsebaseformula("⊥ ∧ □¬((p∧¬q)→r)")
-@test_broken parsebaseformula("□¬((p∧¬q)→r) ∧ ⊤")
-@test_broken parsebaseformula("⊤ ∧ (⊥∧¬⊤→⊤)")
-@test_nowarn parsebaseformula("□¬((p∧¬q)→r)")
+@test_throws ErrorException parseformula(AnchoredFormula, "")
+@test_broken parseformula(AnchoredFormula, "⊤")
+@test_broken parseformula(AnchoredFormula, "⊤ ∧ ⊤")
+@test_broken parseformula(AnchoredFormula, "⊤ ∧ p")
+@test_broken parseformula(AnchoredFormula, "⊥ ∧ □¬((p∧¬q)→r)")
+@test_broken parseformula(AnchoredFormula, "□¬((p∧¬q)→r) ∧ ⊤")
+@test_broken parseformula(AnchoredFormula, "⊤ ∧ (⊥∧¬⊤→⊤)")
+@test_nowarn parseformula(AnchoredFormula, "□¬((p∧¬q)→r)")
 
-@test_nowarn parsebaseformula("p")
-@test_nowarn ¬parsebaseformula("p")
-@test_nowarn ¬parsebaseformula("p", propositionallogic())
+@test_nowarn parseformula(AnchoredFormula, "p")
+@test_nowarn ¬parseformula(AnchoredFormula, "p")
+@test_nowarn ¬parseformula(AnchoredFormula, "p", propositionallogic())
 
 @test_nowarn ¬parseformula("p")
 @test_nowarn ¬parseformula("(s∧z)", propositionallogic())
 
 @test operatorstype(
-    logic(parsebaseformula("¬p∧q∧(¬s∧¬z)", [BOX]))) <: SoleLogics.BaseModalConnectives
+    logic(parseformula(AnchoredFormula, "¬p∧q∧(¬s∧¬z)", [BOX]))) <: SoleLogics.BaseModalConnectives
 @test !(operatorstype(
-    logic(parsebaseformula("¬p∧q∧(¬s∧¬z)", [BOX]))) <:
+    logic(parseformula(AnchoredFormula, "¬p∧q∧(¬s∧¬z)", [BOX]))) <:
         SoleLogics.BasePropositionalConnectives)
 @test !(operatorstype(logic(
-    parsebaseformula("¬p∧q∧(¬s∧¬z)", modallogic()))) <:
+    parseformula(AnchoredFormula, "¬p∧q∧(¬s∧¬z)", modallogic()))) <:
         SoleLogics.BasePropositionalConnectives)
 @test (@test_nowarn operatorstype(
-    logic(parsebaseformula("¬p∧q∧(¬s∧¬z)"))) <: SoleLogics.BasePropositionalConnectives)
+    logic(parseformula(AnchoredFormula, "¬p∧q∧(¬s∧¬z)"))) <: SoleLogics.BasePropositionalConnectives)
 
-@test alphabet(logic(parsebaseformula("p→q"))) == AlphabetOfAny{String}()
+@test alphabet(logic(parseformula(AnchoredFormula, "p→q"))) == AlphabetOfAny{String}()
 
 @test_throws ErrorException propositionallogic(; operators = [¬, ∨])(¬p1)
 @test_nowarn propositionallogic(; operators = [¬, ∨])(¬p_string)

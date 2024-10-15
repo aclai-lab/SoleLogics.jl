@@ -40,6 +40,12 @@ include("types/syntactical.jl")
 
 ############################################################################################
 
+export parseformula
+
+include("types/parse.jl")
+
+############################################################################################
+
 export interpret, check
 
 include("types/interpretation.jl")
@@ -126,11 +132,7 @@ include("types/interpretation-sets.jl")
 
 include("utils/interpretation-sets.jl")
 
-############################################################################################
-
-export parseformula
-
-include("parse.jl")
+include("utils/parse.jl")
 
 ############################################################################################
 

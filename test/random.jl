@@ -48,7 +48,7 @@ w = [5,1,1,1,1,1,1]
 # @test all([begin
 #         f = randformula(i%5, _alphabet, _operators)
 #         s = syntaxstring(f; function_notation = true)
-#         s == syntaxstring(parsebaseformula(s; function_notation = true);
+#         s == syntaxstring(parseformula(AnchoredFormula, s; function_notation = true);
 #             function_notation = true)
 #     end for i in 1:1000])
 

@@ -23,7 +23,7 @@ See the examples.
 
 # Examples
 ```julia-repl
-julia> φ = parsebaseformula("◊(p→q)");
+julia> φ = parseformula(AnchoredFormula, "◊(p→q)");
 
 julia> f2 = φ(parseformula("p"));
 
@@ -242,7 +242,8 @@ end
 ############################################################################################
 
 """
-    parsebaseformula(
+    parseformula(
+        ::Type{AnchoredFormula},
         expr::String,
         additional_operators::Union{Nothing,Vector{<:Operator}} = nothing;
         operators::Union{Nothing,Vector{<:Operator}},
@@ -263,8 +264,6 @@ in the expression, and those in `additional_operators`.
 
 See [`parseformula`](@ref), [`baseformula`](@ref), [`BASE_PARSABLE_CONNECTIVES`](@ref).
 """
-parsebaseformula(expr::String, args...; kwargs...) = parseformula(AnchoredFormula, expr, args...; kwargs...)
-
 function parseformula(
     ::Type{AnchoredFormula},
     expr::String,
@@ -299,7 +298,6 @@ function parseformula(
     AnchoredFormula(logic, parseformula(SyntaxTree, expr, operators(logic); kwargs...))
 end
 
-"""$(doc_randformula)"""
 function randformula(
     height::Integer,
     g::AbstractGrammar;
@@ -314,7 +312,8 @@ function randformula(
     )
 end
 
-function randbaseformula(
+function randformula(
+    ::Type{AnchoredFormula},
     height::Integer,
     alphabet,
     operators::AbstractVector{<:Operator};
@@ -328,12 +327,13 @@ function randbaseformula(
     )
 end
 
-function randbaseformula(
+function randformula(
+    T::Type{AnchoredFormula},
     height::Integer,
     g::AbstractGrammar,
     args...;
     rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG,
     kwargs...
 )::AnchoredFormula
-    randbaseformula(height, alphabet(g), operators(g), args...; rng=rng, kwargs...)
+    randformula(T, height, alphabet(g), operators(g), args...; rng=rng, kwargs...)
 end
