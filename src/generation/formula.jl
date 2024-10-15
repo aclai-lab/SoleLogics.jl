@@ -79,7 +79,7 @@ end
 
 
 """$(rand_abstractalphabet_docstring)"""
-@__rng_dispatch function Base.rand(
+@__rng_dispatch function SoleLogics.rand(
     rng::Union{Integer,AbstractRNG},
     a::AbstractAlphabet,
     args...;
@@ -87,7 +87,14 @@ end
 )
     randatom(initrng(rng), a, args...; kwargs...)
 end
-
+function rand(rng::Random.AbstractRNG, a::SoleLogics.AbstractAlphabet, args...; kwargs...)
+    # This is needed to avoid a dispatch ambiguity caused by @__rng_dispatch:
+    # rand(rng::Union{Integer, Random.AbstractRNG}, a::SoleLogics.AbstractAlphabet, args...; kwargs...)
+    # @ SoleLogics ~/.julia/fork/SoleLogics.jl/src/generation/formula.jl:82
+    # rand(rng::Random.AbstractRNG, X)
+    # @ Random ~/.julia/julia_exec/julia-1.9.0/share/julia/stdlib/v1.9/Random/src/Random.jl:256
+    randatom(rng, a, args...; kwargs...)
+end
 
 """$(rand_abstractlogic_docstring)"""
 @__rng_dispatch function Base.rand(
@@ -167,13 +174,15 @@ end
 """$(sample_lao_docstring)"""
 @__rng_dispatch function StatsBase.sample(
     rng::Union{Integer,AbstractRNG},
+    height::Integer,
     l::AbstractLogic,
     atomweights::AbstractWeights,
     opweights::AbstractWeights,
     args...;
     kwargs...
 )
-    StatsBase.sample(init(rng), grammar(l), atomweights, opweights, args...; kwargs...)
+    StatsBase.sample(
+        initrng(rng), height, grammar(l), atomweights, opweights, args...; kwargs...)
 end
 
 """$(sample_hgao_docstring)"""
@@ -324,6 +333,6 @@ end
     g::AbstractGrammar,
     args...;
     kwargs...
-)::AnchoredFormula
+)
     randbaseformula(rng, height, alphabet(g), operators(g), args...; kwargs...)
 end
