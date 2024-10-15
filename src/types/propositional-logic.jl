@@ -1,7 +1,10 @@
+"""Placeholder to indicate a vector of propositional logical operators, i.e. ¬, ∧, ∨, →."""
 const BASE_PROPOSITIONAL_CONNECTIVES = BASE_CONNECTIVES
+
+"""Types associated with propositional logical operators."""
 const BasePropositionalConnectives = Union{typeof.(BASE_PROPOSITIONAL_CONNECTIVES)...}
 
-# A propositional logic based on the base propositional operators
+"""A propositional logic based on the base propositional operators."""
 const BasePropositionalLogic = AbstractLogic{G,A} where {
         ALP,
         G<:AbstractGrammar{ALP,<:BasePropositionalConnectives},
@@ -60,6 +63,11 @@ end
 Abstract type for assigments, that is, interpretations of propositional logic,
 encoding mappings from `Atom`s to `Truth` values.
 
+# Interface
+- `Base.haskey(i::AbstractAssignment, ::AbstractAtom)::Bool`
+- `inlinedisplay(i::AbstractAssignment)`
+- `interpret(a::AbstractAtom, i::AbstractAssignment, args...; kwargs...)::SyntaxLeaf`
+
 See also [`AbstractInterpretation`](@ref).
 """
 abstract type AbstractAssignment <: AbstractInterpretation end
@@ -67,19 +75,51 @@ abstract type AbstractAssignment <: AbstractInterpretation end
 """
     Base.haskey(i::AbstractAssignment, ::AbstractAtom)::Bool
 
-Return whether an assigment has a truth value for a given atom.
+    Base.haskey(i::AbstractAssignment, v)::Bool
 
-See also [`AbstractInterpretation`](@ref).
+Return whether an assigment has a truth value for a given atom.
+If any object is passed, it is wrapped in an atom and then checked.
+
+# Examples
+
+```julia-repl
+julia> haskey(TruthDict(["a" => true, "b" => false, "c" => true]), Atom("a"))
+true
+
+julia> haskey(TruthDict(1:4, false), 3)
+true
+
+julia> haskey(TruthDict(1:4, false), 8)
+false
+```
+
+See also [`AbstractInterpretation`](@ref), [`AbstractAtom`](@ref), [`TruthDict`](@ref).
 """
 function Base.haskey(i::AbstractAssignment, ::AbstractAtom)::Bool
     return error("Please, provide method Base.haskey(::$(typeof(i)), ::AbstractAtom)::Bool.")
 end
 
-# Helper
 function Base.haskey(i::AbstractAssignment, v)::Bool
     Base.haskey(i, Atom(v))
 end
 
+"""
+    inlinedisplay(i::AbstractAssignment)
+
+Provides a string representation of an AbstractAssignment.
+
+# Examples
+
+```julia-repl
+julia> SoleLogics.inlinedisplay(TruthDict(["a" => true, "b" => false, "c" => true]))
+"TruthDict([c => ⊤, b => ⊥, a => ⊤])"
+
+julia> SoleLogics.inlinedisplay(TruthDict(1:4, false))
+"TruthDict([4 => ⊥, 2 => ⊥, 3 => ⊥, 1 => ⊥])"
+```
+
+See also [`TruthDict`](@ref).
+"""
 function inlinedisplay(i::AbstractAssignment)
     return error("Please, provide method inlinedisplay(::$(typeof(i)))::String.")
 end
