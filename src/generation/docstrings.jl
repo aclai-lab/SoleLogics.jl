@@ -121,3 +121,53 @@ rand_granular_docstring = """
 See also [`AbstractAlphabet`](@ref), [`AbstractAlgebra`](@ref), [`Connective`](@ref),
 [`Operator`](@ref).
 """
+
+sample_aw_docstring = """
+    function StatsBase.sample(
+        [rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG,]
+        alphabet::AbstractAlphabet,
+        weights::AbstractWeights,
+        args...;
+        kwargs...
+    )
+
+Sample an [`Atom`](@ref) from an `alphabet`, with probabilities proportional to the weights
+given in `weights`.
+
+See also [`AbstractAlphabet`](@ref), [`AbstractWeights`](@ref), [`Atom`](@ref).
+"""
+
+sample_lao_docstring = """
+    function StatsBase.sample(
+        [rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG,]
+        l::AbstractLogic,
+        weights::AbstractWeights,
+        args...;
+        kwargs...
+    )
+
+Sample from the [`grammar`](@ref) of logic `l`, with probabilities proportional to the
+weights given in `weights`.
+
+See also [`AbstractLogic`](@ref), [`AbstractWeights`](@ref),
+[`grammar(::AbstractLogic{G}) where {G}`](@ref).
+"""
+
+sample_hgao_docstring = """
+    function StatsBase.sample(
+        [rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG,]
+        height::Integer,
+        g::AbstractGrammar,
+        atomweights::Union{Nothing,AbstractWeights} = nothing,
+        opweights::Union{Nothing,AbstractWeights} = nothing,
+        args...;
+        kwargs...
+    )
+
+Sample a formula from grammar `g`.
+[`Atom`](@ref)s and [`Operator`](@ref)s sampling probabilities are proportional
+respectively to `atomweights` and `opweights`.
+
+See also [`AbstractGrammar`](@ref), [`AbstractWeights`](@ref), [`Atom`](@ref),
+[`Operator`](@ref).
+"""

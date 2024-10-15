@@ -1,7 +1,7 @@
 using Random
 using StatsBase
 
-import Random: rand
+import Base: rand
 import StatsBase: sample
 
 include("docstrings.jl")
@@ -148,75 +148,25 @@ end
 
 
 
-doc_sample = """
-    function StatsBase.sample(
-        [rng::AbstractRNG = Random.GLOBAL_RNG,]
-        alphabet::AbstractAlphabet,
-        weights::AbstractWeights,
-        args...;
-        kwargs...
-    )
-
-    function StatsBase.sample(
-        rng::AbstractRNG,
-        l::AbstractLogic,
-        weights::AbstractWeights,
-        args...;
-        kwargs...
-    )
-
-    StatsBase.sample(
-        [rng::AbstractRNG = Random.GLOBAL_RNG,]
-        height::Integer,
-        g::AbstractGrammar,
-        [opweights::Union{Nothing,AbstractWeights} = nothing,]
-        args...;
-        kwargs...
-    )::Formula
-
-Randomly sample an [`Atom`](@ref) from an `alphabet`, or a logic formula of given `height`
-from a grammar `g`.
-Sampling is weighted, thus, for example, if the first weight in `weights` is higher than
-the others, then the first atom in the alphabet is selected more frequently.
-
-See also [`AbstractAlphabet`](@ref), [`AbstractWeights`](@ref), [`Atom`](@ref).
-"""
-function StatsBase.sample(
+"""$(sample_aw_docstring)"""
+@__rng_dispatch function StatsBase.sample(
+    rng::Union{Integer,AbstractRNG},
     alphabet::AbstractAlphabet,
     weights::AbstractWeights,
     args...;
     kwargs...
-)::Atom
-    StatsBase.sample(Random.GLOBAL_RNG, alphabet, weights, args...; kwargs...)
-end
-
-function StatsBase.sample(
-    rng::AbstractRNG,
-    alphabet::AbstractAlphabet,
-    weights::AbstractWeights,
-    args...;
-    kwargs...
-)::Atom
+)
     if isfinite(alphabet)
-        StatsBase.sample(rng, atoms(alphabet), weights, args...; kwargs...)
+        StatsBase.sample(initrng(rng), atoms(alphabet), weights, args...; kwargs...)
     else
         error("Please, provide method StatsBase.sample(rng::AbstractRNG, " *
             "alphabet::$(typeof(alphabet)), args...; kwargs...).")
     end
 end
 
-function StatsBase.sample(
-    l::AbstractLogic,
-    atomweights::AbstractWeights,
-    opweights::AbstractWeights,
-    args...;
-    kwargs...
-)
-    StatsBase.sample(Random.GLOBAL_RNG, l, atomweights, opweights, args...; kwargs...)
-end
-
-function StatsBase.sample(
-    rng::AbstractRNG,
+"""$(sample_lao_docstring)"""
+@__rng_dispatch function StatsBase.sample(
+    rng::Union{Integer,AbstractRNG},
     l::AbstractLogic,
     atomweights::AbstractWeights,
     opweights::AbstractWeights,
@@ -226,32 +176,18 @@ function StatsBase.sample(
     StatsBase.sample(init(rng), grammar(l), atomweights, opweights, args...; kwargs...)
 end
 
-"""$(doc_sample)"""
-function StatsBase.sample(
+"""$(sample_hgao_docstring)"""
+@__rng_dispatch function StatsBase.sample(
+    rng::Union{Integer,AbstractRNG},
     height::Integer,
     g::AbstractGrammar,
-    atomweights::Union{Nothing,AbstractWeights} = nothing,
-    opweights::Union{Nothing,AbstractWeights} = nothing,
     args...;
-    kwargs...
-)
-    StatsBase.sample(Random.GLOBAL_RNG, height, g, atomweights, opweights, args...;
-        kwargs...)
-end
-
-"""$(doc_sample)"""
-function StatsBase.sample(
-    rng::AbstractRNG,
-    height::Integer,
-    g::AbstractGrammar,
-    atomweights::Union{Nothing,AbstractWeights} = nothing,
-    opweights::Union{Nothing,AbstractWeights} = nothing,
-    args...;
+    atomweights::Union{Nothing,AbstractWeights}=nothing,
+    opweights::Union{Nothing,AbstractWeights}=nothing,
     kwargs...
 )
     randformula(
-        rng, height, alphabet(g), operators(g), args...;
-        # atompicker=(rng,dom)->StatsBase.sample(rng, dom, atomweights), kwargs...)
+        initrng(rng), height, alphabet(g), operators(g), args...;
         atompicker = atomweights, opweights = opweights, kwargs...)
 end
 
