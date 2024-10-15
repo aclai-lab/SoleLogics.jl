@@ -210,7 +210,7 @@ end
     modaldepth::Integer=height,
     atompicker::Union{Function,AbstractWeights,AbstractVector{<:Real},Nothing}=randatom,
     opweights::Union{AbstractWeights,AbstractVector{<:Real},Nothing}=nothing,
-
+    # alphabet_sample_kwargs
     kwargs...
 )
     rng = initrng(rng)

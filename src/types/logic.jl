@@ -36,7 +36,7 @@ true
 ```
 
 # Interface
-- `atoms(a::AbstractAlphabet)::Bool`
+- `atoms(a::AbstractAlphabet)::AbstractVector`
 - `Base.isfinite(::Type{<:AbstractAlphabet})::Bool`
 - `randatom(rng::Union{Random.AbstractRNG, Integer}, a::AbstractAlphabet, args...; kwargs...)::AbstractAtom`
 
