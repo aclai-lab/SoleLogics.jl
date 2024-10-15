@@ -193,13 +193,6 @@ end
 
 
 
-# TODO
-# - make rng first (optional) argument of randformula (see above)
-# - in randformula, keyword argument alphabet_sample_kwargs that are unpacked upon sampling atoms, as in: Base.rand(rng, a; alphabet_sample_kwargs...). This would allow to sample from infinite alphabets, so when this parameter, !isfinite(alphabet) is allowed!
-
-# TODO @Mauro implement this method.
-
-
 """$(randformula_docstring)"""
 @__rng_dispatch function randformula(
     rng::Union{Integer,AbstractRNG},
@@ -210,7 +203,7 @@ end
     modaldepth::Integer=height,
     atompicker::Union{Nothing,Function,AbstractWeights,AbstractVector{<:Real}}=randatom,
     opweights::Union{Nothing,AbstractWeights,AbstractVector{<:Real}}=nothing,
-    alphabet_sample_kwargs::Union{Nothing,AbstractVector},
+    alphabet_sample_kwargs::Union{Nothing,AbstractVector}=nothing,
     kwargs...
 )
     rng = initrng(rng)
@@ -279,7 +272,7 @@ end
     end
 
     # if the alphabet is not iterable, this function should not work.
-    if !isfinite(alphabet)
+    if !isfinite(alphabet) && isnothing(alphabet_sample_kwargs)
         @warn "Attempting to generate random formulas from " *
             "(infinite) alphabet of type $(typeof(alphabet))!"
     end

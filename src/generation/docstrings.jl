@@ -182,6 +182,7 @@ randformula_docstring = """
         modaldepth::Integer=height,
         atompicker::Union{Nothing,Function,AbstractWeights,AbstractVector{<:Real}}=randatom,
         opweights::Union{Nothing,AbstractWeights,AbstractVector{<:Real}}=nothing,
+        alphabet_sample_kwargs::Union{Nothing,AbstractVector}=nothing,
         kwargs...
     )
 
@@ -199,6 +200,8 @@ Return a pseudo-randomic [`SyntaxTree`](@ref).
     Base.rand or StatsBase.sample;
 - `opweights::AbstractWeights`: operators are sampled with probabilities proportional to
     this vector vector (see [`AbstractWeights`](@ref) of StatsBase package).
+- `alphabet_sample_kwargs::AbstractVector`: pool of atoms to pull from if the given alphabet
+    is not finite.
 
 # Examples
 
