@@ -1,5 +1,5 @@
 using StatsBase
-using SoleLogics: parsebaseformula
+using SoleLogics: parsebaseformula, @__rng_dispatch
 using Random
 
 import SoleLogics: arity, syntaxstring
@@ -144,4 +144,13 @@ Base.promote_rule(::Type{<:BooleanTruth}, ::Type{<:MyTruth}) = Truth
 
 @test_nowarn randbaseformula(4, my_grammar)
 @test_nowarn randbaseformula(MersenneTwister(42), 4, my_grammar)
+end
+
+
+
+@testset "@__rng_dispatch" begin
+
+@test_throws LoadError @eval @__rng_dispatch 1+1
+@test_throws LoadError @eval @__rng_dispatch function foo() end
+
 end

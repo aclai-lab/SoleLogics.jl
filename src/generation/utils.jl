@@ -22,12 +22,13 @@ macro __rng_dispatch(ex)
 
     # The first argument one must be an Union{Random.AbstractRNG,Integer},
     # otherwise, this macro makes no sense.
-    quote
-        if !isa($fargs[2], Union{Random.AbstractRNG,Integer})
-            throw(ArgumentError("Expected function's first argument to be of type " *
-                "Union{Random.AbstractRNG,Integer}."))
-        end
-    end
+    # TODO - this check should be made out of quote environment
+    # quote
+    #     if !isa($(esc(fargs[2])), Union{Random.AbstractRNG,Integer})
+    #         throw(ArgumentError("Expected function's first argument to be of type " *
+    #             "Union{Random.AbstractRNG,Integer}."))
+    #     end
+    # end
 
     # At this point, fargs is shaped similar to:
     #
