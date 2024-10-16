@@ -214,10 +214,6 @@ end
 )
     rng = initrng(rng)
     alphabet = convert(AbstractAlphabet, alphabet)
-    if !(all(x->x isa Operator, operators))
-        throw(ArgumentError("Unexpected object(s) passed as" *
-            " operator:" * " $(filter(x->!(x isa Operator), operators))"))
-    end
 
     if (isnothing(opweights))
         opweights = StatsBase.uweights(length(operators))
