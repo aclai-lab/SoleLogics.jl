@@ -1,113 +1,34 @@
-const BASE_PROPOSITIONAL_CONNECTIVES = BASE_CONNECTIVES
-const BasePropositionalConnectives = Union{typeof.(BASE_PROPOSITIONAL_CONNECTIVES)...}
-
-# A propositional logic based on the base propositional operators
-const BasePropositionalLogic = AbstractLogic{G,A} where {
-        ALP,
-        G<:AbstractGrammar{ALP,<:BasePropositionalConnectives},
-        A<:AbstractAlgebra
-    }
-
-"""
-    propositionallogic(;
-        alphabet = AlphabetOfAny{String}(),
-        operators = $(BASE_PROPOSITIONAL_CONNECTIVES),
-        grammar = CompleteFlatGrammar(AlphabetOfAny{String}(), $(BASE_PROPOSITIONAL_CONNECTIVES)),
-        algebra = BooleanAlgebra()
-    )
-
-Instantiate a [propositional logic](https://simple.wikipedia.org/wiki/Propositional_logic)
-given a grammar and an algebra. Alternatively, an alphabet and a set of operators
-can be specified instead of the grammar.
-
-# Examples
-```julia-repl
-julia> (¬) isa operatorstype(propositionallogic())
-true
-
-julia> (¬) isa operatorstype(propositionallogic(; operators = [∨]))
-false
-
-julia> propositionallogic(; alphabet = ["p", "q"]);
-
-julia> propositionallogic(; alphabet = ExplicitAlphabet([Atom("p"), Atom("q")]));
-
-```
-
-See also [`modallogic`](@ref), [`AbstractAlphabet`](@ref), [`AbstractAlgebra`](@ref).
-"""
-function propositionallogic(;
-    alphabet::Union{Nothing,Vector,AbstractAlphabet} = nothing,
-    operators::Union{Nothing,Vector{<:Operator}} = nothing,
-    grammar::Union{Nothing,AbstractGrammar} = nothing,
-    algebra::Union{Nothing,AbstractAlgebra} = nothing
-)
-    _baselogic(
-        alphabet = alphabet,
-        operators = operators,
-        grammar = grammar,
-        algebra = algebra;
-        default_operators = BASE_PROPOSITIONAL_CONNECTIVES,
-        logictypename = "propositional logic",
-    )
-end
-
+############################################################################################
+####################################### Utilities ##########################################
 ############################################################################################
 
 """
-    abstract type AbstractAssignment <: AbstractInterpretation end
+    _hpretty_table(io::IO, keys::Any, values::Any)
 
-Abstract type for assigments, that is, interpretations of propositional logic,
-encoding mappings from `Atom`s to `Truth` values.
-
-See also [`AbstractInterpretation`](@ref).
+Recreate horizontal pretty table formatting. 
+The keys represent the header of the table and the values the first row of the table.
 """
-abstract type AbstractAssignment <: AbstractInterpretation end
+function _hpretty_table(io::IO, keys::Any, values::Any)
+    # Prepare columns names
+    _keys = map(x -> x isa Atom ? value(x) : x, collect(keys))
+    header = (_keys, string.(nameof.(typeof.(_keys))))
 
-"""
-    Base.haskey(i::AbstractAssignment, ::Atom)::Bool
-
-Return whether an assigment has a truth value for a given atom.
-
-See also [`AbstractInterpretation`](@ref).
-"""
-function Base.haskey(i::AbstractAssignment, ::Atom)::Bool
-    return error("Please, provide method Base.haskey(::$(typeof(i)), ::Atom)::Bool.")
-end
-
-# Helper
-function Base.haskey(i::AbstractAssignment, v)::Bool
-    Base.haskey(i, Atom(v))
-end
-
-function inlinedisplay(i::AbstractAssignment)
-    return error("Please, provide method inlinedisplay(::$(typeof(i)))::String.")
-end
-
-# When interpreting a single atom, if the lookup fails, then return the atom itself
-function interpret(a::Atom, i::AbstractAssignment, args...; kwargs...)::SyntaxLeaf
-    if Base.haskey(i, a)
-        Base.getindex(i, a, args...; kwargs...)
-    else
-        a
+    try
+        # Try to draw a complete table
+        data = hcat([x for x in values]...)
+        pretty_table(io, data; header=header)
+    catch e
+        if e isa DimensionMismatch
+            # If it is not possible to draw a complete table, throw a custom error.
+            error("Some syntax structures are not resolved with all the interpretations ")
+        else
+            throw(e)
+        end
     end
 end
 
-# # TODO remove repetition!!!
-# function interpret(
-#     φ::SyntaxBranch,
-#     i::AbstractAssignment,
-#     args...;
-#     kwargs...,
-# )
-#     connective = token(φ)
-#     return simplify(connective, Tuple(
-#         [interpret(ch, i, args...; kwargs...) for ch in children(φ)]
-#     ), args...; kwargs...)
-# end
-
 ############################################################################################
-#### Implementations #######################################################################
+####################################### TruthDict ##########################################
 ############################################################################################
 
 """
@@ -161,7 +82,8 @@ true
 
 See also
 [`DefaultedTruthDict`](@ref),
-[`AbstractAssignment`](@ref), [`AbstractInterpretation`](@ref).
+[`AbstractAssignment`](@ref), 
+[`AbstractInterpretation`](@ref).
 """
 struct TruthDict{D<:AbstractDict} <: AbstractAssignment
 
@@ -222,26 +144,6 @@ function inlinedisplay(i::TruthDict)
     "TruthDict([$(join(["$(syntaxstring(a)) => $t" for (a,t) in i.truth], ", "))])"
 end
 
-# Utility function to represent pretty tables horizontally
-function _hpretty_table(io::IO, keys::Any, values::Any)
-    # Prepare columns names
-    _keys = map(x -> x isa Atom ? value(x) : x, collect(keys))
-    header = (_keys, string.(nameof.(typeof.(_keys))))
-
-    try
-        # Try to draw a complete table
-        data = hcat([x for x in values]...)
-        pretty_table(io, data; header=header)
-    catch e
-        if e isa DimensionMismatch
-            # If it is not possible to draw a complete table, throw a custom error.
-            @error "Some syntax structures are not resolved with all the interpretations "
-        else
-            throw(e)
-        end
-    end
-end
-
 function Base.show(
     io::IO,
     i::TruthDict,
@@ -266,6 +168,8 @@ end
     Base.keys, Base.values,
 )
 
+############################################################################################
+################################## DefaultedTruthDict ######################################
 ############################################################################################
 
 """
@@ -364,7 +268,7 @@ function interpret(a::Atom, i::DefaultedTruthDict, args...; kwargs...)
     return Base.haskey(i.truth, a) ? Base.getindex(i.truth, a) : i.default_truth
 end
 
-function inlinedisplay(i::DefaultedTruthDict)
+function inlinedisplay(i::DefaultedTruthDict)::String
     "DefaultedTruthDict([$(join(["$(syntaxstring(a)) => $t" for (a,t) in i.truth], ", "))], $(i.default_truth))"
 end
 
@@ -384,17 +288,18 @@ end
     Base.values,
 )
 
-
+############################################################################################
+###################################### TruthTable ##########################################
 ############################################################################################
 
+# TODO: it is necessary?
 """
     struct TruthTable{A,T<:Truth}
 
 Dictionary which associates an [`AbstractAssignment`](@ref)s to the truth value of the
 assignment itself on a [`SyntaxStructure`](@ref).
 
-See also [`AbstractAssignment`](@ref), [`SyntaxStructure`](@ref),
-[`Truth`](@ref).
+See also [`AbstractAssignment`](@ref), [`SyntaxStructure`](@ref), [`Truth`](@ref).
 """
 struct TruthTable{
     A,
@@ -405,9 +310,15 @@ end
 
 ############################################################################################
 
-# Helpers:
-#  we let any AbstractDict and AbstractVector be used as an interpretation when model checking.
+"""
+    check(φ::Formula,i::Union{AbstractDict,AbstractVector},args...)
 
+Takes a formula as input and returns its truth value in relation to the dictionary 
+or vector passed. We let any AbstractDict and AbstractVector be used as an interpretation 
+when model checking.
+
+See also [`Formula`](@ref).
+"""
 function check(
     φ::Formula,
     i::Union{AbstractDict,AbstractVector},
@@ -416,14 +327,131 @@ function check(
     check(φ, convert(AbstractInterpretation, i), args...)
 end
 
-# A dictionary is interpreted as the map from atoms to `Truth` values
-convert(::Type{AbstractInterpretation}, i::AbstractDict) = TruthDict(i)
-# Base.getindex(i::AbstractDict, a::Atom) = i[value(a)]
-Base.haskey(a::Atom, i::AbstractDict) = (value(a) in keys(i))
-check(a::Atom, i::AbstractDict) = Base.getindex(i, a)
+#############################################################################################
+###################################### AbstractDict #########################################
+#############################################################################################
 
-# A vector is interpreted as the set of true atoms
+"""
+    convert(::Type{AbstractInterpretation}, i::AbstractDict)
+
+Convert a dictionary (with keys and values) in a TruthDict.
+In this case, a dictionary is interpreted as the map from atoms to `Truth` values.
+
+# Examples
+
+```julia-repl
+julia> convert(AbstractInterpretation, Dict([1 => ⊤, 2 => ⊥]))
+TruthDict with values:
+┌───────┬───────┐
+│     2 │     1 │
+│ Int64 │ Int64 │
+├───────┼───────┤
+│     ⊥ │     ⊤ │
+└───────┴───────┘
+```
+
+!!! warning
+    For a proper functioning, the values contained in the dictionary and 
+    associated with the keys must be Boolean values. If this were not the 
+    case, this method could not be used.
+
+See also [`AbstractInterpretation`](@ref), [`TruthDict`](@ref).
+"""
+convert(::Type{AbstractInterpretation}, i::AbstractDict) = TruthDict(i)
+#Base.getindex(i::AbstractDict, a::Atom) = i[value(a)]
+
+"""
+    Base.haskey(a::Atom, i::AbstractDict)::Bool
+
+Checks whether an atom is contained in any dictionary.
+
+# Examples
+
+```julia-repl
+julia> haskey(Atom(1), Dict([1 => ⊤, 2 => ⊥]))
+true
+
+julia> haskey(Atom(3), Dict([1 => ⊤, 2 => ⊥]))
+false
+```
+
+See also [`TruthDict`](@ref).
+"""
+Base.haskey(a::Atom, i::AbstractDict)::Bool = (value(a) in keys(i))
+
+"""
+    check(a::Atom, i::AbstractDict)
+
+Returns the Boolean value corresponding to the atom passed as parameter.
+
+# Examples
+
+```julia-repl
+julia> check(Atom(1), Dict([1 => ⊤, 2 => ⊥]))
+true
+
+julia> check(Atom(3), Dict([1 => ⊤, 2 => ⊥]))
+false
+```
+
+See also [`Atom`](@ref).
+"""
+check(a::Atom, i::AbstractDict) = haskey(a,i) ? Base.getindex(i, value(a)) : nothing
+
+#############################################################################################
+##################################### AbstractVector#########################################
+#############################################################################################
+
+"""
+    convert(::Type{AbstractInterpretation}, i::AbstractVector)
+
+Converts any vector to a dictionary with all ⊤ and ⊥ default value.
+In this case, a vector is interpreted as the set of true atoms.
+
+# Examples
+
+```julia-repl
+julia> convert(AbstractInterpretation, [1,2,3])
+DefaultedTruthDict with default truth `⊥` and values:
+┌───────┬───────┬───────┐
+│     2 │     3 │     1 │
+│ Int64 │ Int64 │ Int64 │
+├───────┼───────┼───────┤
+│     ⊤ │     ⊤ │     ⊤ │
+└───────┴───────┴───────┘
+
+julia> convert(SoleLogics.AbstractInterpretation, ["a","b"])
+DefaultedTruthDict with default truth `⊥` and values:
+┌────────┬────────┐
+│      b │      a │
+│ String │ String │
+├────────┼────────┤
+│      ⊤ │      ⊤ │
+└────────┴────────┘
+```
+
+See also [`AbstractInterpretation`](@ref), [`TruthDict`](@ref).
+"""
 convert(::Type{AbstractInterpretation}, i::AbstractVector) = DefaultedTruthDict(i, ⊥)
-# Base.getindex(i::AbstractVector, a::Atom) = (value(a) in i)
-# Base.in(a::Atom, i::AbstractVector) = true
-check(a::Atom, i::AbstractVector) = (a in i)
+#Base.getindex(i::AbstractVector, a::Atom) = (value(a) in i)
+#Base.in(a::Atom, i::AbstractVector) = true
+
+"""
+    check(a::Atom, i::AbstractVector)
+
+Returns a truth value indicating whether or not that atom 
+is contained in the passed vector.
+
+# Examples
+
+```julia-repl
+julia> check(Atom(1), [1,2,4])
+true
+
+julia> check(Atom(5), [2,3,4])
+false
+```
+
+See also [`Atom`](@ref).
+"""
+check(a::Atom, i::AbstractVector) = (value(a) in i)

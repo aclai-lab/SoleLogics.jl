@@ -67,16 +67,18 @@ export BooleanAlgebra
 
 export BaseLogic
 
-include("utils.jl")
+include("utils/synctactical.jl")
 
 ############################################################################################
 
 export propositionallogic
+export inlinedisplay
 
 export TruthDict, DefaultedTruthDict
 export truth_table
 
-include("propositional-logic.jl")
+include("types/propositional-logic.jl")
+include("utils/propositional-logic.jl")
 
 ############################################################################################
 

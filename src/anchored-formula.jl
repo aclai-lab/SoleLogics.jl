@@ -146,8 +146,7 @@ end
 (l::AbstractLogic)(t::SyntaxStructure, args...) = AnchoredFormula(Base.RefValue(l), t; args...)
 
 # Adapted from https://github.com/JuliaLang/julia/blob/master/base/promotion.jl
-function Base._promote(x::AnchoredFormula, y::SyntaxStructure)
-    @inline
+@inline function Base._promote(x::AnchoredFormula, y::SyntaxStructure)
     return (x, x(y))
 end
 Base._promote(x::SyntaxStructure, y::AnchoredFormula) = reverse(Base._promote(y, x))

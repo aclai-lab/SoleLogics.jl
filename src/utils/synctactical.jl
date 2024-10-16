@@ -610,7 +610,6 @@ Base.in(::Atom{PV}, ::AlphabetOfAny{VV}) where {PV, VV} = (PV <: VV)
 #### UnionAlphabet #########################################################################
 ############################################################################################
 
-# Finite alphabet of conditions induced from a set of metaconditions
 """
 Alphabet given by the *union* of a number of (sub-)alphabets.
 
@@ -661,10 +660,10 @@ together with a `subalphabets_weights` vector.
 See also [`UnionAlphabet`](@ref).
 """
 function randatom(
-        rng::Union{Integer, AbstractRNG},
-        a::UnionAlphabet;
-        atompicking_mode::Symbol = :uniform,
-        subalphabets_weights::Union{AbstractWeights, AbstractVector{<:Real}, Nothing} = nothing,
+    rng::Union{Integer,AbstractRNG},
+    a::UnionAlphabet;
+    atompicking_mode::Symbol = :uniform,
+    subalphabets_weights::Union{AbstractWeights, AbstractVector{<:Real}, Nothing} = nothing,
 )::Atom
 
     # @show a
