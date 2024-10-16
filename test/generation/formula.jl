@@ -132,6 +132,7 @@ Base.promote_rule(::Type{<:BooleanTruth}, ::Type{<:MyTruth}) = Truth
 @test_nowarn randformula(MersenneTwister(1), 4, my_grammar)
 @test_nowarn randformula(4, my_alph, my_ops)
 @test_throws ArgumentError randformula(4, my_alph, my_ops; atompicker=[1,2])
+@test_throws ArgumentError randformula(4, non_finite_alph, my_ops)
 
 @test_nowarn randformula(MersenneTwister(1), 4, my_alph, my_ops; atompicker = 1:5)
 @test_throws ArgumentError randformula(

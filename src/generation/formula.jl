@@ -271,8 +271,8 @@ end
 
     # if the alphabet is not iterable, this function should not work.
     if !isfinite(alphabet) && isnothing(alphabet_sample_kwargs)
-        @warn "Attempting to generate random formulas from " *
-            "(infinite) alphabet of type $(typeof(alphabet))!"
+        throw(ArgumentError("Attempting to generate random formulas from " *
+            "(infinite) alphabet of type $(typeof(alphabet))!"))
     end
 
     return _randformula(rng, height, modaldepth)
