@@ -289,16 +289,6 @@ end
     randformula(rng, height, alphabet(g), operators(g), args...; kwargs...)
 end
 
-@__rng_dispatch function randformula(
-    rng::Union{Integer,AbstractRNG},
-    height::Integer,
-    args...;
-    kwargs...
-)
-    randformula(initrng(rng), height, args...; kwargs...)
-end
-
-
 """$(randbaseformula_docstring)"""
 @__rng_dispatch function randbaseformula(
     rng::Union{Integer,AbstractRNG},
