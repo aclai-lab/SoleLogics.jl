@@ -77,7 +77,7 @@ unionalph = UnionAlphabet([my_alph,alph2])
 
 _subalphabets_weights_test_dim = 100
 @test count(x -> x<5,
-    atom.([randatom(unionalph; atompicking_mode=:weighted, subalphabets_weights=[5,1])
+    value.([randatom(unionalph; atompicking_mode=:weighted, subalphabets_weights=[5,1])
         for i in 1:_subalphabets_weights_test_dim])
     ) > convert(Int32, (_subalphabets_weights_test_dim/2))
 
