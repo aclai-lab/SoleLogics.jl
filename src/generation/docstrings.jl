@@ -198,10 +198,12 @@ Return a pseudo-randomic [`SyntaxTree`](@ref).
 
 # Keyword Arguments
 - `modaldepth::Integer`: maximum modal depth;
-- `atompicker::Function`: method used to pick a random element. For example, this could be
-    Base.rand or StatsBase.sample;
-- `opweights::AbstractWeights`: operators are sampled with probabilities proportional to
-    this vector vector (see [`AbstractWeights`](@ref) of StatsBase package).
+- `atompicker::Union{Nothing,Function,AbstractWeights,AbstractVector{<:Real}}`: method used
+    to pick a random element. For example, this could be Base.rand, StatsBase.sample or
+    an array of integers or an array of `StatsBase.AbstractWeights`;
+- `opweights::Union{Nothing,AbstractWeights,AbstractVector{<:Real}}`: operators are sampled
+    with probabilities proportional to this vector (see [`AbstractWeights`](@ref) of
+    StatsBase package).
 - `alphabet_sample_kwargs::AbstractVector`: pool of atoms to pull from if the given alphabet
     is not finite.
 
