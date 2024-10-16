@@ -64,11 +64,10 @@ my_ops = [∧,¬]
 my_grammar = SoleLogics.CompleteFlatGrammar(my_alph, my_ops)
 my_logic = propositionallogic(alphabet=my_alph)
 
-
 @test_nowarn randatom(my_alph)
 @test randatom(42, my_alph) == Atom(4)
 
-non_finite_alph = my_alph = AlphabetOfAny{Atom{String}}()
+non_finite_alph = AlphabetOfAny{Atom{String}}()
 @test_throws Exception randatom(42, non_finite_alph)
 
 alph2 = ExplicitAlphabet(6:10)
@@ -135,6 +134,7 @@ Base.promote_rule(::Type{<:BooleanTruth}, ::Type{<:MyTruth}) = Truth
 @test_nowarn randformula(MersenneTwister(1), 4, my_alph, my_ops; atompicker = 1:5)
 @test_throws ArgumentError randformula(
     MersenneTwister(1), 4, my_alph, my_ops; atompicker = 1:6)
+@test_nowarn randformula(MersenneTwister(1), 4, my_alph, my_ops; atompicker = 1:5)
 
 @test_nowarn randbaseformula(2, my_alph, my_ops)
 @test_nowarn randbaseformula(MersenneTwister(42), 2, my_alph, my_ops)

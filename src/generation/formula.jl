@@ -258,7 +258,7 @@ end
             # (modal connectives only if modaldepth is set > 0)
             ops, ops_w = (modaldepth > 0) ?
                 (operators, opweights) :
-                operators[nonmodal_operators], opweights[nonmodal_operators]
+                (operators[nonmodal_operators], opweights[nonmodal_operators])
 
             # op = rand(rng, ops)
             op = sample(rng, ops, ops_w)
