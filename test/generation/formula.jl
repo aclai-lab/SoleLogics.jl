@@ -4,7 +4,7 @@ using Random
 
 import SoleLogics: arity, syntaxstring
 
-@testset "randformula + randbaseformula" begin
+# @testset "randformula + randbaseformula" begin
 
 _alphabet = ExplicitAlphabet(["p", "q", "r", "s"])
 _operators = [NEGATION, CONJUNCTION, IMPLICATION]
@@ -14,11 +14,11 @@ w = [10,1,1]
 @test_nowarn [randbaseformula(i, _alphabet, _operators, opweights=w) for i in 1:2]
 @test_nowarn [randformula(i, _alphabet, _operators, opweights=w) for i in 1:5]
 
-end
+# end # endof test set
 
 
 
-@testset "generation w. custom operators" begin
+# @testset "generation w. custom operators" begin
 
 TERNOP = SoleLogics.NamedConnective{:⇶}()
 SoleLogics.arity(::typeof(TERNOP)) = 3
@@ -53,11 +53,11 @@ w = [5,1,1,1,1,1,1]
             function_notation = true)
     end for i in 1:10])
 
-end
+# end # endof test set
 
 
 
-@testset "Dispatches made with @__rng_dispatch" begin
+# @testset "Dispatches made with @__rng_dispatch" begin
 
 my_alph = ExplicitAlphabet(1:5)
 my_ops = [∧,¬]
@@ -105,7 +105,7 @@ _subalphabets_weights_test_dim = 100
 struct MyTruth <: Truth
     val::Integer
 end
-const MyTruthTOP = MyTruth(5);
+MyTruthTOP = MyTruth(5);
 syntaxstring(mt::MyTruth) = mt.val
 Base.promote_rule(::Type{<:BooleanTruth}, ::Type{<:MyTruth}) = Truth
 
@@ -144,13 +144,14 @@ Base.promote_rule(::Type{<:BooleanTruth}, ::Type{<:MyTruth}) = Truth
 
 @test_nowarn randbaseformula(4, my_grammar)
 @test_nowarn randbaseformula(MersenneTwister(42), 4, my_grammar)
-end
+
+# end # endof test set
 
 
 
-@testset "@__rng_dispatch" begin
+# @testset "@__rng_dispatch" begin
 
 @test_throws LoadError @eval @__rng_dispatch 1+1
 @test_throws LoadError @eval @__rng_dispatch function foo() end
 
-end
+# end # endof test set
