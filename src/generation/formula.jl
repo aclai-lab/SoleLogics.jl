@@ -4,9 +4,6 @@ using StatsBase
 import Base: rand
 import StatsBase: sample
 
-include("docstrings.jl")
-include("utils.jl")
-
 """$(randatom_docstring)"""
 @__rng_dispatch function randatom(
     rng::Union{Random.AbstractRNG,Integer},

@@ -1,3 +1,5 @@
+#formula.jl docstrings
+
 randatom_docstring = """
     randatom(
         [rng::Union{Random.AbstractRNG,Integer},]
@@ -246,3 +248,7 @@ that includes [`Atom`](@ref)s in `alphabet` and [`Operator`](@ref)s in `operator
 See also [`AnchoredFormula`](@ref), [`Atom`](@ref), [`Operator`](@ref),
 [`randformula(::Integer, ::Union{AbstractVector,AbstractAlphabet}, ::AbstractVector)`](@ref)
 """
+
+
+
+# models.jl docstrings

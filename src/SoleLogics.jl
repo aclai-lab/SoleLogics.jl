@@ -132,9 +132,13 @@ include("parse.jl")
 
 ############################################################################################
 
+# these first files are included here to avoid repeated inclusions in those below;
+# "generation" could become a SoleLogics submodule.
+include("generation/docstrings.jl")
+include("generation/utils.jl")
+
 export randatom
 export randformula, randbaseformula
-
 include("generation/formula.jl")
 
 export randframe, randmodel
