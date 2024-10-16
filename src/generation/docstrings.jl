@@ -179,7 +179,7 @@ randformula_docstring = """
         [rng::Union{Integer,AbstractRNG}=Random.GLOBAL_RNG,]
         height::Integer,
         alphabet::Union{AbstractVector,AbstractAlphabet},
-        operators::AbstractVector,
+        operators::AbstractVector{<:Operator},
         args...;
         modaldepth::Integer=height,
         atompicker::Union{Nothing,Function,AbstractWeights,AbstractVector{<:Real}}=randatom,
@@ -194,7 +194,7 @@ Return a pseudo-randomic [`SyntaxTree`](@ref).
 - `rng::Union{Intger,AbstractRNG}=Random.GLOBAL_RNG`: random number generator;
 - `height::Integer`: height of the generated structure;
 - `alphabet::AbstractAlphabet`: collection from which atoms are chosen randomly;
-- `operators::AbstractVector`: vector from which legal operators are chosen.
+- `operators::AbstractVector{<:Operator}`: vector from which legal operators are chosen.
 
 # Keyword Arguments
 - `modaldepth::Integer`: maximum modal depth;

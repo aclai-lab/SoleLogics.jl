@@ -130,7 +130,7 @@ end
     if !(connectives isa AbstractVector{<:Connective} ||
             !(truthvalues isa AbstractVector{<:Truth})
         )
-        thorw(ArgumentError("Unexpected connectives and truth values: " *
+        throw(ArgumentError("Unexpected connectives and truth values: " *
             "$(connectives) and $(truthvalues)."))
     end
 
@@ -147,7 +147,7 @@ end
         ops = vcat(ops, truthvalues)
     end
 
-    randformula(height, ops, atoms, args...; rng=initrng(rng), kwargs...)
+    randformula(height, atoms, ops, args...; kwargs...)
 end
 
 
@@ -204,7 +204,7 @@ end
     rng::Union{Integer,AbstractRNG},
     height::Integer,
     alphabet::Union{AbstractVector,AbstractAlphabet},
-    operators::AbstractVector,
+    operators::AbstractVector{<:Operator},
     args...;
     modaldepth::Integer=height,
     atompicker::Union{Nothing,Function,AbstractWeights,AbstractVector{<:Real}}=randatom,
@@ -260,13 +260,9 @@ end
         else
             # sample operator and generate children
             # (modal connectives only if modaldepth is set > 0)
-            ops, ops_w = begin
-                if modaldepth > 0
-                    operators, opweights
-                else
-                    operators[nonmodal_operators], opweights[nonmodal_operators]
-                end
-            end
+            ops, ops_w = (modaldepth > 0) ?
+                (operators, opweights) :
+                operators[nonmodal_operators], opweights[nonmodal_operators]
 
             # op = rand(rng, ops)
             op = sample(rng, ops, ops_w)
