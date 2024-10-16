@@ -28,7 +28,7 @@ function _hpretty_table(io::IO, keys::Any, values::Any)
 end
 
 ############################################################################################
-#### Implementations #######################################################################
+####################################### TruthDict ##########################################
 ############################################################################################
 
 """
@@ -169,6 +169,8 @@ end
 )
 
 ############################################################################################
+################################## DefaultedTruthDict ######################################
+############################################################################################
 
 """
     struct DefaultedTruthDict{
@@ -287,7 +289,10 @@ end
 )
 
 ############################################################################################
+###################################### TruthTable ##########################################
+############################################################################################
 
+# TODO: it is necessary?
 """
     struct TruthTable{A,T<:Truth}
 
@@ -305,9 +310,15 @@ end
 
 ############################################################################################
 
-# Helpers:
-#  we let any AbstractDict and AbstractVector be used as an interpretation when model checking.
+"""
+    check(φ::Formula,i::Union{AbstractDict,AbstractVector},args...)
 
+Takes a formula as input and returns its truth value in relation to the dictionary 
+or vector passed. We let any AbstractDict and AbstractVector be used as an interpretation 
+when model checking.
+
+See also [`Formula`](@ref).
+"""
 function check(
     φ::Formula,
     i::Union{AbstractDict,AbstractVector},
@@ -316,14 +327,131 @@ function check(
     check(φ, convert(AbstractInterpretation, i), args...)
 end
 
-# A dictionary is interpreted as the map from atoms to `Truth` values
-convert(::Type{AbstractInterpretation}, i::AbstractDict) = TruthDict(i)
-# Base.getindex(i::AbstractDict, a::Atom) = i[value(a)]
-Base.haskey(a::Atom, i::AbstractDict) = (value(a) in keys(i))
-check(a::Atom, i::AbstractDict) = Base.getindex(i, a)
+#############################################################################################
+###################################### AbstractDict #########################################
+#############################################################################################
 
-# A vector is interpreted as the set of true atoms
+"""
+    convert(::Type{AbstractInterpretation}, i::AbstractDict)
+
+Convert a dictionary (with keys and values) in a TruthDict.
+In this case, a dictionary is interpreted as the map from atoms to `Truth` values.
+
+# Examples
+
+```julia-repl
+julia> convert(AbstractInterpretation, Dict([1 => ⊤, 2 => ⊥]))
+TruthDict with values:
+┌───────┬───────┐
+│     2 │     1 │
+│ Int64 │ Int64 │
+├───────┼───────┤
+│     ⊥ │     ⊤ │
+└───────┴───────┘
+```
+
+!!! warning
+    For a proper functioning, the values contained in the dictionary and 
+    associated with the keys must be Boolean values. If this were not the 
+    case, this method could not be used.
+
+See also [`AbstractInterpretation`](@ref), [`TruthDict`](@ref).
+"""
+convert(::Type{AbstractInterpretation}, i::AbstractDict) = TruthDict(i)
+#Base.getindex(i::AbstractDict, a::Atom) = i[value(a)]
+
+"""
+    Base.haskey(a::Atom, i::AbstractDict)::Bool
+
+Checks whether an atom is contained in any dictionary.
+
+# Examples
+
+```julia-repl
+julia> haskey(Atom(1), Dict([1 => ⊤, 2 => ⊥]))
+true
+
+julia> haskey(Atom(3), Dict([1 => ⊤, 2 => ⊥]))
+false
+```
+
+See also [`TruthDict`](@ref).
+"""
+Base.haskey(a::Atom, i::AbstractDict)::Bool = (value(a) in keys(i))
+
+"""
+    check(a::Atom, i::AbstractDict)
+
+Returns the Boolean value corresponding to the atom passed as parameter.
+
+# Examples
+
+```julia-repl
+julia> check(Atom(1), Dict([1 => ⊤, 2 => ⊥]))
+true
+
+julia> check(Atom(3), Dict([1 => ⊤, 2 => ⊥]))
+false
+```
+
+See also [`Atom`](@ref).
+"""
+check(a::Atom, i::AbstractDict) = haskey(a,i) ? Base.getindex(i, value(a)) : nothing
+
+#############################################################################################
+##################################### AbstractVector#########################################
+#############################################################################################
+
+"""
+    convert(::Type{AbstractInterpretation}, i::AbstractVector)
+
+Converts any vector to a dictionary with all ⊤ and ⊥ default value.
+In this case, a vector is interpreted as the set of true atoms.
+
+# Examples
+
+```julia-repl
+julia> convert(AbstractInterpretation, [1,2,3])
+DefaultedTruthDict with default truth `⊥` and values:
+┌───────┬───────┬───────┐
+│     2 │     3 │     1 │
+│ Int64 │ Int64 │ Int64 │
+├───────┼───────┼───────┤
+│     ⊤ │     ⊤ │     ⊤ │
+└───────┴───────┴───────┘
+
+julia> convert(SoleLogics.AbstractInterpretation, ["a","b"])
+DefaultedTruthDict with default truth `⊥` and values:
+┌────────┬────────┐
+│      b │      a │
+│ String │ String │
+├────────┼────────┤
+│      ⊤ │      ⊤ │
+└────────┴────────┘
+```
+
+See also [`AbstractInterpretation`](@ref), [`TruthDict`](@ref).
+"""
 convert(::Type{AbstractInterpretation}, i::AbstractVector) = DefaultedTruthDict(i, ⊥)
-# Base.getindex(i::AbstractVector, a::Atom) = (value(a) in i)
-# Base.in(a::Atom, i::AbstractVector) = true
-check(a::Atom, i::AbstractVector) = (a in i)
+#Base.getindex(i::AbstractVector, a::Atom) = (value(a) in i)
+#Base.in(a::Atom, i::AbstractVector) = true
+
+"""
+    check(a::Atom, i::AbstractVector)
+
+Returns a truth value indicating whether or not that atom 
+is contained in the passed vector.
+
+# Examples
+
+```julia-repl
+julia> check(Atom(1), [1,2,4])
+true
+
+julia> check(Atom(5), [2,3,4])
+false
+```
+
+See also [`Atom`](@ref).
+"""
+check(a::Atom, i::AbstractVector) = (value(a) in i)
