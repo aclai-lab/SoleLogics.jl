@@ -47,7 +47,9 @@ export AlphabetOfAny, ExplicitAlphabet, UnionAlphabet
 export alphabet, alphabets
 export domain, top, bot, grammar, algebra, logic
 
-include("logics.jl")
+include("types/logics.jl")
+include("utils/logics.jl")
+#include("logics.jl") TODO ha senso come ordine ? 
 
 ############################################################################################
 
@@ -118,7 +120,9 @@ include("syntax-utils.jl")
 
 ############################################################################################
 
-include("interpretation-sets.jl")
+include("types/interpretation-sets.jl")
+include("utils/interpretation-sets.jl")
+#include("interpretation-sets.jl") TODO ha senso come ordine ? 
 
 ############################################################################################
 
