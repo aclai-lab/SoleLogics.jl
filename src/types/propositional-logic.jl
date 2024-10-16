@@ -65,7 +65,7 @@ encoding mappings from `Atom`s to `Truth` values.
 
 # Interface
 - `Base.haskey(i::AbstractAssignment, ::AbstractAtom)::Bool`
-- `inlinedisplay(i::AbstractAssignment)`
+- `inlinedisplay(i::AbstractAssignment)::String`
 - `interpret(a::AbstractAtom, i::AbstractAssignment, args...; kwargs...)::SyntaxLeaf`
 
 See also [`AbstractInterpretation`](@ref).
@@ -74,7 +74,6 @@ abstract type AbstractAssignment <: AbstractInterpretation end
 
 """
     Base.haskey(i::AbstractAssignment, ::AbstractAtom)::Bool
-
     Base.haskey(i::AbstractAssignment, v)::Bool
 
 Return whether an assigment has a truth value for a given atom.
@@ -106,7 +105,7 @@ end
 """
     inlinedisplay(i::AbstractAssignment)
 
-Provides a string representation of an AbstractAssignment.
+Provides a string representation of an assignment.
 
 # Examples
 
@@ -124,7 +123,35 @@ function inlinedisplay(i::AbstractAssignment)
     return error("Please, provide method inlinedisplay(::$(typeof(i)))::String.")
 end
 
-# When interpreting a single atom, if the lookup fails, then return the atom itself
+"""
+    interpret(a::AbstractAtom, i::AbstractAssignment, args...; kwargs...)::SyntaxLeaf
+
+Return the value corresponding to the atom contained in the assignment.
+When interpreting a single atom, if the lookup fails, then return the atom itself.
+
+# Implementation
+
+If you pass a DefaultedTruthDict as assignment and the atom is not present in the dictionary, 
+then the default dictionary value will be returned and not the atom itself.
+
+Here is an example of this.
+```julia-repl
+julia> interpret(Atom(5), DefaultedTruthDict(string.(1:4), false))
+⊥
+```
+
+# Examples
+
+```julia-repl
+julia>interpret(Atom("a"), TruthDict(["a" => true, "b" => false, "c" => true]))
+⊤
+
+julia>interpret(Atom(3), TruthDict(1:4, false))
+⊥
+```
+
+See also [`TruthDict`](@ref), [`Atom`](@ref).
+"""
 function interpret(a::AbstractAtom, i::AbstractAssignment, args...; kwargs...)::SyntaxLeaf
     if Base.haskey(i, a)
         Base.getindex(i, a, args...; kwargs...)

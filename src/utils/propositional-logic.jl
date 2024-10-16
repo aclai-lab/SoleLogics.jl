@@ -1,4 +1,33 @@
 ############################################################################################
+####################################### Utilities ##########################################
+############################################################################################
+
+"""
+    _hpretty_table(io::IO, keys::Any, values::Any)
+
+Recreate horizontal pretty table formatting. 
+The keys represent the header of the table and the values the first row of the table.
+"""
+function _hpretty_table(io::IO, keys::Any, values::Any)
+    # Prepare columns names
+    _keys = map(x -> x isa Atom ? value(x) : x, collect(keys))
+    header = (_keys, string.(nameof.(typeof.(_keys))))
+
+    try
+        # Try to draw a complete table
+        data = hcat([x for x in values]...)
+        pretty_table(io, data; header=header)
+    catch e
+        if e isa DimensionMismatch
+            # If it is not possible to draw a complete table, throw a custom error.
+            error("Some syntax structures are not resolved with all the interpretations ")
+        else
+            throw(e)
+        end
+    end
+end
+
+############################################################################################
 #### Implementations #######################################################################
 ############################################################################################
 
@@ -53,7 +82,8 @@ true
 
 See also
 [`DefaultedTruthDict`](@ref),
-[`AbstractAssignment`](@ref), [`AbstractInterpretation`](@ref).
+[`AbstractAssignment`](@ref), 
+[`AbstractInterpretation`](@ref).
 """
 struct TruthDict{D<:AbstractDict} <: AbstractAssignment
 
@@ -112,26 +142,6 @@ end
 
 function inlinedisplay(i::TruthDict)
     "TruthDict([$(join(["$(syntaxstring(a)) => $t" for (a,t) in i.truth], ", "))])"
-end
-
-# Utility function to represent pretty tables horizontally
-function _hpretty_table(io::IO, keys::Any, values::Any)
-    # Prepare columns names
-    _keys = map(x -> x isa Atom ? value(x) : x, collect(keys))
-    header = (_keys, string.(nameof.(typeof.(_keys))))
-
-    try
-        # Try to draw a complete table
-        data = hcat([x for x in values]...)
-        pretty_table(io, data; header=header)
-    catch e
-        if e isa DimensionMismatch
-            # If it is not possible to draw a complete table, throw a custom error.
-            @error "Some syntax structures are not resolved with all the interpretations "
-        else
-            throw(e)
-        end
-    end
 end
 
 function Base.show(
@@ -256,7 +266,7 @@ function interpret(a::Atom, i::DefaultedTruthDict, args...; kwargs...)
     return Base.haskey(i.truth, a) ? Base.getindex(i.truth, a) : i.default_truth
 end
 
-function inlinedisplay(i::DefaultedTruthDict)
+function inlinedisplay(i::DefaultedTruthDict)::String
     "DefaultedTruthDict([$(join(["$(syntaxstring(a)) => $t" for (a,t) in i.truth], ", "))], $(i.default_truth))"
 end
 
@@ -276,7 +286,6 @@ end
     Base.values,
 )
 
-
 ############################################################################################
 
 """
@@ -285,8 +294,7 @@ end
 Dictionary which associates an [`AbstractAssignment`](@ref)s to the truth value of the
 assignment itself on a [`SyntaxStructure`](@ref).
 
-See also [`AbstractAssignment`](@ref), [`SyntaxStructure`](@ref),
-[`Truth`](@ref).
+See also [`AbstractAssignment`](@ref), [`SyntaxStructure`](@ref), [`Truth`](@ref).
 """
 struct TruthTable{
     A,
