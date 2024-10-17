@@ -14,6 +14,7 @@
     Also:
     const Operator = Union{Connective,Truth}
     const SyntaxToken = Union{Connective,SyntaxLeaf}
+
 =#
 
 include("docstrings.jl")
@@ -171,6 +172,7 @@ It can be parsed from its [`syntaxstring`](@ref) representation via [`parseformu
 
 # Utility functions (requiring a walk of the tree)
 - `Base.in(tok::SyntaxToken, φ::Formula)::Bool`
+
 - `height(φ::Formula)::Int`
 - `tokens(φ::Formula)::AbstractVector{<:SyntaxToken}`
 - `atoms(φ::Formula)::AbstractVector{<:AbstractAtom}`
@@ -189,16 +191,21 @@ See also [`tree`](@ref), [`SyntaxStructure`](@ref), [`SyntaxLeaf`](@ref).
 """
 abstract type Formula <: Syntactical end
 
-"""
-    tree(φ::Formula)::SyntaxTree
-
-Return the `SyntaxTree` representation of a formula;
-note that this is equivalent to `Base.convert(SyntaxTree, φ)`.
-
-See also [`Formula`](@ref), [`SyntaxTree`](@ref).
-"""
+"""$(doc_tree)"""
 function tree(φ::Formula)
     return error("Please, provide method tree(::$(typeof(φ)))::SyntaxTree.")
+end
+
+"""$(doc_composeformulas)"""
+function composeformulas(c::Connective, φs::NTuple{N,F})::F where {N,F<:Formula}
+    return error("Please, provide method " *
+        "composeformulas(c::Connective, φs::NTuple{N,$(F)}) where {N}.")
+end
+
+# Helper (?)
+# Note: don't type the output as F
+function composeformulas(c::Connective, φs::Vararg{Formula,N}) where {N}
+    return composeformulas(c, φs)
 end
 
 """
@@ -261,6 +268,7 @@ function noperators(φ::Formula)::Int
     return noperators(tree(φ));
 end
 
+
 function Base.isequal(φ1::Formula, φ2::Formula)
     Base.isequal(tree(φ1), tree(φ2))
 end
@@ -271,17 +279,7 @@ function syntaxstring(φ::Formula; kwargs...)
     syntaxstring(tree(φ); kwargs...)
 end
 
-"""$(doc_composeformulas)"""
-function composeformulas(c::Connective, φs::NTuple{N,F})::F where {N,F<:Formula}
-    return error("Please, provide method " *
-        "composeformulas(c::Connective, φs::NTuple{N,$(F)}) where {N}.")
-end
 
-# Helper (?)
-# Note: don't type the output as F
-function composeformulas(c::Connective, φs::Vararg{Formula,N}) where {N}
-    return composeformulas(c, φs)
-end
 
 ############################################################################################
 #### SyntaxStructure ###############################################################
