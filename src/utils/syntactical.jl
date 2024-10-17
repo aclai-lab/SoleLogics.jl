@@ -46,8 +46,11 @@ struct Atom{V} <: AbstractAtom
     value::V
 
     function Atom{V}(value::V) where {V}
-        @assert !(value isa Union{Formula, Connective}) "Illegal nesting. "*
-        "Cannot instantiate Atom with value of type $(typeof(value))"
+        if value isa Union{Formula, Connective}
+            throw("Illegal nesting. " *
+                  "Cannot instantiate Atom with value of type $(typeof(value))"
+            )
+        end
         new{V}(value)
     end
     function Atom(value::V) where {V}
@@ -143,8 +146,12 @@ struct SyntaxBranch <: AbstractSyntaxBranch
     children::NTuple{N, SyntaxTree} where {N}
 
     function _aritycheck(N, token, children)
-        @assert arity(token)==N "Cannot instantiate SyntaxBranch with token "*
-        "$(token) of arity $(arity(token)) and $(N) children."
+        if arity(token) != N
+            throw(
+                "Cannot instantiate SyntaxBranch with token " *
+                "$(token) of arity $(arity(token)) and $(N) children."
+            )
+        end
         return nothing
     end
 
@@ -551,9 +558,6 @@ function Base.show(
             "BaseLogic{$(G),$(A)}(\n\t- grammar: $(grammar(l));\n\t- algebra: $(algebra(l))\n)",)
     end
 end
-
-
-
 
 ############################################################################################
 #### ExplicitAlphabet ######################################################################
