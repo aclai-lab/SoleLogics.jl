@@ -15,7 +15,6 @@ println("Julia version: ", VERSION)
 test_suites = [
     ("Core", ["core.jl",]),
     ("Parse", ["parse.jl",]),
-    ("Random", ["random.jl",]),
     ("Normalize", ["normalize.jl",]),
     ("Syntax Utils", ["syntax-utils.jl",]),
 
@@ -30,6 +29,9 @@ test_suites = [
     ("Algebras: worlds", ["algebras/worlds.jl",]),
     ("Algebras: frames", ["algebras/frames.jl",]),
     ("Algebras: relations", ["algebras/relations.jl",]),
+
+    ("Generation: formula", ["generation/formula.jl",]),
+    ("Generation: models", ["generation/models.jl",]),
 
     ("Kripke word", ["kripke-word.jl",]),
     ("Kripke image", ["kripke-image.jl",]),

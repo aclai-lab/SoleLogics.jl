@@ -243,7 +243,7 @@ end
 
 """
     parseformula(
-        ::Type{AnchoredFormula},
+        T::Type{AnchoredFormula},
         expr::String,
         additional_operators::Union{Nothing,Vector{<:Operator}} = nothing;
         operators::Union{Nothing,Vector{<:Operator}},
@@ -296,44 +296,4 @@ function parseformula(
     kwargs...,
 )
     AnchoredFormula(logic, parseformula(SyntaxTree, expr, operators(logic); kwargs...))
-end
-
-function randformula(
-    height::Integer,
-    g::AbstractGrammar;
-    kwargs...
-)::AnchoredFormula
-    _alphabet = alphabet(g)
-    _operators = operators(g)
-    baseformula(
-        randformula(height, _alphabet, _operators; kwargs...);
-        alphabet = _alphabet,
-        additional_operators = _operators
-    )
-end
-
-function randformula(
-    ::Type{AnchoredFormula},
-    height::Integer,
-    alphabet,
-    operators::AbstractVector{<:Operator};
-    kwargs...
-)::AnchoredFormula
-    alphabet = convert(AbstractAlphabet, alphabet)
-    baseformula(
-        randformula(height, alphabet, operators; kwargs...);
-        alphabet = alphabet,
-        additional_operators = operators,
-    )
-end
-
-function randformula(
-    T::Type{AnchoredFormula},
-    height::Integer,
-    g::AbstractGrammar,
-    args...;
-    rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG,
-    kwargs...
-)::AnchoredFormula
-    randformula(T, height, alphabet(g), operators(g), args...; rng=rng, kwargs...)
 end

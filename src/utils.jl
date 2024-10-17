@@ -643,62 +643,6 @@ function Base.in(p::Atom, a::UnionAlphabet)
     return any(sa -> Base.in(p, sa), subalphabets(a))
 end
 
-"""
-    randatom(
-        rng::Union{Integer,AbstractRNG},
-        a::UnionAlphabet;
-        atompicking_mode::Symbol=:uniform,
-        subalphabets_weights::Union{AbstractWeights,AbstractVector{<:Real},Nothing} = nothing
-    )::Atom
-
-Sample an atom from a `UnionAlphabet`. By default, the sampling is uniform with respect to the atoms.
-However, by setting `atompicking_mode = :uniform_subalphabets` one can force
-a uniform sampling with respect to the sub-alphabets.
-Moreover, one can specify a `:weighted` `atompicking_mode`,
-together with a `subalphabets_weights` vector.
-
-See also [`UnionAlphabet`](@ref).
-"""
-function randatom(
-        rng::Union{Integer, AbstractRNG},
-        a::UnionAlphabet;
-        atompicking_mode::Symbol = :uniform,
-        subalphabets_weights::Union{AbstractWeights, AbstractVector{<:Real}, Nothing} = nothing,
-)::Atom
-
-    # @show a
-    @assert atompicking_mode in [:uniform, :uniform_subalphabets, :weighted] "Value for `atompicking_mode` not..."
-    rng = initrng(rng)
-    alphs = subalphabets(a)
-
-    if atompicking_mode == :weighted
-        if isnothing(subalphabets_weights)
-            error("`:weighted` picking_mode requires weights in `subalphabets_weights` ")
-        end
-        @assert length(subalphabets_weights)==length(alphs) "Mismatching numbers of alphabets "*
-        "($(length(alphs))) and weights ($(length(subalphabets_weights)))."
-        subalphabets_weights = StatsBase.weights(subalphabets_weights)
-        pickedalphabet = StatsBase.sample(rng, alphs, subalphabets_weights)
-    else
-        subalphabets_weights = begin
-            # This atomatically excludes subalphabets with empty threshold vector
-            if atompicking_mode == :uniform_subalphabets
-                # set the weight of the empty alphabets to zero
-                weights = Weights(ones(Int, length(alphs)))
-                weights[natoms.(alphs) == 0] .= 0
-            elseif atompicking_mode == :uniform
-                weights = Weights(natoms.(alphs))
-            end
-            weights
-        end
-        pickedalphabet = sample(rng, alphs, subalphabets_weights)
-    end
-    # @show a
-    # @show subalphabets_weights
-    # @show pickedalphabet
-    return randatom(rng, pickedalphabet)
-end
-
 ############################################################################################
 #### CompleteFlatGrammar ###################################################################
 ############################################################################################
@@ -927,4 +871,3 @@ function _baselogic(;
 
     return BaseLogic(grammar, algebra)
 end
-

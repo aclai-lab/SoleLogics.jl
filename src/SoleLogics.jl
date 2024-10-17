@@ -75,6 +75,8 @@ export BaseLogic
 
 include("utils.jl")
 
+include("utils/anchored-formula.jl")
+
 ############################################################################################
 
 export propositionallogic
@@ -132,14 +134,25 @@ include("types/interpretation-sets.jl")
 
 include("utils/interpretation-sets.jl")
 
+############################################################################################
+
+export parseformula
+
 include("utils/parse.jl")
 
 ############################################################################################
 
-export randformula
-export randframe, randmodel
+# these first files are included here to avoid repeated inclusions in those below;
+# "generation" could become a SoleLogics submodule.
+include("generation/docstrings.jl")
+include("generation/utils.jl")
 
-include("random.jl")
+export randatom
+export randformula
+include("generation/formula.jl")
+
+export randframe, randmodel
+include("generation/models.jl")
 
 ############################################################################################
 

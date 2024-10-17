@@ -36,7 +36,7 @@ true
 ```
 
 # Interface
-- `atoms(a::AbstractAlphabet)::Bool`
+- `atoms(a::AbstractAlphabet)::AbstractVector`
 - `Base.isfinite(::Type{<:AbstractAlphabet})::Bool`
 - `randatom(rng::Union{Random.AbstractRNG, Integer}, a::AbstractAlphabet, args...; kwargs...)::AbstractAtom`
 
@@ -143,29 +143,6 @@ function natoms(a::AbstractAlphabet)::Integer
         return error("Please, provide method natoms(::$(typeof(a))).")
     else
         return error("Cannot compute natoms of (infinite) alphabet of type $(typeof(a)).")
-    end
-end
-
-"""
-    randatom(a::AbstractAlphabet, args...; kwargs...)
-    randatom(rng::Union{Random.AbstractRNG, Integer}, a::AbstractAlphabet, args...; kwargs...)
-
-Return a random atom from a *finite* alphabet.
-
-See also [`natoms`](@ref), [`AbstractAlphabet`](@ref).
-"""
-function randatom(a::AbstractAlphabet, args...; kwargs...)
-    randatom(Random.GLOBAL_RNG, a, args...; kwargs...)
-end
-
-function randatom(rng::Union{Random.AbstractRNG, Integer}, a::AbstractAlphabet, args...; kwargs...)
-    if isfinite(a)
-        # TODO: note that `atoms(a)` can lead to brutal reduction in performance,
-        #  if one forgets to implement specific methods for `randatom` for custom alphabets!
-        return Base.rand(rng, atoms(a), args...; kwargs...)
-    else
-        error("Please provide method randatom(rng::$(typeof(rng)), " *
-            "alphabet::$(typeof(a)), args...; kwargs...)")
     end
 end
 

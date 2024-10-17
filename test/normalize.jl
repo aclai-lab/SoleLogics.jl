@@ -51,7 +51,13 @@ check(φ, K1, w0)
 N = 200
 for K in [K0, K1]
     for i in 1:N
-        _ops = rand([SoleLogics.BASE_MODAL_CONNECTIVES, union(SoleLogics.BASE_MODAL_CONNECTIVES, [⊤, ⊥])])
+        _ops = Vector{Operator}([
+            rand([
+                SoleLogics.BASE_MODAL_CONNECTIVES,
+                union(SoleLogics.BASE_MODAL_CONNECTIVES,
+                [⊤, ⊥])
+                ])...
+        ])
         _φ = randformula(MersenneTwister(i), 3, alph_vector, _ops)
         _nφ = normalize(_φ)
         # @show syntaxstring(φ)

@@ -23,25 +23,21 @@ const BASE_PARSABLE_CONNECTIVES = [
 ] |> unique
 
 doc_parseformula = """
-    parseformula(expr::String, additional_operators = nothing; kwargs...)
+    parseformula(
+        [F::Type{<:Formula}=SyntaxTree],
+        expr::String,
+        additional_operators::Union{Nothing,AbstractVector} = nothing;
+        kwargs...
+    )::F
 
     parseformula(
         F::Type{<:SyntaxTree},
         expr::String,
-        additional_operators::Union{Nothing,AbstractVector} = nothing;
-        function_notation::Bool = false,
-        atom_parser::Base.Callable = Atom{String},
-        additional_whitespaces::Vector{Char} = Char[],
-        opening_parenthesis::String = $(repr(DEFAULT_OPENING_PARENTHESIS)),
-        closing_parenthesis::String = $(repr(DEFAULT_CLOSING_PARENTHESIS)),
-        arg_delim::String = $(repr(DEFAULT_ARG_DELIM))
+        logic::AbstractLogic;
+        kwargs...
     )::F
 
-    parseformula(F::Type{<:Formula}, expr::String, additional_operators = nothing; kwargs...)
-    parseformula(F::Type{<:SyntaxTree}, expr::String, logic::AbstractLogic; kwargs...)
-
 Parse a formula of type `F` from a string expression (its [`syntaxstring`](@ref)).
-When `F` is not specified, it defaults to `SyntaxTree`.
 
 By default, this function is only able to parse operators in
 [`SoleLogics.BASE_PARSABLE_CONNECTIVES`](@ref) (e.g.,

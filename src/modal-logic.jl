@@ -645,7 +645,7 @@ end
 function interpret(
     φ::Formula,
     i::AbstractKripkeStructure,
-    w::Union{AbstractWorld,Nothing},
+    w::Union{Nothing,AbstractWorld},
 )::Formula
     return error("Please, provide method interpret(::$(typeof(φ)), ::$(typeof(i)), ::$(typeof(w))).")
 end
