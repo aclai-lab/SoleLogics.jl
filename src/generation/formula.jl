@@ -4,6 +4,7 @@ using StatsBase
 import Base: rand
 import StatsBase: sample
 
+# TODO - Move in src/utils.jl (keep here the implementations for struct)
 """$(randatom_docstring)"""
 @__rng_dispatch function randatom(
     rng::Union{Random.AbstractRNG,Integer},

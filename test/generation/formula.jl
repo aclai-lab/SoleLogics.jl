@@ -107,7 +107,7 @@ struct MyTruth <: Truth
 end
 MyTruthTOP = MyTruth(5);
 syntaxstring(mt::MyTruth) = mt.val
-Base.promote_rule(::Type{<:BooleanTruth}, ::Type{<:MyTruth}) = Truth
+# Base.promote_rule(::Type{<:BooleanTruth}, ::Type{<:MyTruth}) = Truth
 
 @test_throws ArgumentError rand(
     42, 4, my_alph, [CONJUNCTION]; truthvalues=Truth[TOP,MyTruthTOP]);

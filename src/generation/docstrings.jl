@@ -208,7 +208,6 @@ Return a pseudo-randomic [`SyntaxTree`](@ref).
     is not finite.
 
 # Examples
-
 ```julia-repl
 julia> syntaxstring(randformula(4, ExplicitAlphabet([1,2]), [NEGATION, CONJUNCTION, IMPLICATION]))
 "¬((¬(¬(2))) → ((1 → 2) → (1 → 2)))"
@@ -273,6 +272,7 @@ The underlying graph is generated using [`Graphs.SimpleGraphs.SimpleDiGraph`](@r
 - `nedges::Int64`: number of relations (edges) in the frame;
 
 # Examples
+```julia-repl
 julia> randframe(Random.MersenneTwister(42),5,10)
 SoleLogics.ExplicitCrispUniModalFrame{SoleLogics.World{Int64}, Graphs.SimpleGraphs.SimpleDiGraph{Int64}} with
 - worlds = ["1", "2", "3", "4", "5"]
@@ -282,6 +282,7 @@ SoleLogics.ExplicitCrispUniModalFrame{SoleLogics.World{Int64}, Graphs.SimpleGrap
         3 -> []
         4 -> [1, 2]
         5 -> [1, 2]
+```
 
 See also [`SoleLogics.ExplicitCrispUniModalFrame`](@ref), [`SyntaxLeaf`](@ref),
 [`Graphs.SimpleGraphs.SimpleDiGraph`](@ref).
@@ -307,6 +308,7 @@ randmodel_docstring = """
     be associated for each element of `facts`.
 
 # Examples
+```julia-repl
 julia> randmodel(Random.MersenneTwister(42),5,10, [Atom("s"), Atom("p")], BooleanAlgebra())
 KripkeStructure{SoleLogics.ExplicitCrispUniModalFrame{SoleLogics.World{Int64}, Graphs.SimpleGraphs.SimpleDiGraph{Int64}}, Dict{SoleLogics.World{Int64}, TruthDict{Dict{Atom{String}, BooleanTruth}}}} with
 - frame = SoleLogics.ExplicitCrispUniModalFrame{SoleLogics.World{Int64}, Graphs.SimpleGraphs.SimpleDiGraph{Int64}} with
@@ -323,6 +325,7 @@ KripkeStructure{SoleLogics.ExplicitCrispUniModalFrame{SoleLogics.World{Int64}, G
         3 -> TruthDict([s => ⊥, p => ⊥])
         4 -> TruthDict([s => ⊤, p => ⊤])
         5 -> TruthDict([s => ⊤, p => ⊤])
+```
 
 See also [`AbstractAlgebra`](@ref), [`SyntaxLeaf`](@ref), [`Truth`](@ref).
 """
