@@ -25,6 +25,8 @@ test_suites = [
     ("Operators", ["logics/operators.jl"]),
     # ("Logics", ["logics/logics.jl"]),
 
+    ("Interpretation Sets", ["interpretation-sets.jl"]),
+
     ("Algebras: worlds", ["algebras/worlds.jl",]),
     ("Algebras: frames", ["algebras/frames.jl",]),
     ("Algebras: relations", ["algebras/relations.jl",]),

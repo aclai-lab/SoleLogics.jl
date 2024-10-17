@@ -40,6 +40,12 @@ include("types/syntactical.jl")
 
 ############################################################################################
 
+export parseformula
+
+include("types/parse.jl")
+
+############################################################################################
+
 export interpret, check
 
 include("types/interpretation.jl")
@@ -122,26 +128,23 @@ include("syntax-utils.jl")
 
 ############################################################################################
 
-include("interpretation-sets.jl")
+include("types/interpretation-sets.jl")
+
+include("utils/interpretation-sets.jl")
+
+include("utils/parse.jl")
 
 ############################################################################################
 
-export parseformula
-
-include("parse.jl")
-
-############################################################################################
-
-export randbaseformula, randformula
+export randformula
 export randframe, randmodel
 
 include("random.jl")
 
 ############################################################################################
 
-export AnchoredFormula
-
-include("anchored-formula.jl")
+# export AnchoredFormula
+# include("anchored-formula.jl")
 
 ############################################################################################
 

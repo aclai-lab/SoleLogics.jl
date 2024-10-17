@@ -1,13 +1,3 @@
-import Base: parse
-
-function Base.parse(
-    F::Type{<:Formula},
-    expr::String,
-    args...;
-    kwargs...
-)
-    return parseformula(F, expr, args...; kwargs...)
-end
 
 const STACK_TOKEN_TYPE = Union{SyntaxToken,Symbol}
 
@@ -116,21 +106,14 @@ julia> syntaxstring(parseformula("¬1→0"; atom_parser = (x -> Atom{Float64}(pa
 See also [`SyntaxTree`](@ref), [`BASE_PARSABLE_CONNECTIVES`](@ref), [`syntaxstring`](@ref).
 """
 
-"""$(doc_parseformula)"""
-function parseformula(F::Type{<:Formula}, expr::String, args...; kwargs...)
-    return error("Please, provide method parseformula(::Type{$(F)}, expr::String, ::$(typeof(args))...; ::$(typeof(kwargs))...).")
-end
 
-parseformula(expr::String, args...; kwargs...) = parseformula(SyntaxTree, expr, args...; kwargs...)
+
 
 # This is just an utility function used later
 function strip_whitespaces(expr::String; additional_whitespaces::Vector{Char} = Char[])
     return strip(x -> isspace(x) || x in additional_whitespaces, expr)
 end
 
-############################################################################################
-#### parseformula ##########################################################################
-############################################################################################
 
 """$(doc_parseformula)"""
 function parseformula(
@@ -530,7 +513,6 @@ function parseformula(
     return (function_notation ? _fxbuild() : _infixbuild())
 end
 
-"""$(doc_parseformula)"""
 function parseformula(
     F::Type{<:SyntaxTree},
     expr::String,
@@ -540,7 +522,6 @@ function parseformula(
     parseformula(F, expr, operators(g); kwargs...)
 end
 
-"""$(doc_parseformula)"""
 function parseformula(
     F::Type{<:SyntaxTree},
     expr::String,

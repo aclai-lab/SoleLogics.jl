@@ -1,60 +1,9 @@
-import SoleBase: AbstractDataset, ninstances, eachinstance
-
-import Base: getindex
-
-"""
-    abstract type AbstractInterpretationSet <: AbstractDataset end
-
-Abstract type for ordered sets of interpretations.
-A set of interpretations, also referred to as a *dataset* in this context,
-is a collection of *instances*, each of which is an interpretation, and is
-identified by an index i_instance::Integer.
-These structures are especially useful when performing
-[model checking](https://en.wikipedia.org/wiki/Model_checking).
-
-See also[`truthtype`](@ref),
-[`InterpretationVector`](@ref).
-"""
-abstract type AbstractInterpretationSet <: AbstractDataset end
-
-# TODO improve general doc.
-function interpretationtype(S::Type{<:AbstractInterpretationSet})
-    return error("Please, provide method interpretationtype(::$(typeof(S))).")
-end
-interpretationtype(s::AbstractInterpretationSet) = interpretationtype(typeof(s))
-
-# TODO improve general doc.
-valuetype(S::Type{<:AbstractInterpretationSet}) = valuetype(interpretationtype(S))
-valuetype(s::AbstractInterpretationSet) = valuetype(typeof(s))
-
-# TODO improve general doc.
-truthtype(S::Type{<:AbstractInterpretationSet}) = truthtype(interpretationtype(S))
-truthtype(s::AbstractInterpretationSet) = truthtype(typeof(s))
-
-"""
-    alphabet(s::AbstractInterpretationSet)::Alphabet
-
-Return the propositional alphabet of an interpretation set.
-
-See also [`AbstractAlphabet`](@ref), [`AbstractGrammar`](@ref).
-"""
-function alphabet(s::AbstractInterpretationSet)::Alphabet
-    return error("Please, provide method alphabet(::$(typeof(s))).")
-end
-
-# Fallback
-function getinstance(s::AbstractInterpretationSet, i_instance::Integer)
-    return LogicalInstance(s, i_instance)
-end
-
-function eachinstance(s::AbstractInterpretationSet)
-    return (getinstance(s, i_instance) for i_instance in 1:ninstances(s))
-end
+import SoleBase: ninstances
 
 """
     struct LogicalInstance{S<:AbstractInterpretationSet}
         s::S
-        i_instance::Int64
+        i_instance::Int
     end
 
 Object representing the i-th interpretation of an interpretation set.
@@ -67,7 +16,7 @@ set structures.
 struct LogicalInstance{S<:AbstractInterpretationSet} <: AbstractInterpretation
 
     s::S
-    i_instance::Int64
+    i_instance::Int
 
     function LogicalInstance{S}(
         s::S,
@@ -260,6 +209,11 @@ function check(
     ), 1:ninstances(s))
 end
 
+# Fallback
+function getinstance(s::AbstractInterpretationSet, i_instance::Integer)
+    return LogicalInstance(s, i_instance)
+end
+
 ############################################################################################
 
 """
@@ -267,9 +221,9 @@ end
         instances::Vector{M}
     end
 
-A dataset of interpretations instantiated as a vector.
+A dataset of interpretations, instantiated as a vector.
 
-[`AbstractInterpretationSet`](@ref).
+See also [`AbstractInterpretationSet`](@ref).
 """
 struct InterpretationVector{M<:AbstractInterpretation} <: AbstractInterpretationSet
     instances::Vector{M}
@@ -281,49 +235,4 @@ end
 
 Base.getindex(s::InterpretationVector, i_instance::Integer) = Base.getindex(s.instances, i_instance)
 getinstance(s::InterpretationVector, i_instance::Integer) = Base.getindex(s, i_instance)
-
-############################################################################################
-
-# TODO
-# abstract type AbstractFrameSet{FR<:AbstractFrame} end
-
-# function Base.getindex(::AbstractFrameSet{FR}, i_instance::Integer)::FR where {FR<:AbstractFrame}
-#     return error("Please, provide ...")
-# end
-
-# struct FrameSet{FR<:AbstractFrame} <: AbstractFrameSet{FR}
-#     frames::Vector{FR}
-# end
-
-# Base.getindex(ks::FrameSet, i_instance::Integer) = Base.getindex(ks.frames, i_instance::Integer)
-
-# struct UniqueFrameSet{FR<:AbstractFrame} <: AbstractFrameSet{FR}
-#     frame::FR
-# end
-
-# Base.getindex(ks::UniqueFrameSet, i_instance::Integer) = ks.frame
-
-############################################################################################
-############################# Helpers for (Multi-)modal logics #############################
-############################################################################################
-
-worldtype(S::Type{AbstractInterpretationSet}) = worldtype(interpretationtype(S))
-worldtype(s::AbstractInterpretationSet) = worldtype(typeof(s))
-
-frametype(S::Type{AbstractInterpretationSet}) = frametype(interpretationtype(S))
-frametype(s::AbstractInterpretationSet) = frametype(typeof(s))
-
-# function relations(s::AbstractInterpretationSet)
-#     return error("Please, provide method relations(::$(typeof(s))).")
-# end
-
-# function frame(s::AbstractInterpretationSet, i_instance::Integer)
-#     return frame(getinstance(s, i_instance))
-# end
-
-function frame(s::AbstractInterpretationSet, i_instance::Integer)
-    return error("Please, provide method frame(::$(typeof(s)), ::$(typeof(i_instance))).")
-end
-accessibles(s::AbstractInterpretationSet, i_instance::Integer, args...) = accessibles(frame(s, i_instance), args...)
-allworlds(s::AbstractInterpretationSet, i_instance::Integer, args...) = allworlds(frame(s, i_instance), args...)
-nworlds(s::AbstractInterpretationSet, i_instance::Integer) = nworlds(frame(s, i_instance))
+SoleBase.ninstances(s::InterpretationVector) = Base.length(s.instances)
