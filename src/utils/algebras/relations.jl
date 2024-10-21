@@ -1,5 +1,3 @@
-export GeometricalRelations, IntervalRelation, RCCRelation
-
 # Interval algebra relations 1D
 
 # IA
@@ -51,10 +49,8 @@ name(r::NamedRelation) = r.name
 
 ############################################################################################
 
-
 include("relations/filtered-relations.jl");
 
 ############################################################################################
-
 
 include("relations/geometrical-relations.jl");
