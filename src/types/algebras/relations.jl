@@ -1,4 +1,3 @@
-export GeometricalRelations, IntervalRelation, RCCRelation
 
 ############################################################################################
 

@@ -31,7 +31,7 @@ julia> length(IA2DRelations)
 ```
 
 See also [`Interval`](@ref), [`Interval2D`](@ref),
-[`IntervalRelation`](@ref), [`[`GeometricalRelation`](@ref).
+[`IntervalRelation`](@ref), [`GeometricalRelation`](@ref).
 """
 
 """$(doc_rectangle_rel)"""

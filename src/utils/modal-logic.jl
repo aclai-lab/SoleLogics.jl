@@ -29,7 +29,6 @@ include("algebras/worlds.jl")
 ############################################################################################
 
 # """
-# TODO Mauro
 # Association "(w1,w2) => truth_value". Not recommended in sparse scenarios.
 # """
 # struct AdjMatUniModalFrame{W<:AbstractWorld,T<:Truth} <: AbstractUniModalFrame{W}
@@ -41,8 +40,9 @@ include("algebras/worlds.jl")
 # accessibles(...) = ...
 
 # TODO move truth value out of frame (frame is passive, perhaps it is relations that have a truth value)
+
 """
-TODO
+A unimodal frame given by an `Graphs.SimpleGraphs.AbstractSimpleGraph` on worlds.
 """
 struct ExplicitCrispUniModalFrame{
     W<:AbstractWorld,
@@ -251,7 +251,7 @@ include("algebras/relations.jl")
 
 include("algebras/frames.jl")
 
-# TODO explain
+# TODO explain: a constant representing any world (only to be used for checking grounded formulas).
 struct AnyWorld end
 
 # # General grounding

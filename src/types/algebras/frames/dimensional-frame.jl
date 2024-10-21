@@ -1,3 +1,4 @@
+
 """
     abstract type AbstractDimensionalFrame{
         N,
@@ -14,4 +15,4 @@ See also
 [`IntervalRelation`](@ref),
 [`AbstractDimensionalFrame`](@ref), [`AbstractMultiModalFrame`](@ref).
 """
-abstract type AbstractDimensionalFrame{N,W<:AbstractWorld} <: AbstractMultiModalFrame{W} end
+abstract type AbstractDimensionalFrame{N, W <: AbstractWorld} <: AbstractMultiModalFrame{W} end

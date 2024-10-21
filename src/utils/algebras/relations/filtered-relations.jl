@@ -6,14 +6,16 @@ using FunctionWrappers: FunctionWrapper
 		filter::FunctionWrapper{Bool, Tuple{W}}
 	end
 
-	FunctionalWorldFilter{W, F}(filter::FunctionWrapper{Bool, Tuple{W}}) where {W <: AbstractWorld, F <: Function}
-	FunctionalWorldFilter(filter::FunctionWrapper{Bool, Tuple{W}}, functiontype::Type{F}) where {W <: AbstractWorld, F <: Function}
-	FunctionalWorldFilter{W, F}(filter::F) where {W <: AbstractWorld, F <: Function}
-	FunctionalWorldFilter{W}(filter::F) where {W <: AbstractWorld, F <: Function}
-	FunctionalWorldFilter(filter::F, worldtype::Type{W}) where {W <: AbstractWorld, F <: Function}
+A world filter based on a function from `AbstractWorld` to `Bool`.
 
-Please provide a function as filter so that it takes as input an object subtype of
-AbstractWorld and it gives as output a Bool.
+# Constructors
+- `FunctionalWorldFilter{W, F}(filter::FunctionWrapper{Bool, Tuple{W}}) where {W <: AbstractWorld, F <: Function}`
+- `FunctionalWorldFilter(filter::FunctionWrapper{Bool, Tuple{W}}, functiontype::Type{F}) where {W <: AbstractWorld, F <: Function}`
+- `FunctionalWorldFilter{W, F}(filter::F) where {W <: AbstractWorld, F <: Function}`
+- `FunctionalWorldFilter{W}(filter::F) where {W <: AbstractWorld, F <: Function}`
+- `FunctionalWorldFilter(filter::F, worldtype::Type{W}) where {W <: AbstractWorld, F <: Function}`
+
+See also [`filterworlds`](@ref), [`FilteredRelation`](@ref).
 """
 struct FunctionalWorldFilter{W<:AbstractWorld,F<:Function} <: WorldFilter{W}
     filter::FunctionWrapper{Bool,Tuple{W}}

@@ -14,8 +14,8 @@ accessibles(fr::AbstractUniModalFrame, ::GlobalRel) = allworlds(fr)
 ############################################################################################
 
 doc_tocenterrel = """
-    struct ToCenteredRel <: AbstractRelation end;
-    const tocenterrel = ToCenteredRel();
+    struct ToCenterRel <: AbstractRelation end;
+    const tocenterrel = ToCenterRel();
 
 Singleton type for a relation that leads to the world at the center of a frame.
 The relation is transitive.
@@ -36,19 +36,19 @@ See also
 """
 
 """$(doc_tocenterrel)"""
-struct ToCenteredRel <: AbstractRelation end;
+struct ToCenterRel <: AbstractRelation end;
 """$(doc_tocenterrel)"""
-const tocenterrel = ToCenteredRel();
+const tocenterrel = ToCenterRel();
 
-accessibles(fr::AbstractMultiModalFrame, ::AbstractWorld, r::ToCenteredRel) = [centralworld(fr)]
+accessibles(fr::AbstractMultiModalFrame, ::AbstractWorld, r::ToCenterRel) = [centralworld(fr)]
 
-arity(::ToCenteredRel) = 2
+arity(::ToCenterRel) = 2
 
-syntaxstring(::ToCenteredRel; kwargs...) = "◉"
+syntaxstring(::ToCenterRel; kwargs...) = "◉"
 
-hasconverse(::ToCenteredRel) = false
-istransitive(::ToCenteredRel) = true
-isgrounding(::ToCenteredRel) = true
+hasconverse(::ToCenterRel) = false
+istransitive(::ToCenterRel) = true
+isgrounding(::ToCenterRel) = true
 
 ############################################################################################
 
