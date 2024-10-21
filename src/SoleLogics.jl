@@ -112,7 +112,9 @@ export GlobalRel, IdentityRel
 export globalrel, identityrel
 
 
-include("modal-logic.jl")
+include("types/modal-logic.jl")
+
+include("utils/modal-logic.jl")
 
 ############################################################################################
 

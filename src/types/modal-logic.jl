@@ -73,6 +73,8 @@ function nworlds(fr::AbstractFrame)::Integer
     return error("Please, provide method nworlds(frame::$(typeof(fr))).")
 end
 
+include("algebras/worlds.jl")
+
 ############################################################################################
 ##################################### Uni-modal logic ######################################
 ############################################################################################
@@ -358,6 +360,10 @@ function accessibles(
     IterTools.imap(W, _accessibles(fr, w, r))
 end
 
+include("algebras/relations.jl")
+
+include("algebras/frames.jl")
+
 ############################################################################################
 ############################################################################################
 ############################################################################################
@@ -416,171 +422,6 @@ worldtype(i::AbstractKripkeStructure) = worldtype(frame(i))
 accessibles(i::AbstractKripkeStructure, args...) = accessibles(frame(i), args...)
 allworlds(i::AbstractKripkeStructure, args...) = allworlds(frame(i), args...)
 nworlds(i::AbstractKripkeStructure) = nworlds(frame(i))
-
-# # General grounding
-# function check(
-#     φ::SyntaxTree,
-#     i::AbstractKripkeStructure;
-#     kwargs...
-# )
-#     if token(φ) isa Union{DiamondRelationalConnective,BoxRelationalConnective}
-#         rel = SoleLogics.relation(SoleLogics.token(φ))
-#         if rel == tocenterrel
-#             checkw(first(children(φ)), i, centralworld(frame(i)); kwargs...)
-#         elseif rel == globalrel
-#             checkw(first(children(φ)), i, AnyWorld(); kwargs...)
-#         elseif isgrounding(rel)
-#             checkw(first(children(φ)), i, accessibles(frame(i), rel); kwargs...)
-#         else
-#             error("Unexpected formula: $φ! Perhaps ")
-#         end
-#     else
-#         # checkw(φ, i, nothing; kwargs...)
-#         error("Unexpected formula: $φ! Perhaps ")
-#     end
-# end
-
-"""
-    function check(
-        φ::SyntaxTree,
-        i::AbstractKripkeStructure,
-        w::Union{Nothing,AnyWorld,<:AbstractWorld} = nothing;
-        use_memo::Union{Nothing,AbstractDict{<:Formula,<:Vector{<:AbstractWorld}}} = nothing,
-        perform_normalization::Bool = true,
-        memo_max_height::Union{Nothing,Int} = nothing,
-    )::Bool
-
-Check a formula on a specific word in a [`KripkeStructure`](@ref).
-
-# Examples
-```julia-repl
-julia> using Graphs, Random
-
-julia> @atoms String p q
-2-element Vector{Atom{String}}:
- Atom{String}("p")
- Atom{String}("q")
-
-julia> fmodal = randformula(Random.MersenneTwister(14), 3, [p,q], SoleLogics.BASE_MODAL_CONNECTIVES)
-¬□(p ∨ q)
-
-# A special graph, called Kripke Frame, is created.
-# Nodes are called worlds, and the edges are relations between worlds.
-julia> worlds = SoleLogics.World.(1:5) # 5 worlds are created, numerated from 1 to 5
-
-julia> edges = Edge.([(1,2), (1,3), (2,4), (3,4), (3,5)])
-
-julia> kframe = SoleLogics.ExplicitCrispUniModalFrame(worlds, Graphs.SimpleDiGraph(edges))
-
-# A valuation function establishes which fact are true on each world
-julia> valuation = Dict([
-    worlds[1] => TruthDict([p => true, q => false]),
-    worlds[2] => TruthDict([p => true, q => true]),
-    worlds[3] => TruthDict([p => true, q => false]),
-    worlds[4] => TruthDict([p => false, q => false]),
-    worlds[5] => TruthDict([p => false, q => true]),
- ])
-
-# Kripke Frame and valuation function are merged in a Kripke Structure
-julia> kstruct = KripkeStructure(kframe, valuation)
-
-julia> [w => check(fmodal, kstruct, w) for w in worlds]
-5-element Vector{Pair{SoleLogics.World{Int64}, Bool}}:
- SoleLogics.World{Int64}(1) => 0
- SoleLogics.World{Int64}(2) => 1
- SoleLogics.World{Int64}(3) => 1
- SoleLogics.World{Int64}(4) => 0
- SoleLogics.World{Int64}(5) => 0
-```
-
-See also [`SyntaxTree`](@ref), [`AbstractWorld`](@ref), [`KripkeStructure`](@ref).
-"""
-function check(
-    φ::SyntaxTree,
-    i::AbstractKripkeStructure,
-    w::Union{Nothing,AnyWorld,<:AbstractWorld} = nothing;
-    use_memo::Union{Nothing,AbstractDict{<:Formula,<:Vector{<:AbstractWorld}}} = nothing,
-    perform_normalization::Bool = true,
-    memo_max_height::Union{Nothing,Int} = nothing
-)::Bool
-    W = worldtype(i)
-
-    if isnothing(w)
-        if nworlds(frame(i)) == 1
-            w = first(allworlds(frame(i)))
-        end
-    end
-    @assert isgrounded(φ) || !(isnothing(w)) "Please, specify a world in order " *
-        "to check non-grounded formula: $(syntaxstring(φ))."
-
-    setformula(memo_structure::AbstractDict{<:Formula}, φ::Formula, val) = memo_structure[tree(φ)] = val
-    readformula(memo_structure::AbstractDict{<:Formula}, φ::Formula) = memo_structure[tree(φ)]
-    hasformula(memo_structure::AbstractDict{<:Formula}, φ::Formula) = haskey(memo_structure, tree(φ))
-
-    if perform_normalization
-        φ = normalize(φ; profile = :modelchecking, allow_atom_flipping = false)
-    end
-
-    memo_structure = begin
-        if isnothing(use_memo)
-            ThreadSafeDict{SyntaxTree,Worlds{W}}()
-        else
-            use_memo
-        end
-    end
-
-    if !isnothing(memo_max_height)
-        forget_list = Vector{SyntaxTree}()
-    end
-
-    fr = frame(i)
-
-    # TODO try lazily
-    (_f, _c) = filter, collect
-    # (_f, _c) = Iterators.filter, identity
-
-    if !hasformula(memo_structure, φ)
-        for ψ in unique(subformulas(φ))
-            if !isnothing(memo_max_height) && height(ψ) > memo_max_height
-                push!(forget_list, ψ)
-            end
-
-            if !hasformula(memo_structure, ψ)
-                tok = token(ψ)
-
-                worldset = begin
-                    if tok isa Connective
-                        _c(collateworlds(fr, tok, map(f->readformula(memo_structure, f), children(ψ))))
-                    elseif tok isa SyntaxLeaf
-                        _f(_w->begin
-                            istop(interpret(tok, i, _w))
-                        end, _c(allworlds(fr)))
-                    else
-                        error("Unexpected token encountered in check: $(typeof(tok))")
-                    end
-                end
-                setformula(memo_structure, ψ, Worlds{W}(worldset))
-            end
-            # @show syntaxstring(ψ), readformula(memo_structure, ψ)
-        end
-    end
-
-    if !isnothing(memo_max_height)
-        for ψ in forget_list
-            delete!(memo_structure, ψ)
-        end
-    end
-
-    ret = begin
-        if isnothing(w) || w isa AnyWorld
-            length(readformula(memo_structure, φ)) > 0
-        else
-            w in readformula(memo_structure, φ)
-        end
-    end
-
-    return ret
-end
 
 ############################################################################################
 ############################################################################################
