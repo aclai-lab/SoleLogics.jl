@@ -1,3 +1,9 @@
+# README:
+# Some @test are commented out, in favour of @test_nowarn since:
+# "Relying on a specific seed or generated stream of numbers during unit testing is thus
+# discouraged - consider testing properties of the methods in question instead."
+# (from https://docs.julialang.org/en/v1/stdlib/Random/)
+
 using StatsBase
 using SoleLogics: parseformula, @__rng_dispatch
 using Random
@@ -65,7 +71,8 @@ my_grammar = SoleLogics.CompleteFlatGrammar(my_alph, my_ops)
 my_logic = propositionallogic(alphabet=my_alph)
 
 @test_nowarn randatom(my_alph)
-@test randatom(42, my_alph) == Atom(4)
+@test_nowarn randatom(42, my_alph)
+# @test randatom(42, my_alph) == Atom(4)
 
 non_finite_alph = AlphabetOfAny{Atom{String}}()
 @test_throws Exception randatom(42, non_finite_alph)
@@ -91,7 +98,8 @@ _subalphabets_weights_test_dim = 100
 @test_nowarn rand(42, my_alph) == Atom(4)
 
 @test_nowarn rand(4)
-@test rand(MersenneTwister(42), 2, my_logic) |> syntaxstring == "(1 ∧ 5) ∨ ¬2"
+@test_nowarn rand(MersenneTwister(42), 2, my_logic)
+# @test rand(MersenneTwister(42), 2, my_logic) |> syntaxstring == "(1 ∧ 5) ∨ ¬2"
 
 @test_nowarn rand(4, my_grammar)
 @test_nowarn rand(Random.MersenneTwister(1), 4, my_grammar)
@@ -113,19 +121,29 @@ syntaxstring(mt::MyTruth) = mt.val
     42, 4, my_alph, [CONJUNCTION]; truthvalues=Truth[TOP,MyTruthTOP]);
 
 @test_nowarn sample(my_alph, Weights([1,2,3,4,5]))
-@test sample(2, my_alph, Weights([1,2,3,4,5])) == Atom(3)
+@test_nowarn sample(2, my_alph, Weights([1,2,3,4,5]))
+# @test sample(2, my_alph, Weights([1,2,3,4,5])) == Atom(3)
 @test_throws Exception sample(2, non_finite_alph, Weights([1,2,3,4,5]))
 
 @test_nowarn StatsBase.sample(2, my_logic, Weights([1,2,3,4,5]), Weights([1,2]))
-@test StatsBase.sample(
-        MersenneTwister(42),
-        2,
-        my_logic,
-        Weights([1,2,3,4,5]),
-        Weights([1,2])
-    ) |> syntaxstring == "(1 ∧ 1) ∨ (5 → 2)"
+@test_nowarn StatsBase.sample(
+    MersenneTwister(42),
+    2,
+    my_logic,
+    Weights([1,2,3,4,5]),
+    Weights([1,2])
+)
 
-@test StatsBase.sample(MersenneTwister(42), 2, my_grammar) |> syntaxstring == "¬(1 ∧ 1)"
+# @test StatsBase.sample(
+#         MersenneTwister(42),
+#         2,
+#         my_logic,
+#         Weights([1,2,3,4,5]),
+#         Weights([1,2])
+#     ) |> syntaxstring == "(1 ∧ 1) ∨ (5 → 2)"
+
+@test_nowarn StatsBase.sample(MersenneTwister(42), 2, my_grammar)
+# @test StatsBase.sample(MersenneTwister(42), 2, my_grammar) |> syntaxstring == "¬(1 ∧ 1)"
 @test_nowarn StatsBase.sample(2, my_grammar)
 
 @test_nowarn randformula(4, my_grammar)
