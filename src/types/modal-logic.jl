@@ -1,7 +1,4 @@
 import Base: show
-using DataStructures: OrderedDict
-using Graphs
-using ThreadSafeDicts
 
 """
     abstract type AbstractWorld end
@@ -72,8 +69,6 @@ See also [`nworlds`](@ref), [`AbstractFrame`](@ref).
 function nworlds(fr::AbstractFrame)::Integer
     return error("Please, provide method nworlds(frame::$(typeof(fr))).")
 end
-
-include("algebras/worlds.jl")
 
 ############################################################################################
 ##################################### Uni-modal logic ######################################
@@ -359,6 +354,8 @@ function accessibles(
 ) where {W<:AbstractWorld}
     IterTools.imap(W, _accessibles(fr, w, r))
 end
+
+include("algebras/worlds.jl")
 
 include("algebras/relations.jl")
 

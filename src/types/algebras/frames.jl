@@ -19,15 +19,23 @@ end
 ############################################################################################
 
 """
+    emptyworld(fr::AbstractMultiModalFrame)
+
 Return an empty world (e.g., `Interval(-1,0)`).
+
+See also [`AbstractMultiModalFrame`](@ref).
 """
 function emptyworld(fr::AbstractMultiModalFrame)
     return error("Please, provide method emptyworld(::$(typeof(fr))).")
 end
 
 """
-Return the world at the *center* of the frame;
-note that this does not always exist.
+    centralworld(fr::AbstractMultiModalFrame)
+
+Return the world at the *center* of the frame (whenever there exists a definition of
+"center" that makes sense).
+
+See also [`AbstractDimensionalFrame`](@ref), [`AbstractMultiModalFrame`](@ref).
 """
 function centralworld(fr::AbstractMultiModalFrame)
     return error("Please, provide method centralworld(::$(typeof(fr))).")
@@ -35,4 +43,4 @@ end
 
 ############################################################################################
 
-include("frames/full-dimensional-frame/main.jl")
+include("frames/dimensional-frame.jl")

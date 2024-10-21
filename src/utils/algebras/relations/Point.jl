@@ -4,16 +4,16 @@ struct _MinRel         <: PointRelation end; const MinRel         = _MinRel();  
 """Relation leading to the *maximum* `Point` (i.e., the *greatest* in the linear order)."""
 struct _MaxRel         <: PointRelation end; const MaxRel         = _MaxRel();         # Maximum
 
-"""Relation leading to the *successor* `Point` (i.e., the *next* in the linear order)."""
+"""Relation leading to the *successor* `Point` (i.e., the *next* in the linear order). It is displayed as `X` (for "neXt")."""
 struct _SuccessorRel   <: PointRelation end; const SuccessorRel   = _SuccessorRel();   # Successor
 
-"""Relation leading to the *predecessor* `Point` (i.e., the *previous* in the linear order)."""
+"""Relation leading to the *predecessor* `Point` (i.e., the *previous* in the linear order). It is displayed as `X̅` (for "neXt inverse")."""
 struct _PredecessorRel <: PointRelation end; const PredecessorRel = _PredecessorRel(); # Predecessor
 
-"""Relation leading to the *greater* `Point`s in the linear order."""
+"""> relation, leading to *greater* `Point`s in the linear order."""
 struct _GreaterRel     <: PointRelation end; const GreaterRel     = _GreaterRel();     # Greater
 
-"""Relation leading to the *lesser* `Point`s in the linear order."""
+"""< relation, leading to *lesser* `Point`s in the linear order."""
 struct _LesserRel      <: PointRelation end; const LesserRel      = _LesserRel();      # Lesser
 
 hasconverse(::_SuccessorRel) = true

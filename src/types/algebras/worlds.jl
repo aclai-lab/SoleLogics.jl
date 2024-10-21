@@ -56,4 +56,4 @@ const Worlds{W} = Vector{W} where {W<:AbstractWorld}
 
 ############################################################################################
 
-include("worlds/geometrical-worlds.jl")
+include("worlds/geometrical-world.jl")
