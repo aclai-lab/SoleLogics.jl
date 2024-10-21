@@ -13,7 +13,7 @@ function interpret(a::Atom{Int}, i::BWImageKripkeStructure, w::Point{2,Int})
 	return (valueatpoint >= integervalue) ? TOP : BOT
 end
 
-frame(i::AbstractKripkeStructure) = FullDimensionalFrame(size(i.image), Point{2,Int})
+frame(i::BWImageKripkeStructure) = FullDimensionalFrame(size(i.image), Point{2, Int})
 
 using SoleLogics: Point2DRelations
 
