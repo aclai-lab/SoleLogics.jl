@@ -47,9 +47,9 @@ struct Atom{V} <: AbstractAtom
 
     function Atom{V}(value::V) where {V}
         if value isa Union{Formula, Connective}
-            throw("Illegal nesting. " *
+            throw(ArgumentError("Illegal nesting. " *
                   "Cannot instantiate Atom with value of type $(typeof(value))"
-            )
+            ))
         end
         new{V}(value)
     end
