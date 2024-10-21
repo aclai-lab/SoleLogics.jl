@@ -18,13 +18,13 @@ w = [10,1,1]
 
 
 
-# @testset "generation w. custom operators" begin
+@testset "generation w. custom operators" begin
 
-TERNOP = SoleLogics.NamedConnective{:⇶}()
-SoleLogics.arity(::typeof(TERNOP)) = 3
+my_TERNOP = SoleLogics.NamedConnective{:⇶}()
+SoleLogics.arity(::typeof(my_TERNOP)) = 3
 
-QUATERNOP = SoleLogics.NamedConnective{:⩰}()
-SoleLogics.arity(::typeof(QUATERNOP)) = 4
+my_QUATERNOP = SoleLogics.NamedConnective{:⩰}()
+SoleLogics.arity(::typeof(my_QUATERNOP)) = 4
 
 _alphabet = ExplicitAlphabet(["p", "q", "r", "s"])
 _operators = [NEGATION, CONJUNCTION, IMPLICATION,
@@ -38,11 +38,11 @@ w = [5,1,1,1,1,1,1]
     end for i in 1:10])
 
 @test all([begin
-        f = randformula(i%5, _alphabet, [_operators..., TERNOP, QUATERNOP])
+        f = randformula(i%5, _alphabet, [_operators..., my_TERNOP, my_QUATERNOP])
         s = syntaxstring(f; function_notation = true)
         s == syntaxstring(
                 parseformula(
-                    s, [_operators..., TERNOP, QUATERNOP]; function_notation = true),
+                    s, [_operators..., my_TERNOP, my_QUATERNOP]; function_notation = true),
                 function_notation = true)
     end for i in 1:10])
 
@@ -53,7 +53,7 @@ w = [5,1,1,1,1,1,1]
 #             function_notation = true)
 #     end for i in 1:10])
 
-# end # endof test set
+end # endof test set
 
 
 

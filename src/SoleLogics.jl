@@ -73,7 +73,7 @@ export BooleanAlgebra
 
 export BaseLogic
 
-include("utils.jl")
+include("utils/syntactical.jl")
 
 include("utils/anchored-formula.jl")
 
@@ -112,7 +112,9 @@ export GlobalRel, IdentityRel
 export globalrel, identityrel
 
 
-include("modal-logic.jl")
+include("types/modal-logic.jl")
+
+include("utils/modal-logic.jl")
 
 ############################################################################################
 

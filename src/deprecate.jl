@@ -1,6 +1,8 @@
 # core.jl
 export atom, Proposition, NamedOperator
 
+const ToCenteredRel = ToCenterRel
+
 const NamedOperator = NamedConnective
 const AbstractSyntaxStructure = SyntaxStructure
 

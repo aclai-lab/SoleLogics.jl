@@ -13,8 +13,8 @@ p1_number = @test_nowarn Atom{Number}(1)
 p_string = @test_nowarn Atom{String}("1")
 
 @test Atom(Atom(1)) == Atom(1)
-@test_throws AssertionError Atom(parseformula("¬p"))
-@test_throws AssertionError Atom(¬)
+@test_throws ArgumentError Atom(parseformula("¬p"))
+@test_throws ArgumentError Atom(¬)
 
 @test arity(p1) == 0
 @test Atom(1.0) != Atom(1)

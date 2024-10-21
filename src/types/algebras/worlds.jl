@@ -1,4 +1,3 @@
-
 """
 Some worlds (dimensional worlds) can be interpreted on dimensional data,
 that is, n-dimensional arrays. The compatibility of a given world with respect of a 
@@ -35,27 +34,6 @@ goeswithdim(W::Type{<:AbstractWorld}, d::Integer) = goeswithdim(W, Val(d))
 goeswithdim(::Type{<:AbstractWorld}, ::Val) = false
 
 ############################################################################################
-# One unique world (propositional case)
-############################################################################################
-
-"""
-    struct OneWorld <: AbstractWorld end
-
-A singleton world to be used in modal frames with a single, unique world.
-This usage effectively simulates a propositional context.
-Note that it is compatible with 0-dimensional datasets.
-
-See also [`Interval`](@ref), [`Interval2D`](@ref),
-[`goeswithdim`](@ref), [`AbstractWorld`](@ref).
-"""
-struct OneWorld <: AbstractWorld end
-
-inlinedisplay(w::OneWorld) = "−"
-
-# A propositional world is compatible with 0-dimensional datasets
-goeswithdim(::Type{OneWorld}, ::Val{0}) = true
-
-############################################################################################
 
 worlds_doc = """
     const AbstractWorlds{W} = AbstractVector{W} where {W<:AbstractWorld}
@@ -78,4 +56,4 @@ const Worlds{W} = Vector{W} where {W<:AbstractWorld}
 
 ############################################################################################
 
-include("worlds/geometrical-worlds.jl")
+include("worlds/geometrical-world.jl")

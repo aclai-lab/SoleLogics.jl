@@ -1,24 +1,20 @@
-
-"""1D Point relations"""
-abstract type PointRelation <: GeometricalRelation end
-
-arity(::PointRelation) = 2
-
 """Relation leading to the *minimum* `Point` (i.e., the *least* in the linear order)."""
 struct _MinRel         <: PointRelation end; const MinRel         = _MinRel();         # Minimum
 
 """Relation leading to the *maximum* `Point` (i.e., the *greatest* in the linear order)."""
 struct _MaxRel         <: PointRelation end; const MaxRel         = _MaxRel();         # Maximum
 
-"""Relation leading to the *successor* `Point` (i.e., the *next* in the linear order)."""
+"""Relation leading to the *successor* `Point` (i.e., the *next* in the linear order). It is displayed as `X` (for "neXt")."""
 struct _SuccessorRel   <: PointRelation end; const SuccessorRel   = _SuccessorRel();   # Successor
-"""Relation leading to the *predecessor* `Point` (i.e., the *previous* in the linear order)."""
-struct _PredecessorRel <: PointRelation end; const PredecessorRel = _PredecessorRel(); # Predecessor
-"""Relation leading to the *greater* `Point`s in the linear order."""
-struct _GreaterRel     <: PointRelation end; const GreaterRel     = _GreaterRel();     # Greater
-"""Relation leading to the *lesser* `Point`s in the linear order."""
-struct _LesserRel      <: PointRelation end; const LesserRel      = _LesserRel();      # Lesser
 
+"""Relation leading to the *predecessor* `Point` (i.e., the *previous* in the linear order). It is displayed as `X̅` (for "neXt inverse")."""
+struct _PredecessorRel <: PointRelation end; const PredecessorRel = _PredecessorRel(); # Predecessor
+
+"""> relation, leading to *greater* `Point`s in the linear order."""
+struct _GreaterRel     <: PointRelation end; const GreaterRel     = _GreaterRel();     # Greater
+
+"""< relation, leading to *lesser* `Point`s in the linear order."""
+struct _LesserRel      <: PointRelation end; const LesserRel      = _LesserRel();      # Lesser
 
 hasconverse(::_SuccessorRel) = true
 converse(::_SuccessorRel) = PredecessorRel
@@ -55,13 +51,6 @@ See also
 [`Point2DRelations`](@ref).
 """
 const PointRelations = [MinRel, MaxRel, SuccessorRel, PredecessorRel, GreaterRel, LesserRel]
-
-
-"""2D Point relations (see [Compass logic](https://ieeexplore.ieee.org/abstract/document/8133753/))"""
-abstract type Point2DRelation <: GeometricalRelation end
-
-arity(::Point2DRelation) = 2
-hasconverse(::Point2DRelation) = true
 
 struct _CL_N  <: Point2DRelation end; """Relation leading to the closest northern `Point2D`.""" const CL_N  = _CL_N();  # North
 struct _CL_S  <: Point2DRelation end; """Relation leading to the closest southern `Point2D`.""" const CL_S  = _CL_S();  # South

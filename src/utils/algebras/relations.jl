@@ -1,5 +1,3 @@
-export GeometricalRelations, IntervalRelation, RCCRelation
-
 # Interval algebra relations 1D
 
 # IA
@@ -31,8 +29,8 @@ Type for relations that are solely defined by their name.
 See also
 [`AbstractRelation`](@ref),
 [`AbstractWorld`](@ref),
-[`AbstractFrame`](@ref).
-[`AbstractKripkeStructure`](@ref),
+[`AbstractFrame`](@ref),
+[`AbstractKripkeStructure`](@ref).
 """
 struct NamedRelation{T} <: AbstractRelation
     name::T
@@ -51,10 +49,10 @@ name(r::NamedRelation) = r.name
 
 ############################################################################################
 
-
 include("relations/filtered-relations.jl");
 
 ############################################################################################
 
+export GeometricalRelations, IntervalRelation, RCCRelation
 
 include("relations/geometrical-relations.jl");
