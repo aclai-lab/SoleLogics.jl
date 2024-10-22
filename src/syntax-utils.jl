@@ -111,7 +111,7 @@ struct LeftmostLinearForm{C<:Connective,SS<:SyntaxStructure} <: SyntaxStructure
 
     function LeftmostLinearForm(
         tree::SyntaxTree,
-        c::Union{<:SoleLogics.Connective,Nothing} = nothing
+        c::Union{Nothing,<:SoleLogics.Connective} = nothing
     )
         # Check c correctness; it should not be nothing (thus, auto inferred) if
         # tree root contains something that is not a connective
@@ -636,7 +636,7 @@ function treewalk(
     rng::AbstractRNG = Random.GLOBAL_RNG,
     criterion::Function = c->true,
     returnnode::Bool = false,
-    transformnode::Union{Function,Nothing} = nothing,
+    transformnode::Union{Nothing,Function} = nothing,
 )
     chs = children(st)
 

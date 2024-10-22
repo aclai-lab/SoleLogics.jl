@@ -40,6 +40,12 @@ include("types/syntactical.jl")
 
 ############################################################################################
 
+export parseformula
+
+include("types/parse.jl")
+
+############################################################################################
+
 export interpret, check
 
 include("types/interpretation.jl")
@@ -67,7 +73,9 @@ export BooleanAlgebra
 
 export BaseLogic
 
-include("utils.jl")
+include("utils/syntactical.jl")
+
+include("utils/anchored-formula.jl")
 
 ############################################################################################
 
@@ -104,7 +112,9 @@ export GlobalRel, IdentityRel
 export globalrel, identityrel
 
 
-include("modal-logic.jl")
+include("types/modal-logic.jl")
+
+include("utils/modal-logic.jl")
 
 ############################################################################################
 
@@ -122,26 +132,34 @@ include("syntax-utils.jl")
 
 ############################################################################################
 
-include("interpretation-sets.jl")
+include("types/interpretation-sets.jl")
+
+include("utils/interpretation-sets.jl")
 
 ############################################################################################
 
 export parseformula
 
-include("parse.jl")
+include("utils/parse.jl")
 
 ############################################################################################
 
-export randbaseformula, randformula
+# these first files are included here to avoid repeated inclusions in those below;
+# "generation" could become a SoleLogics submodule.
+include("generation/docstrings.jl")
+include("generation/utils.jl")
+
+export randatom
+export randformula
+include("generation/formula.jl")
+
 export randframe, randmodel
-
-include("random.jl")
+include("generation/models.jl")
 
 ############################################################################################
 
-export AnchoredFormula
-
-include("anchored-formula.jl")
+# export AnchoredFormula
+# include("anchored-formula.jl")
 
 ############################################################################################
 

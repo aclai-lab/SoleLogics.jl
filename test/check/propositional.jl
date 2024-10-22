@@ -1,5 +1,5 @@
 # using Revise; using SoleLogics; using Test
-using SoleLogics: parsebaseformula
+# using SoleLogics: AnchoredFormula
 
 @testset "Propositional model checking" begin
 
@@ -9,7 +9,7 @@ d0 = Dict(["a" => true, "b" => false, "c" => true])
 @test haskey(d0, Atom("a"))
 @test d0["a"]
 @test !d0["b"]
-@test check(parsebaseformula("a ∧ ¬b"), d0)
+# @test check(parseformula(AnchoredFormula, "a ∧ ¬b"), d0)
 @test check(parseformula("a ∧ c"), d0)
 
 v0 = ["a", "c"]
@@ -17,11 +17,11 @@ v0 = ["a", "c"]
 @test !("b" in v0)
 @test !(Atom("a") in v0)
 @test check(parseformula("a ∧ ¬b"), v0)
-@test check(parsebaseformula("a ∧ c"), v0)
+# @test check(parseformula(AnchoredFormula, "a ∧ c"), v0)
 
-@test !check(parsebaseformula("a ∧ b"), ["a"])
+# @test !check(parseformula(AnchoredFormula, "a ∧ b"), ["a"])
 @test !check(parseformula("a ∧ ¬b"), ["a", "b"])
-@test check(parsebaseformula("a ∧ ¬b"), ["a"])
+# @test check(parseformula(AnchoredFormula, "a ∧ ¬b"), ["a"])
 
 @test_nowarn TruthDict(1:4)
 @test_nowarn TruthDict(1:4, false)
@@ -33,7 +33,7 @@ t0 = @test_nowarn TruthDict(["a" => true, "b" => false, "c" => true])
 @test haskey(t0, "b")
 @test check(Atom("a"), t0)
 @test !check(Atom("b"), t0)
-@test check(parsebaseformula("a ∨ b"), t0)
+# @test check(parseformula(AnchoredFormula, "a ∨ b"), t0)
 
 t1 = @test_nowarn TruthDict([1 => true, 2 => false, 3 => true])
 
@@ -81,8 +81,8 @@ t2 = @test_nowarn TruthDict(Pair{Real,Bool}[1.0 => true, 2 => true, 3 => true])
 @test_nowarn DefaultedTruthDict(Atom(1.0) => true)
 
 @test !check(parseformula("a ∧ b"), DefaultedTruthDict(["a"]))
-@test !check(parsebaseformula("a ∧ ¬b"), DefaultedTruthDict(["a", "b"]))
-@test check(parsebaseformula("a ∧ ¬b"), DefaultedTruthDict(["a"]))
+# @test !check(parseformula(AnchoredFormula, "a ∧ ¬b"), DefaultedTruthDict(["a", "b"]))
+# @test check(parseformula(AnchoredFormula, "a ∧ ¬b"), DefaultedTruthDict(["a"]))
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
