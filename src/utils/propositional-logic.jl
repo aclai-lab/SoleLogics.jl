@@ -27,6 +27,52 @@ function _hpretty_table(io::IO, keys::Any, values::Any)
     end
 end
 
+"""
+    propositionallogic(;
+        alphabet = AlphabetOfAny{String}(),
+        operators = $(BASE_PROPOSITIONAL_CONNECTIVES),
+        grammar = CompleteFlatGrammar(AlphabetOfAny{String}(), $(BASE_PROPOSITIONAL_CONNECTIVES)),
+        algebra = BooleanAlgebra()
+    )
+
+Instantiate a [propositional logic](https://simple.wikipedia.org/wiki/Propositional_logic)
+given a grammar and an algebra. Alternatively, an alphabet and a set of operators
+can be specified instead of the grammar.
+
+# Examples
+```julia-repl
+julia> (¬) isa operatorstype(propositionallogic())
+true
+
+julia> (¬) isa operatorstype(propositionallogic(; operators = [∨]))
+false
+
+julia> propositionallogic(; alphabet = ["p", "q"]);
+
+julia> propositionallogic(; alphabet = ExplicitAlphabet([Atom("p"), Atom("q")]));
+
+```
+
+See also [`modallogic`](@ref), 
+[`AbstractAlphabet`](@ref), [`AbstractAlgebra`](@ref), [`AlphabetOfAny`](@ref),
+[`CompleteFlatGrammar`], [`BooleanAlgebra`](@ref), [`BASE_PROPOSITIONAL_CONNECTIVES`](@ref).
+"""
+function propositionallogic(;
+    alphabet::Union{Nothing,Vector,AbstractAlphabet} = nothing,
+    operators::Union{Nothing,Vector{<:Operator}} = nothing,
+    grammar::Union{Nothing,AbstractGrammar} = nothing,
+    algebra::Union{Nothing,AbstractAlgebra} = nothing
+)
+    _baselogic(
+        alphabet = alphabet,
+        operators = operators,
+        grammar = grammar,
+        algebra = algebra;
+        default_operators = BASE_PROPOSITIONAL_CONNECTIVES,
+        logictypename = "propositional logic",
+    )
+end
+
 ############################################################################################
 ####################################### TruthDict ##########################################
 ############################################################################################
@@ -78,12 +124,12 @@ true
     If prompted for the value of an unknown atom, this throws an error.
     If boolean, integer, or float values are specified, they are converted to
     `Truth` values.
-    If the structure is initialized as empty, `BooleanTruth` values are assumed.
+    If the structure is initialized as empty, [`BooleanTruth`](@ref) values are assumed.
 
-See also
+See also [`AbstractAssignment`](@ref), 
+[`AbstractInterpretation`](@ref),
 [`DefaultedTruthDict`](@ref),
-[`AbstractAssignment`](@ref), 
-[`AbstractInterpretation`](@ref).
+[`BooleanTruth`](@ref).
 """
 struct TruthDict{D<:AbstractDict} <: AbstractAssignment
 
@@ -186,6 +232,18 @@ This structure assigns truth values to a set of atoms and,
 when prompted for the value of an atom that is not in the dictionary,
 it returns `default_truth`.
 
+# Implementation
+
+If you use [`interpret`](@ref) function and you pass a [`DefaultedTruthDict`](@ref) as [`AbstractAssignment`](@ref) 
+and the [`Atom`](@ref) is not present in the dictionary, then the default dictionary value will be 
+returned and not the [`Atom`](@ref) itself.
+
+Here is an example of this.
+```julia-repl
+julia> interpret(Atom(5), DefaultedTruthDict(string.(1:4), false))
+⊥
+```
+
 # Examples
 ```julia-repl
 julia> t1 = DefaultedTruthDict(string.(1:4), false); t1["5"] = false; t1
@@ -205,9 +263,9 @@ false
 
 ```
 
-See also
-[`TruthDict`](@ref),
-[`AbstractAssignment`](@ref), [`AbstractInterpretation`](@ref).
+See also [`AbstractAssignment`](@ref), [`AbstractInterpretation`](@ref),
+[`interpret`](@ref), [`Atom`](@ref),
+[`TruthDict`](@ref), [`DefaultedTruthDict`](@ref).
 """
 struct DefaultedTruthDict{
     D<:AbstractDict,
@@ -288,33 +346,14 @@ end
     Base.values,
 )
 
-############################################################################################
-###################################### TruthTable ##########################################
-############################################################################################
-
-# TODO: it is necessary?
-"""
-    struct TruthTable{A,T<:Truth}
-
-Dictionary which associates an [`AbstractAssignment`](@ref)s to the truth value of the
-assignment itself on a [`SyntaxStructure`](@ref).
-
-See also [`AbstractAssignment`](@ref), [`SyntaxStructure`](@ref), [`Truth`](@ref).
-"""
-struct TruthTable{
-    A,
-    T<:Truth
-} <: Formula # TODO is this correct? Remove?
-    truth::Dict{<:AbstractAssignment,Vector{Pair{SyntaxStructure,T}}}
-end
 
 ############################################################################################
 
 """
-    check(φ::Formula,i::Union{AbstractDict,AbstractVector},args...)
+    check(φ::Formula, i::Union{AbstractDict, AbstractVector}, args...)
 
-Takes a formula as input and returns its truth value in relation to the dictionary 
-or vector passed. We let any AbstractDict and AbstractVector be used as an interpretation 
+Takes a [`Formula`](@ref) as input and returns its truth value in relation to the dictionary 
+or vector passed. We let any `AbstractDict` and `AbstractVector` be used as an interpretation 
 when model checking.
 
 See also [`Formula`](@ref).
@@ -334,7 +373,7 @@ end
 """
     convert(::Type{AbstractInterpretation}, i::AbstractDict)
 
-Convert a dictionary (with keys and values) in a TruthDict.
+Convert a dictionary (with keys and values) in a [`TruthDict`](@ref).
 In this case, a dictionary is interpreted as the map from atoms to `Truth` values.
 
 # Examples
@@ -399,7 +438,7 @@ See also [`Atom`](@ref).
 check(a::Atom, i::AbstractDict) = haskey(a,i) ? Base.getindex(i, value(a)) : nothing
 
 #############################################################################################
-##################################### AbstractVector#########################################
+##################################### AbstractVector ########################################
 #############################################################################################
 
 """
@@ -420,7 +459,7 @@ DefaultedTruthDict with default truth `⊥` and values:
 │     ⊤ │     ⊤ │     ⊤ │
 └───────┴───────┴───────┘
 
-julia> convert(SoleLogics.AbstractInterpretation, ["a","b"])
+julia> convert(AbstractInterpretation, ["a","b"])
 DefaultedTruthDict with default truth `⊥` and values:
 ┌────────┬────────┐
 │      b │      a │
@@ -430,7 +469,7 @@ DefaultedTruthDict with default truth `⊥` and values:
 └────────┴────────┘
 ```
 
-See also [`AbstractInterpretation`](@ref), [`TruthDict`](@ref).
+See also [`AbstractInterpretation`](@ref), [`DefaultedTruthDict`](@ref), [`TruthDict`](@ref).
 """
 convert(::Type{AbstractInterpretation}, i::AbstractVector) = DefaultedTruthDict(i, ⊥)
 #Base.getindex(i::AbstractVector, a::Atom) = (value(a) in i)
@@ -439,7 +478,7 @@ convert(::Type{AbstractInterpretation}, i::AbstractVector) = DefaultedTruthDict(
 """
     check(a::Atom, i::AbstractVector)
 
-Returns a truth value indicating whether or not that atom 
+Returns a truth value indicating whether or not that [`Atom`](@ref) 
 is contained in the passed vector.
 
 # Examples
