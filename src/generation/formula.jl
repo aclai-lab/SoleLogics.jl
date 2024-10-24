@@ -18,25 +18,25 @@ function randformula end
 function randformula end
 
 """$(rand_abstractlogic_docstring)"""
-function Base.rand end
+function rand end
 
 """$(rand_abstractalphabet_docstring)"""
-function Base.rand end
+function rand end
 
 """$(rand_completeflatgrammar_docstring)"""
-function Base.rand end
+function rand end
 
 """$(rand_granular_docstring)"""
-function Base.rand end
+function rand end
 
 """$(sample_aw_docstring)"""
-function StatsBase.sample end
+function sample end
 
 """$(sample_lao_docstring)"""
-function StatsBase.sample end
+function sample end
 
 """$(sample_hgao_docstring)"""
-function StatsBase.sample end
+function sample end
 
 
 @__rng_dispatch function randatom(
