@@ -6,6 +6,39 @@ import StatsBase: sample
 
 # TODO - Move in src/utils.jl (keep here the implementations for struct)
 """$(randatom_docstring)"""
+function randatom end
+
+"""$(randatom_unionalphabet_docstring)"""
+function randatom end
+
+"""$(randformula_hg_docstring)"""
+function randformula end
+
+"""$(randformula_docstring)"""
+function randformula end
+
+"""$(rand_abstractlogic_docstring)"""
+function Base.rand end
+
+"""$(rand_abstractalphabet_docstring)"""
+function Base.rand end
+
+"""$(rand_completeflatgrammar_docstring)"""
+function Base.rand end
+
+"""$(rand_granular_docstring)"""
+function Base.rand end
+
+"""$(sample_aw_docstring)"""
+function StatsBase.sample end
+
+"""$(sample_lao_docstring)"""
+function StatsBase.sample end
+
+"""$(sample_hgao_docstring)"""
+function StatsBase.sample end
+
+
 @__rng_dispatch function randatom(
     rng::Union{Random.AbstractRNG,Integer},
     a::AbstractAlphabet,
@@ -24,7 +57,6 @@ import StatsBase: sample
     end
 end
 
-"""$(randatom_unionalphabet_docstring)"""
 @__rng_dispatch function randatom(
         rng::Union{Integer,AbstractRNG},
         a::UnionAlphabet,
@@ -76,7 +108,6 @@ end
 
 
 
-"""$(rand_abstractalphabet_docstring)"""
 @__rng_dispatch function SoleLogics.rand(
     rng::Union{Integer,AbstractRNG},
     a::AbstractAlphabet,
@@ -94,7 +125,6 @@ function rand(rng::Random.AbstractRNG, a::SoleLogics.AbstractAlphabet, args...; 
     randatom(rng, a, args...; kwargs...)
 end
 
-"""$(rand_abstractlogic_docstring)"""
 @__rng_dispatch function Base.rand(
     rng::Union{Integer,AbstractRNG},
     height::Integer,
@@ -105,7 +135,7 @@ end
     Base.rand(initrng(rng), height, grammar(l), args...; kwargs...)
 end
 
-"""$(rand_completeflatgrammar_docstring)"""
+
 @__rng_dispatch function Base.rand(
     rng::Union{Integer,AbstractRNG},
     height::Integer,
@@ -116,7 +146,6 @@ end
     randformula(initrng(rng), height, alphabet(g), operators(g), args...; kwargs...)
 end
 
-"""$(rand_granular_docstring)"""
 @__rng_dispatch function Base.rand(
     rng::Union{Integer,AbstractRNG},
     height::Integer,
@@ -153,7 +182,6 @@ end
 
 
 
-"""$(sample_aw_docstring)"""
 @__rng_dispatch function StatsBase.sample(
     rng::Union{Integer,AbstractRNG},
     alphabet::AbstractAlphabet,
@@ -169,7 +197,6 @@ end
     end
 end
 
-"""$(sample_lao_docstring)"""
 @__rng_dispatch function StatsBase.sample(
     rng::Union{Integer,AbstractRNG},
     height::Integer,
@@ -183,8 +210,7 @@ end
         initrng(rng), height, grammar(l), atomweights, opweights, args...; kwargs...)
 end
 
-"""$(sample_hgao_docstring)"""
-@__rng_dispatch function StatsBase.sample(
+
     rng::Union{Integer,AbstractRNG},
     height::Integer,
     g::AbstractGrammar,
@@ -200,8 +226,7 @@ end
 
 
 
-"""$(randformula_docstring)"""
-@__rng_dispatch function randformula(
+
     rng::Union{Integer,AbstractRNG},
     height::Integer,
     alphabet::Union{AbstractVector,AbstractAlphabet},
@@ -279,7 +304,8 @@ end
     return _randformula(rng, height, modaldepth)
 end
 
-"""$(randformula_hg_docstring)"""
+
+
 @__rng_dispatch function randformula(
     rng::Union{Integer,AbstractRNG},
     height::Integer,
@@ -290,7 +316,6 @@ end
     randformula(rng, height, alphabet(g), operators(g), args...; kwargs...)
 end
 
-"""$(randformula_docstring)"""
 @__rng_dispatch function randformula(
     rng::Union{Integer,AbstractRNG},
     T::Type{AnchoredFormula},

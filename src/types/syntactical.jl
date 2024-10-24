@@ -61,7 +61,7 @@ for example, CONJUNCTION, DISJUNCTION, NEGATION and IMPLICATION (stylized as ∧
 - `precedence(::Connective)::Int`
 - `associativity(::Connective)::Symbol`
 - `collatetruth(::Connective, ::NTuple{N,Truth})::Truth`
-- `simplify(::Connective, ::NTuple{N,Truth})::SyntaxTree`
+- `simplify(::Connective, ::NTuple{N,SyntaxTree})::SyntaxTree`
 - `dual(s::Connective)::Connective`
 - `hasdual(s::Connective)::Bool`
 - See also [`Syntactical`](@ref)
