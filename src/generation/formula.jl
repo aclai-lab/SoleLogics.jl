@@ -210,7 +210,7 @@ end
         initrng(rng), height, grammar(l), atomweights, opweights, args...; kwargs...)
 end
 
-
+@__rng_dispatch function StatsBase.sample(
     rng::Union{Integer,AbstractRNG},
     height::Integer,
     g::AbstractGrammar,
@@ -227,6 +227,7 @@ end
 
 
 
+@__rng_dispatch function StatsBase.sample(
     rng::Union{Integer,AbstractRNG},
     height::Integer,
     alphabet::Union{AbstractVector,AbstractAlphabet},
