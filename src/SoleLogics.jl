@@ -128,7 +128,7 @@ export subformulas, normalize
 
 export CNF, DNF, cnf
 
-include("syntax-utils.jl")
+include("utils/syntax-utils.jl")
 
 ############################################################################################
 
