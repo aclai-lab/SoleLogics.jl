@@ -1,7 +1,7 @@
 name = "SoleLogics"
 uuid = "b002da8f-3cb3-4d91-bbe3-2953433912b5"
 authors = ["Mauro MILELLA", "Giovanni PAGLIARINI", "Edoardo PONSANESI", "Alberto PAPARELLA", "Eduard I. STAN"]
-version = "0.9.6"
+version = "0.10.0"
 
 [deps]
 AbstractTrees = "1520ce14-60c1-5f80-bbc7-55ef81b5835c"
