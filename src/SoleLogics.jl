@@ -72,9 +72,8 @@ export BaseLogic
 
 include("utils/syntactical.jl")
 
-
-
 export propositionallogic
+export inlinedisplay
 
 export TruthDict, DefaultedTruthDict
 export truth_table
