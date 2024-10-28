@@ -26,10 +26,10 @@ w = [10,1,1]
 
 @testset "generation w. custom operators" begin
 
-my_TERNOP = SoleLogics.NamedConnective{:⇶}()
+my_TERNOP = SoleLogics.NamedConnective{:threeway}()
 SoleLogics.arity(::typeof(my_TERNOP)) = 3
 
-my_QUATERNOP = SoleLogics.NamedConnective{:⩰}()
+my_QUATERNOP = SoleLogics.NamedConnective{:fourway}()
 SoleLogics.arity(::typeof(my_QUATERNOP)) = 4
 
 _alphabet = ExplicitAlphabet(["p", "q", "r", "s"])

@@ -12,7 +12,6 @@ using Lazy
 using SoleBase
 using SoleBase: initrng
 
-############################################################################################
 
 export iscrisp, isfinite, isnullary, isunary, isbinary
 
@@ -22,44 +21,42 @@ export Syntactical, Connective,
 
 export Operator, SyntaxToken
 
-export syntaxstring
+export tree, syntaxstring
 
 export arity, valuetype, tokentype, tokenstype,
         atomstype, operatorstype, truthtype,
         associativity, precedence
 
-# export value # TODO remove. The name is too generic, and it clashes, e.g., with JuMP.value.
 export token, children, formulas
-export tree
 
 export tokens, ntokens, atoms, natoms, truths, ntruths, leaves, nleaves,
         connectives, nconnectives, operators, noperators, height
-export composeformulas
+
+        export composeformulas
 
 include("types/syntactical.jl")
 
-############################################################################################
 
 export parseformula
 
 include("types/parse.jl")
 
-############################################################################################
+
 
 export interpret, check
 
 include("types/interpretation.jl")
 
-############################################################################################
+include("types/interpretation-sets.jl")
+
 
 export AlphabetOfAny, ExplicitAlphabet, UnionAlphabet
-
-export alphabet, alphabets
+export alphabet, subalphabets
 export domain, top, bot, grammar, algebra, logic
 
 include("types/logic.jl")
 
-############################################################################################
+
 
 export TOP, ⊤
 export BOT, ⊥
@@ -77,7 +74,7 @@ include("utils/syntactical.jl")
 
 include("utils/anchored-formula.jl")
 
-############################################################################################
+
 
 export propositionallogic
 
@@ -86,7 +83,7 @@ export truth_table
 
 include("propositional-logic.jl")
 
-############################################################################################
+
 
 export accessibles
 export ismodal, modallogic
@@ -116,11 +113,11 @@ include("types/modal-logic.jl")
 
 include("utils/modal-logic.jl")
 
-############################################################################################
+
 
 include("many-valued-logics/ManyValuedLogics.jl")
 
-############################################################################################
+
 
 export LeftmostLinearForm, LeftmostConjunctiveForm, LeftmostDisjunctiveForm, Literal
 
@@ -128,21 +125,19 @@ export subformulas, normalize
 
 export CNF, DNF, cnf
 
-include("utils/syntax-utils.jl")
+include("utils/syntactical-normal-forms.jl")
 
-############################################################################################
+include("utils/tools.jl")
 
-include("types/interpretation-sets.jl")
+
 
 include("utils/interpretation-sets.jl")
 
-############################################################################################
 
-export parseformula
 
 include("utils/parse.jl")
 
-############################################################################################
+
 
 # these first files are included here to avoid repeated inclusions in those below;
 # "generation" could become a SoleLogics submodule.
@@ -156,26 +151,26 @@ include("generation/formula.jl")
 export randframe, randmodel
 include("generation/models.jl")
 
-############################################################################################
+
 
 # export AnchoredFormula
 # include("anchored-formula.jl")
 
-############################################################################################
+
 
 export @atoms, @synexpr
 
 include("ui.jl")
 
-############################################################################################
+
 
 include("experimentals.jl")
 
-############################################################################################
+
 
 include("deprecate.jl")
 
-############################################################################################
+
 # Fast isempty(intersect(u, v))
 function intersects(u, v)
     for x in u
@@ -203,6 +198,6 @@ function displaysyntaxvector(a, maxnum = 8; quotes = true)
     "$(eltype(a))[$(join(els, ", "))]"
 end
 
-############################################################################################
+
 
 end
