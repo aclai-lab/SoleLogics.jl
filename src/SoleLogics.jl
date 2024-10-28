@@ -72,8 +72,6 @@ export BaseLogic
 
 include("utils/syntactical.jl")
 
-include("utils/anchored-formula.jl")
-
 
 
 export propositionallogic
@@ -139,6 +137,9 @@ include("utils/interpretation-sets.jl")
 include("utils/parse.jl")
 
 
+export AnchoredFormula
+include("utils/anchored-formula.jl")
+
 
 # these first files are included here to avoid repeated inclusions in those below;
 # "generation" could become a SoleLogics submodule.
@@ -152,10 +153,6 @@ include("generation/formula.jl")
 export randframe, randmodel
 include("generation/models.jl")
 
-
-
-# export AnchoredFormula
-# include("anchored-formula.jl")
 
 
 
