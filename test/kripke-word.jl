@@ -32,3 +32,7 @@ check(SoleLogics.diamond(SoleLogics.PredecessorRel)(Atom('1')), KripkeWord("0100
 
 check(φ000, KripkeWord("01001"))
 check(φ000, KripkeWord("0101"))
+
+
+
+# check(SoleLogics.diamond(globalrel)(Atom("11") ∧ diamond(IA_A)(Atom("11") ∧ diamond(IA_A)(Atom("11")))), KripkeWord("101100011"))
