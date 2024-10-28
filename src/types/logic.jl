@@ -146,11 +146,7 @@ function natoms(a::AbstractAlphabet)::Integer
     end
 end
 
-# Helper
-function Base.length(a::AbstractAlphabet)
-    @warn "Please use `natoms` instead of `Base.length` with alphabets."
-    return natoms(a)
-end
+# [Iteration interface](https://docs.julialang.org/en/v1/manual/interfaces/#man-interface-iteration) utils
 
 """
     Base.iterate(a::AbstractAlphabet)
@@ -175,9 +171,12 @@ function Base.iterate(a::AbstractAlphabet, state)
     end
 end
 
-# [Iteration interface](https://docs.julialang.org/en/v1/manual/interfaces/#man-interface-iteration) util.
 function Base.IteratorSize(::Type{V}) where {V<:AbstractAlphabet}
     return Base.isfinite(V) ? Base.HasLength() : Base.IsInfinite()
+end
+
+function Base.length(a::AbstractAlphabet)
+    return natoms(a)
 end
 
 ############################################################################################

@@ -49,7 +49,7 @@ If the definition above overwhelms you, don't worry: it will be clearer later. F
 Later, we will see some interesting example about how to equip these symbols with semantics, that is, what rules should be applied when interpreting connectives in a generic [`Formula`](@ref). We will also understand how to define our own custom connectives.
 
 ```@docs
-arity(φ::SyntaxTree)
+arity(φ::Connective)
 ```
 
 The vast majority of data structures involved in encoding a logical formula, are children of the [`Formula`](@ref) abstract type. When such data structures purely represents tree-shaped data structures (or single nodes in them), then they are also children of the [`SyntaxStructure`](@ref) abstract type.
@@ -79,7 +79,6 @@ SyntaxStructure
 SyntaxTree
 children(φ::SyntaxTree)
 token(φ::SyntaxTree)
-arity(φ::SyntaxTree)
 
 SyntaxLeaf
 SyntaxToken

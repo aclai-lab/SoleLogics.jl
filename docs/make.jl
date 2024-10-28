@@ -2,7 +2,13 @@ using SoleLogics
 using SoleLogics.ManyValuedLogics
 using Documenter
 
+
+
+
+
 DocMeta.setdocmeta!(SoleLogics, :DocTestSetup, :(using SoleLogics); recursive = true)
+
+
 
 makedocs(;
     modules = [SoleLogics, SoleLogics.ManyValuedLogics],

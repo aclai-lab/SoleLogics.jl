@@ -55,7 +55,7 @@ Base.rand(alphabet::AbstractAlphabet, args...; kwargs...)
 SoleLogics.randatom
 StatsBase.sample(alphabet::AbstractAlphabet, weights::AbstractWeights, args...; kwargs...)
 
-randformula(height::Integer, alphabet, operators::AbstractVector; rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG)
+randformula
 ```
 
 ## Parsing

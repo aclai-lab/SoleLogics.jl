@@ -290,7 +290,6 @@ end
     randformula(rng, height, alphabet(g), operators(g), args...; kwargs...)
 end
 
-"""$(randformula_docstring)"""
 @__rng_dispatch function randformula(
     rng::Union{Integer,AbstractRNG},
     T::Type{AnchoredFormula},
