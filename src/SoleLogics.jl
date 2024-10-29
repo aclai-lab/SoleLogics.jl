@@ -47,8 +47,6 @@ export interpret, check
 
 include("types/interpretation.jl")
 
-include("types/interpretation-sets.jl")
-
 
 export AlphabetOfAny, ExplicitAlphabet, UnionAlphabet
 export alphabet, subalphabets
@@ -56,6 +54,8 @@ export domain, top, bot, grammar, algebra, logic
 
 include("types/logic.jl")
 
+
+include("types/interpretation-sets.jl")
 
 
 export TOP, ⊤
