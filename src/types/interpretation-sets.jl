@@ -59,13 +59,13 @@ truthtype(S::Type{<:AbstractInterpretationSet}) = truthtype(interpretationtype(S
 truthtype(s::AbstractInterpretationSet) = truthtype(typeof(s))
 
 """
-    alphabet(s::AbstractInterpretationSet)::Alphabet
+    alphabet(s::AbstractInterpretationSet)::AbstractAlphabet
 
 Return the propositional alphabet of an interpretation set.
 
 See also [`AbstractAlphabet`](@ref), [`AbstractGrammar`](@ref).
 """
-function alphabet(s::AbstractInterpretationSet)::Alphabet
+function alphabet(s::AbstractInterpretationSet)::AbstractAlphabet
     return error("Please, provide method alphabet(::$(typeof(s))).")
 end
 

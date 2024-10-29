@@ -42,6 +42,9 @@ Markdown = "d6f4376e-aef5-505a-96c1-9c027394607a"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 Revise = "295af30f-e4ad-537b-8983-00126c2a3abe"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
+DecisionTree = "7806a523-6efd-50cb-b5f6-3fa6f1930dbb"
+SoleData = "123f1ae1-6307-4526-ab5b-aab3a92a2b8c"
 
 [targets]
-test = ["Test", "Markdown", "InteractiveUtils", "PlutoUI", "BenchmarkTools"]
+test = ["Test", "Markdown", "InteractiveUtils", "PlutoUI", "BenchmarkTools", "DataFrames", "DecisionTree", "SoleData"]
