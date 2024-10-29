@@ -22,8 +22,8 @@ using SoleData
 X, y = load_data("iris")
 X = Float64.(X)
 X_df = DataFrame(X, :auto)
-s = scalarlogiset(X_df)
-
+s = scalarlogiset(X_df; allow_propositional = true)
 myalphabet = @test_nowarn alphabet(s)
 a = @test_nowarn atoms(myalphabet)[1]
 @test_nowarn [check(a, i) for i in SoleLogics.eachinstance(s)]
+
