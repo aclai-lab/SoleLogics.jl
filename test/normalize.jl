@@ -72,6 +72,9 @@ end
 @test_nowarn normalize(parseformula("(⟨G⟩A ∧ ¬⟨G⟩(A ∧ ⟨A̅⟩C))"), prefer_implications = true)
 @test_nowarn normalize(parseformula("(⟨G⟩A ∧ ¬⟨G⟩(A ∧ ⟨A̅⟩C))"), prefer_implications = true)
 
+@test "(b∧a)∨(d∧c)" |> parseformula |> normalize ==
+    "(d∧c)∨(a∧b)" |> parseformula |> normalize
+
 # φ = parseformula("(¬((q → p) → (q ∨ q))) → ⊤")
 # [check(φ, K, w; perform_normalization = false) for w in worlds]
 # φ = parseformula("¬(¬(¬(¬q ∨ p) ∨ (q ∨ q))) ∨ ⊤")
