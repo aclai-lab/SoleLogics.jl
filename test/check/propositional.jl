@@ -108,7 +108,7 @@ t2 = @test_nowarn TruthDict(Pair{Real,Bool}[1.0 => true, 2 => true, 3 => true])
 @test interpret(Atom("r"), DefaultedTruthDict(["p", "q"])) |> isbot
 
 
-#  normalization: negations compression ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# normalization: negations compression ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 @test syntaxstring(normalize(parseformula("¬¬ p"))) == "p"
 @test syntaxstring(normalize(parseformula("¬¬¬ p"))) == "¬p"
