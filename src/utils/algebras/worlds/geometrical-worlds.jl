@@ -53,6 +53,7 @@ Y(w::Point) = w[2]
 Z(w::Point) = w[3]
 
 dimensionality(::Point{N}) where {N} = N
+dimensionality(::Type{Point{N}}) where {N} = N
 
 goeswithdim(::Type{P}, ::Val{N}) where {N,P<:Point{N}} = true
 
