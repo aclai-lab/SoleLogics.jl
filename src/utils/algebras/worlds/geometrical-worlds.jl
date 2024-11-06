@@ -1,4 +1,5 @@
 import Base: length
+import SoleBase: dimensionality
 
 ############################################################################################
 # Point
@@ -27,10 +28,10 @@ struct Point{N,T} <: GeometricalWorld
     xyz :: NTuple{N,T}
     # TODO check x<=N but only in debug mode
     # Point(x) = x<=N ... ? new(x) : error("Cannot instantiate Point(x={$x})")
-    
+
     # TODO needed?
     Point(w::Point) = Point(w.xyz)
-    
+
     Point{N,T}(xyz::NTuple{N,T}) where {N,T} = new{N,T}(xyz)
     Point{N,T}(xyz::Vararg{T,N}) where {N,T} = Point{N,T}(xyz)
     Point() = error("Cannot instantiate Point in a 0-dimensional space. " *
@@ -50,6 +51,8 @@ Base.getindex(w::Point, args...) = Base.getindex(w.xyz, args...)
 X(w::Point) = w[1]
 Y(w::Point) = w[2]
 Z(w::Point) = w[3]
+
+dimensionality(::Point{N}) where {N} = N
 
 goeswithdim(::Type{P}, ::Val{N}) where {N,P<:Point{N}} = true
 
