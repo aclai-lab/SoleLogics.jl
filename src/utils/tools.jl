@@ -307,7 +307,7 @@ function normalize(
             elseif reduce_negations && (chtok == →) && arity(chtok) == 2
                 # _normalize(∨(¬(grandchildren[1]), grandchildren[2]))
                 ∧(_normalize(grandchildren[1]), _normalize(¬(grandchildren[2])))
-            elseif reduce_negations && chtok isa Atom
+            elseif reduce_negations && chtok isa AbstractAtom
                 if allow_atom_flipping && hasdual(chtok)
                     dual(chtok)
                 else

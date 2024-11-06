@@ -604,7 +604,7 @@ function syntaxstring(
             if !remove_redundant_parentheses
                 true
             elseif arity(chtok) == 0
-                if chtok isa Atom && parenthesize_atoms
+                if chtok isa AbstractAtom && parenthesize_atoms
                     true
                 else
                     false
@@ -683,7 +683,7 @@ function syntaxstring(
         ch = token(children(φ)[1])
         charity = arity(ch)
         if !function_notation && arity(tok) == 1 &&
-           (charity == 1 || (ch isa Atom && !parenthesize_atoms))
+           (charity == 1 || (ch isa AbstractAtom && !parenthesize_atoms))
             # When not in function notation, print "¬p" instead of "¬(p)";
             # note that "◊((p ∧ q) → s)" must not be simplified as "◊(p ∧ q) → s".
             lpar, rpar = "", ""

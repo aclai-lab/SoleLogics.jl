@@ -10,7 +10,7 @@ The keys represent the header of the table and the values the first row of the t
 """
 function _hpretty_table(io::IO, keys::Any, values::Any)
     # Prepare columns names
-    _keys = map(x -> x isa Atom ? value(x) : x, collect(keys))
+    _keys = map(x -> x isa AbstractAtom ? value(x) : x, collect(keys))
     header = (_keys, string.(nameof.(typeof.(_keys))))
 
     try

@@ -265,7 +265,7 @@ function parseformula(
                         else
                             # If the token is something else -> parse as Atom and push it
                             atom = Atom(atom_parser(st))
-                            # @assert atom isa Atom string(atom) *
+                            # @assert atom isa AbstractAtom string(atom) *
                             #     " is not an atom. Please, provide a valid atom_parser."
                             atom
                         end

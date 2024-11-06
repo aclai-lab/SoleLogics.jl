@@ -17,7 +17,7 @@ export iscrisp, isfinite, isnullary, isunary, isbinary
 
 export Syntactical, Connective,
     Formula, SyntaxStructure, SyntaxTree, SyntaxLeaf,
-    Atom, Truth, SyntaxBranch
+    AbstractAtom, Truth
 
 export Operator, SyntaxToken
 
@@ -57,6 +57,9 @@ include("types/logic.jl")
 
 include("types/interpretation-sets.jl")
 
+export Atom, SyntaxBranch
+
+include("utils/syntactical.jl")
 
 export TOP, ⊤
 export BOT, ⊥
@@ -70,7 +73,7 @@ export BooleanAlgebra
 
 export BaseLogic
 
-include("utils/syntactical.jl")
+include("utils/base-logic.jl")
 
 export propositionallogic
 export inlinedisplay
