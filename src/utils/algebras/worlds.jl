@@ -19,6 +19,8 @@ inlinedisplay(w::OneWorld) = "−"
 # A propositional world is compatible with 0-dimensional datasets
 goeswithdim(::Type{OneWorld}, ::Val{0}) = true
 
+nworlds(::OneWorld) = 1
+
 ############################################################################################
 
 include("worlds/geometrical-worlds.jl")
