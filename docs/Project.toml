@@ -4,4 +4,4 @@ SoleBase = "4475fa32-7023-44a0-aa70-4813b230e492"
 SoleLogics = "b002da8f-3cb3-4d91-bbe3-2953433912b5"
 
 [compat]
-Documenter = "1"
+Documenter = "1.7"

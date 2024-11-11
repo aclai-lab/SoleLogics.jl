@@ -48,9 +48,8 @@ Recalling the type hierarchy presented in [man-core](@ref), it is here enriched 
 AbstractAlphabet{V}
 Base.isfinite(::Type{<:AbstractAlphabet})
 atoms(a::AbstractAlphabet)
+natoms(a::AbstractAlphabet)
 Base.in(p::Atom, a::AbstractAlphabet)
-Base.length(a::AbstractAlphabet)
-Base.iterate(a::AbstractAlphabet)
 
 ExplicitAlphabet{V}
 AlphabetOfAny{V}

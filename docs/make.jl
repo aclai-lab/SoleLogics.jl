@@ -2,7 +2,13 @@ using SoleLogics
 using SoleLogics.ManyValuedLogics
 using Documenter
 
+
+
+
+
 DocMeta.setdocmeta!(SoleLogics, :DocTestSetup, :(using SoleLogics); recursive = true)
+
+
 
 makedocs(;
     modules = [SoleLogics, SoleLogics.ManyValuedLogics],
@@ -28,10 +34,12 @@ makedocs(;
     warnonly = :true,
 )
 
+
 @info "`makedocs` has finished running. "
 
 deploydocs(;
     repo = "github.com/aclai-lab/SoleLogics.jl",
+    devbranch = "dev",
     target = "build",
     branch = "gh-pages",
     versions = ["main" => "main", "stable" => "v^", "v#.#", "dev" => "dev"],
