@@ -194,7 +194,7 @@ end
     kwargs...
 )
     randformula(
-        initrng(rng), maxheight, alphabet(g), operators(g), args...;
+        initrng(rng), maxheight, g, args...;
         atompicker = atomweights, opweights = opweights, kwargs...)
 end
 
