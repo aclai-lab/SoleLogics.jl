@@ -176,7 +176,7 @@ token(φ::SyntaxBranch) = φ.token
 ################################################################################
 
 """
-    collatetruth(c::Connective, ts::NTuple{N,T where T<:Truth})::Truth where {N}
+    collatetruth(c::Connective, ts::NTuple{N,T where T<:Truth}, args...)::Truth where {N}
 
 Return the truth value for a composed formula `c(t1, ..., tN)`, given the `N`
 with t1, ..., tN being `Truth` values.
@@ -184,24 +184,25 @@ with t1, ..., tN being `Truth` values.
 See also [`simplify`](@ref), [`Connective`](@ref), [`Truth`](@ref).
 """
 function collatetruth(
-        c::Connective,
-        ts::NTuple{N, T where T <: Truth},
+    c::Connective,
+    ts::NTuple{N,Truth},
+    args...
 )::Truth where {N}
     if arity(c) != length(ts)
         return error("Cannot collate $(length(ts)) truth values for " *
                      "connective $(typeof(c)) with arity $(arity(c))).")
     else
         return error("Please, provide method collatetruth(::$(typeof(c)), " *
-                     "::NTuple{$(arity(c)),$(T)}).")
+                     "::NTuple{$(arity(c)),$(eltype(ts))}).")
     end
 end
 
 # Helper (so that collatetruth work for all operators)
-collatetruth(t::Truth, ::Tuple{}) = t
+collatetruth(t::Truth, ::Tuple{}, args...) = t
 
 # With generic formulas, it composes formula
 """
-    simplify(c::Connective, ts::NTuple{N,F where F<:Formula})::Truth where {N}
+    simplify(c::Connective, ts::NTuple{N,F where F<:Formula} args...)::Truth where {N}
 
 Return a formula with the same semantics of a composed formula `c(φ1, ..., φN)`,
 given the `N`
@@ -209,12 +210,12 @@ immediate sub-formulas.
 
 See also [`collatetruth`](@ref), [`Connective`](@ref), [`Formula`](@ref).
 """
-function simplify(c::Connective, φs::NTuple{N, T where T <: Formula}) where {N}
-    c(φs)
+function simplify(c::Connective, φs::NTuple{N,Formula}, args...) where {N}
+    c(φs, args...)
 end
 
-function simplify(c::Connective, φs::NTuple{N, T where T <: Truth}) where {N}
-    collatetruth(c, φs)
+function simplify(c::Connective, φs::NTuple{N,Truth}, args...) where {N}
+    collatetruth(c, φs, args...)
 end
 
 ############################################################################################

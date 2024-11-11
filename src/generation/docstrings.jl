@@ -84,13 +84,13 @@ See also [`AbstractAlphabet`], [`randatom(::AbstractAlphabet)`](@ref).
 rand_abstractlogic_docstring = """
     function Base.rand(
         [rng::Union{Integer,AbstractRNG}=Random.GLOBAL_RNG,]
-        height::Integer,
+        maxheight::Integer,
         l::AbstractLogic,
         args...;
         kwargs...
     )
 
-Generate a random formula of height `height` and belonging to logic `l`.
+Generate a random formula of maximum height `maxheight` and belonging to logic `l`.
 
 See also [`AbstractLogic`](@ref).
 """
@@ -98,12 +98,12 @@ See also [`AbstractLogic`](@ref).
 rand_completeflatgrammar_docstring = """
     Base.rand(
         [rng::Union{Integer,AbstractRNG}=Random.GLOBAL_RNG,]
-        height::Integer,
+        maxheight::Integer,
         g::CompleteFlatGrammar,
         args...
     )::Formula
 
-Generate a random formula of height `height`, honoring the grammar `g`.
+Generate a random formula of maximum height `maxheight`, honoring the grammar `g`.
 
 See also [`CompleteFlatGrammar`](@ref).
 """
@@ -111,7 +111,7 @@ See also [`CompleteFlatGrammar`](@ref).
 rand_granular_docstring = """
     Base.rand(
         [rng::Union{Integer,AbstractRNG}=Random.GLOBAL_RNG,]
-        height::Integer,
+        maxheight::Integer,
         connectives::Union{AbstractVector{<:Operator},AbstractVector{<:Connective}},
         atoms::Union{AbstractVector{<:Atom},AbstractAlphabet},
         truthvalues::Union{Nothing,AbstractAlgebra,AbstractVector{<:Truth}}=nothing,
@@ -158,7 +158,7 @@ See also [`AbstractLogic`](@ref), [`AbstractWeights`](@ref),
 sample_hgao_docstring = """
     function StatsBase.sample(
         [rng::Union{Integer,AbstractRNG}=Random.GLOBAL_RNG,]
-        height::Integer,
+        maxheight::Integer,
         g::AbstractGrammar,
         atomweights::Union{Nothing,AbstractWeights}=nothing,
         opweights::Union{Nothing,AbstractWeights}=nothing,
@@ -178,11 +178,11 @@ randformula_docstring = """
     function randformula(
         [T::Type{<:Formula}=SyntaxTree,]
         [rng::Union{Integer,AbstractRNG}=Random.GLOBAL_RNG,]
-        height::Integer,
+        maxheight::Integer,
         alphabet::Union{AbstractVector,AbstractAlphabet},
         operators::AbstractVector{<:Operator},
         args...;
-        modaldepth::Integer=height,
+        maxmodaldepth::Integer=maxheight,
         atompicker::Union{Nothing,Function,AbstractWeights,AbstractVector{<:Real}}=randatom,
         opweights::Union{Nothing,AbstractWeights,AbstractVector{<:Real}}=nothing,
         alphabet_sample_kwargs::Union{Nothing,AbstractVector}=nothing,
@@ -193,12 +193,12 @@ Return a pseudo-randomic formula of type [`T`](@ref).
 
 # Arguments
 - `rng::Union{Intger,AbstractRNG}=Random.GLOBAL_RNG`: random number generator;
-- `height::Integer`: height of the generated structure;
+- `maxheight::Integer`: maximum height of the generated structure;
 - `alphabet::AbstractAlphabet`: collection from which atoms are chosen randomly;
 - `operators::AbstractVector{<:Operator}`: vector from which legal operators are chosen.
 
 # Keyword Arguments
-- `modaldepth::Integer`: maximum modal depth;
+- `maxmodaldepth::Integer`: maximum modal depth;
 - `atompicker::Union{Nothing,Function,AbstractWeights,AbstractVector{<:Real}}`: method used
     to pick a random element. For example, this could be Base.rand, StatsBase.sample or
     an array of integers or an array of `StatsBase.AbstractWeights`;
@@ -207,6 +207,20 @@ Return a pseudo-randomic formula of type [`T`](@ref).
     StatsBase package).
 - `alphabet_sample_kwargs::AbstractVector`: pool of atoms to pull from if the given alphabet
     is not finite.
+- `basecase::Function` = method to specify the base case of the recursion; if not specified,
+    it returns `atompicker`.
+[!WARNING]
+The basecase is applied at the end of the recustion (i.e., when height = 0). If introducting
+a basecase which produces a subformula, please adjust the `maxheight` parameter value
+accordingly (e.g., when producing a subformula of the type o(p,q), where `o` is a connective
+and `p,q` are atoms, to generate a formula of maxheight `n` provide a value of `n-1` for the
+`maxheight` parameter).
+- `mode::Bool = :maxheight` constrains the generated syntax tree
+    to having a height smaller or equal to `maxheight` (`mode = :maxheight`),
+    to having height equal to `maxheight` (`mode = :exactheight`),
+    or to having height equal to `maxheight` and being full (`mode = :full`),.
+- `earlystoppingtreshold::Float` : when `mode = :maxheight`,
+    controls the probability of calling the basecase before reaching.
 
 # Examples
 ```julia-repl
@@ -222,13 +236,13 @@ randformula_hg_docstring = """
     function randformula(
         [T::Type{<:Formula}=SyntaxTree,]
         [rng::Union{Integer,AbstractRNG}=Random.GLOBAL_RNG,]
-        height::Integer,
+        maxheight::Integer,
         [g::AbstractGrammar,]
         args...;
         kwargs...
     )
 
-Fallback to `randformula`, specifying only the `height` (possibly also a `grammar`) of the
+Fallback to `randformula`, specifying only the `maxheight` (possibly also a `grammar`) of the
 generated [`SyntaxTree`](@ref).
 
 See also [`AbstractGrammar`](@ref),

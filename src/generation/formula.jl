@@ -97,29 +97,29 @@ end
 """$(rand_abstractlogic_docstring)"""
 @__rng_dispatch function Base.rand(
     rng::Union{Integer,AbstractRNG},
-    height::Integer,
+    maxheight::Integer,
     l::AbstractLogic,
     args...;
     kwargs...
 )
-    Base.rand(initrng(rng), height, grammar(l), args...; kwargs...)
+    Base.rand(initrng(rng), maxheight, grammar(l), args...; kwargs...)
 end
 
 """$(rand_completeflatgrammar_docstring)"""
 @__rng_dispatch function Base.rand(
     rng::Union{Integer,AbstractRNG},
-    height::Integer,
+    maxheight::Integer,
     g::CompleteFlatGrammar,
     args...;
     kwargs...
 )
-    randformula(initrng(rng), height, alphabet(g), operators(g), args...; kwargs...)
+    randformula(initrng(rng), maxheight, alphabet(g), operators(g), args...; kwargs...)
 end
 
 """$(rand_granular_docstring)"""
 @__rng_dispatch function Base.rand(
     rng::Union{Integer,AbstractRNG},
-    height::Integer,
+    maxheight::Integer,
     atoms::Union{AbstractVector{<:Atom},AbstractAlphabet},
     connectives::Union{AbstractVector{<:Operator},AbstractVector{<:Connective}},
     args...;
@@ -148,7 +148,7 @@ end
         ops = vcat(ops, truthvalues)
     end
 
-    randformula(height, atoms, ops, args...; kwargs...)
+    randformula(maxheight, atoms, ops, args...; kwargs...)
 end
 
 
@@ -172,7 +172,7 @@ end
 """$(sample_lao_docstring)"""
 @__rng_dispatch function StatsBase.sample(
     rng::Union{Integer,AbstractRNG},
-    height::Integer,
+    maxheight::Integer,
     l::AbstractLogic,
     atomweights::AbstractWeights,
     opweights::AbstractWeights,
@@ -180,13 +180,13 @@ end
     kwargs...
 )
     StatsBase.sample(
-        initrng(rng), height, grammar(l), atomweights, opweights, args...; kwargs...)
+        initrng(rng), maxheight, grammar(l), atomweights, opweights, args...; kwargs...)
 end
 
 """$(sample_hgao_docstring)"""
 @__rng_dispatch function StatsBase.sample(
     rng::Union{Integer,AbstractRNG},
-    height::Integer,
+    maxheight::Integer,
     g::AbstractGrammar,
     args...;
     atomweights::Union{Nothing,AbstractWeights}=nothing,
@@ -194,7 +194,7 @@ end
     kwargs...
 )
     randformula(
-        initrng(rng), height, alphabet(g), operators(g), args...;
+        initrng(rng), maxheight, alphabet(g), operators(g), args...;
         atompicker = atomweights, opweights = opweights, kwargs...)
 end
 
@@ -203,14 +203,16 @@ end
 """$(randformula_docstring)"""
 @__rng_dispatch function randformula(
     rng::Union{Integer,AbstractRNG},
-    height::Integer,
+    maxheight::Integer,
     alphabet::Union{AbstractVector,AbstractAlphabet},
-    operators::AbstractVector{<:Operator},
-    args...;
-    modaldepth::Integer=height,
+    operators::AbstractVector{<:Operator};
+    maxmodaldepth::Integer=maxheight,
     atompicker::Union{Nothing,Function,AbstractWeights,AbstractVector{<:Real}}=randatom,
     opweights::Union{Nothing,AbstractWeights,AbstractVector{<:Real}}=nothing,
     alphabet_sample_kwargs::Union{Nothing,AbstractVector}=nothing,
+    basecase::Union{Function,Nothing} = nothing,
+    mode::Symbol = :maxheight,
+    earlystoppingtreshold::AbstractFloat = 0.5,
     kwargs...
 )
     rng = initrng(rng)
@@ -244,28 +246,45 @@ end
     end
 
     nonmodal_operators = findall(!ismodal, operators)
-
     # recursive call
     function _randformula(
         rng::AbstractRNG,
-        height::Integer,
-        modaldepth::Integer;
+        maxheight::Integer,
+        maxmodaldepth::Integer,
+        must_honor_height = (mode != :maxheight);
     )::SyntaxTree
 
-        if height == 0
-            return atompicker(rng, alphabet)
+        if (maxheight == 0) || (mode != :full && !must_honor_height && rand(rng, Float16) < earlystoppingtreshold)
+            if isnothing(basecase)
+                return atompicker(rng, alphabet)
+            else
+                return basecase(rng)
+            end
         else
             # sample operator and generate children
-            # (modal connectives only if modaldepth is set > 0)
-            ops, ops_w = (modaldepth > 0) ?
+            # (modal connectives only if maxmodaldepth is set > 0)
+            ops, ops_w = (maxmodaldepth > 0) ?
                 (operators, opweights) :
                 (operators[nonmodal_operators], opweights[nonmodal_operators])
 
             # op = rand(rng, ops)
             op = sample(rng, ops, ops_w)
-            ch = Tuple([
-                    _randformula(rng, height-1, modaldepth-(ismodal(op) ? 1 : 0))
-                    for _ in 1:arity(op)])
+            if must_honor_height && (mode != :maxheight)
+                child_to_honor_height = rand(rng, 1:arity(op))
+            end
+            ch = Tuple([begin
+                    if must_honor_height
+                        if (mode != :maxheight)
+                            # A child must honor the height constraint
+                            child_must_honor_height = (i_ch == child_to_honor_height)
+                        else
+                            child_must_honor_height = false
+                        end
+                    else
+                        child_must_honor_height = false
+                    end
+                    _randformula(rng, maxheight-1, maxmodaldepth-(ismodal(op) ? 1 : 0), (must_honor_height && child_must_honor_height))
+                end for i_ch in 1:arity(op)])
             return SyntaxTree(op, ch)
         end
     end
@@ -276,24 +295,24 @@ end
             "(infinite) alphabet of type $(typeof(alphabet))!"))
     end
 
-    return _randformula(rng, height, modaldepth)
+    return _randformula(rng, maxheight, maxmodaldepth)
 end
 
 """$(randformula_hg_docstring)"""
 @__rng_dispatch function randformula(
     rng::Union{Integer,AbstractRNG},
-    height::Integer,
+    maxheight::Integer,
     g::AbstractGrammar,
     args...;
     kwargs...
 )
-    randformula(rng, height, alphabet(g), operators(g), args...; kwargs...)
+    randformula(rng, maxheight, alphabet(g), operators(g), args...; kwargs...)
 end
 
 @__rng_dispatch function randformula(
     rng::Union{Integer,AbstractRNG},
     T::Type{AnchoredFormula},
-    height::Integer,
+    maxheight::Integer,
     alphabet::Union{AbstractVector,AbstractAlphabet},
     operators::AbstractVector{<:Operator},
     args...;
@@ -301,7 +320,7 @@ end
 )
     alphabet = convert(AbstractAlphabet, alphabet)
     baseformula(
-        randformula(height, alphabet, operators, args...; kwargs...);
+        randformula(maxheight, alphabet, operators, args...; kwargs...);
         alphabet=alphabet,
         additional_operators=operators,
     )
@@ -310,10 +329,10 @@ end
 @__rng_dispatch function randformula(
     rng::Union{Integer,AbstractRNG},
     T::Type{AnchoredFormula},
-    height::Integer,
+    maxheight::Integer,
     g::AbstractGrammar,
     args...;
     kwargs...
 )
-    randformula(rng, T, height, alphabet(g), operators(g), args...; kwargs...)
+    randformula(rng, T, maxheight, alphabet(g), operators(g), args...; kwargs...)
 end

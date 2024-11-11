@@ -183,29 +183,29 @@ bot(::BooleanAlgebra) = BOT
 
 # Standard semantics for NOT, AND, OR, IMPLIES
 collatetruth(::typeof(¬), (ts,)::Tuple{BooleanTruth}) = istop(ts) ? BOT : TOP
-function collatetruth(::typeof(∧), (t1, t2)::NTuple{N, T where T <: BooleanTruth}) where {N}
+function collatetruth(::typeof(∧), (t1, t2)::NTuple{N,BooleanTruth}, args...) where {N}
     truthmeet(t1, t2)
 end
-function collatetruth(::typeof(∨), (t1, t2)::NTuple{N, T where T <: BooleanTruth}) where {N}
+function collatetruth(::typeof(∨), (t1, t2)::NTuple{N,BooleanTruth}, args...) where {N}
     truthjoin(t1, t2)
 end
 
 # Incomplete information
-function simplify(::typeof(∧), (t1, t2)::Tuple{BooleanTruth, BooleanTruth})
+function simplify(::typeof(∧), (t1, t2)::Tuple{BooleanTruth, BooleanTruth}, args...)
     istop(t1) && istop(t2) ? TOP : BOT
 end
-simplify(::typeof(∧), (t1, t2)::Tuple{BooleanTruth, Formula}) = istop(t1) ? t2 : t1
-simplify(::typeof(∧), (t1, t2)::Tuple{Formula, BooleanTruth}) = istop(t2) ? t1 : t2
+simplify(::typeof(∧), (t1, t2)::Tuple{BooleanTruth, Formula}, args...) = istop(t1) ? t2 : t1
+simplify(::typeof(∧), (t1, t2)::Tuple{Formula, BooleanTruth}, args...) = istop(t2) ? t1 : t2
 
-function simplify(::typeof(∨), (t1, t2)::Tuple{BooleanTruth, BooleanTruth})
+function simplify(::typeof(∨), (t1, t2)::Tuple{BooleanTruth, BooleanTruth}, args...)
     isbot(t1) && isbot(t2) ? BOT : TOP
 end
-simplify(::typeof(∨), (t1, t2)::Tuple{BooleanTruth, Formula}) = isbot(t1) ? t2 : t1
-simplify(::typeof(∨), (t1, t2)::Tuple{Formula, BooleanTruth}) = isbot(t2) ? t1 : t2
+simplify(::typeof(∨), (t1, t2)::Tuple{BooleanTruth, Formula}, args...) = isbot(t1) ? t2 : t1
+simplify(::typeof(∨), (t1, t2)::Tuple{Formula, BooleanTruth}, args...) = isbot(t2) ? t1 : t2
 
 # The IMPLIES operator, →, falls back to using ¬ and ∨
-function collatetruth(::typeof(→), (t1, t2)::NTuple{2, BooleanTruth})
-    return collatetruth(∨, (collatetruth(¬, (t1,)), t2))
+function collatetruth(::typeof(→), (t1, t2)::NTuple{2, BooleanTruth}, args...)
+    return collatetruth(∨, (collatetruth(¬, (t1,), args...), t2), args...)
 end
 
 ############################################################################################

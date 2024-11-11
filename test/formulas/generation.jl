@@ -52,3 +52,36 @@ ops = [∧,∨]
 gr = SoleLogics.CompleteFlatGrammar(alp, ops)
 
 @test length(formulas(gr; maxdepth=3)) == 1631721
+
+using Random
+
+rng = MersenneTwister(1)
+found_not_full = false
+for i in 1:100
+  φ = randformula(rng, 4, SoleLogics.CompleteFlatGrammar(ExplicitAlphabet(@atoms p q r), [∨, ∧, ¬, □]), mode = :exactheight)
+  @test height(φ) == 4
+  φs = (φ |> subformulas)
+  ls = children.(φs) .|> x->map(height, x)
+  !all(allequal, ls) && (found_not_full = true) && break
+end
+@test found_not_full
+
+rng = MersenneTwister(1)
+found_shorter_than_maxheight = false
+for i in 1:100
+  maxφ = randformula(4, SoleLogics.CompleteFlatGrammar(ExplicitAlphabet(@atoms p q r), [∨, ∧, ¬, □]), mode = :maxheight)
+  @test height(maxφ) <= 4
+  height(maxφ) < 4 && (found_shorter_than_maxheight = true) && break
+end
+@test found_shorter_than_maxheight
+
+
+rng = MersenneTwister(1)
+for i in 1:50
+  # Full syntax trees
+  fullφ = randformula(4, SoleLogics.CompleteFlatGrammar(ExplicitAlphabet(@atoms p q r), [∨, ∧, ¬, □]), mode = :full)
+  @test height(fullφ) == 4
+  φs = (fullφ |> subformulas)
+  ls = children.(φs) .|> x->map(height, x)
+  @test all(allequal, ls)
+end

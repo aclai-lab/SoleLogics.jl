@@ -15,6 +15,7 @@ PrettyTables = "08abe8d2-0d0c-5749-adfa-8a2ac140af0d"
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 Reexport = "189a3867-3050-52da-a836-e630ba90ab69"
 SoleBase = "4475fa32-7023-44a0-aa70-4813b230e492"
+StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
 ThreadSafeDicts = "4239201d-c60e-5e0a-9702-85d713665ba7"
 

@@ -47,11 +47,11 @@ abstract type FiniteAlgebra{T<:Truth, D<:AbstractVector{T}} <: AbstractAlgebra{T
 
 """
     function checkmonoidaxioms(
-        o::BinaryOperation{T,D},
+        o::O,
         e::T
     ) where {
-        T<:Truth,
-        D<:AbstractVector{T}
+        O<:AbstractBinaryOperation,
+        T<:Truth
     }
 
 Check if given domain, operation and identity element form a monoid.
@@ -68,11 +68,11 @@ See also [`BinaryOperation`](@ref), [`Axiom`](@ref), [`checkaxiom`](@ref),
 [`Associativity`](@ref), [`IdentityElement`](@ref).
 """
 function checkmonoidaxioms(
-    o::BinaryOperation{T,D},
+    o::O,
     e::T
 ) where {
-    T<:Truth,
-    D<:AbstractVector{T}
+    O<:AbstractBinaryOperation,
+    T<:Truth
 }
     @assert checkaxiom(Associativity, o) "Defined an operation for the monoid which " *
         "is not associative."
@@ -226,11 +226,10 @@ end
 
 """
     function checklatticeaxioms(
-        join::BinaryOperation{T,D},
-        meet::BinaryOperation{T,D}
+        join::O,
+        meet::O
     ) where {
-        T<:Truth,
-        D<:AbstractVector{T}
+        O<:AbstractBinaryOperation
     }
 
 Check if given domain, join and meet form a finite lattice.
@@ -245,11 +244,10 @@ See also [`FiniteLattice`](@ref), [`BinaryOperation`](@ref), [`Commutativity`](@
 [`Associativity`](@ref), [`AbsorptionLaw`](@ref),
 """
 function checklatticeaxioms(
-    join::BinaryOperation{T,D},
-    meet::BinaryOperation{T,D}
+    join::O,
+    meet::O
 ) where {
-    T<:Truth,
-    D<:AbstractVector{T}
+    O<:AbstractBinaryOperation
 }
     @assert checkaxiom(Commutativity, join) "Defined a join operation which is not " *
         "commutative."
@@ -356,13 +354,13 @@ end
 
 """
     function checkboundedlatticeaxioms(
-        join::BinaryOperation{T,D},
-        meet::BinaryOperation{T,D},
+        join::O,
+        meet::O,
         bot::T,
         top::T
     ) where {
-        T<:Truth,
-        D<:AbstractVector{T}
+        O<:AbstractBinaryOperation,
+        T<:Truth
     }
 
 Check if given domain, join, meet, bot and top form a bounded lattice.
@@ -376,13 +374,13 @@ element ⊤ is the identity element for the meet operation ∧:
 See also [`FiniteBoundedLattice`](@ref), [`checklatticeaxioms`](@ref).
 """
 function checkboundedlatticeaxioms(
-    join::BinaryOperation{T,D},
-    meet::BinaryOperation{T,D},
+    join::O,
+    meet::O,
     bot::T,
     top::T
 ) where {
-    T<:Truth,
-    D<:AbstractVector{T}
+    O<:AbstractBinaryOperation,
+    T<:Truth
 }
     checklatticeaxioms(join, meet)
     @assert checkaxiom(IdentityElement, join, bot) "$bot is not a valid identity element " *
@@ -501,12 +499,12 @@ See also [`Axiom`](@ref), [`Monoid`](@ref).
 """
 function checkaxiom(
     ::typeof(RightResidual),
-    meet::BinaryOperation{T,D},
+    meet::O,
     monoid::M
 ) where {
+    O<:AbstractBinaryOperation,
     T<:Truth,
-    D<:AbstractVector{T},
-    M<:FiniteAlgebra{T,D}
+    M<:AbstractAlgebra{T}
 }
     !ismonoid(monoid) && error("Cannot convert an object of type $(typeof(monoid)) to an "*
         "object of type Monoid.")
@@ -560,12 +558,12 @@ See also [`Axiom`](@ref), [`Monoid`](@ref).
 """
 function checkaxiom(
     ::typeof(LeftResidual),
-    meet::BinaryOperation{T,D},
+    meet::O,
     monoid::M
 ) where {
+    O<:AbstractBinaryOperation,
     T<:Truth,
-    D<:AbstractVector{T},
-    M<:FiniteAlgebra{T,D}
+    M<:AbstractAlgebra{T}
 }
     !ismonoid(monoid) && error("Cannot convert an object of type $(typeof(monoid)) to an "*
         "object of type Monoid.")
@@ -621,12 +619,12 @@ See also [`Axiom`](@ref), [`Monoid`](@ref).
 """
 function checkaxiom(
     ::typeof(ResiduationProperty),
-    meet::BinaryOperation{T,D},
+    meet::O,
     monoid::M
 ) where {
+    O<:AbstractBinaryOperation,
     T<:Truth,
-    D<:AbstractVector{T},
-    M<:FiniteAlgebra{T,D}
+    M<:AbstractAlgebra{T}
 }
     !ismonoid(monoid) && error("Cannot convert an object of type $(typeof(monoid)) to an "*
         "object of type Monoid.")
