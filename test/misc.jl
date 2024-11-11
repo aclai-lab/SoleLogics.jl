@@ -131,9 +131,9 @@ interp2             = TruthDict(1:4, BOT)
 @test trees_implication |> children |> first == pandq
 @test trees_implication |> children |> last  == porq
 
-@test norm |> children |> first                     == SyntaxTree(m)
-@test norm |> children |> first |> token            == m
-@test norm |> children |> first |> token |> value   == value(m)
+@test norm |> children |> first                              == SyntaxTree(m)
+@test norm |> children |> first |> token                     == m
+@test norm |> children |> first |> token |> SoleLogics.value == SoleLogics.value(m)
 
 @test_nowarn interp1[p] = BOT
 @test_nowarn interp1[p] = TOP

@@ -1,10 +1,9 @@
-using SoleBase: AbstractDataset
-using SoleBase: ninstances
+import SoleBase: AbstractDataset, ninstances, eachinstance
 
 import Base: getindex
 
 """
-    abstract type AbstractInterpretationSet{M<:AbstractInterpretation} <: AbstractDataset end
+    abstract type AbstractInterpretationSet <: AbstractDataset end
 
 Abstract type for ordered sets of interpretations.
 A set of interpretations, also referred to as a *dataset* in this context,
@@ -16,18 +15,20 @@ These structures are especially useful when performing
 See also[`truthtype`](@ref),
 [`InterpretationVector`](@ref).
 """
-abstract type AbstractInterpretationSet{M<:AbstractInterpretation} <: AbstractDataset end
+abstract type AbstractInterpretationSet <: AbstractDataset end
 
 # TODO improve general doc.
-interpretationtype(::Type{S}) where {M,S<:AbstractInterpretationSet{M}} = M
+function interpretationtype(S::Type{<:AbstractInterpretationSet})
+    return error("Please, provide method interpretationtype(::$(typeof(S))).")
+end
 interpretationtype(s::AbstractInterpretationSet) = interpretationtype(typeof(s))
 
 # TODO improve general doc.
-valuetype(::Type{S}) where {M,S<:AbstractInterpretationSet{M}} = valuetype(M)
+valuetype(S::Type{<:AbstractInterpretationSet}) = valuetype(interpretationtype(S))
 valuetype(s::AbstractInterpretationSet) = valuetype(typeof(s))
 
 # TODO improve general doc.
-truthtype(::Type{S}) where {M,S<:AbstractInterpretationSet{M}} = truthtype(M)
+truthtype(S::Type{<:AbstractInterpretationSet}) = truthtype(interpretationtype(S))
 truthtype(s::AbstractInterpretationSet) = truthtype(typeof(s))
 
 """
@@ -46,6 +47,10 @@ function getinstance(s::AbstractInterpretationSet, i_instance::Integer)
     return LogicalInstance(s, i_instance)
 end
 
+function eachinstance(s::AbstractInterpretationSet)
+    return (getinstance(s, i_instance) for i_instance in 1:ninstances(s))
+end
+
 """
     struct LogicalInstance{S<:AbstractInterpretationSet}
         s::S
@@ -59,18 +64,10 @@ set; thus, this representation, holding the interpretation set + instance id (i_
 can come handy in defining `check` and `interpret` methods for newly defined interpretation
 set structures.
 """
-# TODO: struct LogicalInstance{S<:AbstractInterpretationSet{M}} <: M
 struct LogicalInstance{S<:AbstractInterpretationSet} <: AbstractInterpretation
 
     s::S
     i_instance::Int64
-
-    # function LogicalInstance{M,S}(
-    #     s::S,
-    #     i_instance::Integer
-    # ) where {M<:AbstractInterpretation,S<:AbstractInterpretationSet{M}}
-    #     new{M,S}(s, i_instance)
-    # end
 
     function LogicalInstance{S}(
         s::S,
@@ -110,8 +107,10 @@ function check(
     args...;
     kwargs...
 )
-    return istop(interpret(φ, i, args...; kwargs...))
-    # return check(tree(φ), i, args...; kwargs...)
+    return error("Please, provide method " *
+        "check(φ::SyntaxTree, i::$(typeof(i)), " *
+        "args...::$(typeof(args)); " *
+        "kwargs...::$(typeof(kwargs))).")
 end
 
 function check(
@@ -120,16 +119,14 @@ function check(
     args...;
     kwargs...
 )
-    return error("Please, provide method " *
-        "check(φ::SyntaxTree, i::$(typeof(i)), " *
-        "args...::$(typeof(args)); " *
-        "kwargs...::$(typeof(kwargs))).")
+    return istop(interpret(φ, i, args...; kwargs...))
+    # return check(tree(φ), i, args...; kwargs...)
 end
 
 # # General grounding
 # function check(
 #     φ::SyntaxTree,
-#     i::LogicalInstance{AbstractInterpretationSet{<:AbstractKripkeStructure}};
+#     i::LogicalInstance{AbstractInterpretationSet};
 #     kwargs...
 # )
 #     if token(φ) isa Union{DiamondRelationalConnective,BoxRelationalConnective}
@@ -266,7 +263,7 @@ end
 ############################################################################################
 
 """
-    struct InterpretationVector{M<:AbstractInterpretation} <: AbstractInterpretationSet{M}
+    struct InterpretationVector{M<:AbstractInterpretation} <: AbstractInterpretationSet
         instances::Vector{M}
     end
 
@@ -274,8 +271,12 @@ A dataset of interpretations instantiated as a vector.
 
 [`AbstractInterpretationSet`](@ref).
 """
-struct InterpretationVector{M<:AbstractInterpretation} <: AbstractInterpretationSet{M}
+struct InterpretationVector{M<:AbstractInterpretation} <: AbstractInterpretationSet
     instances::Vector{M}
+end
+
+function interpretationtype(::Type{S}) where {M<:AbstractInterpretation,S<:InterpretationVector{M}}
+    return error("Please, provide method interpretationtype(::$(typeof(S))).")
 end
 
 Base.getindex(s::InterpretationVector, i_instance::Integer) = Base.getindex(s.instances, i_instance)
@@ -306,21 +307,21 @@ getinstance(s::InterpretationVector, i_instance::Integer) = Base.getindex(s, i_i
 ############################# Helpers for (Multi-)modal logics #############################
 ############################################################################################
 
-worldtype(::Type{AbstractInterpretationSet{M}}) where {M<:AbstractKripkeStructure} = worldtype(M)
+worldtype(S::Type{AbstractInterpretationSet}) = worldtype(interpretationtype(S))
 worldtype(s::AbstractInterpretationSet) = worldtype(typeof(s))
 
-frametype(::Type{AbstractInterpretationSet{M}}) where {M<:AbstractKripkeStructure} = frametype(M)
+frametype(S::Type{AbstractInterpretationSet}) = frametype(interpretationtype(S))
 frametype(s::AbstractInterpretationSet) = frametype(typeof(s))
 
-# function relations(s::AbstractInterpretationSet{M}) where {M<:AbstractKripkeStructure}
+# function relations(s::AbstractInterpretationSet)
 #     return error("Please, provide method relations(::$(typeof(s))).")
 # end
 
-function frame(s::AbstractInterpretationSet, i_instance::Integer)
-    return frame(getinstance(s, i_instance))
-end
+# function frame(s::AbstractInterpretationSet, i_instance::Integer)
+#     return frame(getinstance(s, i_instance))
+# end
 
-function frame(s::AbstractInterpretationSet{M}, i_instance::Integer) where {M<:AbstractKripkeStructure}
+function frame(s::AbstractInterpretationSet, i_instance::Integer)
     return error("Please, provide method frame(::$(typeof(s)), ::$(typeof(i_instance))).")
 end
 accessibles(s::AbstractInterpretationSet, i_instance::Integer, args...) = accessibles(frame(s, i_instance), args...)

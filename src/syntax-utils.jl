@@ -176,7 +176,8 @@ Base.getindex(lf::LeftmostLinearForm, idx::Integer) = Base.getindex(children(lf)
 Base.push!(lf::LeftmostLinearForm, el) = Base.push!(children(lf), el)
 
 function composeformulas(c::Connective, φs::NTuple{N,LeftmostLinearForm}) where {N}
-    if all(_c->_c == c, connective.(φs)) # If operator is the same, collapse children
+    # @show φs
+    if all(_c->_c == c, connective.(φs)) # If operator is the same, collapse children TODO and operator is ... associative?
         return LeftmostLinearForm(c, collect(Iterators.flatten(children.(φs))))
         # return LeftmostLinearForm(c, reduce(vcat,children.(φs)))
     else
@@ -788,6 +789,22 @@ See also
 [`SyntaxTree`](@ref)), [`Formula`](@ref).
 """
 normalize(f::Formula, args...; kwargs...) = normalize(tree(f), args...; kwargs...)
+function normalize(
+    t::LLF;
+    kwargs...
+) where {LLF<:Union{LeftmostConjunctiveForm,LeftmostDisjunctiveForm}}
+    ch = children(t)
+    unique!(ch)
+    ch = normalize.(ch; kwargs...)
+    unique!(ch)
+    if connective(t) == (∧)
+        filter!(c->c != ⊤, ch)
+    elseif connective(t) == (∨)
+        filter!(c->c != ⊥, ch)
+    end
+    return LeftmostLinearForm(connective(t), ch)
+end
+
 function normalize(
     t::SyntaxTree;
     profile = :readability,

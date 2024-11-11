@@ -55,22 +55,17 @@ See also
 """
 
 """$(doc_rand)"""
-function Base.rand(alphabet::AbstractAlphabet, args...; kwargs...)
-    Base.rand(Random.GLOBAL_RNG, alphabet, args...; kwargs...)
+function Base.rand(a::AbstractAlphabet, args...; kwargs...)
+    Base.rand(Random.GLOBAL_RNG, a, args...; kwargs...)
 end
 
 function Base.rand(
     rng::AbstractRNG,
-    alphabet::AbstractAlphabet,
+    a::AbstractAlphabet,
     args...;
     kwargs...
 )
-    if isfinite(alphabet)
-        Base.rand(rng, atoms(alphabet), args...; kwargs...)
-    else
-        error("Please, provide method Base.rand(rng::AbstractRNG, " *
-            "alphabet::$(typeof(alphabet)), args...; kwargs...).")
-    end
+    randatom(rng, a, args...; kwargs...)
 end
 
 function Base.rand(height::Integer, l::AbstractLogic, args...; kwargs...)
@@ -179,7 +174,6 @@ the others, then the first atom in the alphabet is selected more frequently.
 
 See also [`AbstractAlphabet`](@ref), [`AbstractWeights`](@ref), [`Atom`](@ref).
 """
-
 function StatsBase.sample(
     alphabet::AbstractAlphabet,
     weights::AbstractWeights,
@@ -266,16 +260,16 @@ doc_randformula = """
         maxheight::Integer,
         alphabet,
         operators::AbstractVector;
-        rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG
+        kwargs...
     )::SyntaxTree
 
     function randformula(
         maxheight::Integer,
         g::AbstractGrammar;
-        rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG
+        kwargs...
     )::SyntaxTree
 
-Return a pseudo-randomic `SyntaxBranch`.
+Return a pseudo-randomic `SyntaxTree`.
 
 # Arguments
 - `maxheight::Integer`: max height of the generated structure;
@@ -284,8 +278,8 @@ Return a pseudo-randomic `SyntaxBranch`.
 - `g::AbstractGrammar`: alternative to passing alphabet and operators separately. (TODO explain?)
 
 # Keyword Arguments
-- `rng::Union{Intger,AbstractRNG} = Random.GLOBAL_RNG`: random number generator;
-- `atompicker::Function` = method used to pick a random element. For example, this could be
+- `modaldepth::Integer`: maximum modal depth
+- `atompicker::Function`: method used to pick a random element. For example, this could be
     Base.rand or StatsBase.sample.
 - `opweights::AbstractWeights` = weight vector over the set of operators (see `StatsBase`).
 - `basecase::Function` = method to specify the base case of the recursion; if not specified,
@@ -323,9 +317,9 @@ function randformula(
     balanced::Bool = false,
     earlystoppingtreshold::AbstractFloat = 0.5,
 )::SyntaxTree
+
     rng = initrng(rng)
     alphabet = convert(AbstractAlphabet, alphabet)
-
     @assert all(x->x isa Operator, operators) "Unexpected object(s) passed as" *
         " operator:" * " $(filter(x->!(x isa Operator), operators))"
 
@@ -338,10 +332,10 @@ function randformula(
     end
 
     if (isnothing(atompicker))
-        atompicker = StatsBase.uweights(length(alphabet))
+        atompicker = StatsBase.uweights(natoms(alphabet))
     elseif (atompicker isa AbstractVector)
-        @assert length(atompicker) == length(alphabet) "Mismatching numbers of atoms " *
-                "($(length(alphabet))) and atompicker ($(length(atompicker)))."
+        @assert length(atompicker) == natoms(alphabet) "Mismatching numbers of atoms " *
+                "($(natoms(alphabet))) and atompicker ($(length(atompicker)))."
         atompicker = StatsBase.weights(atompicker)
     end
 
@@ -352,6 +346,7 @@ function randformula(
 
     nonmodal_operators = findall(!ismodal, operators)
 
+    # recursive call
     function _randformula(
         rng::AbstractRNG,
         maxheight::Integer,

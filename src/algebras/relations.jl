@@ -4,7 +4,8 @@ export GeometricalRelations, IntervalRelation, RCCRelation
 
 # IA
 export IARelations
-export IA_A, IA_L, IA_B, IA_E, IA_D, IA_Ai, IA_Li, IA_Bi, IA_Ei, IA_Di, IA_Oi
+export IA_A, IA_L, IA_B, IA_E, IA_D, IA_O
+export IA_Ai, IA_Li, IA_Bi, IA_Ei, IA_Di, IA_Oi
 export IA_AorO, IA_DorBorE, IA_AiorOi, IA_DiorBiorEi
 export IA_I
 
