@@ -16,7 +16,7 @@ struct OneWorld <: AbstractWorld end
 
 inlinedisplay(w::OneWorld) = "−"
 
-nparameters(::OneWorld) = 0
+nparameters(::Type{<:OneWorld}) = 0
 
 # A propositional world is compatible with 0-dimensional datasets
 goeswithdim(::Type{OneWorld}, ::Val{0}) = true
