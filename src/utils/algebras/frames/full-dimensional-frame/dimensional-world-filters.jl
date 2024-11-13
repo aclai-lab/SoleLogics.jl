@@ -1,6 +1,6 @@
 struct IntervalLengthFilter{F<:Function,T<:Real,W<:Interval} <: WorldFilter{W}
-    f::F
-    k::T
+    f::F # e.g., >=, <
+    k::T # e.g., 3, 10
 
     function IntervalLengthFilter{F,T,W}(f::F, k::T) where {F<:Function,T<:Real,W<:Interval}
         return new{F,T,W}(f, k)

@@ -53,7 +53,9 @@ Y(w::Point) = w[2]
 Z(w::Point) = w[3]
 
 dimensionality(::Point{N}) where {N} = N
-dimensionality(::Type{Point{N}}) where {N} = N
+dimensionality(::Type{<:Point{N}}) where {N} = N
+
+nparameters(T::Type{<:Point}) = dimensionality(T)
 
 goeswithdim(::Type{P}, ::Val{N}) where {N,P<:Point{N}} = true
 
@@ -120,6 +122,8 @@ inlinedisplay(w::Interval) = "($(w.x)−$(w.y))"
 
 goeswithdim(::Type{<:Interval}, ::Val{1}) = true
 
+nparameters(T::Type{<:Interval}) = 2
+
 ############################################################################################
 # Interval 2D
 ############################################################################################
@@ -175,3 +179,5 @@ Base.length(w::Interval2D) = prod(Base.length(w.x), Base.length(w.y))
 inlinedisplay(w::Interval2D) = "($(w.x)×$(w.y))"
 
 goeswithdim(::Type{<:Interval2D}, ::Val{2}) = true
+
+nparameters(T::Type{<:Interval2D}) = 4

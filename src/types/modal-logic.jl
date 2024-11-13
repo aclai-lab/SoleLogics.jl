@@ -18,6 +18,11 @@ abstract type AbstractWorld end
 
 # Base.show(io::IO, w::AbstractWorld) = print(io, inlinedisplay(w))
 
+
+function nparameters(T::Type{<:AbstractWorld})
+    return error("Please, provide method nparameters(T::$(T)).")
+end
+
 ############################################################################################
 
 """
