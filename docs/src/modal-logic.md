@@ -65,7 +65,7 @@ Now here's a challenge. Try to express the following fact using just proposition
 
 The situation is simply schematized as follows
 
-![A Kripke Model, representing a time serie](./assets/time_serie.png)
+![A Kripke structure, representing a time serie](./assets/time_serie.png)
 
 where each world identifies $3$ seconds of audio, and we consider a relation between two worlds only if they represent adjacent parts of the audio. At this point, let's create the Kripke structure in the example using SoleLogics.jl.
 
@@ -92,7 +92,7 @@ Now we are ready to resume the long statement of a few paragraphs ago, the one w
 
 $$q \wedge \lozenge p \wedge \lozenge \lozenge q$$ 
 
-which has to be read *check whether this sub-sample of audio is silence, and the sub-sample after this is loud, and the sub-sample after the latter is silence again*. Let's see if this formula is true on the Kripke model above, starting from $w_1$.
+which has to be read *check whether this sub-sample of audio is silence, and the sub-sample after this is loud, and the sub-sample after the latter is silence again*. Let's see if this formula is true on the Kripke structure above, starting from $w_1$.
 
 ```julia
 # ... continuing code above ...

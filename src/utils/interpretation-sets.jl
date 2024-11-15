@@ -46,8 +46,8 @@ function interpret(
 )::Formula
     return error("Please, provide method " *
         "interpret(φ::Atom, i::$(typeof(i)), " *
-        "args...::$(typeof(args)); " *
-        "kwargs...::$(typeof(kwargs))).")
+        "" * join(map(t->"::$(t)", typeof.(args)), ", ") * "; " *
+        "kwargs...{" * join(map(p->"$(p.first)::$(p.second)", kwargs), ", ") * "}).")
 end
 
 function check(
@@ -58,8 +58,8 @@ function check(
 )
     return error("Please, provide method " *
         "check(φ::SyntaxTree, i::$(typeof(i)), " *
-        "args...::$(typeof(args)); " *
-        "kwargs...::$(typeof(kwargs))).")
+        "" * join(map(t->"::$(t)", typeof.(args)), ", ") * "; " *
+        "kwargs...{" * join(map(p->"$(p.first)::$(p.second)", kwargs), ", ") * "}).")
 end
 
 function check(
