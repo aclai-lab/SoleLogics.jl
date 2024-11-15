@@ -113,7 +113,7 @@ access the current world and all worlds, respectively.
 
 # Examples
 ```julia-repl
-julia> fr = SoleLogics.FullDimensionalFrame((10,),);
+julia> fr = SoleLogics.FullDimensionalFrame((10,), Interval{Int});
 
 julia> Interval(8,11) in (accessibles(fr, Interval(2,5), IA_L))
 true
@@ -276,7 +276,7 @@ Return the worlds in frame `fr` that are accessible from world `w` via relation 
 
 # Examples
 ```julia-repl
-julia> fr = SoleLogics.FullDimensionalFrame((10,),);
+julia> fr = SoleLogics.FullDimensionalFrame((10,), Interval{Int});
 
 julia> typeof(accessibles(fr, Interval(2,5), IA_L))
 Base.Generator{...}

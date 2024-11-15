@@ -180,7 +180,7 @@ julia> accessibles(fr, SoleLogics.Point(3), SoleLogics.GreaterRel) |> collect
 
 ```julia
 # An interval temporal frame on 10 (equidistant) points
-julia> fr = SoleLogics.FullDimensionalFrame(10);
+julia> fr = SoleLogics.FullDimensionalFrame(10, Interval{Int});
 
 # Interval Algebra (IA) relation `L` (later, see [Halpern & Shoham, 1991](https://dl.acm.org/doi/abs/10.1145/115234.115351))
 julia> accessibles(fr, Interval(3,5), IA_L) |> collect

@@ -62,7 +62,7 @@ julia> IARelations
 
 julia> @assert SoleLogics._IA_L() == IA_L
 
-julia> fr = SoleLogics.FullDimensionalFrame((10,),);
+julia> fr = SoleLogics.FullDimensionalFrame((10,), Interval{Int});
 
 julia> collect(accessibles(fr, Interval(2,5), IA_L))
 15-element Vector{Interval{Int64}}:

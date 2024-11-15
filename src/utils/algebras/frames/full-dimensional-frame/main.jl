@@ -26,7 +26,7 @@ julia> SoleLogics.allworlds(SoleLogics.FullDimensionalFrame((),))
 1-element Vector{OneWorld}:
  −
 
-julia> nworlds(SoleLogics.FullDimensionalFrame((10,),))
+julia> nworlds(SoleLogics.FullDimensionalFrame((10,), Interval{Int}))
 55
 
 julia> nworlds(SoleLogics.FullDimensionalFrame((10,10),))
@@ -62,7 +62,10 @@ struct FullDimensionalFrame{N,W<:AbstractWorld} <: AbstractDimensionalFrame{N,W}
         FullDimensionalFrame{N,W}(channelsize)
     end
 
-    function FullDimensionalFrame(channelsize::Tuple{})
+    function FullDimensionalFrame(channelsize::Tuple{}, W::Union{Nothing,Type{<:AbstractWorld}} = nothing)
+        if !isnothing(W)
+            @warn "Ignoring worldtype provided ($(W)) and defaulting to worldtype to OneWorld."
+        end
         W = OneWorld
         FullDimensionalFrame{0,W}(channelsize)
     end

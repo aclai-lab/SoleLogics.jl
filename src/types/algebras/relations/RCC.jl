@@ -76,7 +76,7 @@ julia> RCC8Relations
 
 julia> @assert SoleLogics._Topo_DC() == Topo_DC
 
-julia> fr = SoleLogics.FullDimensionalFrame((10,),);
+julia> fr = SoleLogics.FullDimensionalFrame((10,), Interval{Int});
 
 julia> collect(accessibles(fr, Interval(4,8), Topo_DC))
 6-element Vector{Interval{Int64}}:
