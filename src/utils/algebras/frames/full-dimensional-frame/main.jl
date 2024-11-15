@@ -83,8 +83,8 @@ struct FullDimensionalFrame{N,W<:AbstractWorld} <: AbstractDimensionalFrame{N,W}
         end
         FullDimensionalFrame{2,W}(channelsize; silent)
     end
-    function FullDimensionalFrame(channelsize::Vararg{Int,N}, silent = true) where {N}
-        FullDimensionalFrame(channelsize; silent)
+    function FullDimensionalFrame(channelsize::Vararg{Int,N}) where {N}
+        FullDimensionalFrame(channelsize)
     end
     function FullDimensionalFrame(; silent = true)
         return error("Could not instantiate FullDimensionalFrame with no dimensions")
