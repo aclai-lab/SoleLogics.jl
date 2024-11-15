@@ -63,22 +63,22 @@ struct FullDimensionalFrame{N,W<:AbstractWorld} <: AbstractDimensionalFrame{N,W}
     end
 
     function FullDimensionalFrame(channelsize::Tuple{}, W::Union{Nothing,Type{<:AbstractWorld}} = nothing; silent = true)
-        if !silent && !isnothing(W)
-            @warn "Ignoring worldtype provided ($(W)) and defaulting to worldtype to OneWorld."
+        if !isnothing(W)
+            silent || @warn "Ignoring worldtype provided ($(W)) and defaulting to worldtype to OneWorld."
         end
         W = OneWorld
         FullDimensionalFrame{0,W}(channelsize; silent)
     end
     function FullDimensionalFrame(channelsize::Tuple{Int}, W::Union{Nothing,Type{<:AbstractWorld}} = nothing; silent = true)
-        if !silent && isnothing(W)
-            @warn "Unknown world type. Defaulting to Interval{Int}."
+        if isnothing(W)
+            silent || @warn "Unknown world type. Defaulting to Interval{Int}."
             W = Interval{Int}
         end
         FullDimensionalFrame{1,W}(channelsize; silent)
     end
     function FullDimensionalFrame(channelsize::Tuple{Int,Int}, W::Union{Nothing,Type{<:AbstractWorld}} = nothing; silent = true)
-        if !silent && isnothing(W)
-            @warn "Unknown world type. Defaulting to Interval2D{Int}."
+        if isnothing(W)
+            silent || @warn "Unknown world type. Defaulting to Interval2D{Int}."
             W = Interval2D{Int}
         end
         FullDimensionalFrame{2,W}(channelsize; silent)
