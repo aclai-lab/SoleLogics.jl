@@ -53,40 +53,40 @@ struct FullDimensionalFrame{N,W<:AbstractWorld} <: AbstractDimensionalFrame{N,W}
 
     channelsize::NTuple{N,Int}
 
-    function FullDimensionalFrame{N,W}(channelsize::NTuple{N,Int}) where
+    function FullDimensionalFrame{N,W}(channelsize::NTuple{N,Int}; silent = true) where
             {N,W<:AbstractWorld}
         new{N,W}(channelsize)
     end
-    function FullDimensionalFrame{N,W}(channelsize::Vararg{Int,N}) where
+    function FullDimensionalFrame{N,W}(channelsize::Vararg{Int,N}; silent = true) where
             {N,W<:AbstractWorld}
-        FullDimensionalFrame{N,W}(channelsize)
+        FullDimensionalFrame{N,W}(channelsize; silent)
     end
 
-    function FullDimensionalFrame(channelsize::Tuple{}, W::Union{Nothing,Type{<:AbstractWorld}} = nothing)
-        if !isnothing(W)
+    function FullDimensionalFrame(channelsize::Tuple{}, W::Union{Nothing,Type{<:AbstractWorld}} = nothing; silent = true)
+        if !silent && !isnothing(W)
             @warn "Ignoring worldtype provided ($(W)) and defaulting to worldtype to OneWorld."
         end
         W = OneWorld
-        FullDimensionalFrame{0,W}(channelsize)
+        FullDimensionalFrame{0,W}(channelsize; silent)
     end
-    function FullDimensionalFrame(channelsize::Tuple{Int}, W::Union{Nothing,Type{<:AbstractWorld}} = nothing)
-        if isnothing(W)
+    function FullDimensionalFrame(channelsize::Tuple{Int}, W::Union{Nothing,Type{<:AbstractWorld}} = nothing; silent = true)
+        if !silent && isnothing(W)
             @warn "Unknown world type. Defaulting to Interval{Int}."
             W = Interval{Int}
         end
-        FullDimensionalFrame{1,W}(channelsize)
+        FullDimensionalFrame{1,W}(channelsize; silent)
     end
-    function FullDimensionalFrame(channelsize::Tuple{Int,Int}, W::Union{Nothing,Type{<:AbstractWorld}} = nothing)
-        if isnothing(W)
+    function FullDimensionalFrame(channelsize::Tuple{Int,Int}, W::Union{Nothing,Type{<:AbstractWorld}} = nothing; silent = true)
+        if !silent && isnothing(W)
             @warn "Unknown world type. Defaulting to Interval2D{Int}."
             W = Interval2D{Int}
         end
-        FullDimensionalFrame{2,W}(channelsize)
+        FullDimensionalFrame{2,W}(channelsize; silent)
     end
-    function FullDimensionalFrame(channelsize::Vararg{Int,N}) where {N}
-        FullDimensionalFrame(channelsize)
+    function FullDimensionalFrame(channelsize::Vararg{Int,N}, silent = true) where {N}
+        FullDimensionalFrame(channelsize; silent)
     end
-    function FullDimensionalFrame()
+    function FullDimensionalFrame(; silent = true)
         return error("Could not instantiate FullDimensionalFrame with no dimensions")
     end
 end
