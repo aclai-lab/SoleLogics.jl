@@ -243,7 +243,7 @@ end
 """
     parseformula(
         T::Type{AnchoredFormula},
-        expr::String,
+        expr::AbstractString,
         additional_operators::Union{Nothing,Vector{<:Operator}} = nothing;
         operators::Union{Nothing,Vector{<:Operator}},
         grammar::Union{Nothing,AbstractGrammar} = nothing,
@@ -265,7 +265,7 @@ See [`parseformula`](@ref), [`baseformula`](@ref), [`BASE_PARSABLE_CONNECTIVES`]
 """
 function parseformula(
     ::Type{AnchoredFormula},
-    expr::String,
+    expr::AbstractString,
     additional_operators::Union{Nothing,Vector{<:Operator}} = nothing;
     # TODO add alphabet parameter add custom parser for atoms
     # alphabet::Union{Nothing,Vector,AbstractAlphabet} = nothing,
@@ -290,7 +290,7 @@ end
 
 function parseformula(
     ::Type{AnchoredFormula},
-    expr::String,
+    expr::AbstractString,
     logic::AbstractLogic;
     kwargs...,
 )

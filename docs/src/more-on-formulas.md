@@ -45,7 +45,7 @@ synstruct(φ::AnchoredFormula)
 
 baseformula(φ::Formula; infer_logic = true, additional_operators::Union{Nothing,Vector{<:Operator}} = nothing, kwargs...)
 
-parseformula(::Type{AnchoredFormula}, expr::String, additional_operators::Union{Nothing,Vector{<:Operator}} = nothing; operators::Union{Nothing,Vector{<:Operator}}, grammar::Union{Nothing,AbstractGrammar} = nothing, algebra::Union{Nothing,AbstractAlgebra} = nothing, kwargs...)
+parseformula(::Type{AnchoredFormula}, expr::AbstractString, additional_operators::Union{Nothing,Vector{<:Operator}} = nothing; operators::Union{Nothing,Vector{<:Operator}}, grammar::Union{Nothing,AbstractGrammar} = nothing, algebra::Union{Nothing,AbstractAlgebra} = nothing, kwargs...)
 ``` -->
 
 ## Random sampling and generation
@@ -63,7 +63,7 @@ randformula
 ```@docs
 BASE_PARSABLE_CONNECTIVES
 
-parseformula(F::Type{<:SyntaxTree}, expr::String, additional_operators::Union{Nothing,AbstractVector} = nothing; function_notation::Bool = false, atom_parser::Base.Callable = Atom{String}, additional_whitespaces::Vector{Char} = Char[], opening_parenthesis::String = DEFAULT_OPENING_PARENTHESIS, closing_parenthesis::String = DEFAULT_CLOSING_PARENTHESIS, arg_delim::String = DEFAULT_ARG_DELIM)
+parseformula(F::Type{<:SyntaxTree}, expr::AbstractString, additional_operators::Union{Nothing,AbstractVector} = nothing; function_notation::Bool = false, atom_parser::Base.Callable = Atom{String}, additional_whitespaces::Vector{Char} = Char[], opening_parenthesis::String = DEFAULT_OPENING_PARENTHESIS, closing_parenthesis::String = DEFAULT_CLOSING_PARENTHESIS, arg_delim::String = DEFAULT_ARG_DELIM)
 ```
 
 ## Utilities

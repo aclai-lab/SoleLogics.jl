@@ -5,7 +5,7 @@
 
 doc_lmlf = """
     struct LeftmostLinearForm{C<:Connective,SS<:SyntaxStructure} <: SyntaxStructure
-        children::Vector{<:SS}
+        grandchildren::Vector{<:SS}
     end
 
 A syntax structure representing the [`foldl`](https://en.wikipedia.org/wiki/Fold_(higher-order_function))
@@ -37,7 +37,7 @@ julia> LeftmostDisjunctiveForm([LeftmostConjunctiveForm(parseformula.(["¬p", "q
 true
 
 julia> conj = LeftmostConjunctiveForm(@atoms p q)
-LeftmostConjunctiveForm with 2 Atom{String} children:
+LeftmostConjunctiveForm with 2 Atom{String} grandchildren:
         p
         q
 
@@ -45,7 +45,7 @@ julia> tree(conj)
 SyntaxBranch: p ∧ q
 
 julia> nconj = NEGATION(conj)
-LeftmostLinearForm with connective ¬ and 1 LeftmostConjunctiveForm{Atom{String}} children:
+LeftmostLinearForm with connective ¬ and 1 LeftmostConjunctiveForm{Atom{String}} grandchildren:
         (p) ∧ (q)
 
 julia> tree(nconj)
@@ -63,52 +63,53 @@ See also [`SyntaxStructure`](@ref), [`SyntaxTree`](@ref),
 [`Literal`](@ref).
 """
 struct LeftmostLinearForm{C<:Connective,SS<:SyntaxStructure} <: SyntaxStructure
-    children::Vector{SS}
+    grandchildren::Vector{SS}
 
     function LeftmostLinearForm{C,SS}(
-        children::Vector,
+        grandchildren::Vector,
     ) where {C<:Connective,SS<:SyntaxStructure}
         a = arity(C()) # TODO maybe add member connective::C and use that instead of C()
-        n_children = length(children)
+        n_children = length(grandchildren)
 
-        length(children) > 0 || error("Cannot instantiate LeftmostLinearForm{$(C)} with no children.")
+        length(grandchildren) > 0 || error("Cannot instantiate LeftmostLinearForm{$(C)} with no grandchildren.")
 
         if a == 1
             n_children == 1 ||
-                error("Mismatching number of children ($n_children) and connective's arity ($a).")
+                error("Mismatching number of grandchildren ($n_children) and connective's arity ($a).")
         else
             h = (n_children-1)/(a-1)
             (isinteger(h) && h >= 0) ||
             # TODO figure out whether the base case n_children = 0 makes sense
-                error("Mismatching number of children ($n_children) and connective's arity ($a).")
+                error("Mismatching number of grandchildren ($n_children) and connective's arity ($a).")
         end
 
-        new{C,SS}(children)
+        new{C,SS}(grandchildren)
     end
 
-    function LeftmostLinearForm{C}(children::AbstractVector{SS}) where {C<:Connective,SS<:SyntaxStructure}
-        # SS = SoleBase._typejoin(typeof.(children)...)
-        LeftmostLinearForm{C,SS}(children)
+    function LeftmostLinearForm{C}(grandchildren::AbstractVector{SS}) where {C<:Connective,SS<:SyntaxStructure}
+        # SS = SoleBase._typejoin(typeof.(grandchildren)...)
+        LeftmostLinearForm{C,SS}(grandchildren)
     end
 
     # Ugly!!
-    function LeftmostLinearForm{C}(children::AbstractVector) where {C<:Connective}
-        SS = SoleBase._typejoin(typeof.(children)...)
-        LeftmostLinearForm{C,SS}(children)
+    function LeftmostLinearForm{C}(grandchildren::AbstractVector) where {C<:Connective}
+        length(grandchildren) > 0 || error("Cannot instantiate LeftmostLinearForm{$(C)} with no grandchildren.")
+        SS = SoleBase._typejoin(typeof.(grandchildren)...)
+        LeftmostLinearForm{C,SS}(grandchildren)
     end
 
     function LeftmostLinearForm(
         C::Type{<:SoleLogics.Connective},
-        children::Vector,
+        grandchildren::Vector,
     )
-        LeftmostLinearForm{C}(children)
+        LeftmostLinearForm{C}(grandchildren)
     end
 
     function LeftmostLinearForm(
         op::Connective,
-        children::Vector,
+        grandchildren::Vector,
     )
-        LeftmostLinearForm(typeof(op), children)
+        LeftmostLinearForm(typeof(op), grandchildren)
     end
 
     function LeftmostLinearForm(
@@ -149,39 +150,46 @@ struct LeftmostLinearForm{C<:Connective,SS<:SyntaxStructure} <: SyntaxStructure
     end
 end
 
-children(lf::LeftmostLinearForm) = lf.children
+grandchildren(lf::LeftmostLinearForm) = lf.grandchildren
+ngrandchildren(lf::LeftmostLinearForm) = length(grandchildren(lf))
 connective(::LeftmostLinearForm{C}) where {C} = C() # TODO avoid using C alone, since it may not be a singleton.
 
 operatortype(::LeftmostLinearForm{C}) where {C} = C
-childrentype(::LeftmostLinearForm{C,SS}) where {C,SS} = SS
+grandchildrentype(::LeftmostLinearForm{C,SS}) where {C,SS} = SS
 
-nchildren(lf::LeftmostLinearForm) = length(children(lf))
+# AbstractTrees.children (from Formula interface)
+# children(lf::LeftmostLinearForm) = error("TODO implement.")
+# TODO not quite true.
+children(lf::LeftmostLinearForm) = grandchildren(lf)
+token(lf::LeftmostLinearForm) = connective(lf)
 
 
-@forward LeftmostLinearForm.children (
+@forward LeftmostLinearForm.grandchildren (
     Base.length,
     Base.setindex!,
     Base.push!,
+    Base.pushfirst!,
+    Base.append!,
     Base.iterate, Base.IteratorSize, Base.IteratorEltype,
     Base.firstindex, Base.lastindex,
     Base.keys, Base.values,
 )
 
 # function Base.getindex(lf::LeftmostLinearForm{C,SS}, idxs::AbstractVector) where {C,SS}
-    # return LeftmostLinearForm{C,SS}(children(lf)[idxs])
+    # return LeftmostLinearForm{C,SS}(grandchildren(lf)[idxs])
 # end
 # Base.getindex(lf::LeftmostLinearForm, idx::Integer) = Base.getindex(lf,[idx])
 function Base.getindex(lf::LeftmostLinearForm, idxs::AbstractVector)
-    return LeftmostLinearForm(children(lf)[idxs])
+    return LeftmostLinearForm(grandchildren(lf)[idxs])
 end
-Base.getindex(lf::LeftmostLinearForm, idx::Integer) = Base.getindex(children(lf),idx)
-Base.push!(lf::LeftmostLinearForm, el) = Base.push!(children(lf), el)
+Base.getindex(lf::LeftmostLinearForm, idx::Integer) = Base.getindex(grandchildren(lf),idx)
+Base.push!(lf::LeftmostLinearForm, el) = Base.push!(grandchildren(lf), el)
 
 function composeformulas(c::Connective, φs::NTuple{N,LeftmostLinearForm}) where {N}
     # @show φs
-    if all(_c->_c == c, connective.(φs)) # If operator is the same, collapse children TODO and operator is ... associative?
-        return LeftmostLinearForm(c, collect(Iterators.flatten(children.(φs))))
-        # return LeftmostLinearForm(c, reduce(vcat,children.(φs)))
+    if all(_c->_c == c, connective.(φs)) # If operator is the same, collapse grandchildren TODO and operator is ... associative?
+        return LeftmostLinearForm(c, collect(Iterators.flatten(grandchildren.(φs))))
+        # return LeftmostLinearForm(c, reduce(vcat,grandchildren.(φs)))
     else
         return LeftmostLinearForm(c, collect(φs))
     end
@@ -197,7 +205,7 @@ function syntaxstring(
     if function_notation
         syntaxstring(tree(lf); function_notation = function_notation, kwargs...)
     else
-        chs = children(lf)
+        chs = grandchildren(lf)
         children_ss = map(
             c->syntaxstring(c; kwargs...),
             chs
@@ -209,7 +217,7 @@ end
 function tree(lf::LeftmostLinearForm)
     c = connective(lf)
     a = arity(c)
-    chs = children(lf)
+    chs = grandchildren(lf)
 
     st = begin
         if length(chs) == 1 # Only child
@@ -235,14 +243,22 @@ end
 function Base.show(io::IO, lf::LeftmostLinearForm{C,SS}) where {C,SS}
     if lf isa CNF
         print(io, "CNF with")
-        println(io, " $(nconjuncts(lf)) conjuncts:")
+        print(io, " $(nconjuncts(lf)) conjuncts")
         L = literaltype(lf)
-        L <: Literal || println(io, " $(nconjuncts(lf)) and literals of type $(L):")
+        if L <: Literal
+            println(io, ":")
+        else
+            println(io, " and literals of type $(L):")
+        end
     elseif lf isa DNF
         print(io, "DNF with")
-        println(io, " $(ndisjuncts(lf)) disjuncts:")
+        print(io, " $(ndisjuncts(lf)) disjuncts")
         L = literaltype(lf)
-        L <: Literal || println(io, " $(ndisjuncts(lf)) and literals of type $(L):")
+        if L <: Literal
+            println(io, ":")
+        else
+            println(io, " and literals of type $(L):")
+        end
     else
         if lf isa LeftmostConjunctiveForm
             print(io, "LeftmostConjunctiveForm with")
@@ -251,10 +267,10 @@ function Base.show(io::IO, lf::LeftmostLinearForm{C,SS}) where {C,SS}
         else
             print(io, "LeftmostLinearForm with connective $(syntaxstring(connective(lf))) and")
         end
-        println(io, " $(nchildren(lf)) $((SS == SyntaxStructure ? "" : "$(SS) "))children:")
+        println(io, " $(ngrandchildren(lf)) $((SS == SyntaxStructure ? "" : "$(SS) "))grandchildren:")
     end
-    # println(io, "\t$(join(syntaxstring.(children(lf)), " $(syntaxstring(connective(lf))) \n\t"))")
-    println(io, "\t$(join(syntaxstring.(children(lf)), "\n\t"))")
+    # println(io, "\t$(join(syntaxstring.(grandchildren(lf)), " $(syntaxstring(connective(lf))) \n\t"))")
+    println(io, "\t$(join(syntaxstring.(grandchildren(lf)), "\n\t"))")
 end
 
 # TODO fix
@@ -264,26 +280,26 @@ Base.promote_rule(::Type{LF}, ::Type{SS}) where {LF<:LeftmostLinearForm,SS<:Synt
 
 function Base.in(tok::SyntaxToken, φ::LeftmostLinearForm)::Bool
     return (tok isa Connective && connective(φ) == tok) ||
-        any(c->Base.in(tok, c), children(φ))
+        any(c->Base.in(tok, c), grandchildren(φ))
 end
 
 function Base.in(tok::SyntaxLeaf, φ::LeftmostLinearForm{C,<:SyntaxLeaf})::Bool where {C<:Connective}
-    return Base.in(tok, children(φ))
+    return Base.in(tok, grandchildren(φ))
 end
 
 
-atoms(φ::LeftmostLinearForm) = Iterators.flatten(Iterators.map(atoms, children(φ)))
-leaves(φ::LeftmostLinearForm) = Iterators.flatten(Iterators.map(leaves, children(φ)))
+atoms(φ::LeftmostLinearForm) = Iterators.flatten(Iterators.map(atoms, grandchildren(φ)))
+leaves(φ::LeftmostLinearForm) = Iterators.flatten(Iterators.map(leaves, grandchildren(φ)))
 
-natoms(φ::LeftmostLinearForm) = sum(natoms, children(φ))
-nleaves(φ::LeftmostLinearForm) = sum(nleaves, children(φ))
+natoms(φ::LeftmostLinearForm) = sum(natoms, grandchildren(φ))
+nleaves(φ::LeftmostLinearForm) = sum(nleaves, grandchildren(φ))
 
 # function tokens(φ::LeftmostLinearForm)
 #     # return TODO
 # end
 
 function atoms(φ::LeftmostLinearForm{C,<:Atom})::Vector{Atom} where {C<:Connective}
-    return children(φ)
+    return grandchildren(φ)
 end
 
 # function connectives(φ::LeftmostLinearForm{C,<:Atom})::Bool where {C<:Connective}
@@ -295,7 +311,7 @@ end
 # end
 
 function leaves(φ::LeftmostLinearForm{C,<:SyntaxLeaf})::SyntaxLeaf where {C<:Connective}
-    return children(φ)
+    return grandchildren(φ)
 end
 
 # function ntokens(φ::LeftmostLinearForm{C,<:Atom})::Bool where {C<:Connective}
@@ -303,7 +319,7 @@ end
 # end
 
 function natoms(φ::LeftmostLinearForm{C,<:Atom})::Integer where {C<:Connective}
-    return nchildren(φ)
+    return ngrandchildren(φ)
 end
 
 # function nconnectives(φ::LeftmostLinearForm{C,<:Atom})::Bool where {C<:Connective}
@@ -315,7 +331,7 @@ end
 # end
 
 function nleaves(φ::LeftmostLinearForm{C,<:SyntaxLeaf})::Integer where {C<:Connective}
-    return nchildren(φ)
+    return ngrandchildren(φ)
 end
 
 Base.promote_rule(::Type{LF}, ::Type{SS}) where {LF<:LeftmostLinearForm,SS<:SyntaxTree} = SyntaxTree
@@ -343,7 +359,7 @@ function check(
     args...;
     kwargs...
 )
-    return all(ch -> check(ch, args...; kwargs...), children(φ))
+    return all(ch -> check(ch, args...; kwargs...), grandchildren(φ))
 end
 
 function check(
@@ -352,7 +368,7 @@ function check(
     args...;
     kwargs...
 )
-    return all(ch -> check(ch, i, args...; kwargs...), children(φ))
+    return all(ch -> check(ch, i, args...; kwargs...), grandchildren(φ))
 end
 
 """
@@ -371,7 +387,7 @@ function check(
     args...;
     kwargs...
 )
-    return any(ch -> check(ch, args...; kwargs...), children(φ))
+    return any(ch -> check(ch, args...; kwargs...), grandchildren(φ))
 end
 
 function check(
@@ -380,7 +396,7 @@ function check(
     args...;
     kwargs...
 )
-    return any(ch -> check(ch, i, args...; kwargs...), children(φ))
+    return any(ch -> check(ch, i, args...; kwargs...), grandchildren(φ))
 end
 
 """
@@ -398,7 +414,7 @@ function check(
     args...;
     kwargs...
 )
-    return all(ch -> any(grandch -> check(grandch, args...; kwargs...), children(ch)), children(φ))
+    return all(ch -> any(grandch -> check(grandch, args...; kwargs...), grandchildren(ch)), grandchildren(φ))
 end
 
 function check(
@@ -407,7 +423,7 @@ function check(
     args...;
     kwargs...
 )
-    return all(ch -> any(grandch -> check(grandch, i, args...; kwargs...), children(ch)), children(φ))
+    return all(ch -> any(grandch -> check(grandch, i, args...; kwargs...), grandchildren(ch)), grandchildren(φ))
 end
 
 """
@@ -425,7 +441,7 @@ function check(
     args...;
     kwargs...
 )
-    return any(ch -> all(grandch -> check(grandch, args...; kwargs...), children(ch)), children(φ))
+    return any(ch -> all(grandch -> check(grandch, args...; kwargs...), grandchildren(ch)), grandchildren(φ))
 end
 
 function check(
@@ -434,16 +450,16 @@ function check(
     args...;
     kwargs...
 )
-    return any(ch -> all(grandch -> check(grandch, i, args...; kwargs...), children(ch)), children(φ))
+    return any(ch -> all(grandch -> check(grandch, i, args...; kwargs...), grandchildren(ch)), grandchildren(φ))
 end
 
 # Helpers
 function CNF(conjuncts::AbstractVector{<:LeftmostDisjunctiveForm})
-    SS = Union{childrentype.(conjuncts)...}
+    SS = Union{grandchildrentype.(conjuncts)...}
     return CNF{SS}(conjuncts)
 end
 function DNF(disjuncts::AbstractVector{<:LeftmostConjunctiveForm})
-    SS = Union{childrentype.(disjuncts)...}
+    SS = Union{grandchildrentype.(disjuncts)...}
     return DNF{SS}(disjuncts)
 end
 CNF(conjuncts::NTuple{N,<:LeftmostDisjunctiveForm}) where {N} = CNF(collect(conjuncts))
@@ -478,13 +494,13 @@ literaltype(::DNF{SS}) where {SS<:SyntaxStructure} = SS
 # Base.promote_rule(::Type{<:LeftmostDisjunctiveForm}, ::Type{<:LeftmostDisjunctiveForm}) = LeftmostDisjunctiveForm
 # Base.promote_rule(::Type{<:LeftmostConjunctiveForm}, ::Type{<:LeftmostDisjunctiveForm}) = SyntaxTree
 
-conjuncts(φ::LeftmostConjunctiveForm) = children(φ)
-nconjuncts(φ::LeftmostConjunctiveForm) = nchildren(φ)
-pushconjunct!(φ::LeftmostLinearForm, el) = Base.push!(children(φ), el)
+conjuncts(φ::LeftmostConjunctiveForm) = grandchildren(φ)
+nconjuncts(φ::LeftmostConjunctiveForm) = ngrandchildren(φ)
+pushconjunct!(φ::LeftmostLinearForm, el) = Base.push!(grandchildren(φ), el)
 
-disjuncts(φ::LeftmostDisjunctiveForm) = children(φ)
-ndisjuncts(φ::LeftmostDisjunctiveForm) = nchildren(φ)
-pushdisjunct(φ::LeftmostDisjunctiveForm, el) = Base.push!(children(φ), el)
+disjuncts(φ::LeftmostDisjunctiveForm) = grandchildren(φ)
+ndisjuncts(φ::LeftmostDisjunctiveForm) = ngrandchildren(φ)
+pushdisjunct(φ::LeftmostDisjunctiveForm, el) = Base.push!(grandchildren(φ), el)
 
 # conjuncts(φ::DNF) = map(d->conjuncts(d), disjuncts(φ))
 # nconjuncts(φ::DNF) = map(d->nconjuncts(d), disjuncts(φ))
@@ -497,7 +513,7 @@ pushdisjunct(φ::LeftmostDisjunctiveForm, el) = Base.push!(children(φ), el)
 """
     struct Literal{T<:SyntaxLeaf} <: SyntaxStructure
         ispos::Bool
-        prop::T
+        atom::T
     end
 
 An atom, or its negation.
@@ -506,20 +522,20 @@ See also [`CNF`](@ref), [`DNF`](@ref), [`SyntaxStructure`](@ref).
 """
 struct Literal{T<:SyntaxLeaf} <: SyntaxStructure
     ispos::Bool
-    prop::T
+    atom::T
 
     function Literal{T}(
         ispos::Bool,
-        prop::T,
+        atom::T,
     ) where {T<:SyntaxLeaf}
-        new{T}(ispos, prop)
+        new{T}(ispos, atom)
     end
 
     function Literal(
         ispos::Bool,
-        prop::T,
+        atom::T,
     ) where {T<:SyntaxLeaf}
-        Literal{T}(ispos, prop)
+        Literal{T}(ispos, atom)
     end
 
     function Literal(φ::SyntaxLeaf, flag = true)
@@ -534,76 +550,17 @@ struct Literal{T<:SyntaxLeaf} <: SyntaxStructure
 end
 
 ispos(l::Literal) = l.ispos
-prop(l::Literal) = l.prop
+atom(l::Literal) = l.atom
 
 atomstype(::Literal{T}) where {T} = T
 
-tree(l::Literal) = ispos(l) ? l.prop : ¬(l.prop)
+tree(l::Literal) = ispos(l) ? l.atom : ¬(l.atom)
 
 hasdual(l::Literal) = true
-dual(l::Literal) = Literal(!ispos(l), prop(l))
+dual(l::Literal) = Literal(!ispos(l), atom(l))
 
 function Base.show(io::IO, l::Literal)
     println(io,
-        "Literal{$(atomstype(l))}: " * (ispos(l) ? "" : "¬") * syntaxstring(prop(l))
+        "Literal{$(atomstype(l))}: " * (ispos(l) ? "" : "¬") * syntaxstring(atom(l))
     )
 end
-
-############################################################################################
-# CNF conversion
-############################################################################################
-
-"""
-    cnf(φ::Formula, literaltype = Literal; kwargs...)
-
-    TODO docstring. Converts to cnf form ([`CNF`](@ref)).
-    `CNF{literaltype}`
-    Additional `kwargs` are passed to [`normalize`](@ref)
-"""
-function cnf(φ::Formula, literaltype = Literal; kwargs...)
-    return _cnf(normalize(φ; profile = :nnf, kwargs...), literaltype) end
-
-function cnf(φ::CNF{T}, literaltype = Literal; kwargs...) where {T<:SyntaxStructure}
-    if T == literaltype
-        return φ
-    else
-        return cnf(tree(φ), literaltype; kwargs...)
-    end
-end
-
-function cnf(φ::DNF, args...; kwargs...)
-    return cnf(tree(φ), args...; kwargs...)
-end
-
-
-function _cnf(φ::Formula, literaltype = Literal)
-    return error("Cannot convert to CNF formula of type $(typeof(φ)): $(syntaxstring(φ))")
-end
-
-function _cnf(φ::SyntaxLeaf, literaltype = Literal)
-    φ = φ isa literaltype ? φ : literaltype(φ)
-    return LeftmostConjunctiveForm([LeftmostDisjunctiveForm{literaltype}([φ])])
-end
-
-function _cnf(φ::SyntaxBranch, literaltype = Literal)
-    if token(φ) == ∧
-        return _cnf(first(children(φ)), literaltype) ∧ _cnf(last(children(φ)), literaltype)
-    elseif token(φ) == ∨
-        conjs = vec([begin
-            # @show typeof(c1), typeof(c2)
-            # @show typeof(c1 ∨ c2)
-            # LeftmostDisjunctiveForm{literaltype}(c1 ∨ c2)
-            c1 ∨ c2
-        end for (c1,c2) in Iterators.product(conjuncts(_cnf(first(children(φ)), literaltype)),conjuncts(_cnf(last(children(φ)), literaltype)))])
-        # @show typeof.(conjs)
-        # conjs = Vector{LeftmostDisjunctiveForm{literaltype}}(conjs)
-        return LeftmostConjunctiveForm(conjs)
-    elseif token(φ) == ¬
-        φ = φ isa literaltype ? φ : literaltype(φ)
-        return LeftmostConjunctiveForm([LeftmostDisjunctiveForm{literaltype}([φ])])
-    else
-        return error("Unexpected token $(token)!")
-    end
-end
-
-############################################################################################
