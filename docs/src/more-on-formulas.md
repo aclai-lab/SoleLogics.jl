@@ -14,10 +14,9 @@ We proceed by presenting the random formulae generation engine, parsing and some
 Recalling the type hierarchy presented in [man-core](@ref), it is here enriched with the following new types and structures.
 
 - [`Formula`](@ref)
-    - [`AnchoredFormula`](@ref)
-    - [`AbstractSyntaxStructure`](@ref)
+    - [`SyntaxStructure`](@ref)
         - [`Literal`](@ref)
-        - [`LeftmostLinearForm{C<:Connective,SS<:AbstractSyntaxStructure}`](@ref)
+        - [`LeftmostLinearForm`](@ref)
 ---
 
 ## Literals
@@ -27,14 +26,17 @@ Literal
 
 ## Linear Forms
 ```@docs
-LeftmostLinearForm{C<:Connective,SS<:AbstractSyntaxStructure}
+LeftmostLinearForm{C<:Connective,SS<:SyntaxStructure}
 
-LeftmostConjunctiveForm{SS<:AbstractSyntaxStructure}
-LeftmostDisjunctiveForm{SS<:AbstractSyntaxStructure}
+LeftmostConjunctiveForm{SS<:SyntaxStructure}
+LeftmostDisjunctiveForm{SS<:SyntaxStructure}
 
-CNF{SS<:AbstractSyntaxStructure}
-DNF{SS<:AbstractSyntaxStructure}
+CNF{SS<:SyntaxStructure}
+DNF{SS<:SyntaxStructure}
 ```
+
+<!-- 
+  - [`AnchoredFormula`](@ref)
 
 ```@docs
 AnchoredFormula
@@ -43,16 +45,17 @@ synstruct(φ::AnchoredFormula)
 
 baseformula(φ::Formula; infer_logic = true, additional_operators::Union{Nothing,Vector{<:Operator}} = nothing, kwargs...)
 
-parsebaseformula(expr::String, additional_operators::Union{Nothing,Vector{<:Operator}} = nothing; operators::Union{Nothing,Vector{<:Operator}}, grammar::Union{Nothing,AbstractGrammar} = nothing, algebra::Union{Nothing,AbstractAlgebra} = nothing, kwargs...)
-```
+parseformula(::Type{AnchoredFormula}, expr::String, additional_operators::Union{Nothing,Vector{<:Operator}} = nothing; operators::Union{Nothing,Vector{<:Operator}}, grammar::Union{Nothing,AbstractGrammar} = nothing, algebra::Union{Nothing,AbstractAlgebra} = nothing, kwargs...)
+``` -->
 
 ## Random sampling and generation
 
 ```@docs
 Base.rand(alphabet::AbstractAlphabet, args...; kwargs...)
+SoleLogics.randatom
 StatsBase.sample(alphabet::AbstractAlphabet, weights::AbstractWeights, args...; kwargs...)
 
-randformula(height::Integer, alphabet, operators::AbstractVector; rng::Union{Integer,AbstractRNG} = Random.GLOBAL_RNG)
+randformula
 ```
 
 ## Parsing

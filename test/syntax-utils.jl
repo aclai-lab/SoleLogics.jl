@@ -145,3 +145,12 @@ for i in 1:50
     # i == 1 && println(_tdict)
     @test check(φ, _tdict) == check(φ2, _tdict)
 end
+
+############################################################################################
+
+using SoleLogics
+
+conj = LeftmostConjunctiveForm(@atoms p q)
+tree(conj)
+nconj = NEGATION(conj)
+@test_broken tree(¬¬nconj) != tree(¬nconj) # TODO this is very bad.

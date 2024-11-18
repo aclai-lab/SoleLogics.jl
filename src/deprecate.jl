@@ -1,7 +1,16 @@
 # core.jl
 export atom, Proposition, NamedOperator
 
+const ToCenteredRel = ToCenterRel
+
 const NamedOperator = NamedConnective
+const AbstractSyntaxStructure = SyntaxStructure
+
+# Helper
+function Base.getindex(i::AbstractInterpretation, v, args...; kwargs...)
+    Base.getindex(i, Atom(v), args...; kwargs...)
+end
+
 
 const Proposition = Atom
 Base.@deprecate atom(p::Proposition) value(p)
@@ -25,6 +34,26 @@ export global_diamond, global_box
 
 const global_diamond = globaldiamond
 const global_box = globalbox
+
+# propositional-logic.jl
+function Base.haskey(i::AbstractAssignment, v)::Bool
+    Base.haskey(i, Atom(v))
+end
+
+"""
+    struct TruthTable{A,T<:Truth}
+
+Dictionary which associates an [`AbstractAssignment`](@ref)s to the truth value of the
+assignment itself on a [`SyntaxStructure`](@ref).
+
+See also [`AbstractAssignment`](@ref), [`SyntaxStructure`](@ref), [`Truth`](@ref).
+"""
+struct TruthTable{
+    A,
+    T<:Truth
+} <: Formula # TODO is this correct? Remove?
+    truth::Dict{<:AbstractAssignment,Vector{Pair{SyntaxStructure,T}}}
+end
 
 # syntax-utils.jl
 op(::LeftmostLinearForm{C}) where {C} = C()

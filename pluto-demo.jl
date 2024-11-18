@@ -93,8 +93,9 @@ end
 # ╔═╡ 996c3107-ab3f-4fc9-a9f1-4b95a634bfde
 # Define a new logical operator `⊕`
 begin
-	import SoleLogics: arity
+	import SoleLogics: iscommutative, arity
 	const ⊕ = SoleLogics.NamedConnective{:⊕}()
+	SoleLogics.iscommutative(::typeof(⊕)) = true
 	SoleLogics.arity(::typeof(⊕)) = 2
 
 	# Compose a formula with `⊕`

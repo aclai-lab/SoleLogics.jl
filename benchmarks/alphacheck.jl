@@ -1,7 +1,7 @@
 using Test
 using SoleLogics
 using SoleLogics.ManyValuedLogics
-using SoleLogics.ManyValuedLogics: G3
+using SoleLogics.ManyValuedLogics: G3, FiniteIndexFLewAlgebra
 using StatsBase
 using BenchmarkTools
 using Random
@@ -12,16 +12,18 @@ alphabet = @atoms p q r
 
 ############################################################################################
 
-using SoleLogics.ManyValuedLogics: FiniteIndexTruth, BinaryIndexOperation, IndexMonoid, CommutativeIndexMonoid, FiniteIndexLattice, FiniteIndexFLewAlgebra
+# using SoleLogics.ManyValuedLogics: FiniteIndexTruth, BinaryIndexOperation, IndexMonoid, CommutativeIndexMonoid, FiniteIndexLattice, FiniteIndexFLewAlgebra
 
-t, b, a = FiniteIndexTruth.([1:3]...)
-jointruthtable = [t, t, t, t, b, a, t, a, a]
-meettruthtable = [t, b, a, b, b, b, a, b, a]
-idxjoin = BinaryIndexOperation{3}(jointruthtable)
-idxmeet = BinaryIndexOperation{3}(meettruthtable)
-IG3 = FiniteIndexFLewAlgebra{3}(idxjoin, idxmeet, idxmeet, b, t)
-_IG3_domain = getdomain(IG3)[[2,3,1]]
-t, a, b = _IG3_domain
+# t, b, a = FiniteIndexTruth.([1:3]...)
+# jointruthtable = [t, t, t, t, b, a, t, a, a]
+# meettruthtable = [t, b, a, b, b, b, a, b, a]
+# idxjoin = BinaryIndexOperation{3}(jointruthtable)
+# idxmeet = BinaryIndexOperation{3}(meettruthtable)
+# IG3 = FiniteIndexFLewAlgebra{3}(idxjoin, idxmeet, idxmeet, b, t)
+# _IG3_domain = getdomain(IG3)[[2,3,1]]
+# t, a, b = _IG3_domain
+
+IG3 = convert(FiniteIndexFLewAlgebra, G3)
 
 _G3_domain = getdomain(G3)
 ⊤, α, ⊥ = _G3_domain

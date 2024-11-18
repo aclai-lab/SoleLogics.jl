@@ -1,11 +1,14 @@
 """
     function precedeq(
         l::L,
-        t1::T,
-        t2::T
+        t1::T1,
+        t2::T2
     ) where {
         T<:Truth,
-        L<:FiniteAlgebra{T}
+        D<:AbstractVector{T},
+        L<:FiniteAlgebra{T,D},
+        T1<:Truth,
+        T2<:Truth
     }
 
 Return true if `t1` ≤ `t2` in `l`. Given an algebraically defined lattice (L, ∨, ∧), one can
@@ -37,11 +40,14 @@ end
 """
     function precedes(
         l::L,
-        t1::T,
-        t2::T
+        t1::T1,
+        t2::T2
     ) where {
         T<:Truth,
-        L<:FiniteAlgebra{T}
+        D<:AbstractVector{T},
+        L<:FiniteAlgebra{T,D},
+        T1<:Truth,
+        T2<:Truth
     }
 
 Return true if `t1` < `t2` in `l`. Given an algebraically defined lattice (L, ∨, ∧), one can
@@ -51,11 +57,14 @@ See also [`precedeq`](@ref), [`succeedes`](@ref), [`succeedeq`](@ref).
 """
 function precedes(
     l::L,
-    t1::T,
-    t2::T
+    t1::T1,
+    t2::T2
 ) where {
     T<:Truth,
-    L<:FiniteAlgebra{T}
+    D<:AbstractVector{T},
+    L<:FiniteAlgebra{T,D},
+    T1<:Truth,
+    T2<:Truth
 }
     return t1 != t2 && precedeq(l, t1, t2)
 end
@@ -63,11 +72,14 @@ end
 """
     function succeedeq(
         l::L,
-        t1::T,
-        t2::T
+        t1::T1,
+        t2::T2
     ) where {
         T<:Truth,
-        L<:FiniteAlgebra{T}
+        D<:AbstractVector{T},
+        L<:FiniteAlgebra{T,D},
+        T1<:Truth,
+        T2<:Truth
     }
 
 Return true if `t1` ≥ `t2` in `l`. Given an algebraically defined lattice (L, ∨, ∧), one can
@@ -77,11 +89,14 @@ See also [`precedes`](@ref), [`precedeq`](@ref), [`succeedes`](@ref).
 """
 function succeedeq(
     l::L,
-    t1::T,
-    t2::T
+    t1::T1,
+    t2::T2
 ) where {
     T<:Truth,
-    L<:FiniteAlgebra{T}
+    D<:AbstractVector{T},
+    L<:FiniteAlgebra{T,D},
+    T1<:Truth,
+    T2<:Truth
 }
     return precedeq(l, t2, t1)
 end
@@ -103,11 +118,14 @@ See also [`precedes`](@ref), [`precedeq`](@ref), [`succeedeq`](@ref).
 """
 function succeedes(
     l::L,
-    t1::T,
-    t2::T
+    t1::T1,
+    t2::T2
 ) where {
     T<:Truth,
-    L<:FiniteAlgebra{T}
+    D<:AbstractVector{T},
+    L<:FiniteAlgebra{T,D},
+    T1<:Truth,
+    T2<:Truth
 }
     return precedes(l, t2, t1)
 end
@@ -122,7 +140,7 @@ end
         T1<:Truth
     }
 
-Return all members of l below t.
+Return all members of l below (or equal to) t.
 
 See also [`precedes`](@ref), [`precedeq`](@ref).
 """
@@ -135,7 +153,7 @@ function lesservalues(
     T1<:Truth
 }
     if !isa(t, T) t = convert(T, t)::T end
-    return filter(ti->precedes(l, ti, t), getdomain(l))
+    return filter(ti->precedeq(l, ti, t), getdomain(l))
 end
 
 """
@@ -148,7 +166,7 @@ end
         T1<:Truth
     }
 
-Return all maximal members of l not above t.
+Return all maximal members of l not above (or equal to) t.
 
 See also [`succeedes`](@ref), [`succeedeq`](@ref), [`minimalmembers`](@ref).
 """
@@ -180,7 +198,7 @@ end
         T1<:Truth
     }
 
-Return all minimal members of l not below t.
+Return all minimal members of l not below (or equal to) t.
 
 See also [`precedes`](@ref), [`precedeq`](@ref), [`maximalmembers`](@ref).
 """

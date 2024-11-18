@@ -37,7 +37,7 @@ Recalling the type hierarchy presented in [man-core](@ref), it is here enriched 
     - [`AbstractAssignment`](@ref)
         - [`TruthDict`](@ref)
         - [`DefaultedTruthDict`](@ref)
-        - [`AbstractInterpretationSet`](@ref) <!-- **(see [SoleBase.jl](https://github.com/aclai-lab/SoleBase.jl))** -->
+        - [`AbstractInterpretationSet`](@ref)
         - [`InterpretationVector`](@ref)
     - [`LogicalInstance`](@ref) 
 - [`TruthTable`](@ref)
@@ -48,9 +48,8 @@ Recalling the type hierarchy presented in [man-core](@ref), it is here enriched 
 AbstractAlphabet{V}
 Base.isfinite(::Type{<:AbstractAlphabet})
 atoms(a::AbstractAlphabet)
+natoms(a::AbstractAlphabet)
 Base.in(p::Atom, a::AbstractAlphabet)
-Base.length(a::AbstractAlphabet)
-Base.iterate(a::AbstractAlphabet)
 
 ExplicitAlphabet{V}
 AlphabetOfAny{V}
@@ -141,7 +140,7 @@ TruthTable{A,T<:Truth}
 ```
 
 ```
-AbstractInterpretationSet{M<:AbstractInterpretation}
+AbstractInterpretationSet
 
 LogicalInstance{S<:AbstractInterpretationSet}
 

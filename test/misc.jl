@@ -32,8 +32,8 @@ interp2             = TruthDict(1:4, BOT)
 ############################################################################################
 
 @test Formula           <: Syntactical
-@test AbstractSyntaxStructure   <: Formula
-@test SyntaxLeaf              <: AbstractSyntaxStructure
+@test SyntaxStructure   <: Formula
+@test SyntaxLeaf              <: SyntaxStructure
 @test Truth                     <: SyntaxLeaf
 
 @test TOP               isa Truth
@@ -49,7 +49,7 @@ interp2             = TruthDict(1:4, BOT)
 @test Connective        <: SyntaxToken
 @test SyntaxLeaf        <: SyntaxToken
 
-@test SyntaxTree        <: AbstractSyntaxStructure
+@test SyntaxTree        <: SyntaxStructure
 @test SyntaxBranch      <: SyntaxTree
 
 @test NEGATION          isa NamedConnective
@@ -131,9 +131,9 @@ interp2             = TruthDict(1:4, BOT)
 @test trees_implication |> children |> first == pandq
 @test trees_implication |> children |> last  == porq
 
-@test norm |> children |> first                     == SyntaxTree(m)
-@test norm |> children |> first |> token            == m
-@test norm |> children |> first |> token |> value   == value(m)
+@test norm |> children |> first                              == SyntaxTree(m)
+@test norm |> children |> first |> token                     == m
+@test norm |> children |> first |> token |> SoleLogics.value == SoleLogics.value(m)
 
 @test_nowarn interp1[p] = BOT
 @test_nowarn interp1[p] = TOP

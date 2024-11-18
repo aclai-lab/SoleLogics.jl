@@ -13,8 +13,8 @@
 (C) Improve this general description about SoleLogics.jl, in order to make the first page in SoleLogics documentation
 #     # Usage
 #     ## Parsing Formulas
-#     Consider the string representation of a logical formula (in infix notation, e.g., "p∧q" or in function notation, e.g. "∧(p,q)". Such expressions can easily be parsed to a `SyntaxTree` representation using the method `parsebaseformula`. As you can see from the documentation, it is highly customizable, allowing parsing custom-defined operators and changing how recognized atoms must be interpreted (e.g. in "true∧false" atoms are booleans, while in "1∧0" they are integers).
-#     The `SyntaxBranch` returned by `parsebaseformula` can be paired with a logic (a grammar and an algebra) using `parsebaseformula`, thus returning a AnchoredFormula: the latter method disposes of the same flexibility of `parseformula` TODO not true.
+#     Consider the string representation of a logical formula (in infix notation, e.g., "p∧q" or in function notation, e.g. "∧(p,q)". Such expressions can easily be parsed to a `SyntaxTree` representation using the method `parseformula`. As you can see from the documentation, it is highly customizable, allowing parsing custom-defined operators and changing how recognized atoms must be interpreted (e.g. in "true∧false" atoms are booleans, while in "1∧0" they are integers).
+#     The `SyntaxBranch` returned by `parseformula` can be paired with a logic (a grammar and an algebra) using `parsebaseformula`, thus returning a AnchoredFormula: the latter method disposes of the same flexibility of `parseformula` TODO not true.
 #     ## Generating random formulas
 #     Random formulas generation is provided by the following methods:
 #     - randformula (which returns a SyntaxBranch);
@@ -23,7 +23,7 @@
 #     Notes for Giovanni; 
 #     1) many important definitions are introduced here: is this the correct place to explain them or it's better to just link the documentation? 
 #     2) I'm still working on putting a modal_depth parameter in both randbaseformula and randformula 
-#     3) As stated in AbstractSyntaxStructure docstring, classically a logical formula is implemented using a tree structure (an AST) but other representations may exist: I guess we could add a "randnormalform" method
+#     3) As stated in SyntaxStructure docstring, classically a logical formula is implemented using a tree structure (an AST) but other representations may exist: I guess we could add a "randnormalform" method
 #     ## Generating random interpretations
 #     Kripke structures generation is provided by gen_kstructure interface. As you can see from the documentation, internally it builds up a random directed graph structure (using some, possibly custom algorithm). The adjacency list obtained is enriched with informations to obtain a so called Kripke frame; this is done by taking each vertex in the list and
 #     - converting it into a World structure;

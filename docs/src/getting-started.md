@@ -16,7 +16,7 @@ Please, feel free to use the following tree structures to orient yourself in the
 - [`Syntactical`](@ref)
     - [`Connective`](@ref)                      (e.g., ∧, ∨, ¬, →)
     - [`Formula`](@ref)
-        - [`AbstractSyntaxStructure`](@ref)
+        - [`SyntaxStructure`](@ref)
             - [`SyntaxTree`](@ref)              (e.g., ¬p ∧ q → s)
                 - [`SyntaxLeaf`](@ref)
                     - [`Atom`](@ref)            (e.g., p, q)
@@ -49,10 +49,10 @@ If the definition above overwhelms you, don't worry: it will be clearer later. F
 Later, we will see some interesting example about how to equip these symbols with semantics, that is, what rules should be applied when interpreting connectives in a generic [`Formula`](@ref). We will also understand how to define our own custom connectives.
 
 ```@docs
-arity(φ::SyntaxTree)
+arity(φ::Connective)
 ```
 
-The vast majority of data structures involved in encoding a logical formula, are children of the [`Formula`](@ref) abstract type. When such data structures purely represents tree-shaped data structures (or single nodes in them), then they are also children of the [`AbstractSyntaxStructure`](@ref) abstract type.
+The vast majority of data structures involved in encoding a logical formula, are children of the [`Formula`](@ref) abstract type. When such data structures purely represents tree-shaped data structures (or single nodes in them), then they are also children of the [`SyntaxStructure`](@ref) abstract type.
 
 ```@docs
 Formula
@@ -75,11 +75,10 @@ composeformulas(c::Connective, φs::NTuple{N,F}) where {N,F<:Formula}
 We are ready to see how logical formulas are represented using syntax trees
 
 ```@docs
-AbstractSyntaxStructure
+SyntaxStructure
 SyntaxTree
 children(φ::SyntaxTree)
 token(φ::SyntaxTree)
-arity(φ::SyntaxTree)
 
 SyntaxLeaf
 SyntaxToken
@@ -118,8 +117,6 @@ The internal nodes in a [`SyntaxTree`](@ref) definitely have [`ariety`](@ref) gr
 ```@docs
 SyntaxBranch
 ```
-<!-- children(φ::SyntaxBranch) -->
-<!-- token(φ::SyntaxBranch) -->
 
 ## [Semantics Basics](@id semantics-base-definitions)
 ```@docs

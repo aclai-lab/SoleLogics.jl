@@ -57,7 +57,15 @@ function Base.convert(::Type{FiniteIndexTruth}, c::Char)
         error("Please, provide a character between α and ҭ, ⊤ and ⊥")
     end
 end
+function Base.convert(::Type{FiniteIndexTruth}, s::String)
+    if length(s) == 1
+        convert(FiniteIndexTruth, s[1])
+    else
+        error("Please, provide a string of one character")
+    end
+end
 Base.convert(::Type{FiniteIndexTruth}, index::UInt8) = FiniteIndexTruth(index)
+Base.convert(::Type{FiniteIndexTruth}, t::FiniteTruth) = convert(FiniteIndexTruth, t.label)
 
 ############################################################################################
 #### Binary index operation ################################################################
@@ -344,7 +352,7 @@ struct FiniteIndexFLewAlgebra{N} <: FiniteIndexAlgebra{N}
         return FiniteIndexFLewAlgebra{N}(
             join,
             meet,
-            CommutativeIndexMonoid{3}(monoidoperation, top),
+            CommutativeIndexMonoid{N}(monoidoperation, top),
             bot,
             top
         )
@@ -365,18 +373,105 @@ function Base.show(io::IO, a::FiniteIndexFLewAlgebra{N}) where {N}
     println(io, "Implication: " * string(a.implication))
 end
 
+# Temporary helper
+# TODO: remove (FiniteIndexTruth will become default)
+function convert(::Type{FiniteIndexFLewAlgebra}, a::FiniteFLewAlgebra)
+    jointruthtable = [
+        convert(FiniteIndexTruth, a.join(⊤, ⊤)),
+        convert(FiniteIndexTruth, a.join(⊤, ⊥))
+    ]
+    meettruthtable = [
+        convert(FiniteIndexTruth, a.meet(⊤, ⊤)),
+        convert(FiniteIndexTruth, a.meet(⊤, ⊥))
+    ]
+    monoidtruthtable = [
+        convert(FiniteIndexTruth, a.monoid(⊤, ⊤)),
+        convert(FiniteIndexTruth, a.monoid(⊤, ⊥))
+    ]
+    for i ∈ 2:length(getdomain(a))-1
+        push!(jointruthtable, convert(FiniteIndexTruth, a.join(⊤, getdomain(a)[i])))
+        push!(meettruthtable, convert(FiniteIndexTruth, a.meet(⊤, getdomain(a)[i])))
+        push!(monoidtruthtable, convert(FiniteIndexTruth, a.monoid(⊤, getdomain(a)[i])))
+    end
+    push!(
+        jointruthtable,
+        convert(FiniteIndexTruth, a.join(⊥, ⊤)),
+        convert(FiniteIndexTruth, a.join(⊥, ⊥))
+    )
+    push!(
+        meettruthtable,
+        convert(FiniteIndexTruth, a.meet(⊥, ⊤)),
+        convert(FiniteIndexTruth, a.meet(⊥, ⊥))
+    )
+    push!(
+        monoidtruthtable,
+        convert(FiniteIndexTruth, a.monoid(⊥, ⊤)),
+        convert(FiniteIndexTruth, a.monoid(⊥, ⊥))
+    )
+    for i ∈ 2:length(getdomain(a))-1
+        push!(jointruthtable, convert(FiniteIndexTruth, a.join(⊥, getdomain(a)[i])))
+        push!(meettruthtable, convert(FiniteIndexTruth, a.meet(⊥, getdomain(a)[i])))
+        push!(monoidtruthtable, convert(FiniteIndexTruth, a.monoid(⊥, getdomain(a)[i])))
+    end
+    for i ∈ 2:length(getdomain(a))-1
+        push!(
+            jointruthtable,
+            convert(FiniteIndexTruth, a.join(getdomain(a)[i], ⊤)),
+            convert(FiniteIndexTruth, a.join(getdomain(a)[i], ⊥))
+        )
+        push!(
+            meettruthtable,
+            convert(FiniteIndexTruth, a.meet(getdomain(a)[i], ⊤)),
+            convert(FiniteIndexTruth, a.meet(getdomain(a)[i], ⊥))
+        )
+        push!(
+            monoidtruthtable,
+            convert(FiniteIndexTruth, a.monoid(getdomain(a)[i], ⊤)),
+            convert(FiniteIndexTruth, a.monoid(getdomain(a)[i], ⊥))
+        )
+        for j ∈ 2:length(getdomain(a))-1
+            push!(
+                jointruthtable,
+                convert(FiniteIndexTruth, a.join(getdomain(a)[i], getdomain(a)[j]))
+            )
+            push!(
+                meettruthtable,
+                convert(FiniteIndexTruth, a.meet(getdomain(a)[i], getdomain(a)[j]))
+            )
+            push!(
+                monoidtruthtable,
+                convert(FiniteIndexTruth, a.monoid(getdomain(a)[i], getdomain(a)[j]))
+            )
+        end
+    end
+    idxjoin = BinaryIndexOperation{length(getdomain(a))}(jointruthtable)
+    idxmeet = BinaryIndexOperation{length(getdomain(a))}(meettruthtable)
+    idxmonoid = BinaryIndexOperation{length(getdomain(a))}(monoidtruthtable)
+    return FiniteIndexFLewAlgebra{length(getdomain(a))}(
+        idxjoin,
+        idxmeet,
+        idxmonoid,
+        FiniteIndexTruth(UInt8(2)),
+        FiniteIndexTruth(UInt8(1))
+    )
+end
+
 ############################################################################################
 #### Order utilities #######################################################################
 ############################################################################################
 
 function precedeq(
     l::L,
-    t1::FiniteIndexTruth,
-    t2::FiniteIndexTruth
+    t1::T1,
+    t2::T2
 ) where {
     N,
-    L<:FiniteIndexAlgebra{N}
+    L<:FiniteIndexAlgebra{N},
+    T1<:Truth,
+    T2<:Truth
 }
+    if !isa(t1, FiniteIndexTruth) t1 = convert(FiniteIndexTruth, t1)::FiniteIndexTruth end
+    if !isa(t2, FiniteIndexTruth) t2 = convert(FiniteIndexTruth, t2)::FiniteIndexTruth end
     !islattice(l) && error("Cannot convert object of type $(typeof(l)) to an object of " *
         "type FiniteLattice.")
     if l.meet(t1, t2) == t1
@@ -388,56 +483,78 @@ end
 
 function precedes(
     l::L,
-    t1::FiniteIndexTruth,
-    t2::FiniteIndexTruth
+    t1::T1,
+    t2::T2
 ) where {
     N,
-    L<:FiniteIndexAlgebra{N}
+    L<:FiniteIndexAlgebra{N},
+    T1<:Truth,
+    T2<:Truth
 }
+    if !isa(t1, FiniteIndexTruth) t1 = convert(FiniteIndexTruth, t1)::FiniteIndexTruth end
+    if !isa(t2, FiniteIndexTruth) t2 = convert(FiniteIndexTruth, t2)::FiniteIndexTruth end
+    !islattice(l) && error("Cannot convert object of type $(typeof(l)) to an object of " *
+        "type FiniteLattice.")
     return t1 != t2 && precedeq(l, t1, t2)
 end
 
 function succeedeq(
     l::L,
-    t1::FiniteIndexTruth,
-    t2::FiniteIndexTruth
+    t1::T1,
+    t2::T2
 ) where {
     N,
-    L<:FiniteIndexAlgebra{N}
+    L<:FiniteIndexAlgebra{N},
+    T1<:Truth,
+    T2<:Truth
 }
+    if !isa(t1, FiniteIndexTruth) t1 = convert(FiniteIndexTruth, t1)::FiniteIndexTruth end
+    if !isa(t2, FiniteIndexTruth) t2 = convert(FiniteIndexTruth, t2)::FiniteIndexTruth end
+    !islattice(l) && error("Cannot convert object of type $(typeof(l)) to an object of " *
+        "type FiniteLattice.")
     return precedeq(l, t2, t1)
 end
 
 function succeedes(
     l::L,
-    t1::FiniteIndexTruth,
-    t2::FiniteIndexTruth
+    t1::T1,
+    t2::T2
 ) where {
     N,
-    L<:FiniteIndexAlgebra{N}
+    L<:FiniteIndexAlgebra{N},
+    T1<:Truth,
+    T2<:Truth
 }
+    if !isa(t1, FiniteIndexTruth) t1 = convert(FiniteIndexTruth, t1)::FiniteIndexTruth end
+    if !isa(t2, FiniteIndexTruth) t2 = convert(FiniteIndexTruth, t2)::FiniteIndexTruth end
+    !islattice(l) && error("Cannot convert object of type $(typeof(l)) to an object of " *
+        "type FiniteLattice.")
     return precedes(l, t2, t1)
 end
 
 function lesservalues(
     l::L,
-    t::FiniteIndexTruth
+    t::T
 ) where {
     N,
     L<:FiniteIndexAlgebra{N},
+    T<:Truth
 }
+    if !isa(t, FiniteIndexTruth) t = convert(FiniteIndexTruth, t)::FiniteIndexTruth end
     return filter(ti->precedes(l, ti, t), getdomain(l))
 end
 
 function maximalmembers(
     l::L,
-    t::FiniteIndexTruth
+    t::T
 ) where {
     N,
     L<:FiniteIndexAlgebra{N},
+    T<:Truth
 }
+    if !isa(t, FiniteIndexTruth) t = convert(FiniteIndexTruth, t)::FiniteIndexTruth end
     candidates = filter(ti->!succeedeq(l, ti, t), getdomain(l))
-    mm = D()
+    mm = Vector{FiniteIndexTruth}()
     for c in candidates
         if isempty(filter(ti->succeedes(l, ti, c), candidates)) push!(mm, c) end
     end
@@ -446,13 +563,15 @@ end
 
 function minimalmembers(
     l::L,
-    t::FiniteIndexTruth
+    t::T
 ) where {
     N,
     L<:FiniteIndexAlgebra{N},
+    T<:Truth
 }
+    if !isa(t, FiniteIndexTruth) t = convert(FiniteIndexTruth, t)::FiniteIndexTruth end
     candidates = filter(ti->!precedeq(l, ti, t), getdomain(l))
-    mm = D()
+    mm = Vector{FiniteIndexTruth}()
     for c in candidates
         if isempty(filter(ti->precedes(l, ti, c), candidates)) push!(mm, c) end
     end

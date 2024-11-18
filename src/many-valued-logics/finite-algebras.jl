@@ -165,13 +165,31 @@ function checkaxiom(a::Axiom, m::Monoid)
 end
 
 """
-    function (m::Monoid)(t1::T, t2::T) where {T<:Truth}
+    function (m::Monoid{T,D})(
+        t1::T1,
+        t2::T2
+    ) where {
+        T<:Truth,
+        D<:AbstractVector{T},
+        T1<:Truth,
+        T2<:Truth
+    }
 
 Helper allowing to use monoids with function notation.
 
 See also [`Monoid`](@ref), [`BinaryOperation`](@ref).
 """
-(m::Monoid{T})(t1::T, t2::T) where {T<:Truth} = m.operation(t1, t2)
+function (m::Monoid{T,D})(
+    t1::T1,
+    t2::T2
+) where {
+    T<:Truth,
+    D<:AbstractVector{T},
+    T1<:Truth,
+    T2<:Truth
+}
+    return m.operation(t1, t2)
+end
 
 ############################################################################################
 #### Commutative monoid ####################################################################
@@ -211,13 +229,29 @@ end
 ismonoid(::CommutativeMonoid) = true
 
 """
-    function(m::CommutativeMonoid{T})(t1::T, t2::T) where {T<:Truth}
+    function(m::CommutativeMonoid{T,D})(
+        t1::T1,
+        t2::T2
+    ) where {
+        T<:Truth,
+        D<:AbstractVector{T},
+        T1<:Truth,
+        T2<:Truth
+    }
 
 Helper allowing to use commutative monoids with function notation.
 
 See also [`Monoid`](@ref), [`BinaryOperation`](@ref).
 """
-function (m::CommutativeMonoid{T})(t1::T, t2::T) where {T<:Truth}
+function (m::CommutativeMonoid{T,D})(
+    t1::T1,
+    t2::T2
+) where {
+    T<:Truth,
+    D<:AbstractVector{T},
+    T1<:Truth,
+    T2<:Truth
+}
     return m.operation(t1, t2)
 end
 

@@ -1,7 +1,7 @@
 name = "SoleLogics"
 uuid = "b002da8f-3cb3-4d91-bbe3-2953433912b5"
-authors = ["Mauro MILELLA", "Giovanni PAGLIARINI", "Alberto PAPARELLA", "Eduard I. STAN"]
-version = "0.9.0"
+authors = ["Mauro MILELLA", "Giovanni PAGLIARINI", "Edoardo PONSANESI", "Alberto PAPARELLA", "Eduard I. STAN"]
+version = "0.10.4"
 
 [deps]
 AbstractTrees = "1520ce14-60c1-5f80-bbc7-55ef81b5835c"
@@ -14,7 +14,6 @@ Lazy = "50d2b5c4-7a5e-59d5-8109-a42b560f39c0"
 PrettyTables = "08abe8d2-0d0c-5749-adfa-8a2ac140af0d"
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 Reexport = "189a3867-3050-52da-a836-e630ba90ab69"
-Revise = "295af30f-e4ad-537b-8983-00126c2a3abe"
 SoleBase = "4475fa32-7023-44a0-aa70-4813b230e492"
 StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
@@ -23,7 +22,7 @@ ThreadSafeDicts = "4239201d-c60e-5e0a-9702-85d713665ba7"
 [compat]
 AbstractTrees = "0.4"
 DataStructures = "0.18"
-Dictionaries = "0.3"
+Dictionaries = "0.3, 0.4"
 FunctionWrappers = "1"
 Graphs = "1.8"
 IterTools = "1"
@@ -42,7 +41,11 @@ BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
 InteractiveUtils = "b77e0a4c-d291-57a0-90e8-8db25a27a240"
 Markdown = "d6f4376e-aef5-505a-96c1-9c027394607a"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
+Revise = "295af30f-e4ad-537b-8983-00126c2a3abe"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
+DecisionTree = "7806a523-6efd-50cb-b5f6-3fa6f1930dbb"
+SoleData = "123f1ae1-6307-4526-ab5b-aab3a92a2b8c"
 
 [targets]
-test = ["Test", "Markdown", "InteractiveUtils", "PlutoUI", "BenchmarkTools"]
+test = ["Test", "Markdown", "InteractiveUtils", "PlutoUI", "BenchmarkTools", "DataFrames", "DecisionTree", "SoleData"]

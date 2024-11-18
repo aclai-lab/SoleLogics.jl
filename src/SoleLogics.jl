@@ -12,42 +12,54 @@ using Lazy
 using SoleBase
 using SoleBase: initrng
 
-############################################################################################
 
 export iscrisp, isfinite, isnullary, isunary, isbinary
 
 export Syntactical, Connective,
-    Formula, AbstractSyntaxStructure, SyntaxTree, SyntaxLeaf,
-    Atom, Truth, SyntaxBranch
+    Formula, SyntaxStructure, SyntaxTree, SyntaxLeaf,
+    AbstractAtom, Truth
 
 export Operator, SyntaxToken
 
-export syntaxstring
+export tree, syntaxstring
 
 export arity, valuetype, tokentype, tokenstype,
         atomstype, operatorstype, truthtype,
         associativity, precedence
-export value, token, children, formulas
-export tree
+
+export token, children, formulas
 
 export tokens, ntokens, atoms, natoms, truths, ntruths, leaves, nleaves,
         connectives, nconnectives, operators, noperators, height
-export composeformulas
+
+        export composeformulas
+
+include("types/syntactical.jl")
+
+
+export parseformula
+
+include("types/parse.jl")
+
+
 
 export interpret, check
 
-include("core.jl")
+include("types/interpretation.jl")
 
-############################################################################################
 
 export AlphabetOfAny, ExplicitAlphabet, UnionAlphabet
-
-export alphabet, alphabets
+export alphabet, subalphabets
 export domain, top, bot, grammar, algebra, logic
 
-include("logics.jl")
+include("types/logic.jl")
 
-############################################################################################
+
+include("types/interpretation-sets.jl")
+
+export Atom, SyntaxBranch
+
+include("utils/syntactical.jl")
 
 export TOP, ⊤
 export BOT, ⊥
@@ -61,18 +73,18 @@ export BooleanAlgebra
 
 export BaseLogic
 
-include("base-logic.jl")
-
-############################################################################################
+include("utils/base-logic.jl")
 
 export propositionallogic
+export inlinedisplay
 
 export TruthDict, DefaultedTruthDict
 export truth_table
 
-include("propositional-logic.jl")
+include("types/propositional-logic.jl")
+include("utils/propositional-logic.jl")
 
-############################################################################################
+
 
 export accessibles
 export ismodal, modallogic
@@ -98,13 +110,15 @@ export GlobalRel, IdentityRel
 export globalrel, identityrel
 
 
-include("modal-logic.jl")
+include("types/modal-logic.jl")
 
-############################################################################################
+include("utils/modal-logic.jl")
+
+
 
 include("many-valued-logics/ManyValuedLogics.jl")
 
-############################################################################################
+
 
 export LeftmostLinearForm, LeftmostConjunctiveForm, LeftmostDisjunctiveForm, Literal
 
@@ -112,49 +126,78 @@ export subformulas, normalize
 
 export CNF, DNF, cnf
 
-include("syntax-utils.jl")
+include("utils/syntactical-normal-forms.jl")
 
-############################################################################################
+include("utils/tools.jl")
 
-include("interpretation-sets.jl")
 
-############################################################################################
 
-export parseformula
+include("utils/interpretation-sets.jl")
 
-include("parse.jl")
 
-############################################################################################
 
-export randbaseformula, randformula
-export randframe, randmodel
+include("utils/parse.jl")
 
-include("random.jl")
-
-############################################################################################
 
 export AnchoredFormula
+include("utils/anchored-formula.jl")
 
-include("anchored-formula.jl")
 
-############################################################################################
+# these first files are included here to avoid repeated inclusions in those below;
+# "generation" could become a SoleLogics submodule.
+include("generation/docstrings.jl")
+include("generation/utils.jl")
+
+export randatom
+export randformula
+include("generation/formula.jl")
+
+export randframe, randmodel
+include("generation/models.jl")
+
+
+
 
 export @atoms, @synexpr
 
 include("ui.jl")
 
-############################################################################################
+
 
 include("experimentals.jl")
 
-############################################################################################
+
 
 include("deprecate.jl")
 
-############################################################################################
 
-include("utils.jl")
+# Fast isempty(intersect(u, v))
+function intersects(u, v)
+    for x in u
+        if x in v
+            return true
+        end
+    end
+    false
+end
 
-############################################################################################
+function inittruthvalues(truthvalues::Union{Vector{<:Truth}, AbstractAlgebra})
+    return (truthvalues isa AbstractAlgebra) ? domain(truthvalues) : truthvalues
+end
+
+function displaysyntaxvector(a, maxnum = 8; quotes = true)
+    q = e -> (quotes ? "\"$(e)\"" : "$(e)")
+    els = begin
+        if length(a) > maxnum
+            [(q.(syntaxstring.(a)[1:div(maxnum, 2)]))..., "...",
+                (q.(syntaxstring.(a)[(end - div(maxnum, 2)):end]))...,]
+        else
+            q.(syntaxstring.(a))
+        end
+    end
+    "$(eltype(a))[$(join(els, ", "))]"
+end
+
+
 
 end
