@@ -25,14 +25,14 @@ const BASE_PARSABLE_CONNECTIVES = [
 doc_parseformula = """
     parseformula(
         [F::Type{<:Formula}=SyntaxTree],
-        expr::String,
+        expr::AbstractString,
         additional_operators::Union{Nothing,AbstractVector} = nothing;
         kwargs...
     )::F
 
     parseformula(
         F::Type{<:SyntaxTree},
-        expr::String,
+        expr::AbstractString,
         logic::AbstractLogic;
         kwargs...
     )::F
@@ -106,7 +106,7 @@ See also [`SyntaxTree`](@ref), [`BASE_PARSABLE_CONNECTIVES`](@ref), [`syntaxstri
 
 
 # This is just an utility function used later
-function strip_whitespaces(expr::String; additional_whitespaces::Vector{Char} = Char[])
+function strip_whitespaces(expr::AbstractString; additional_whitespaces::Vector{Char} = Char[])
     return strip(x -> isspace(x) || x in additional_whitespaces, expr)
 end
 
@@ -114,7 +114,7 @@ end
 """$(doc_parseformula)"""
 function parseformula(
     F::Type{<:SyntaxTree},
-    expr::String,
+    expr::AbstractString,
     additional_operators::Union{Nothing,AbstractVector} = nothing;
     function_notation::Bool = false,
     atom_parser::Base.Callable = Atom{String},
@@ -149,7 +149,7 @@ function parseformula(
 
     # A simple lexer capable of distinguish operators in a string.
     function tokenizer(
-        expr::String,
+        expr::AbstractString,
         operators::Vector{<:Operator},
         atom_parser::Base.Callable,
         additional_whitespaces::Vector{Char},
@@ -160,7 +160,7 @@ function parseformula(
 
         # Raw tokens are cutted out from the initial expr
         function _recognize_tokens(
-            expr::String,
+            expr::AbstractString,
             splitters::Vector{String},
             additional_whitespaces::Vector{Char}
         )::Vector{String}
@@ -511,7 +511,7 @@ end
 
 function parseformula(
     F::Type{<:SyntaxTree},
-    expr::String,
+    expr::AbstractString,
     g::AbstractGrammar;
     kwargs...
 )
@@ -520,7 +520,7 @@ end
 
 function parseformula(
     F::Type{<:SyntaxTree},
-    expr::String,
+    expr::AbstractString,
     logic::AbstractLogic;
     kwargs...
 )

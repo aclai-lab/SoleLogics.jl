@@ -124,7 +124,7 @@ export LeftmostLinearForm, LeftmostConjunctiveForm, LeftmostDisjunctiveForm, Lit
 
 export subformulas, normalize
 
-export CNF, DNF, cnf
+export CNF, DNF, cnf, dnf
 
 include("utils/syntactical-normal-forms.jl")
 
