@@ -553,9 +553,12 @@ General helper for converting formulas into CNF or DNF.
 function _convert_to_normal_form(φ::Formula, primary::Connective, secondary::Connective, literaltype::Type)
     ret = if φ isa SyntaxLeaf # TODO first find literals, then use `if φ isa literaltype`
         _literal_to_normal_form(φ, primary, secondary, literaltype)
-    elseif φ isa Union{AbstractSyntaxBranch,LeftmostConjunctiveForm,LeftmostDisjunctiveForm}
+    elseif φ isa Union{LeftmostConjunctiveForm,LeftmostDisjunctiveForm}
+        _convert_to_normal_form(tree(φ), primary, secondary, literaltype) # TODO: this is slow.
+    elseif φ isa AbstractSyntaxBranch
         tok = token(φ)
         if tok == primary
+            @assert isbinary(tok)
             # Combine the primary operation directly
             _combine_normal_form!(
                 _convert_to_normal_form(first(children(φ)), primary, secondary, literaltype),
@@ -563,6 +566,7 @@ function _convert_to_normal_form(φ::Formula, primary::Connective, secondary::Co
                 primary
             )
         elseif tok == secondary
+            @assert isbinary(secondary)
             # Distribute the secondary operation over the primary
             ONE = _extract_normal_form_clauses(
                     _convert_to_normal_form(first(children(φ)), primary, secondary, literaltype), primary
