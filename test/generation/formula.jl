@@ -84,7 +84,8 @@ unionalph = UnionAlphabet([my_alph,alph2])
 
 _subalphabets_weights_test_dim = 100
 @test count(x -> x<5,
-    SoleLogics.value.([randatom(unionalph; atompicking_mode=:weighted, subalphabets_weights=[5,1])
+    SoleLogics.value.(
+        [randatom(unionalph; atompicking_mode=:weighted, subalphabets_weights=[5,1])
         for i in 1:_subalphabets_weights_test_dim])
     ) > convert(Int32, (_subalphabets_weights_test_dim/2))
 
@@ -125,13 +126,13 @@ syntaxstring(mt::MyTruth) = mt.val
 # @test sample(2, my_alph, Weights([1,2,3,4,5])) == Atom(3)
 @test_throws Exception sample(2, non_finite_alph, Weights([1,2,3,4,5]))
 
-@test_nowarn StatsBase.sample(2, my_logic, Weights([1,2,3,4,5]), Weights([1,2]))
+@test_nowarn StatsBase.sample(2, my_logic, Weights([1,2,3,4,5]), Weights([1,2,3,4]))
 @test_nowarn StatsBase.sample(
     MersenneTwister(42),
     2,
     my_logic,
     Weights([1,2,3,4,5]),
-    Weights([1,2])
+    Weights([1,2,3,5])
 )
 
 # @test StatsBase.sample(

@@ -101,8 +101,9 @@ export AbstractWorld
 
 export AbstractWorlds, Worlds
 
-export Interval, Interval2D, OneWorld
-
+export OneWorld
+export Point, Point1D, Point2D, Point3D
+export Interval, Interval2D
 
 export AbstractRelation
 
