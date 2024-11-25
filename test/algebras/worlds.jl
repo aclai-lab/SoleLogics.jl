@@ -16,10 +16,20 @@
 @test !SoleLogics.goeswithdim(Interval2D, 1)
 @test SoleLogics.goeswithdim(Interval2D, 2)
 
-@test_nowarn SoleLogics.FullDimensionalFrame(1)
-@test_nowarn SoleLogics.FullDimensionalFrame(1,2)
+fr1D = @test_nowarn SoleLogics.FullDimensionalFrame(5)
+fr2D = @test_nowarn SoleLogics.FullDimensionalFrame(1,2)
 @test_nowarn SoleLogics.FullDimensionalFrame((1,2),)
 
+# Relative worlds
+rw1 = @test_nowarn SoleLogics.RelativeInterval(0,1.00)
+rw2 = @test_nowarn SoleLogics.RelativeInterval(0,0.95)
+rw3 = @test_nowarn SoleLogics.RelativeInterval(0.05,0.95)
+rw4 = @test_nowarn SoleLogics.RelativeInterval(0,0.95)
+
+@test_broken (@test_nowarn accessibles(fr1D, rw1))
+@test_broken (@test_nowarn accessibles(fr1D, rw2))
+@test_broken (@test_nowarn accessibles(fr1D, rw3))
+@test_broken (@test_nowarn accessibles(fr1D, rw4))
 # TODO test several cases of accessibles
 # 
 
