@@ -6,7 +6,7 @@ import SoleBase: dimensionality
 ############################################################################################
 
 """
-    struct Point{N,T} <: GeometricalWorld
+    struct Point{N,T<:Real} <: GeometricalWorld
         xyz :: NTuple{N,T}
     end
 
@@ -24,7 +24,7 @@ false
 See also [`goeswithdim`](@ref), [`Interval`](@ref),
 [`Interval2D`](@ref), [`GeometricalWorld`](@ref), [`AbstractWorld`](@ref).
 """
-struct Point{N,T} <: GeometricalWorld
+struct Point{N,T<:Real} <: GeometricalWorld
     xyz :: NTuple{N,T}
     # TODO check x<=N but only in debug mode
     # Point(x) = x<=N ... ? new(x) : error("Cannot instantiate Point(x={$x})")
@@ -32,12 +32,12 @@ struct Point{N,T} <: GeometricalWorld
     # TODO needed?
     Point(w::Point) = Point(w.xyz)
 
-    Point{N,T}(xyz::NTuple{N,T}) where {N,T} = new{N,T}(xyz)
-    Point{N,T}(xyz::Vararg{T,N}) where {N,T} = Point{N,T}(xyz)
+    Point{N,T}(xyz::NTuple{N,T}) where {N,T<:Real} = new{N,T}(xyz)
+    Point{N,T}(xyz::Vararg{T,N}) where {N,T<:Real} = Point{N,T}(xyz)
     Point() = error("Cannot instantiate Point in a 0-dimensional space. " *
         "Please, consider using `OneWorld` instead.")
-    Point(xyz::NTuple{N,T}) where {N,T} = Point{N,T}(xyz)
-    Point((xyz,)::Tuple{NTuple{N,T}}) where {N,T} = Point{N,T}(xyz)
+    Point(xyz::NTuple{N,T}) where {N,T<:Real} = Point{N,T}(xyz)
+    Point((xyz,)::Tuple{NTuple{N,T}}) where {N,T<:Real} = Point{N,T}(xyz)
     Point(xyz::Vararg) = Point(xyz)
 end
 
@@ -69,7 +69,7 @@ const Point3D = Point{3}
 ############################################################################################
 
 """
-    struct Interval{T} <: GeometricalWorld
+    struct Interval{T<:Real} <: GeometricalWorld
         x :: T
         y :: T
     end
@@ -102,7 +102,7 @@ See also
 [`Point`](@ref),
 [`Interval2D`](@ref), [`GeometricalWorld`](@ref), [`AbstractWorld`](@ref).
 """
-struct Interval{T} <: GeometricalWorld
+struct Interval{T<:Real} <: GeometricalWorld
     x :: T
     y :: T
 
@@ -129,7 +129,7 @@ nparameters(T::Type{<:Interval}) = 2
 ############################################################################################
 
 """
-    struct Interval2D{T} <: GeometricalWorld
+    struct Interval2D{T<:Real} <: GeometricalWorld
         x :: Interval{T}
         y :: Interval{T}
     end
@@ -160,7 +160,7 @@ See also
 [`Point`](@ref),
 [`Interval`](@ref), [`GeometricalWorld`](@ref), [`AbstractWorld`](@ref).
 """
-struct Interval2D{T} <: GeometricalWorld
+struct Interval2D{T<:Real} <: GeometricalWorld
     x :: Interval{T}
     y :: Interval{T}
 
@@ -181,3 +181,24 @@ inlinedisplay(w::Interval2D) = "($(w.x)×$(w.y))"
 goeswithdim(::Type{<:Interval2D}, ::Val{2}) = true
 
 nparameters(T::Type{<:Interval2D}) = 4
+
+############################################################################################
+
+struct RelativeGeometricalWorld{W<:GeometricalWorld} <: GeometricalWorld
+    w::W
+    # TODO assert xyz \in [0,1] ...?
+end
+
+innerworld(w::RelativeGeometricalWorld) = w.w
+@forward RelativeGeometricalWorld.w (
+    Base.length,
+    inlinedisplay,
+    goeswithdim,
+    nparameters,
+    Base.getindex,
+    X, Y, Z, dimensionality,
+)
+
+const RelativePoint{N,T<:Real} = RelativeGeometricalWorld{Point{N,T}}
+const RelativeInterval{T<:Real} = RelativeGeometricalWorld{Interval{T}}
+const RelativeInterval2D{T<:Real} = RelativeGeometricalWorld{Interval2D{T}}

@@ -137,6 +137,7 @@ end
         remove_identities = true,
         unify_toones = true,
         rotate_commutatives = true,
+        flip_atom = nothing,
     )
 
 Return a modified version of a given formula, that has the same semantics
@@ -162,6 +163,8 @@ The current implementation assumes the underlying algebra is Boolean!
 - `allow_atom_flipping::Bool`: when set to `true`,
     together with `reduce_negations=true`, this may cause the negation of an atom
     to be replaced with the its [`dual`](@ref) atom.
+- `flip_atom::Union{Nothing,Callable}`: when a callable is provided, it is used
+    for deciding when to flip atoms.
 
 # Examples
 ```julia-repl
@@ -210,6 +213,7 @@ function normalize(
     remove_identities = nothing,
     unify_toones = nothing,
     rotate_commutatives = nothing,
+    flip_atom = nothing,
 )
     if profile == :readability
         if isnothing(remove_boxes)               remove_boxes = false end
@@ -225,7 +229,8 @@ function normalize(
     elseif profile == :nnf
         if isnothing(remove_boxes)               remove_boxes = false end
         if isnothing(reduce_negations)           reduce_negations = true end
-        if isnothing(simplify_constants)         simplify_constants = false end
+        # if isnothing(simplify_constants)         simplify_constants = false end
+        if isnothing(simplify_constants)         simplify_constants = true end
         if isnothing(allow_atom_flipping)        allow_atom_flipping = false end
         if isnothing(prefer_implications)        prefer_implications = false end
         if isnothing(remove_implications)        remove_implications = true end
@@ -268,7 +273,8 @@ function normalize(
         forced_negation_removal = forced_negation_removal,
         remove_identities = remove_identities,
         unify_toones = unify_toones,
-        rotate_commutatives = rotate_commutatives
+        rotate_commutatives = rotate_commutatives,
+        flip_atom = flip_atom,
     )
 
     newt = t
@@ -290,7 +296,10 @@ function normalize(
     # Simplify
     newt = begin
         tok, chs = token(newt), children(newt)
-        if (tok == ¬) && arity(tok) == 1
+        if tok isa AbstractAtom && !isnothing(flip_atom)
+            # @show (1, newt)
+            flip_atom(tok) ? ¬dual(tok) : tok
+        elseif (tok == ¬) && arity(tok) == 1
             child = chs[1]
             chtok, grandchildren = token(child), children(child)
             if reduce_negations && (chtok == ¬) && arity(chtok) == 1
@@ -309,7 +318,8 @@ function normalize(
                 ∧(_normalize(grandchildren[1]), _normalize(¬(grandchildren[2])))
             elseif reduce_negations && chtok isa AbstractAtom
                 if allow_atom_flipping && hasdual(chtok)
-                    dual(chtok)
+                    should_flip = (!isnothing(flip_atom) && flip_atom(chtok))
+                    should_flip ? dual(chtok) : ¬chtok
                 else
                     ¬(_normalize(child))
                 end
@@ -340,6 +350,7 @@ function normalize(
             SyntaxTree(tok, _normalize.(chs))
         end
     end
+    # @show (2, newt)
 
     # DEBUG: old_newt = newt
     # Simplify constants
@@ -410,6 +421,7 @@ function normalize(
     # DEBUG:
     # "$(syntaxstring(old_newt)) => $(syntaxstring(newt))" |> println
 
+    # Remove boxes
     newt = begin
         tok, chs = token(newt), children(newt)
         if remove_boxes && tok isa Connective && SoleLogics.isbox(tok) && arity(tok) == 1
@@ -428,6 +440,7 @@ function normalize(
             newt
         end
     end
+    # @show (3, newt)
 
     function _isless(st1::SyntaxTree, st2::SyntaxTree)
         isless(Base.hash(st1), Base.hash(st2))
@@ -439,7 +452,9 @@ function normalize(
             tok, chs = token(newt), children(newt)
             if tok isa Connective && iscommutative(tok) && arity(tok) > 1
                 chs = children(LeftmostLinearForm(newt, tok))
+                # @show chs
                 chs = Vector(sort(collect(_normalize.(chs)), lt=_isless))
+                # @show chs
                 if tok in [∧,∨] # TODO create trait for this behavior: p ∧ p ∧ p ∧ q   -> p ∧ q
                     chs = unique(chs)
                 end
@@ -449,7 +464,7 @@ function normalize(
             end
         end
     end
-
+    # @show (4, newt)
     return newt
 end
 
@@ -480,4 +495,177 @@ function isgrounded(t::SyntaxTree)::Bool
     return (token(t) isa SoleLogics.AbstractRelationalConnective && isgrounding(relation(token(t)))) ||
     # (token(t) in [◊,□]) ||
     (token(t) isa Connective && all(c->isgrounded(c), children(t)))
+end
+
+################################################################################
+################################################################################
+################################################################################
+
+using SoleLogics
+using SoleLogics: AbstractSyntaxBranch, token
+
+"""
+    normalize_formula(φ::Formula, mode::Symbol, literaltype = Literal; kwargs...)
+
+Returns a formula in a normal form (CNF or DNF) with literals of type `literaltype`.
+`mode` can be `:cnf` or `:dnf`. Uses [`normalize`](@ref) to ensure the formula
+is in Negation Normal Form (NNF) first.
+"""
+function normalize_formula(φ::Formula, mode::Symbol, literaltype = Literal; kwargs...)
+    if mode == :cnf
+        return _convert_to_normal_form(deepcopy(normalize(φ; profile = :nnf, kwargs...)), ∧, ∨, literaltype)
+    elseif mode == :dnf
+        return _convert_to_normal_form(deepcopy(normalize(φ; profile = :nnf, kwargs...)), ∨, ∧, literaltype)
+    else
+        throw(ArgumentError("Unsupported mode: $mode. Use :cnf or :dnf"))
+    end
+end
+
+"""
+    cnf(φ::Formula, literaltype = Literal; kwargs...)
+
+Return a formula into Conjunctive Normal Form with literals of type
+`literaltype` (`CNF{literaltype}`).
+Any additional `kwarg` is internally passed to [`normalize`](@ref).
+"""
+function cnf(φ::Formula, literaltype = Literal; kwargs...)
+    return normalize_formula(φ, :cnf, literaltype; kwargs...)
+end
+
+"""
+    dnf(φ::Formula, literaltype = Literal; kwargs...)
+
+Return a formula into Disjunctive Normal Form with literals of type
+`literaltype` (`CNF{literaltype}`).
+Any additional `kwarg` is internally passed to [`normalize`](@ref).
+"""
+function dnf(φ::Formula, literaltype = Literal; kwargs...)
+    return normalize_formula(φ, :dnf, literaltype; kwargs...)
+end
+
+"""
+    _convert_to_normal_form(φ::Formula, primary::Connective, secondary::Connective, literaltype::Type)
+
+General helper for converting formulas into CNF or DNF.
+- `primary`: The main connective of the normal form (`∧` for CNF, `∨` for DNF).
+- `secondary`: The secondary connective used for distributing terms.
+"""
+function _convert_to_normal_form(φ::Formula, primary::Connective, secondary::Connective, literaltype::Type)
+    ret = if φ isa SyntaxLeaf # TODO first find literals, then use `if φ isa literaltype`
+        _literal_to_normal_form(φ, primary, secondary, literaltype)
+    elseif φ isa Union{LeftmostConjunctiveForm,LeftmostDisjunctiveForm}
+        _convert_to_normal_form(tree(φ), primary, secondary, literaltype) # TODO: this is slow.
+    elseif φ isa AbstractSyntaxBranch
+        tok = token(φ)
+        if tok == primary
+            @assert isbinary(tok)
+            # Combine the primary operation directly
+            _combine_normal_form!(
+                _convert_to_normal_form(first(children(φ)), primary, secondary, literaltype),
+                _convert_to_normal_form(last(children(φ)), primary, secondary, literaltype),
+                primary
+            )
+        elseif tok == secondary
+            @assert isbinary(secondary)
+            # Distribute the secondary operation over the primary
+            ONE = _extract_normal_form_clauses(
+                    _convert_to_normal_form(first(children(φ)), primary, secondary, literaltype), primary
+                )
+            TWO = _extract_normal_form_clauses(
+                    _convert_to_normal_form(last(children(φ)), primary, secondary, literaltype), primary
+                )
+            # @show first(children(φ))
+            # @show ONE
+            # @show last(children(φ))
+            # @show TWO
+            distributed_terms = [
+                _combine_normal_form(c1, c2, secondary)
+                for c1 in ONE
+                for c2 in TWO
+            ]
+            # @show distributed_terms
+            _combine_clauses(distributed_terms, primary)
+        elseif tok == (¬)
+            # @show φ
+            # Negate literals and convert to desired form
+            _literal_to_normal_form(φ, primary, secondary, literaltype)
+        else
+            throw(ArgumentError("Unexpected token in formula: $tok"))
+        end
+    else
+        throw(ArgumentError("Unsupported formula type: $(typeof(φ))"))
+    end
+    # @show φ
+    # @show ret
+    return ret
+end
+
+"""
+    _literal_to_normal_form(φ::Formula, primary::Connective, secondary::Connective, literaltype::Type)
+
+Converts a literal into the specified normal form's atomic unit.
+"""
+function _literal_to_normal_form(φ::Formula, primary::typeof(∧), secondary::typeof(∨), literaltype::Type)
+    # @show φ, literaltype
+    literal = φ isa literaltype ? φ : literaltype(φ)
+    return LeftmostConjunctiveForm([LeftmostDisjunctiveForm{literaltype}([literal])])
+end
+
+function _literal_to_normal_form(φ::Formula, primary::typeof(∨), secondary::typeof(∧), literaltype::Type)
+    # @show φ, literaltype
+    literal = φ isa literaltype ? φ : literaltype(φ)
+    return LeftmostDisjunctiveForm([LeftmostConjunctiveForm{literaltype}([literal])])
+end
+
+# """
+#     _combine_normal_form!(left, right, c)
+
+# Combines two sub-formulas using the given connective.
+# """
+function _combine_normal_form!(left::LeftmostLinearForm{C}, right::LeftmostLinearForm{C}, c::C) where {C<:Connective}
+    Base.append!(SoleLogics.grandchildren(left), SoleLogics.grandchildren(right))
+    return left
+end
+
+"""
+    _combine_normal_form(left, right, c)
+
+Combines two sub-formulas using the given connective.
+"""
+function _combine_normal_form(left::LeftmostLinearForm{C}, right::LeftmostLinearForm{C}, c::C) where {C<:Connective}
+    if c == ∧
+        return left ∧ right
+    elseif c == ∨
+        return left ∨ right
+    else
+        throw(ArgumentError("Unsupported connective: $op"))
+    end
+end
+
+"""
+    _extract_normal_form_clauses(φ::Formula, primary::Connective)
+
+Extracts the conjuncts or disjuncts from the given formula.
+"""
+function _extract_normal_form_clauses(φ::Formula, primary::Connective)
+    if token(φ) == primary
+        return SoleLogics.grandchildren(φ)
+    else
+        return [φ]
+    end
+end
+
+"""
+    _combine_clauses(clauses::Vector, c::Connective)
+
+Combines a set of clauses using the specified connective.
+"""
+function _combine_clauses(clauses::Vector, c::Connective)
+    if c == (∧)
+        return LeftmostConjunctiveForm(clauses)
+    elseif c == (∨)
+        return LeftmostDisjunctiveForm(clauses)
+    else
+        throw(ArgumentError("Unsupported connective: $c"))
+    end
 end

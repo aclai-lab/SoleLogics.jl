@@ -19,7 +19,8 @@ test_suites = [
     ("Syntax Utils", ["syntax-utils.jl",]),
 
     ("Formula Generation", ["formulas/generation.jl",]),
-    ("Formulas I/O", ["formulas/input.jl",]),
+    ("Formula I/O", ["formulas/input.jl",]),
+    ("Normal Forms", ["formulas/normal-forms.jl",]),
 
     ("Operators", ["logics/operators.jl"]),
     # ("Logics", ["logics/logics.jl"]),
@@ -40,7 +41,7 @@ test_suites = [
 
     ("Pluto Demo", ["$(dirname(dirname(pathof(SoleLogics))))/pluto-demo.jl", ]),
 
-    ("ManyValuedLogics", ["many-valued-logics.jl",]),
+    ("ManyValuedLogics", ["many-valued-check.jl", "many-valued-logics.jl"]),
 
     ("Miscellaneous", ["misc.jl", "util.jl"]),
 ]

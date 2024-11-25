@@ -2,7 +2,7 @@ import Base: parse
 
 function Base.parse(
     F::Type{<:Formula},
-    expr::String,
+    expr::AbstractString,
     args...;
     kwargs...
 )
@@ -10,9 +10,9 @@ function Base.parse(
 end
 
 
-function parseformula(F::Type{<:Formula}, expr::String, args...; kwargs...)
-    return error("Please, provide method parseformula(::Type{$(F)}, expr::String, ::$(typeof(args))...; ::$(typeof(kwargs))...).")
+function parseformula(F::Type{<:Formula}, expr::AbstractString, args...; kwargs...)
+    return error("Please, provide method parseformula(::Type{$(F)}, expr::AbstractString, ::$(typeof(args))...; ::$(typeof(kwargs))...).")
 end
 
-parseformula(expr::String, args...; kwargs...) = parseformula(SyntaxTree, expr, args...; kwargs...)
+parseformula(expr::AbstractString, args...; kwargs...) = parseformula(SyntaxTree, expr, args...; kwargs...)
 

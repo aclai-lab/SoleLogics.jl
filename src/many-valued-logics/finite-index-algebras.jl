@@ -24,10 +24,10 @@ struct FiniteIndexTruth <: Truth
     end
 end
 
-istop(t::FiniteIndexTruth) = t.index == UInt8(1)
-isbot(t::FiniteIndexTruth) = t.index == UInt8(2)
-istop(t::UInt8) = t == UInt8(1)
-isbot(t::UInt8) = t == UInt8(2)
+_istop(t::UInt8) = t == UInt8(1)
+_isbot(t::UInt8) = t == UInt8(2)
+istop(t::FiniteIndexTruth) = _istop(t.index)
+isbot(t::FiniteIndexTruth) = _isbot(t.index)
 
 function syntaxstring(t::FiniteIndexTruth; kwargs...)
     if t.index < UInt8(3)
@@ -71,15 +71,15 @@ Base.convert(::Type{FiniteIndexTruth}, t::FiniteTruth) = convert(FiniteIndexTrut
 #### Binary index operation ################################################################
 ############################################################################################
 
-struct BinaryIndexOperation{N} <: AbstractBinaryOperation
-    truthtable::SMatrix{N, N, FiniteIndexTruth}
+struct BinaryIndexOperation{N,M<:SMatrix{N,N,FiniteIndexTruth}} <: AbstractBinaryOperation
+    truthtable::M
 
-    function BinaryIndexOperation{N}(truthtable::SMatrix{N, N, FiniteIndexTruth}) where {N}
-        return new{N}(truthtable)
+    function BinaryIndexOperation{N}(truthtable::M) where {N,M<:SMatrix{N,N,FiniteIndexTruth}}
+        return new{N,M}(truthtable)
     end
 
-    function BinaryIndexOperation{N}(truthtable::Array{FiniteIndexTruth, 1}) where {N}
-        return BinaryIndexOperation{N}(SMatrix{N, N, FiniteIndexTruth}(truthtable))
+    function BinaryIndexOperation{N}(truthtable::AbstractVector{<:FiniteIndexTruth}) where {N}
+        return BinaryIndexOperation{N}(SMatrix{N,N,FiniteIndexTruth}(truthtable))
     end
 end
 
@@ -90,19 +90,19 @@ function getdomain(::BinaryIndexOperation{N}) where {N}
     return SVector{N,FiniteIndexTruth}(FiniteIndexTruth.([1:N]...))
 end
 
-function (o::BinaryIndexOperation{N})(t1::UInt8, t2::UInt8) where {N}
+@inline function (o::BinaryIndexOperation{N})(t1::UInt8, t2::UInt8) where {N}
     return o.truthtable[t1, t2]
 end
 
-function (o::BinaryIndexOperation{N})(t1::FiniteIndexTruth, t2::UInt8) where {N}
+@inline function (o::BinaryIndexOperation{N})(t1::FiniteIndexTruth, t2::UInt8) where {N}
     return o.truthtable[t1.index, t2]
 end
 
-function (o::BinaryIndexOperation{N})(t1::UInt8, t2::FiniteIndexTruth) where {N}
+@inline function (o::BinaryIndexOperation{N})(t1::UInt8, t2::FiniteIndexTruth) where {N}
     return o.truthtable[t1, t2.index]
 end
 
-function (o::BinaryIndexOperation{N})(t1::FiniteIndexTruth, t2::FiniteIndexTruth) where {N}
+@inline function (o::BinaryIndexOperation{N})(t1::FiniteIndexTruth, t2::FiniteIndexTruth) where {N}
     return o.truthtable[t1.index, t2.index]
 end
 

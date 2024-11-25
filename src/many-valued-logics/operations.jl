@@ -35,9 +35,9 @@ function arity(o::O) where {O<:Operation}
 end
 
 """
-    struct BinaryOperation{T<:Truth, D<:AbstractVector{T}} <: Operation
+    struct BinaryOperation{T<:Truth,D<:AbstractVector{T},DI<:AbstractDict{Tuple{T,T},T}} <: Operation
         domain::D
-        truthtable::AbstractDict{Tuple{T, T}, T}
+        truthtable::DI
     end
 
 A binary operation on a set S is a mapping of the elements of the Cartesian product
@@ -47,16 +47,17 @@ on all elements of S × S.
 
 See also [`Operation`](@ref), [`arity`](@ref).
 """
-struct BinaryOperation{T<:Truth, D<:AbstractVector{T}} <: AbstractBinaryOperation
+struct BinaryOperation{T<:Truth,D<:AbstractVector{T},DI<:AbstractDict{Tuple{T,T},T}} <: AbstractBinaryOperation
     domain::D
-    truthtable::AbstractDict{Tuple{T, T}, T}
+    truthtable::DI
 
     function BinaryOperation(
         domain::D,
-        truthtable::Dict{Tuple{T, T}, T}
+        truthtable::DI,
     ) where {
         T<:Truth,
-        D<:AbstractVector{T}
+        D<:AbstractVector{T},
+        DI<:Dict{Tuple{T,T},T}
     }
         for i ∈ domain
             for j ∈ domain
@@ -65,7 +66,7 @@ struct BinaryOperation{T<:Truth, D<:AbstractVector{T}} <: AbstractBinaryOperatio
         end
         @assert length(truthtable) == length(domain)^2 "Found truthtable[(i, j)] where i " *
             "or j ∉ domain."
-        return new{T,D}(domain, truthtable)
+        return new{T,D,DI}(domain, truthtable)
     end
 end
 
