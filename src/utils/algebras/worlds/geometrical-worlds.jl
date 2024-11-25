@@ -189,6 +189,16 @@ struct RelativeGeometricalWorld{W<:GeometricalWorld} <: GeometricalWorld
     # TODO assert xyz \in [0,1] ...?
 end
 
+innerworld(w::RelativeGeometricalWorld) = w.w
+@forward RelativeGeometricalWorld.w (
+    Base.length,
+    inlinedisplay,
+    goeswithdim,
+    nparameters,
+    Base.getindex,
+    X, Y, Z, dimensionality,
+)
+
 const RelativePoint{N,T<:Real} = RelativeGeometricalWorld{Point{N,T}}
 const RelativeInterval{T<:Real} = RelativeGeometricalWorld{Interval{T}}
 const RelativeInterval2D{T<:Real} = RelativeGeometricalWorld{Interval2D{T}}
