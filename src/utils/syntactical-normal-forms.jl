@@ -106,7 +106,7 @@ struct LeftmostLinearForm{C<:Connective,SS<:SyntaxStructure} <: SyntaxStructure
         grandchildren::Vector,
         args...
     ) where {C<:SoleLogics.Connective}
-        LeftmostLinearForm{C}(op, grandchildren, args...)
+        LeftmostLinearForm{C}(grandchildren, args...)
     end
 
     function LeftmostLinearForm(
