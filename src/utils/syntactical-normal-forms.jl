@@ -67,54 +67,52 @@ struct LeftmostLinearForm{C<:Connective,SS<:SyntaxStructure} <: SyntaxStructure
 
     function LeftmostLinearForm{C,SS}(
         grandchildren::Vector,
+        allow_empty::Bool = false,
     ) where {C<:Connective,SS<:SyntaxStructure}
         a = arity(C()) # TODO maybe add member connective::C and use that instead of C()
         n_children = length(grandchildren)
 
-        length(grandchildren) > 0 || error("Cannot instantiate LeftmostLinearForm{$(C)} with no grandchildren.")
+        if !allow_empty
+            length(grandchildren) > 0 || error("Cannot instantiate LeftmostLinearForm{$(C)} with no grandchildren.")
 
-        if a == 1
-            n_children == 1 ||
-                error("Mismatching number of grandchildren ($n_children) and connective's arity ($a).")
-        else
-            h = (n_children-1)/(a-1)
-            (isinteger(h) && h >= 0) ||
-            # TODO figure out whether the base case n_children = 0 makes sense
-                error("Mismatching number of grandchildren ($n_children) and connective's arity ($a).")
+            if a == 1
+                n_children == 1 ||
+                    error("Mismatching number of grandchildren ($n_children) and connective's arity ($a).")
+            else
+                h = (n_children-1)/(a-1)
+                (isinteger(h) && h >= 0) ||
+                # TODO figure out whether the base case n_children = 0 makes sense
+                    error("Mismatching number of grandchildren ($n_children) and connective's arity ($a).")
+            end
         end
 
         new{C,SS}(grandchildren)
     end
 
-    function LeftmostLinearForm{C}(grandchildren::AbstractVector{SS}) where {C<:Connective,SS<:SyntaxStructure}
+    function LeftmostLinearForm{C}(grandchildren::AbstractVector{SS}, args...) where {C<:Connective,SS<:SyntaxStructure}
         # SS = SoleBase._typejoin(typeof.(grandchildren)...)
-        LeftmostLinearForm{C,SS}(grandchildren)
+        LeftmostLinearForm{C,SS}(grandchildren, args...)
     end
 
     # Ugly!!
-    function LeftmostLinearForm{C}(grandchildren::AbstractVector) where {C<:Connective}
-        length(grandchildren) > 0 || error("Cannot instantiate LeftmostLinearForm{$(C)} with no grandchildren.")
+    function LeftmostLinearForm{C}(grandchildren::AbstractVector, args...) where {C<:Connective}
+        allow_empty || length(grandchildren) > 0 || error("Cannot instantiate LeftmostLinearForm{$(C)} with no grandchildren.")
         SS = SoleBase._typejoin(typeof.(grandchildren)...)
-        LeftmostLinearForm{C,SS}(grandchildren)
+        LeftmostLinearForm{C,SS}(grandchildren, args...)
     end
 
     function LeftmostLinearForm(
-        C::Type{<:SoleLogics.Connective},
+        op::C,
         grandchildren::Vector,
-    )
-        LeftmostLinearForm{C}(grandchildren)
-    end
-
-    function LeftmostLinearForm(
-        op::Connective,
-        grandchildren::Vector,
-    )
-        LeftmostLinearForm(typeof(op), grandchildren)
+        args...
+    ) where {C<:SoleLogics.Connective}
+        LeftmostLinearForm{C}(op, grandchildren, args...)
     end
 
     function LeftmostLinearForm(
         tree::SyntaxTree,
-        c::Union{Nothing,<:SoleLogics.Connective} = nothing
+        c::Union{Nothing,<:SoleLogics.Connective} = nothing,
+        args...
     )
         # Check c correctness; it should not be nothing (thus, auto inferred) if
         # tree root contains something that is not a connective
@@ -142,11 +140,11 @@ struct LeftmostLinearForm{C<:Connective,SS<:SyntaxStructure} <: SyntaxStructure
         end
         _dig_and_retrieve(tree, c)
 
-        LeftmostLinearForm(c, _children)
+        LeftmostLinearForm(c, _children, args...)
     end
 
-    function LeftmostLinearForm{C}(tree::SyntaxTree) where {C<:Connective}
-        LeftmostLinearForm(tree, C()) # TODO avoid
+    function LeftmostLinearForm{C}(tree::SyntaxTree, args...) where {C<:Connective}
+        LeftmostLinearForm(tree, C(), args...) # TODO avoid
     end
 end
 
