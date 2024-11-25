@@ -29,8 +29,8 @@ join = BinaryOperation(domain, jointable)
 #### Finite algebras (boolean case) ########################################################
 ############################################################################################
 
-α = FiniteTruth("α")
-@test string(α) == "α"
+β = FiniteTruth("β")
+@test string(β) == "β"
 
 meettable = Dict{Tuple{BooleanTruth, BooleanTruth}, BooleanTruth}(
     (⊥, ⊥) => ⊥, (⊥, ⊤) => ⊥,

@@ -210,12 +210,12 @@ immediate sub-formulas.
 
 See also [`collatetruth`](@ref), [`Connective`](@ref), [`Formula`](@ref).
 """
-function simplify(c::Connective, φs::NTuple{N,Formula}, args...) where {N}
-    c(φs, args...)
+function simplify(c::Connective, φs::NTuple{N,Formula}, args...; kwargs...) where {N}
+    c(φs, args...; kwargs...)
 end
 
-function simplify(c::Connective, φs::NTuple{N,Truth}, args...) where {N}
-    collatetruth(c, φs, args...)
+function simplify(c::Connective, φs::NTuple{N,T}, args...; kwargs...) where {N,T<:Truth}
+    collatetruth(c, φs, args...; kwargs...)
 end
 
 ############################################################################################
