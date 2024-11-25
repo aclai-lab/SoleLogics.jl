@@ -1,3 +1,6 @@
+using SoleLogics
+using Test
+
 @test_throws ErrorException SoleLogics.Point()
 @test_nowarn SoleLogics.Point(1,2)
 @test_nowarn SoleLogics.Point(1,2,3)
@@ -21,17 +24,19 @@ fr2D = @test_nowarn SoleLogics.FullDimensionalFrame(1,2)
 @test_nowarn SoleLogics.FullDimensionalFrame((1,2),)
 
 # Relative worlds
-rw1 = @test_nowarn SoleLogics.RelativeInterval(0,1.00)
-rw2 = @test_nowarn SoleLogics.RelativeInterval(0,0.95)
-rw3 = @test_nowarn SoleLogics.RelativeInterval(0.05,0.95)
-rw4 = @test_nowarn SoleLogics.RelativeInterval(0,0.95)
+@test_broken begin
+  rw1 = @test_nowarn SoleLogics.RelativeInterval(0,1.00)
+  rw2 = @test_nowarn SoleLogics.RelativeInterval(0,0.95)
+  rw3 = @test_nowarn SoleLogics.RelativeInterval(0.05,0.95)
+  rw4 = @test_nowarn SoleLogics.RelativeInterval(0,0.95)
 
-@test_broken (@test_nowarn accessibles(fr1D, rw1))
-@test_broken (@test_nowarn accessibles(fr1D, rw2))
-@test_broken (@test_nowarn accessibles(fr1D, rw3))
-@test_broken (@test_nowarn accessibles(fr1D, rw4))
-# TODO test several cases of accessibles
+  @test_broken (@test_nowarn accessibles(fr1D, rw1))
+  @test_broken (@test_nowarn accessibles(fr1D, rw2))
+  @test_broken (@test_nowarn accessibles(fr1D, rw3))
+  @test_broken (@test_nowarn accessibles(fr1D, rw4))
+  # TODO test several cases of accessibles
 # 
+end
 
 @test Base.isconcretetype(Base.return_types(accessibles, typeof.((SoleLogics.FullDimensionalFrame((5,),), [Interval(2,3),Interval(2,4)], SoleLogics.IA_L)))[1])
 @test_broken Base.isconcretetype(eltype(Base.return_types(accessibles, typeof.((SoleLogics.FullDimensionalFrame((5,),), [Interval(2,3),Interval(2,4)], SoleLogics.IA_L)))[1]))

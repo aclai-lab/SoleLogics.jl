@@ -187,6 +187,15 @@ nparameters(T::Type{<:Interval2D}) = 4
 struct RelativeGeometricalWorld{W<:GeometricalWorld} <: GeometricalWorld
     w::W
     # TODO assert xyz \in [0,1] ...?
+    function RelativeGeometricalWorld{W}(args...; kwargs...) where {W<:GeometricalWorld}
+        new{W}(W(args...; kwargs...))
+    end
+    function RelativeGeometricalWorld{W}(w::W) where {W<:GeometricalWorld}
+        new{W}(w)
+    end
+    function RelativeGeometricalWorld(w::W) where {W<:GeometricalWorld}
+        RelativeGeometricalWorld{W}(w)
+    end
 end
 
 innerworld(w::RelativeGeometricalWorld) = w.w
