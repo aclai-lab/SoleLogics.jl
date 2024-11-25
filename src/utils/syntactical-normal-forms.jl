@@ -95,10 +95,14 @@ struct LeftmostLinearForm{C<:Connective,SS<:SyntaxStructure} <: SyntaxStructure
     end
 
     # Ugly!!
-    function LeftmostLinearForm{C}(grandchildren::AbstractVector, args...) where {C<:Connective}
+    function LeftmostLinearForm{C}(
+        grandchildren::AbstractVector,
+        allow_empty::Bool = false,
+        args...
+    ) where {C<:Connective}
         allow_empty || length(grandchildren) > 0 || error("Cannot instantiate LeftmostLinearForm{$(C)} with no grandchildren.")
         SS = SoleBase._typejoin(typeof.(grandchildren)...)
-        LeftmostLinearForm{C,SS}(grandchildren, args...)
+        LeftmostLinearForm{C,SS}(grandchildren, allow_empty, args...)
     end
 
     function LeftmostLinearForm(
