@@ -202,17 +202,21 @@ end
 function syntaxstring(
     lf::LeftmostLinearForm;
     function_notation = false,
+    parenthesize_grandchildren = true,
     kwargs...,
 )
     if function_notation
         syntaxstring(tree(lf); function_notation = function_notation, kwargs...)
-    else
+    elseif arity(connective(lf)) == 2
         chs = grandchildren(lf)
         children_ss = map(
-            c->syntaxstring(c; kwargs...),
+            c->syntaxstring(c; parenthesize_grandchildren, kwargs...),
             chs
         )
-        "(" * join(children_ss, ") $(syntaxstring(connective(lf); kwargs...)) (") * ")"
+        if parenthesize_grandchildren
+            children_ss = map(ch->"($(ch))", children_ss)
+        end
+        join(children_ss, " $(syntaxstring(connective(lf); kwargs...)) ")
     end
 end
 
