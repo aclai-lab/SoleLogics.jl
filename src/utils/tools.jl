@@ -188,7 +188,7 @@ function normalize(
     t::LLF;
     kwargs...
 ) where {LLF<:Union{LeftmostConjunctiveForm,LeftmostDisjunctiveForm}}
-    ch = children(t)
+    ch = deepcopy(children(t))
     unique!(ch)
     ch = normalize.(ch; kwargs...)
     unique!(ch)
@@ -513,9 +513,9 @@ is in Negation Normal Form (NNF) first.
 """
 function normalize_formula(φ::Formula, mode::Symbol, literaltype = Literal; kwargs...)
     if mode == :cnf
-        return _convert_to_normal_form(deepcopy(normalize(φ; profile = :nnf, kwargs...)), ∧, ∨, literaltype)
+        return _convert_to_normal_form(normalize(φ; profile = :nnf, kwargs...), ∧, ∨, literaltype)
     elseif mode == :dnf
-        return _convert_to_normal_form(deepcopy(normalize(φ; profile = :nnf, kwargs...)), ∨, ∧, literaltype)
+        return _convert_to_normal_form(normalize(φ; profile = :nnf, kwargs...), ∨, ∧, literaltype)
     else
         throw(ArgumentError("Unsupported mode: $mode. Use :cnf or :dnf"))
     end
@@ -560,7 +560,7 @@ function _convert_to_normal_form(φ::Formula, primary::Connective, secondary::Co
         if tok == primary
             @assert isbinary(tok)
             # Combine the primary operation directly
-            _combine_normal_form!(
+            _combine_normal_form(
                 _convert_to_normal_form(first(children(φ)), primary, secondary, literaltype),
                 _convert_to_normal_form(last(children(φ)), primary, secondary, literaltype),
                 primary
