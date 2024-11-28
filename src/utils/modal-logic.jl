@@ -247,6 +247,8 @@ end
 # allworlds(fr::AdjMatMultiModalFrame) = fr.worlds
 # nworlds(fr::AdjMatMultiModalFrame) = length(fr)
 
+include("algebras/world-filters.jl");
+
 include("algebras/relations.jl")
 
 include("algebras/frames.jl")

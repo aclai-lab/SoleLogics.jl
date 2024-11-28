@@ -60,4 +60,6 @@ end
 
 ############################################################################################
 
+include("frames/filtered-frame.jl");
+
 include("frames/full-dimensional-frame/main.jl")
