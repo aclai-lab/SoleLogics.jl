@@ -22,7 +22,7 @@ function accessibles(fr::Full1DFrame, w::W, r::FilteredRelation{<:AbstractRelati
     return IterTools.imap(W, _accessibles(fr, w, r))
 end
 
-function accessibles(fr::Full1DFrame, w::W, r::FilteredRelation{GlobalRel, IntervalLengthFilter{F, T, W}}) where {F<:Function, T<:Real, W<:Interval{<:Integer}}
+function accessibles(fr::Full1DFrame, w::W, r::FilteredRelation{GlobalRel,IntervalLengthFilter{F, T, W}}) where {F<:Function, T<:Real, W<:Interval{<:Integer}}
     return IterTools.imap(W, _accessibles(fr, w, r))
 end
 
