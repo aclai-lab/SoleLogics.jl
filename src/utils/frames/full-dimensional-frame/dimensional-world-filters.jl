@@ -1,3 +1,4 @@
+# TODO docstring for IntervalLengthFilter. World filter on a thresholding of Base.length(w).
 struct IntervalLengthFilter{F<:Function,T<:Real,W<:Interval} <: WorldFilter{W}
     f::F # e.g., >=, <
     k::T # e.g., 3, 10
@@ -11,7 +12,6 @@ struct IntervalLengthFilter{F<:Function,T<:Real,W<:Interval} <: WorldFilter{W}
     function IntervalLengthFilter(f::F, k::T) where {F<:Function,T<:Real}
         return IntervalLengthFilter{F,T}(f, k)
     end
-
 end
 
 function filterworlds(wf::IntervalLengthFilter, worlds) # ::AbstractArray{W}) where {W<:Interval}
