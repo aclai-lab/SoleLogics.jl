@@ -360,11 +360,11 @@ function accessibles(
     IterTools.imap(W, _accessibles(fr, w, r))
 end
 
-include("algebras/worlds.jl")
+include("frames/worlds.jl")
 
-include("algebras/relations.jl")
+include("frames/relations.jl")
 
-include("algebras/frames.jl")
+include("frames/frames.jl")
 
 ############################################################################################
 ############################################################################################

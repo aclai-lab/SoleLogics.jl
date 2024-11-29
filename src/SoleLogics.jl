@@ -115,11 +115,8 @@ include("types/modal-logic.jl")
 
 include("utils/modal-logic.jl")
 
-include("types/algebras/relations/filtered-relations.jl")
 export WorldFilter
-include("utils/algebras/relations/filtered-relations.jl")
 export FunctionalWorldFilter, FilteredRelation
-include("utils/algebras/frames/full-dimensional-frame/dimensional-world-filters.jl")
 export IntervalLengthFilter
 
 

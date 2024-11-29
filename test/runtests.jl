@@ -29,9 +29,9 @@ test_suites = [
 
     ("Propositional Logic", ["propositional-logic.jl"]),
 
-    ("Algebras: worlds", ["algebras/worlds.jl",]),
-    ("Algebras: frames", ["algebras/frames.jl",]),
-    ("Algebras: relations", ["algebras/relations.jl",]),
+    ("Algebras: worlds", ["frames/worlds.jl",]),
+    ("Algebras: frames", ["frames/frames.jl",]),
+    ("Algebras: relations", ["frames/relations.jl",]),
 
     ("Generation: formula", ["generation/formula.jl",]),
     ("Generation: models", ["generation/models.jl",]),
