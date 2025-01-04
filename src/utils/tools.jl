@@ -276,7 +276,7 @@ function normalize(
         rotate_commutatives = rotate_commutatives,
         flip_atom = flip_atom,
     )
-
+    # @show allow_atom_flipping, forced_negation_removal
     newt = t
 
     # Remove modal connectives based on the identity relation
@@ -317,8 +317,11 @@ function normalize(
                 # _normalize(∨(¬(grandchildren[1]), grandchildren[2]))
                 ∧(_normalize(grandchildren[1]), _normalize(¬(grandchildren[2])))
             elseif reduce_negations && chtok isa AbstractAtom
+                # @show chtok
+                # @show hasdual(chtok)
                 if allow_atom_flipping && hasdual(chtok)
-                    should_flip = (!isnothing(flip_atom) && flip_atom(chtok))
+                    should_flip = isnothing(flip_atom) || (!isnothing(flip_atom) && flip_atom(chtok))
+                    # @show should_flip
                     should_flip ? dual(chtok) : ¬chtok
                 else
                     ¬(_normalize(child))
