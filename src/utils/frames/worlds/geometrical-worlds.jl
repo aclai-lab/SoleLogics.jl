@@ -60,8 +60,23 @@ nparameters(T::Type{<:Point}) = dimensionality(T)
 goeswithdim(::Type{P}, ::Val{N}) where {N,P<:Point{N}} = true
 
 # Useful aliases
+"""const Point1D = Point{1}
+
+A world representing a point in a one-dimensional space.
+See [`Point`](@ref).
+"""
 const Point1D = Point{1}
+"""const Point2D = Point{2}
+
+A world representing a point in a two-dimensional space.
+See [`Point`](@ref).
+"""
 const Point2D = Point{2}
+"""const Point3D = Point{3}
+
+A world representing a point in a three-dimensional space.
+See [`Point`](@ref).
+"""
 const Point3D = Point{3}
 
 ############################################################################################

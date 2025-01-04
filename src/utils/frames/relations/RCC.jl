@@ -3,13 +3,13 @@
 ############################################################################################
 
 # Relations for RCC8
-struct _Topo_DC     <: RCCRelation end; const Topo_DC     = _Topo_DC();     # Disconnected
-struct _Topo_EC     <: RCCRelation end; const Topo_EC     = _Topo_EC();     # Externally connected
-struct _Topo_PO     <: RCCRelation end; const Topo_PO     = _Topo_PO();     # Partially overlapping
-struct _Topo_TPP    <: RCCRelation end; const Topo_TPP    = _Topo_TPP();    # Tangential proper part
-struct _Topo_TPPi   <: RCCRelation end; const Topo_TPPi   = _Topo_TPPi();   # Tangential proper part inverse
-struct _Topo_NTPP   <: RCCRelation end; const Topo_NTPP   = _Topo_NTPP();   # Non-tangential proper part
-struct _Topo_NTPPi  <: RCCRelation end; const Topo_NTPPi  = _Topo_NTPPi();  # Non-tangential proper part inverse
+struct _Topo_DC     <: RCCRelation end; """See [`RCCRelation`](@ref).""" const Topo_DC     = _Topo_DC();     # Disconnected
+struct _Topo_EC     <: RCCRelation end; """See [`RCCRelation`](@ref).""" const Topo_EC     = _Topo_EC();     # Externally connected
+struct _Topo_PO     <: RCCRelation end; """See [`RCCRelation`](@ref).""" const Topo_PO     = _Topo_PO();     # Partially overlapping
+struct _Topo_TPP    <: RCCRelation end; """See [`RCCRelation`](@ref).""" const Topo_TPP    = _Topo_TPP();    # Tangential proper part
+struct _Topo_TPPi   <: RCCRelation end; """See [`RCCRelation`](@ref).""" const Topo_TPPi   = _Topo_TPPi();   # Tangential proper part inverse
+struct _Topo_NTPP   <: RCCRelation end; """See [`RCCRelation`](@ref).""" const Topo_NTPP   = _Topo_NTPP();   # Non-tangential proper part
+struct _Topo_NTPPi  <: RCCRelation end; """See [`RCCRelation`](@ref).""" const Topo_NTPPi  = _Topo_NTPPi();  # Non-tangential proper part inverse
 
 syntaxstring(::_Topo_DC; kwargs...)    = "DC"
 syntaxstring(::_Topo_EC; kwargs...)    = "EC"
@@ -37,9 +37,9 @@ istransitive(r::_Topo_NTPPi) = true
 ############################################################################################
 
 # Coarser relations for RCC5
-struct _Topo_DR     <: RCCRelation end; const Topo_DR     = _Topo_DR();     # Disjointed
-struct _Topo_PP     <: RCCRelation end; const Topo_PP     = _Topo_PP();     # Proper part
-struct _Topo_PPi    <: RCCRelation end; const Topo_PPi    = _Topo_PPi();    # Proper part inverse
+struct _Topo_DR     <: RCCRelation end; """See [`RCCRelation`](@ref).""" const Topo_DR     = _Topo_DR();     # Disjointed
+struct _Topo_PP     <: RCCRelation end; """See [`RCCRelation`](@ref).""" const Topo_PP     = _Topo_PP();     # Proper part
+struct _Topo_PPi    <: RCCRelation end; """See [`RCCRelation`](@ref).""" const Topo_PPi    = _Topo_PPi();    # Proper part inverse
 
 syntaxstring(::_Topo_DR; kwargs...)    = "DR"
 syntaxstring(::_Topo_PP; kwargs...)    = "PP"

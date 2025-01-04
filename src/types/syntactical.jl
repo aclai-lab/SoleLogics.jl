@@ -522,7 +522,7 @@ const SyntaxToken = Union{Connective,SyntaxLeaf}
 """$(doc_dual)"""
 dual(t::SyntaxToken) = error("Please, provide method dual(::$(typeof(t))).")
 
-"""See [`dual`](@ref)"""
+"""See [`dual`](@ref)."""
 hasdual(t::SyntaxToken) = false
 
 ############################################################################################

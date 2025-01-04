@@ -26,8 +26,8 @@ const Bottom = typeof(BOT)
 Base.@deprecate bottom(a) bot(a)
 Base.@deprecate isbottom(a) isbot(a)
 
-# parse.jl
-Base.@deprecate parsetree(s::String, args...; kwargs...) parseformula(s, args...; kwargs...)
+# # parse.jl
+# Base.@deprecate parsetree(s::String, args...; kwargs...) parseformula(s, args...; kwargs...)
 
 # modal-logic.jl
 export global_diamond, global_box

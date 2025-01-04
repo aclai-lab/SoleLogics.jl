@@ -2,19 +2,19 @@
 # Allen's Interval Algebra relations
 ############################################################################################
 
-struct _IA_A  <: IntervalRelation end; """See [`IntervalRelation`](@ref)""" const IA_A  = _IA_A();  # After
-struct _IA_L  <: IntervalRelation end; """See [`IntervalRelation`](@ref)""" const IA_L  = _IA_L();  # Later
-struct _IA_B  <: IntervalRelation end; """See [`IntervalRelation`](@ref)""" const IA_B  = _IA_B();  # Begins
-struct _IA_E  <: IntervalRelation end; """See [`IntervalRelation`](@ref)""" const IA_E  = _IA_E();  # Ends
-struct _IA_D  <: IntervalRelation end; """See [`IntervalRelation`](@ref)""" const IA_D  = _IA_D();  # During
-struct _IA_O  <: IntervalRelation end; """See [`IntervalRelation`](@ref)""" const IA_O  = _IA_O();  # Overlaps
+struct _IA_A  <: IntervalRelation end; """See [`IntervalRelation`](@ref).""" const IA_A  = _IA_A();  # After
+struct _IA_L  <: IntervalRelation end; """See [`IntervalRelation`](@ref).""" const IA_L  = _IA_L();  # Later
+struct _IA_B  <: IntervalRelation end; """See [`IntervalRelation`](@ref).""" const IA_B  = _IA_B();  # Begins
+struct _IA_E  <: IntervalRelation end; """See [`IntervalRelation`](@ref).""" const IA_E  = _IA_E();  # Ends
+struct _IA_D  <: IntervalRelation end; """See [`IntervalRelation`](@ref).""" const IA_D  = _IA_D();  # During
+struct _IA_O  <: IntervalRelation end; """See [`IntervalRelation`](@ref).""" const IA_O  = _IA_O();  # Overlaps
 
-struct _IA_Ai <: IntervalRelation end; """See [`IntervalRelation`](@ref)""" const IA_Ai = _IA_Ai(); # After inverse
-struct _IA_Li <: IntervalRelation end; """See [`IntervalRelation`](@ref)""" const IA_Li = _IA_Li(); # Later inverse
-struct _IA_Bi <: IntervalRelation end; """See [`IntervalRelation`](@ref)""" const IA_Bi = _IA_Bi(); # Begins inverse
-struct _IA_Ei <: IntervalRelation end; """See [`IntervalRelation`](@ref)""" const IA_Ei = _IA_Ei(); # Ends inverse
-struct _IA_Di <: IntervalRelation end; """See [`IntervalRelation`](@ref)""" const IA_Di = _IA_Di(); # During inverse
-struct _IA_Oi <: IntervalRelation end; """See [`IntervalRelation`](@ref)""" const IA_Oi = _IA_Oi(); # Overlaps inverse
+struct _IA_Ai <: IntervalRelation end; """See [`IntervalRelation`](@ref).""" const IA_Ai = _IA_Ai(); # After inverse
+struct _IA_Li <: IntervalRelation end; """See [`IntervalRelation`](@ref).""" const IA_Li = _IA_Li(); # Later inverse
+struct _IA_Bi <: IntervalRelation end; """See [`IntervalRelation`](@ref).""" const IA_Bi = _IA_Bi(); # Begins inverse
+struct _IA_Ei <: IntervalRelation end; """See [`IntervalRelation`](@ref).""" const IA_Ei = _IA_Ei(); # Ends inverse
+struct _IA_Di <: IntervalRelation end; """See [`IntervalRelation`](@ref).""" const IA_Di = _IA_Di(); # During inverse
+struct _IA_Oi <: IntervalRelation end; """See [`IntervalRelation`](@ref).""" const IA_Oi = _IA_Oi(); # Overlaps inverse
 
 syntaxstring(::_IA_A; kwargs...)  = "A"
 syntaxstring(::_IA_L; kwargs...)  = "L"
@@ -57,13 +57,13 @@ converse(::_IA_Oi) = IA_O
 ############################################################################################
 
 # Coarser relations: IA7
-struct _IA_AorO       <: IntervalRelation end; """See [`IntervalRelation`](@ref)""" const IA_AorO       = _IA_AorO();       # After ∪ Overlaps
-struct _IA_DorBorE    <: IntervalRelation end; """See [`IntervalRelation`](@ref)""" const IA_DorBorE    = _IA_DorBorE();    # During ∪ Begins ∪ Ends
-struct _IA_AiorOi     <: IntervalRelation end; """See [`IntervalRelation`](@ref)""" const IA_AiorOi     = _IA_AiorOi();     # (After ∪ Overlaps) inverse
-struct _IA_DiorBiorEi <: IntervalRelation end; """See [`IntervalRelation`](@ref)""" const IA_DiorBiorEi = _IA_DiorBiorEi(); # (During ∪ Begins ∪ Ends) inverse
+struct _IA_AorO       <: IntervalRelation end; """See [`IntervalRelation`](@ref).""" const IA_AorO       = _IA_AorO();       # After ∪ Overlaps
+struct _IA_DorBorE    <: IntervalRelation end; """See [`IntervalRelation`](@ref).""" const IA_DorBorE    = _IA_DorBorE();    # During ∪ Begins ∪ Ends
+struct _IA_AiorOi     <: IntervalRelation end; """See [`IntervalRelation`](@ref).""" const IA_AiorOi     = _IA_AiorOi();     # (After ∪ Overlaps) inverse
+struct _IA_DiorBiorEi <: IntervalRelation end; """See [`IntervalRelation`](@ref).""" const IA_DiorBiorEi = _IA_DiorBiorEi(); # (During ∪ Begins ∪ Ends) inverse
 
 # Even coarser relations: IA3
-struct _IA_I          <: IntervalRelation end; """See [`IntervalRelation`](@ref)""" const IA_I          = _IA_I();   # Intersecting (ABEDO ∪ ABEDO inverse)
+struct _IA_I          <: IntervalRelation end; """See [`IntervalRelation`](@ref).""" const IA_I          = _IA_I();   # Intersecting (ABEDO ∪ ABEDO inverse)
 
 converse(::_IA_AorO) = IA_AiorOi
 converse(::_IA_DorBorE) = IA_DiorBiorEi
