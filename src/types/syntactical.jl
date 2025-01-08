@@ -683,10 +683,14 @@ function syntaxstring(
         # TODO this is very dirty...
         ch = token(children(φ)[1])
         charity = arity(ch)
-        if !function_notation && arity(tok) == 1 &&
-           (charity == 1 || (ch isa AbstractAtom && !parenthesize_atoms))
+        # @show !function_notation
+        # @show arity(tok) == 1
+        # @show (charity == 1 || (ch isa AbstractAtom && !parenthesize_atoms))
+        # @show (charity == 1 || (ch isa AbstractAtom))
+        if !function_notation && arity(tok) == 1 && (charity == 1 || (ch isa AbstractAtom))
             # When not in function notation, print "¬p" instead of "¬(p)";
             # note that "◊((p ∧ q) → s)" must not be simplified as "◊(p ∧ q) → s".
+            # @show "NO"
             lpar, rpar = "", ""
         end
 
@@ -695,7 +699,15 @@ function syntaxstring(
         else
             tokstr * "$(lpar)" *
             join(
-                [syntaxstring(c; ch_kwargs...) for c in children(φ)], ", ",) * "$(rpar)"
+                [begin
+                    if (c isa AbstractAtom && parenthesize_atoms)
+                        _ch_kwargs = merge(ch_kwargs, (; parenthesize_atoms = false))
+                    else
+                        _ch_kwargs = ch_kwargs
+                    end
+                    # @show _ch_kwargs
+                    syntaxstring(c; ch_kwargs...)
+                end for c in children(φ)], ", ") * "$(rpar)"
         end
     end
 end

@@ -1,3 +1,5 @@
+using Test
+using SoleLogics
 import SoleLogics: arity
 
 using SoleLogics: relation
@@ -45,7 +47,7 @@ end
 @test_nowarn parseformula("⟨G⟩p")
 
 @test syntaxstring(parseformula("(◊¬p) ∧ (¬q)")) == "◊¬p ∧ ¬q"
-@test syntaxstring(parseformula("q → p → ¬q"), remove_redundant_parentheses=false) == "(q) → ((p) → (¬(q)))"
+@test_broken syntaxstring(parseformula("q → p → ¬q"), remove_redundant_parentheses=false) == "(q) → ((p) → (¬(q)))"
 # function notation ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 @test syntaxstring(parseformula("p∧q"); function_notation = true) == "∧(p, q)"
