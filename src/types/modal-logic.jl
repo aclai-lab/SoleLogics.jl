@@ -295,9 +295,9 @@ true
 
 # Implementation
 
-Since `accessibles` always returns an iterator of worlds of the same type `W`,
+Since `accessibles` always returns an iterator to worlds of the same type `W`,
 the current implementation of `accessibles` for multi-modal frames delegates the enumeration
-to a lower level `_accessibles` function, which returns an iterator of parameter tuples
+to a lower level `_accessibles` function, which returns an iterator to parameter tuples
 that are, then, fed to the world constructor the using IterTools generators, as in:
 
     function accessibles(

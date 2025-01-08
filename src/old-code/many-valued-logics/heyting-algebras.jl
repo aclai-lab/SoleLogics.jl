@@ -20,7 +20,7 @@ position in the domain vector of the associated algebra.
 Values `⊤` and `⊥` always exist with index 1 and 2, respectively.
 New values can be easily constructed via the [`@heytingtruths`](@ref) macro.
 
-See also [`@heytingtruths`](@ref), [`HeytingAlgebra`](@ref), [`Truth`](@ref)
+See also [`@heytingtruths`](@ref), [`HeytingAlgebra`](@ref), [`Truth`](@ref).
 """
 struct HeytingTruth <: Truth
     label::String
@@ -95,7 +95,7 @@ specific constraints (see [here](https://en.wikipedia.org/wiki/Heyting_algebra))
 ⊤ and ⊥ are always the first and the second element of each algebra, respectively.
 A copy of the graph under transitive closure is also stored for optimization purposes.
 
-See also [`@heytingalgebra`](@ref), [`HeytingTruth`](@ref)
+See also [`@heytingalgebra`](@ref), [`HeytingTruth`](@ref).
 """
 struct HeytingAlgebra{
     D<:AbstractVector{HeytingTruth},
@@ -661,7 +661,7 @@ julia> SoleLogics.@heytingtruths α β
 julia> α
 HeytingTruth: α
 
-See also [`HeytingTruth`](@ref), [`@heytingalgebra`](@ref)
+See also [`HeytingTruth`](@ref), [`@heytingalgebra`](@ref).
 """
 macro heytingtruths(labels...)
     quote
@@ -692,7 +692,7 @@ julia> myalgebra = SoleLogics.@heytingalgebra (α, β) (⊥, α) (⊥, β) (α, 
 HeytingAlgebra(HeytingTruth[⊤, ⊥, α, β], SimpleDiGraph{Int64}(4, [Int64[], [3, 4], [1], [1]]
 , [[3, 4], Int64[], [2], [2]]))
 
-See also [`HeytingTruth`](@ref), [`@heytingalgebra`](@ref)
+See also [`HeytingTruth`](@ref), [`@heytingalgebra`](@ref).
 """
 macro heytingalgebra(values, relations...)
     quote

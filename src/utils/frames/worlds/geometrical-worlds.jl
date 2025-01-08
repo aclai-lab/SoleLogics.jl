@@ -21,6 +21,7 @@ julia> SoleLogics.goeswithdim(SoleLogics.Point(1,2,3),2)
 false
 
 ```
+
 See also [`goeswithdim`](@ref), [`Interval`](@ref),
 [`Interval2D`](@ref), [`GeometricalWorld`](@ref), [`AbstractWorld`](@ref).
 """
@@ -110,6 +111,7 @@ julia> collect(accessibles(SoleLogics.FullDimensionalFrame(5), Interval(1,2), So
 
 
 ```
+
 See also
 [`goeswithdim`](@ref),
 [`accessibles`](@ref),
@@ -168,6 +170,7 @@ julia> collect(accessibles(SoleLogics.FullDimensionalFrame(5,5), Interval2D((2,3
  ((5−6)×(5−6))
 
 ```
+
 See also
 [`goeswithdim`](@ref),
 [`accessibles`](@ref),

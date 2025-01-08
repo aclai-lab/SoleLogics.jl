@@ -87,7 +87,7 @@ istopological(r::RectangleRelation) = istopological(r.x) && istopological(r.y)
 """
 (12+1)^2-1=168 2D Interval Algebra relations.
 
-See [`RectangleRelation`](@ref)
+See [`RectangleRelation`](@ref).
 """
 const IA2DRelations = [
         IA_IdA ,IA_IdL ,IA_IdB ,IA_IdE ,IA_IdD ,IA_IdO ,IA_IdAi ,IA_IdLi ,IA_IdBi ,IA_IdEi ,IA_IdDi ,IA_IdOi,
@@ -109,7 +109,7 @@ IA2DRelation = Union{typeof.(IA2DRelations)...}
 """
 (1+1)*13=26 2D Interval Algebra relations with either globalrel and/or identity.
 
-See [`RectangleRelation`](@ref)
+See [`RectangleRelation`](@ref).
 """
 const IA2D_URelations = [
 IA_UId ,IA_UA ,IA_UL ,IA_UB ,IA_UE ,IA_UD ,IA_UO ,IA_UAi ,IA_ULi ,IA_UBi ,IA_UEi ,IA_UDi ,IA_UOi,
@@ -120,7 +120,7 @@ IA2D_URelation = Union{typeof.(IA2D_URelations)...}
 """
 (12+1+1)^2-1=195 2D Interval Algebra relations extended with their combinations with the global relation.
 
-See [`RectangleRelation`](@ref)
+See [`RectangleRelation`](@ref).
 """
 const IA2DRelations_extended = [
 globalrel,
