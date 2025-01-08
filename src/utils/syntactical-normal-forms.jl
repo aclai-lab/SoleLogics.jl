@@ -483,13 +483,13 @@ function DNF(φ::SyntaxLeaf)
     return LeftmostDisjunctiveForm([LeftmostConjunctiveForm([φ])])
 end
 
-function CNF(φ::SyntaxBranch)
-    return erorr("TODO")
-end
+# function CNF(φ::SyntaxBranch)
+#     return LeftmostConjunctiveForm(LeftmostDisjunctiveForm.(conjuncts(LeftmostConjunctiveForm(φ))))
+# end
 
-function DNF(φ::SyntaxBranch)
-    return erorr("TODO")
-end
+# function DNF(φ::SyntaxBranch)
+#     return LeftmostDisjunctiveForm(LeftmostConjunctiveForm.(disjuncts(LeftmostDisjunctiveForm(φ))))
+# end
 
 
 literaltype(::CNF{SS}) where {SS<:SyntaxStructure} = SS
