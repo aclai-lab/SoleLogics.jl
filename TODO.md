@@ -4,6 +4,9 @@
 Utils:
   ☐ iscnf(::Formula)/isdnf(::Formula)
 
+Modal Logic:
+  ☐ recheck/double-check/add tests for accessibles Point1D
+
 Connectives:
   ☐ Change DiamondRelationalConnective and BoxRelationalConnective from singletons to structs wrapping a relation.
     In theory, not all relations are singletons; some might be parametric (e.g., a relation leading to the world w). Therefore, the Diamond and Box relational connectives (e.g., DiamondRelationalConnective) should be structs containing a relation, rather than singletons with the relation encoded only as a type parameter.
