@@ -202,7 +202,7 @@ end
 function syntaxstring(
     lf::LeftmostLinearForm;
     function_notation = false,
-    parenthesize_grandchildren = true,
+    parenthesize_grandchildren = ngrandchildren(lf) > 1,
     kwargs...,
 )
     if function_notation

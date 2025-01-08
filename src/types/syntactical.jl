@@ -608,11 +608,7 @@ function syntaxstring(
             if !remove_redundant_parentheses
                 true
             elseif arity(chtok) == 0
-                if chtok isa AbstractAtom && parenthesize_atoms
-                    true
-                else
-                    false
-                end
+                false
             elseif arity(chtok) == 2 # My child is infix
                 tprec = precedence(ptok)
                 chprec = precedence(chtok)
@@ -682,8 +678,9 @@ function syntaxstring(
         "$(_binary_infix_syntaxstring(tok, children(φ)[1], :left)) " *
         "$tokstr $(_binary_infix_syntaxstring(tok, children(φ)[2], :right))"
     else
-        # Infix notation with arity != 2, or function notation
+        # Function notation
         lpar, rpar = "(", ")"
+        # TODO this is very dirty...
         ch = token(children(φ)[1])
         charity = arity(ch)
         if !function_notation && arity(tok) == 1 &&

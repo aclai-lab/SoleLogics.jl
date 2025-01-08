@@ -84,7 +84,10 @@ Base.isequal(a::Atom, b::SyntaxTree) = (a == b) # Needed for resolving ambiguiti
 Base.isequal(a::SyntaxTree, b::Atom) = (a == b) # Needed for resolving ambiguities
 Base.hash(a::Atom) = Base.hash(value(a))
 
-syntaxstring(a::Atom; kwargs...)::String = syntaxstring(value(a); kwargs...)
+function syntaxstring(a::Atom; parenthesize_atoms = false, kwargs...)::String
+    valstr = syntaxstring(value(a); kwargs...)
+    return parenthesize_atoms ? "(" * valstr * ")" : valstr
+end
 
 syntaxstring(value; kwargs...) = string(value)
 
