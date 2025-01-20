@@ -219,7 +219,7 @@ and `p,q` are atoms, to generate a formula of maxheight `n` provide a value of `
     to having a height smaller or equal to `maxheight` (`mode = :maxheight`),
     to having height equal to `maxheight` (`mode = :exactheight`),
     or to having height equal to `maxheight` and being full (`mode = :full`),.
-- `earlystoppingtreshold::Float` : when `mode = :maxheight`,
+- `earlystoppingtreshold::Float64` : when `mode = :maxheight`,
     controls the probability of calling the basecase before reaching.
 
 # Examples
