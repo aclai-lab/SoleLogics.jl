@@ -11,10 +11,9 @@ _accessibles(fr::Full1DFrame, w::Interval{<:Integer}, ::_IA_Bi) = zip(Iterators.
 _accessibles(fr::Full1DFrame, w::Interval{<:Integer}, ::_IA_E) = zip(w.x+1:w.y-1, Iterators.repeated(w.y))
 _accessibles(fr::Full1DFrame, w::Interval{<:Integer}, ::_IA_Ei) = zip(1:w.x-1, Iterators.repeated(w.y))
 _accessibles(fr::Full1DFrame, w::Interval{<:Integer}, ::_IA_D) = _intervals_in(w.x+1, w.y-1)
-_accessibles(fr::Full1DFrame, w::Interval{<:Integer}, ::_IA_Di) = ( (x,y) for x in 1:w.x-1 for y in w.y+1:X(fr)+1 )
-_accessibles(fr::Full1DFrame, w::Interval{<:Integer}, ::_IA_O) = ( (x,y) for x in w.x+1:w.y-1 for y in w.y+1:X(fr)+1 )
-_accessibles(fr::Full1DFrame, w::Interval{<:Integer}, ::_IA_Oi) = ( (x,y) for x in 1:w.x-1 for y in w.x+1:w.y-1 )
-
+_accessibles(fr::Full1DFrame, w::Interval{<:Integer}, ::_IA_Di) = Iterators.product(1:w.x-1, w.y+1:X(fr)+1)
+_accessibles(fr::Full1DFrame, w::Interval{<:Integer}, ::_IA_O) = Iterators.product(w.x+1:w.y-1, w.y+1:X(fr)+1)
+_accessibles(fr::Full1DFrame, w::Interval{<:Integer}, ::_IA_Oi) = Iterators.product(1:w.x-1, w.x+1:w.y-1)
 
 _accessibles(fr::Full1DFrame, w::Interval{<:Integer}, ::_IA_AorO) = Iterators.product(w.x+1:w.y, w.y+1:X(fr)+1)
 _accessibles(fr::Full1DFrame, w::Interval{<:Integer}, ::_IA_AiorOi) = Iterators.product(1:w.x-1,   w.x:w.y-1)
