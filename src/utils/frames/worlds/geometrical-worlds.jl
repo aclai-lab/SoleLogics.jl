@@ -124,7 +124,7 @@ struct Interval{T<:Real} <: GeometricalWorld
     y :: T
 
     function Interval{T}(x::T,y::T) where {T}
-        if x<1 || x >= y
+        if x<-1 || x >= y
             error("Cannot instantiate Interval(x={$x},y={$y})")
         end
         return new{T}(x,y)
