@@ -105,3 +105,24 @@ fr = FullDimensionalFrame((10,), Interval{Int})
     Interval{Int64}(3,6),
     Interval{Int64}(3,7)
 ]
+
+################################################################################
+# Lutz and Wolter's Modal Logic of Topological Relations (LRCC8)
+################################################################################
+using SoleLogics: LRCC8_DC, LRCC8_EC, LRCC8_PO
+using SoleLogics: LRCC8_TPP, LRCC8_TPPi, LRCC8_NTPP, LRCC8_NTPPi
+
+fr = FullDimensionalFrame((5,5), Interval2D{Int})
+@test length(collect(accessibles(fr, Interval2D((3,4),(3,4)), LRCC8_DC))) == 56
+fr = FullDimensionalFrame((3,3), Interval2D{Int})
+@test length(collect(accessibles(fr, Interval2D((2,3),(2,3)), LRCC8_EC))) == 20
+fr = FullDimensionalFrame((4,4), Interval2D{Int})
+@test length(collect(accessibles(fr, Interval2D((2,4),(2,4)), LRCC8_PO))) == 40
+fr = FullDimensionalFrame((5,5), Interval2D{Int})
+@test length(collect(accessibles(fr, Interval2D((2,5),(2,5)), LRCC8_TPP))) == 34
+fr = FullDimensionalFrame((6,6), Interval2D{Int})
+@test length(collect(accessibles(fr, Interval2D((2,6),(2,6)), LRCC8_NTPP))) == 9
+fr = FullDimensionalFrame((4,4), Interval2D{Int})
+@test length(collect(accessibles(fr, Interval2D((2,4),(2,4)), LRCC8_TPPi))) == 14
+fr = FullDimensionalFrame((5,5), Interval2D{Int})
+@test length(collect(accessibles(fr, Interval2D((3,4),(3,4)), LRCC8_NTPPi))) == 16
