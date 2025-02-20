@@ -3,7 +3,8 @@
 # - Linear Temporal Logic with Future and Past (LTL[F,P])
 # - Compass Logic (CL)
 # - Halpern and Shoham's Modal Logic of Time Intervals (HS)
-# - Lutz and Wolter's Modal Logic of Topological Relations (LRCC8)
+# - Lutz and Wolter's Modal Logic of Topological Relations with rectangular
+#   areas aligned with the axes (LRCC8_Rec)
 #
 # Relation names are given in an uniform way as follows:
 #   `NAMEOFTHELOGIC`_`NAMEOFTHERELATION`
@@ -57,22 +58,23 @@ const HS = [
 ]
 
 ################################################################################
-# Lutz and Wolter's Modal Logic of Topological Relations (LRCC8)
+# Lutz and Wolter's Modal Logic of Topological Relations with rectangular
+# areas aligned with the axes (LRCC8_Rec)
 ################################################################################
-const LRCC8_DC    = Topo_DC
-const LRCC8_EC    = Topo_EC
-const LRCC8_PO    = Topo_PO
-const LRCC8_TPP   = Topo_TPP
-const LRCC8_TPPi  = Topo_TPPi
-const LRCC8_NTPP  = Topo_NTPP
-const LRCC8_NTPPi = Topo_NTPPi
+const LRCC8_Rec_DC    = Topo_DC
+const LRCC8_Rec_EC    = Topo_EC
+const LRCC8_Rec_PO    = Topo_PO
+const LRCC8_Rec_TPP   = Topo_TPP
+const LRCC8_Rec_TPPi  = Topo_TPPi
+const LRCC8_Rec_NTPP  = Topo_NTPP
+const LRCC8_Rec_NTPPi = Topo_NTPPi
 
-const LRCC8 = [
-    LRCC8_DC,
-    LRCC8_EC,
-    LRCC8_PO,
-    LRCC8_TPP,
-    LRCC8_TPPi,
-    LRCC8_NTPP,
-    LRCC8_NTPPi
+const LRCC8_Rec = [
+    LRCC8_Rec_DC,
+    LRCC8_Rec_EC,
+    LRCC8_Rec_PO,
+    LRCC8_Rec_TPP,
+    LRCC8_Rec_TPPi,
+    LRCC8_Rec_NTPP,
+    LRCC8_Rec_NTPPi
 ]

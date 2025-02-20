@@ -107,22 +107,37 @@ fr = FullDimensionalFrame((10,), Interval{Int})
 ]
 
 ################################################################################
-# Lutz and Wolter's Modal Logic of Topological Relations (LRCC8)
+# Lutz and Wolter's Modal Logic of Topological Relations with rectangular
+# areas aligned with the axes (LRCC8_Rec)
 ################################################################################
-using SoleLogics: LRCC8_DC, LRCC8_EC, LRCC8_PO
-using SoleLogics: LRCC8_TPP, LRCC8_TPPi, LRCC8_NTPP, LRCC8_NTPPi
+using SoleLogics: LRCC8_Rec_DC, LRCC8_Rec_EC, LRCC8_Rec_PO
+using SoleLogics: LRCC8_Rec_TPP, LRCC8_Rec_TPPi, LRCC8_Rec_NTPP, LRCC8_Rec_NTPPi
 
 fr = FullDimensionalFrame((5,5), Interval2D{Int})
-@test length(collect(accessibles(fr, Interval2D((3,4),(3,4)), LRCC8_DC))) == 56
+@test length(
+    collect(accessibles(fr, Interval2D((3,4),(3,4)), LRCC8_Rec_DC))
+) == 56
 fr = FullDimensionalFrame((3,3), Interval2D{Int})
-@test length(collect(accessibles(fr, Interval2D((2,3),(2,3)), LRCC8_EC))) == 20
+@test length(
+    collect(accessibles(fr, Interval2D((2,3),(2,3)), LRCC8_Rec_EC))
+) == 20
 fr = FullDimensionalFrame((4,4), Interval2D{Int})
-@test length(collect(accessibles(fr, Interval2D((2,4),(2,4)), LRCC8_PO))) == 40
+@test length(
+    collect(accessibles(fr, Interval2D((2,4),(2,4)), LRCC8_Rec_PO))
+) == 40
 fr = FullDimensionalFrame((5,5), Interval2D{Int})
-@test length(collect(accessibles(fr, Interval2D((2,5),(2,5)), LRCC8_TPP))) == 34
+@test length(
+    collect(accessibles(fr, Interval2D((2,5),(2,5)), LRCC8_Rec_TPP))
+) == 34
 fr = FullDimensionalFrame((6,6), Interval2D{Int})
-@test length(collect(accessibles(fr, Interval2D((2,6),(2,6)), LRCC8_NTPP))) == 9
+@test length(
+    collect(accessibles(fr, Interval2D((2,6),(2,6)), LRCC8_Rec_NTPP))
+) == 9
 fr = FullDimensionalFrame((4,4), Interval2D{Int})
-@test length(collect(accessibles(fr, Interval2D((2,4),(2,4)), LRCC8_TPPi))) == 14
+@test length(
+    collect(accessibles(fr, Interval2D((2,4),(2,4)), LRCC8_Rec_TPPi))
+) == 14
 fr = FullDimensionalFrame((5,5), Interval2D{Int})
-@test length(collect(accessibles(fr, Interval2D((3,4),(3,4)), LRCC8_NTPPi))) == 16
+@test length(
+    collect(accessibles(fr, Interval2D((3,4),(3,4)), LRCC8_Rec_NTPPi))
+) == 16
