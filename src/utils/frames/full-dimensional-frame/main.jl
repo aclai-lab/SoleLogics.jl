@@ -58,10 +58,10 @@ struct FullDimensionalFrame{N,W<:AbstractWorld} <: AbstractDimensionalFrame{N,W}
         new{N,W}(channelsize)
     end
 
-    function FullDimensionalFrame{N,W}(channelsize::Int; silent = true) where
-        {N,W<:AbstractWorld}
-        FullDimensionalFrame{1,W}((channelsize,))
-    end
+    function FullDimensionalFrame{N,W}(channelsize::Vararg{Int,N}; silent = true) where 
+        {N,W<:AbstractWorld} 
+        FullDimensionalFrame{N,W}(channelsize; silent) 
+    end 
 
     function FullDimensionalFrame(channelsize::Tuple{}, W::Union{Nothing,Type{<:AbstractWorld}} = nothing; silent = true)
         if !isnothing(W)
