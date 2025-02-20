@@ -107,39 +107,39 @@ function _accessibles(fr::Full1DFrame, w::W, r::FilteredRelation{_IA_D,IntervalL
 end
 
 function _accessibles(fr::Full1DFrame, w::W, r::FilteredRelation{_IA_Di,IntervalLengthFilter{typeof(≤),T,W}}) where {T<:Real,W<:Interval{<:Integer}}
-    return Iterators.filter(((x,y),)->y-x≤worldfilter(r).k, Iterators.product(1:w.x-1, w.y+1:X(fr)+1))
+    return Iterators.filter(((x,y),)->y-x≤worldfilter(r).k, ( (x,y) for x in 1:w.x-1 for y in w.y+1:X(fr)+1 ))
 end
 
 function _accessibles(fr::Full1DFrame, w::W, r::FilteredRelation{_IA_Di, IntervalLengthFilter{typeof(≥),T,W}}) where {T<:Real,W<:Interval{<:Integer}}
-    return Iterators.filter(((x,y),)->y-x≥worldfilter(r).k, Iterators.product(1:w.x-1, w.y+1:X(fr)+1))
+    return Iterators.filter(((x,y),)->y-x≥worldfilter(r).k, ( (x,y) for x in 1:w.x-1 for y in w.y+1:X(fr)+1 ))
 end
 
 function _accessibles(fr::Full1DFrame, w::W, r::FilteredRelation{_IA_Di,IntervalLengthFilter{typeof(==),T,W}}) where {T<:Real,W<:Interval{<:Integer}}
-    return Iterators.filter(((x,y),)->y-x==worldfilter(r).k, Iterators.product(1:w.x-1, w.y+1:X(fr)+1))
+    return Iterators.filter(((x,y),)->y-x==worldfilter(r).k, ( (x,y) for x in 1:w.x-1 for y in w.y+1:X(fr)+1 ))
 end
 
 function _accessibles(fr::Full1DFrame, w::W, r::FilteredRelation{_IA_O,IntervalLengthFilter{typeof(≤),T,W}}) where {T<:Real,W<:Interval{<:Integer}}
-    return Iterators.filter(((x,y),)->y-x≤worldfilter(r).k, Iterators.product(w.x+1:w.y-1, w.y+1:X(fr)+1))
+    return Iterators.filter(((x,y),)->y-x≤worldfilter(r).k, ( (x,y) for x in w.x+1:w.y-1 for y in w.y+1:X(fr)+1 ))
 end
 
 function _accessibles(fr::Full1DFrame, w::W, r::FilteredRelation{_IA_O, IntervalLengthFilter{typeof(≥),T,W}}) where {T<:Real,W<:Interval{<:Integer}}
-    return Iterators.filter(((x,y),)->y-x≥worldfilter(r).k, Iterators.product(w.x+1:w.y-1, w.y+1:X(fr)+1))
+    return Iterators.filter(((x,y),)->y-x≥worldfilter(r).k, ( (x,y) for x in w.x+1:w.y-1 for y in w.y+1:X(fr)+1 ))
 end
 
 function _accessibles(fr::Full1DFrame, w::W, r::FilteredRelation{_IA_O,IntervalLengthFilter{typeof(==),T,W}}) where {T<:Real,W<:Interval{<:Integer}}
-    return Iterators.filter(((x,y),)->y-x==worldfilter(r).k, Iterators.product(w.x+1:w.y-1, w.y+1:X(fr)+1))
+    return Iterators.filter(((x,y),)->y-x==worldfilter(r).k, ( (x,y) for x in w.x+1:w.y-1 for y in w.y+1:X(fr)+1 ))
 end
 
 function _accessibles(fr::Full1DFrame, w::W, r::FilteredRelation{_IA_Oi,IntervalLengthFilter{typeof(≤),T,W}}) where {T<:Real,W<:Interval{<:Integer}}
-    return Iterators.filter(((x,y),)->y-x≤worldfilter(r).k, Iterators.product(1:w.x-1, w.x+1:w.y-1))
+    return Iterators.filter(((x,y),)->y-x≤worldfilter(r).k, ( (x,y) for x in 1:w.x-1 for y in w.x+1:w.y-1 ))
 end
 
 function _accessibles(fr::Full1DFrame, w::W, r::FilteredRelation{_IA_Oi, IntervalLengthFilter{typeof(≥),T,W}}) where {T<:Real,W<:Interval{<:Integer}}
-    return Iterators.filter(((x,y),)->y-x≥worldfilter(r).k, Iterators.product(1:w.x-1, w.x+1:w.y-1))
+    return Iterators.filter(((x,y),)->y-x≥worldfilter(r).k, ( (x,y) for x in 1:w.x-1 for y in w.x+1:w.y-1 ))
 end
 
 function _accessibles(fr::Full1DFrame, w::W, r::FilteredRelation{_IA_Oi,IntervalLengthFilter{typeof(==),T,W}}) where {T<:Real,W<:Interval{<:Integer}}
-    return Iterators.filter(((x,y),)->y-x==worldfilter(r).k, Iterators.product(1:w.x-1, w.x+1:w.y-1))
+    return Iterators.filter(((x,y),)->y-x==worldfilter(r).k, ( (x,y) for x in 1:w.x-1 for y in w.x+1:w.y-1 ))
 end
 
 # ################################################################################
