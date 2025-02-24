@@ -1,30 +1,32 @@
-α = FiniteTruth("α")
+# Domain ⊤, ⊥, α
+t, b, α = FiniteTruth.([1:3]...)
 
-d3 = Vector{FiniteTruth}([⊥, α, ⊤])
+# α ∨ β = max{α, β}
+jointruthtable = [
+#   ⊤  ⊥  α
+    t, t, t,    # ⊤
+    t, b, α,    # ⊥
+    t, α, α     # α
+]
 
-# a ∨ b = max{a, b}
-jointable = Dict{Tuple{FiniteTruth, FiniteTruth}, FiniteTruth}(
-    (⊥, ⊥) => ⊥, (⊥, α) => α, (⊥, ⊤) => ⊤,
-    (α, ⊥) => α, (α, α) => α, (α, ⊤) => ⊤,
-    (⊤, ⊥) => ⊤, (⊤, α) => ⊤, (⊤, ⊤) => ⊤
-)
+# α ∧ β = min{α, β}
+meettruthtable = [
+#   ⊤  ⊥  α
+    t, b, α,    # ⊤
+    b, b, b,    # ⊥
+    α, b, α     # α
+]
 
-# a ∧ b = min{a, b}
-meettable = Dict{Tuple{FiniteTruth, FiniteTruth}, FiniteTruth}(
-    (⊥, ⊥) => ⊥, (⊥, α) => ⊥, (⊥, ⊤) => ⊥,
-    (α, ⊥) => ⊥, (α, α) => α, (α, ⊤) => α,
-    (⊤, ⊥) => ⊥, (⊤, α) => α, (⊤, ⊤) => ⊤
-)
+# α ⋅Ł β = max{0, α + β - 1}
+lnormtruthtable = [
+#   ⊤  ⊥  α  β
+    t, b, α,    # ⊤
+    b, b, b,    # ⊥
+    α, b, b    # α
+]
 
-# a ⋅Ł b = max{0, a + b - 1}   
-lnormtable = Dict{Tuple{FiniteTruth, FiniteTruth}, FiniteTruth}(
-    (⊥, ⊥) => ⊥, (⊥, α) => ⊥, (⊥, ⊤) => ⊥,
-    (α, ⊥) => ⊥, (α, α) => ⊥, (α, ⊤) => α,
-    (⊤, ⊥) => ⊥, (⊤, α) => α, (⊤, ⊤) => ⊤
-)
+join = BinaryOperation{3}(jointruthtable)
+meet = BinaryOperation{3}(meettruthtable)
+lnorm = BinaryOperation{3}(lnormtruthtable)
 
-join = BinaryOperation(d3, jointable)
-meet = BinaryOperation(d3, meettable)
-lnorm = BinaryOperation(d3, lnormtable)
-
-Ł3 = FiniteFLewAlgebra(join, meet, lnorm, ⊥, ⊤)
+Ł3 = FiniteFLewAlgebra{3}(join, meet, lnorm, b, t)
