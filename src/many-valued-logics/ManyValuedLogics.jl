@@ -2,13 +2,16 @@ module ManyValuedLogics
 
 using ..SoleLogics
 
+export FiniteTruth
+
+include("finitetruth.jl")
+
 export BinaryOperation
 
 include("operations.jl")
 
 include("axioms.jl")
 
-export FiniteTruth
 export Monoid, CommutativeMonoid
 export FiniteLattice, FiniteBoundedLattice, FiniteResiduatedLattice
 export FiniteFLewAlgebra, FiniteHeytingAlgebra
@@ -26,7 +29,7 @@ include("many-valued-formulas.jl")
 
 include("algebras/algebras.jl")
 
-include("finite-index-algebras.jl")
+# include("finite-index-algebras.jl")
 
 export alphacheck
 
