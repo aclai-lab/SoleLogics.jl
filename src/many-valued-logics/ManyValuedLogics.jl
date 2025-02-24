@@ -29,7 +29,7 @@ include("many-valued-formulas.jl")
 
 include("algebras/algebras.jl")
 
-include("finite-index-algebras.jl")
+# include("finite-index-algebras.jl")
 
 export alphacheck
 

@@ -55,7 +55,13 @@ struct BinaryOperation{N,M<:SMatrix{N,N,FiniteTruth}} <: AbstractBinaryOperation
     end
 
     function BinaryOperation{N}(truthtable::AbstractVector{<:FiniteTruth}) where {N}
-        return BinaryOperation{N}(SMatrix{N,N,FiniteTruth}(truthtable))
+        operation =  BinaryOperation{N}(SMatrix{N,N,FiniteTruth}(truthtable))
+        if !checkaxiom(Commutativity, operation)
+            @warn "Non commutative operation defined with `AbstractVector`` constructor!\n" *
+                  "Please, check that indices are in the intended order.\n" *
+                  "If you don't know what you're doing, use the `SMatrix` constructor instead."
+        end
+        return operation
     end
 end
 
@@ -81,12 +87,16 @@ See also [`Operation`](@ref), [`BinaryOperation`](@ref), [`arity`](@ref).
 @inline function (o::BinaryOperation{N})(t1::UInt8, t2::UInt8) where {N}
     return o.truthtable[t1, t2]
 end
-@inline function (o::BinaryOperation{N})(t1::FiniteTruth, t2::UInt8) where {N}
+@inline function (o::BinaryOperation{N})(t1::T, t2::UInt8) where {N, T<:Truth}
+    if !isa(t1, FiniteTruth) t1 = convert(FiniteTruth, t1)::FiniteTruth end
     return o.truthtable[t1.index, t2]
 end
-@inline function (o::BinaryOperation{N})(t1::UInt8, t2::FiniteTruth) where {N}
+@inline function (o::BinaryOperation{N})(t1::UInt8, t2::T) where {N, T<:Truth}
+    if !isa(t2, FiniteTruth) t2 = convert(FiniteTruth, t2)::FiniteTruth end
     return o.truthtable[t1, t2.index]
 end
-@inline function (o::BinaryOperation{N})(t1::FiniteTruth, t2::FiniteTruth) where {N}
+@inline function (o::BinaryOperation{N})(t1::T1, t2::T2) where {N, T1<:Truth, T2<:Truth}
+    if !isa(t1, FiniteTruth) t1 = convert(FiniteTruth, t1)::FiniteTruth end
+    if !isa(t2, FiniteTruth) t2 = convert(FiniteTruth, t2)::FiniteTruth end
     return o.truthtable[t1.index, t2.index]
 end

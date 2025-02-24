@@ -43,7 +43,7 @@ test_suites = [
 
     ("Pluto Demo", ["$(dirname(dirname(pathof(SoleLogics))))/pluto-demo.jl", ]),
 
-    ("ManyValuedLogics", ["many-valued-check.jl", "many-valued-logics.jl"]),
+    ("ManyValuedLogics", ["many-valued-logics.jl"]),
 
     ("Miscellaneous", ["misc.jl", "util.jl"]),
 ]

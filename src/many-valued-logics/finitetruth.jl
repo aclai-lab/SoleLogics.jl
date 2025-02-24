@@ -4,12 +4,14 @@ import ..SoleLogics: syntaxstring, istop, isbot
 import Base: convert
 
 """
-A `FiniteTruth` is represented by its `index` in a `FiniteDomain`.
+    struct FiniteTruth <: Truth
+        index::UInt8
+    end
 
-Therefore, a `FiniteTruth` by itself is just a symbol without meaning: it must be associated
-with a structure comprising a `FiniteDomain`.
+A `FiniteTruth` is represented by its `index` in the domain.
 
-By convention, `⊤` (top, 1) and `⊥` (bot, 0) always have indexes `1` and `2`, respectively.
+By convention, `⊤` (top, 1) and `⊥` (bot, 0) always have indexes `1` and `2`,
+respectively. E.g., α, β, γ would have indexes `3`, `4`, `5`, and so on.
 """
 struct FiniteTruth <: Truth
     index::UInt8

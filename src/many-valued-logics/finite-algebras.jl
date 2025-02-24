@@ -625,7 +625,7 @@ struct FiniteResiduatedLattice{N} <: FiniteAlgebra{N}
     bot::FiniteTruth
     top::FiniteTruth
 
-    function FiniteResiduatedLattice(
+    function FiniteResiduatedLattice{N}(
         join::BinaryOperation{N},
         meet::BinaryOperation{N},
         monoid::M,
@@ -645,6 +645,7 @@ struct FiniteResiduatedLattice{N} <: FiniteAlgebra{N}
             "not hold for the defined monoid operation."
 
         rtruthtable = Array{FiniteTruth}(undef, N, N)
+        ltruthtable = Array{FiniteTruth}(undef, N, N)
         for z ∈ UInt8(1):UInt8(N)
             for x ∈ UInt8(1):UInt8(N)
                 candidates = Vector{FiniteTruth}()
@@ -832,8 +833,8 @@ function checkaxiom(
     o::B,
     top::Truth
 ) where {
-    T<:Truth,
-    B<:BinaryOperation{T}
+    N,
+    B<:BinaryOperation{N}
 }
     for i ∈ getdomain(o)
         o(i, i) != top && return false
@@ -871,8 +872,8 @@ function checkaxiom(
     o1::B,
     o2::B
 ) where {
-    T<:Truth,
-    B<:BinaryOperation{T}
+    N,
+    B<:BinaryOperation{N}
 }
     for i ∈ getdomain(o1)
         for j ∈ getdomain(o1)
@@ -912,8 +913,8 @@ function checkaxiom(
     o1::B,
     o2::B
 ) where {
-    T<:Truth,
-    B<:BinaryOperation{T}
+    N,
+    B<:BinaryOperation{N}
 }
     for i ∈ getdomain(o1)
         for j ∈ getdomain(o1)
@@ -953,8 +954,8 @@ function checkaxiom(
     o1::B,
     o2::B
 ) where {
-    T<:Truth,
-    B<:BinaryOperation{T}
+    N,
+    B<:BinaryOperation{N}
 }
     for i ∈ getdomain(o1)
         for j ∈ getdomain(o1)
@@ -970,7 +971,6 @@ end
     struct FiniteHeytingAlgebra{N} <: FiniteAlgebra{N}
         join::BinaryOperation{N}
         meet::BinaryOperation{N}
-        monoid::CommutativeMonoid{N}
         implication::BinaryOperation{N}
         bot::FiniteTruth
         top::FiniteTruth
@@ -991,7 +991,6 @@ See also [`FiniteBoundedLattice`](@ref), [`BinaryOperation`](@ref).
 struct FiniteHeytingAlgebra{N} <: FiniteAlgebra{N}
     join::BinaryOperation{N}
     meet::BinaryOperation{N}
-    monoid::CommutativeMonoid{N}
     implication::BinaryOperation{N}
     bot::FiniteTruth
     top::FiniteTruth
@@ -999,6 +998,7 @@ struct FiniteHeytingAlgebra{N} <: FiniteAlgebra{N}
     function FiniteHeytingAlgebra{N}(
         join::BinaryOperation{N},
         meet::BinaryOperation{N},
+        implication::BinaryOperation{N},
         bot::T1,
         top::T2
     ) where {
