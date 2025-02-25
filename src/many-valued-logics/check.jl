@@ -98,40 +98,6 @@ function alphacheck(
     precedeq(a, α, interpret(φ, i, a, args...; kwargs...))
 end
 
-############################################################################################
-
-# function SoleLogics.collatetruth(
-#     ::typeof(∧),
-#     (α, β)::NTuple{2, FiniteIndexTruth},
-#     a::FiniteIndexFLewAlgebra{N}
-# ) where {
-#     N
-# }
-#     a.monoid(α, β)
-# end
-
-# function SoleLogics.collatetruth(
-#     ::typeof(∨),
-#     (α, β)::NTuple{2, FiniteIndexTruth},
-#     a::FiniteIndexFLewAlgebra{N}
-# ) where {
-#     N
-# }
-#     a.join(α, β)
-# end
-
-# function SoleLogics.collatetruth(
-#     ::typeof(→),
-#     (α, β)::NTuple{2, FiniteIndexTruth},
-#     a::FiniteIndexFLewAlgebra{N}
-# ) where {
-#     N
-# }
-#     a.implication(α, β)
-# end
-
-############################################################################################
-
 function SoleLogics.simplify(::typeof(∧), φs::Tuple{FiniteTruth,BooleanTruth}, args...; kwargs...)
     SoleLogics.simplify(∧, (φs[1], convert(FiniteTruth, φs[2])), args...; kwargs...)
 end
@@ -155,44 +121,3 @@ end
 function SoleLogics.simplify(::typeof(→), φs::Tuple{BooleanTruth,FiniteTruth}, args...; kwargs...)
     SoleLogics.simplify(→, (convert(FiniteTruth, φs[1]), φs[2]), args...; kwargs...)
 end
-
-############################################################################################
-
-# function SoleLogics.simplify(::typeof(∧), φs::Tuple{FiniteIndexTruth,BooleanTruth}, args...; kwargs...)
-#     SoleLogics.simplify(∧, (φs[1], convert(FiniteIndexTruth, φs[2])), args...; kwargs...)
-# end
-
-# function SoleLogics.simplify(::typeof(∧), φs::Tuple{BooleanTruth,FiniteIndexTruth}, args...; kwargs...)
-#     SoleLogics.simplify(∧, (convert(FiniteIndexTruth, φs[1]), φs[2]), args...; kwargs...)
-# end
-
-# function SoleLogics.simplify(::typeof(∨), φs::Tuple{FiniteIndexTruth,BooleanTruth}, args...; kwargs...)
-#     SoleLogics.simplify(∨, (φs[1], convert(FiniteIndexTruth, φs[2])), args...; kwargs...)
-# end
-
-# function SoleLogics.simplify(::typeof(∨), φs::Tuple{BooleanTruth,FiniteIndexTruth}, args...; kwargs...)
-#     SoleLogics.simplify(∨, (convert(FiniteIndexTruth, φs[1]), φs[2]), args...; kwargs...)
-# end
-
-# function SoleLogics.simplify(::typeof(→), φs::Tuple{FiniteIndexTruth,BooleanTruth}, args...; kwargs...)
-#     SoleLogics.simplify(→, (φs[1], convert(FiniteIndexTruth, φs[2])), args...; kwargs...)
-# end
-
-# function SoleLogics.simplify(::typeof(→), φs::Tuple{BooleanTruth,FiniteIndexTruth}, args...; kwargs...)
-#     SoleLogics.simplify(→, (convert(FiniteIndexTruth, φs[1]), φs[2]), args...; kwargs...)
-# end
-
-############################################################################################
-
-# function alphacheck(
-#     α::FiniteIndexTruth,
-#     φ::Formula,
-#     i::SoleLogics.AbstractInterpretation,
-#     a::FiniteIndexFLewAlgebra{N},
-#     args...;
-#     kwargs...
-# ) where {
-#     N
-# }
-#     precedeq(a, α, interpret(φ, i, a, args...; kwargs...))
-# end
