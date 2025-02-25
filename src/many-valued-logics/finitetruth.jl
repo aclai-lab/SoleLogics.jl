@@ -17,7 +17,7 @@ struct FiniteTruth <: Truth
     index::UInt8
 
     function FiniteTruth(index::UInt8)
-        @assert index > 0 "0 is not a valid index in Julia"
+        if index < 1 error("0 is not a valid index in Julia") end
         return new(index)
     end
 

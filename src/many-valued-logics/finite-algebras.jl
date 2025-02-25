@@ -53,10 +53,12 @@ function checkmonoidaxioms(
     O<:AbstractBinaryOperation,
     T<:Truth
 }
-    @assert checkaxiom(Associativity, o) "Defined an operation for the monoid which " *
-        "is not associative."
-    @assert checkaxiom(IdentityElement, o, e) "$e is not a valid identity element for " *
-        "the defined operation."
+    if !checkaxiom(Associativity, o)
+        error("Defined an operation for the monoid which is not associative.")
+    end
+    if !checkaxiom(IdentityElement, o, e)
+        error("$e is not a valid identity element for the defined operation.")
+    end
     return nothing
 end
 
@@ -183,8 +185,9 @@ struct CommutativeMonoid{N} <: FiniteAlgebra{N}
             identityelement = convert(FiniteTruth, identityelement)
         end
         checkmonoidaxioms(operation, identityelement)
-        @assert checkaxiom(Commutativity, operation) "Defined an operation for the " *
-            "commutative monoid which is not commutative."
+        if !checkaxiom(Commutativity, operation)
+            error("Defined an operation for the commutative monoid which is not commutative.")
+        end
         return new{N}(operation, identityelement)
     end
 end
@@ -237,16 +240,21 @@ function checklatticeaxioms(
 ) where {
     O<:AbstractBinaryOperation
 }
-    @assert checkaxiom(Commutativity, join) "Defined a join operation which is not " *
-        "commutative."
-    @assert checkaxiom(Associativity, join) "Defined a join operation which is not " *
-        "associative."
-    @assert checkaxiom(Commutativity, meet) "Defined a meet operation which is not " *
-        "commutative." 
-    @assert checkaxiom(Associativity, meet) "Defined a meet operation which is not " *
-        "associative."
-    @assert checkaxiom(AbsorptionLaw, join, meet) "Absorption law does not hold between " *
-        "join and meet."
+    if !checkaxiom(Commutativity, join)
+        error("Defined a join operation which is not commutative.")
+    end
+    if !checkaxiom(Associativity, join)
+        error("Defined a join operation which is not associative.")
+    end
+    if !checkaxiom(Commutativity, meet) 
+        error("Defined a meet operation which is not commutative.")
+    end
+    if !checkaxiom(Associativity, meet)
+        error("Defined a meet operation which is not associative.")
+    end
+    if !checkaxiom(AbsorptionLaw, join, meet)
+        error("Absorption law does not hold between join and meet.")
+    end
     return nothing
 end
 
@@ -351,10 +359,12 @@ function checkboundedlatticeaxioms(
     T<:Truth
 }
     checklatticeaxioms(join, meet)
-    @assert checkaxiom(IdentityElement, join, bot) "$bot is not a valid identity element " *
-        "for the defined join operation."
-    @assert checkaxiom(IdentityElement, meet, top) "$top is not a valid identity element " *
-        "for the defined meet operation."
+    if !checkaxiom(IdentityElement, join, bot)
+        error("$bot is not a valid identity element for the defined join operation.")
+    end
+    if !checkaxiom(IdentityElement, meet, top)
+        error("$top is not a valid identity element for the defined meet operation.")
+    end
     return nothing
 end
 
@@ -641,8 +651,9 @@ struct FiniteResiduatedLattice{N} <: FiniteAlgebra{N}
         if !isa(bot, FiniteTruth) bot = convert(FiniteTruth, bot)::FiniteTruth end
         if !isa(top, FiniteTruth) top = convert(FiniteTruth, top)::FiniteTruth end
         checkboundedlatticeaxioms(join, meet, bot, top)
-        @assert checkaxiom(ResiduationProperty, meet, monoid) "Residuation property does " *
-            "not hold for the defined monoid operation."
+        if !checkaxiom(ResiduationProperty, meet, monoid)
+            error("Residuation property does not hold for the defined monoid operation.")
+        end
 
         rtruthtable = Array{FiniteTruth}(undef, N, N)
         ltruthtable = Array{FiniteTruth}(undef, N, N)
@@ -735,8 +746,9 @@ struct FiniteFLewAlgebra{N} <: FiniteAlgebra{N}
         if !isa(bot, FiniteTruth) bot = convert(FiniteTruth, bot) end
         if !isa(top, FiniteTruth) top = convert(FiniteTruth, top) end
         checkboundedlatticeaxioms(join, meet, bot, top)
-        @assert checkaxiom(RightResidual, meet, monoid) "Residuation property does not " *
-            "hold for the defined monoid operation."
+        if !checkaxiom(RightResidual, meet, monoid)
+            error("Residuation property does not hold for the defined monoid operation.")
+        end
 
         implicationtruthtable = Array{FiniteTruth}(undef, N, N)
         for z ∈ UInt8(1):UInt8(N)
@@ -1009,14 +1021,18 @@ struct FiniteHeytingAlgebra{N} <: FiniteAlgebra{N}
         if !isa(bot, FiniteTruth) bot = convert(FiniteTruth, bot)::FiniteTruth end
         if !isa(top, FiniteTruth) top = convert(FiniteTruth, top)::FiniteTruth end
         checkboundedlatticeaxioms(join, meet, bot, top)
-        @assert checkaxiom(Implication1, implication, top) "Axiom a → a = ⊤ does not " *
-            "hold for given binary operation →."
-        @assert checkaxiom(Implication2, meet, implication) "Axiom a ∧ (a → b) = a ∧ b " *
-            "does not hold for given binary operation →."
-        @assert checkaxiom(Implication3, meet, implication) "Axiom b ∧ (a → b) = b does " *
-            "not hold for given binary operation →."
-        @assert checkaxiom(DistributiveLaw, implication, meet) "Distributive law for → " *
-            "does not hold for given binary operation →."
+        if !checkaxiom(Implication1, implication, top)
+            error("Axiom a → a = ⊤ does not hold for given binary operation →.")
+        end
+        if !checkaxiom(Implication2, meet, implication)
+            error("Axiom a ∧ (a → b) = a ∧ b does not hold for given binary operation →.")
+        end
+        if !checkaxiom(Implication3, meet, implication)
+            error("Axiom b ∧ (a → b) = b does not hold for given binary operation →.")
+        end
+        if !checkaxiom(DistributiveLaw, implication, meet)
+            error("Distributive law for → does not hold for given binary operation →.")
+        end
         return new{N}(join, meet, implication, bot, top)
     end
 end
