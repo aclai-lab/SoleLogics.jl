@@ -1,17 +1,22 @@
-d2 = Vector{BooleanTruth}([⊥, ⊤])
+# Domain ⊤, ⊥
+t, b = FiniteTruth.([1:2]...)
 
-jt2 = Dict{Tuple{BooleanTruth, BooleanTruth}, BooleanTruth}(
-    (⊥, ⊥) => ⊥, (⊥, ⊤) => ⊤,
-    (⊤, ⊥) => ⊤, (⊤, ⊤) => ⊤
-)
+# α ∨ β = max{α, β}
+jointruthtable = [
+#   ⊤  ⊥
+    t, t,   # ⊤
+    t, b    # ⊥
+]
 
-mt2 = Dict{Tuple{BooleanTruth, BooleanTruth}, BooleanTruth}(
-    (⊥, ⊥) => ⊥, (⊥, ⊤) => ⊥,
-    (⊤, ⊥) => ⊥, (⊤, ⊤) => ⊤
-)
+# α ∧ β = min{α, β}
+meettruthtable = [
+#   ⊤  ⊥
+    t, b,   # ⊤
+    b, b    # ⊥
+]
 
-j2 = BinaryOperation(d2, jt2)
+join = BinaryOperation{2}(jointruthtable)
+meet = BinaryOperation{2}(meettruthtable)
+# In booleanalgebra, the t-norm ⋅ is ∧
 
-m2 = BinaryOperation(d2, mt2)
-
-booleanalgebra = FiniteFLewAlgebra(j2, m2, m2, ⊥, ⊤)
+booleanalgebra = FiniteFLewAlgebra{2}(join, meet, meet, b, t)

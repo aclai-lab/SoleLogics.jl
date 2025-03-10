@@ -1,25 +1,26 @@
-α = FiniteTruth("α")
-β = FiniteTruth("β")
+# Domain ⊤, ⊥, α, β
+t, b, α, β = FiniteTruth.([1:4]...)
 
-d4 = Vector{FiniteTruth}([⊥, α, β, ⊤])
+# α ∨ β = max{α, β}
+jointruthtable = [
+#   ⊤  ⊥  α  β
+    t, t, t, t, # ⊤
+    t, b, α, β, # ⊥
+    t, α, α, β, # α
+    t, β, β, β  # β
+]
 
-# a ∨ b = max{a, b}
-jointable = Dict{Tuple{FiniteTruth, FiniteTruth}, FiniteTruth}(
-    (⊥, ⊥) => ⊥, (⊥, α) => α, (⊥, β) => β, (⊥, ⊤) => ⊤,
-    (α, ⊥) => α, (α, α) => α, (α, β) => β, (α, ⊤) => ⊤,
-    (β, ⊥) => β, (β, α) => β, (β, β) => β, (β, ⊤) => ⊤,
-    (⊤, ⊥) => ⊤, (⊤, α) => ⊤, (⊤, β) => ⊤, (⊤, ⊤) => ⊤
-)
+# α ∧ β = min{α, β}
+meettruthtable = [
+#   ⊤  ⊥  α  β
+    t, b, α, β, # ⊤
+    b, b, b, b, # ⊥
+    α, b, α, α, # α
+    β, b, α, β  # β
+]
 
-# a ∧ b = min{a, b}
-meettable = Dict{Tuple{FiniteTruth, FiniteTruth}, FiniteTruth}(
-    (⊥, ⊥) => ⊥, (⊥, α) => ⊥, (⊥, β) => ⊥, (⊥, ⊤) => ⊥,
-    (α, ⊥) => ⊥, (α, α) => α, (α, β) => α, (α, ⊤) => α,
-    (β, ⊥) => ⊥, (β, α) => α, (β, β) => β, (β, ⊤) => β,
-    (⊤, ⊥) => ⊥, (⊤, α) => α, (⊤, β) => β, (⊤, ⊤) => ⊤
-)
+join = BinaryOperation{4}(jointruthtable)
+meet = BinaryOperation{4}(meettruthtable)
+# In G4, the t-norm ⋅ is ∧
 
-join = BinaryOperation(d4, jointable)
-meet = BinaryOperation(d4, meettable)
-
-G4 = FiniteFLewAlgebra(join, meet, meet, ⊥, ⊤)
+G4 = FiniteFLewAlgebra{4}(join, meet, meet, b, t)
