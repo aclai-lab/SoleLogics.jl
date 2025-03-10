@@ -2,7 +2,7 @@ module SoleLogics
 
 import Base: show
 using DataStructures
-using Dictionaries
+# using Dictionaries
 using PrettyTables
 using Random
 using StatsBase
