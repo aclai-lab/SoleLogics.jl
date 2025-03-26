@@ -1,3 +1,4 @@
+using StaticArrays
 import SoleLogics: arity
 
 """
@@ -35,9 +36,8 @@ function arity(o::O) where {O<:Operation}
 end
 
 """
-    struct BinaryOperation{T<:Truth,D<:AbstractVector{T},DI<:AbstractDict{Tuple{T,T},T}} <: Operation
-        domain::D
-        truthtable::DI
+    struct BinaryOperation{N,M<:SMatrix{N,N,FiniteTruth}} <: AbstractBinaryOperation
+        truthtable::M
     end
 
 A binary operation on a set S is a mapping of the elements of the Cartesian product
@@ -47,31 +47,26 @@ on all elements of S × S.
 
 See also [`Operation`](@ref), [`arity`](@ref).
 """
-struct BinaryOperation{T<:Truth,D<:AbstractVector{T},DI<:AbstractDict{Tuple{T,T},T}} <: AbstractBinaryOperation
-    domain::D
-    truthtable::DI
+struct BinaryOperation{N,M<:SMatrix{N,N,FiniteTruth}} <: AbstractBinaryOperation
+    truthtable::M
 
-    function BinaryOperation(
-        domain::D,
-        truthtable::DI,
-    ) where {
-        T<:Truth,
-        D<:AbstractVector{T},
-        DI<:Dict{Tuple{T,T},T}
-    }
-        for i ∈ domain
-            for j ∈ domain
-                @assert (i, j) ∈ keys(truthtable) "truthtable[($i, $j)] is not defined."
-            end
+    function BinaryOperation{N}(truthtable::M) where {N,M<:SMatrix{N,N,FiniteTruth}}
+        return new{N,M}(truthtable)
+    end
+
+    function BinaryOperation{N}(truthtable::AbstractVector{<:FiniteTruth}) where {N}
+        operation =  BinaryOperation{N}(SMatrix{N,N,FiniteTruth}(truthtable))
+        if !checkaxiom(Commutativity, operation)
+            @warn "Non commutative operation defined with `AbstractVector`` constructor!\n" *
+                  "Please, check that indices are in the intended order.\n" *
+                  "If you don't know what you're doing, use the `SMatrix` constructor instead."
         end
-        @assert length(truthtable) == length(domain)^2 "Found truthtable[(i, j)] where i " *
-            "or j ∉ domain."
-        return new{T,D,DI}(domain, truthtable)
+        return operation
     end
 end
 
-Base.show(io::IO, o::BinaryOperation) = print(io, "$(o.truthtable)")
-arity(o::BinaryOperation) = 2
+Base.show(io::IO, o::BinaryOperation{N}) where {N} = print(io, "$(o.truthtable)")
+arity(o::BinaryOperation{N}) where {N} = 2
 
 """
     function getdomain(o::BinaryOperation)
@@ -80,25 +75,28 @@ Return the domain associated to binary operation `o`.
 
 See also [`BinaryOperation`](@ref).
 """
-getdomain(o::BinaryOperation) = o.domain
+function getdomain(::BinaryOperation{N}) where {N}
+    return SVector{N,FiniteTruth}(FiniteTruth.([1:N]...))
+end
 
 """
-    function (o::BinaryOperation{T,D})(t1::T, t2::T) where {T<:Truth, D<:AbstractVector{T}}
-
 Helper allowing to use binary operations with function notation.
 
 See also [`Operation`](@ref), [`BinaryOperation`](@ref), [`arity`](@ref).
 """
-function (o::BinaryOperation{T,D})(
-    t1::T1,
-    t2::T2
-) where {
-    T<:Truth,
-    D<:AbstractVector{T},
-    T1<:Truth,
-    T2<:Truth
-}
-    if !isa(t1, T) t1 = convert(T, t1)::T end
-    if !isa(t2, T) t2 = convert(T, t2)::T end
-    return o.truthtable[(t1, t2)]
+@inline function (o::BinaryOperation{N})(t1::UInt8, t2::UInt8) where {N}
+    return o.truthtable[t1, t2]
+end
+@inline function (o::BinaryOperation{N})(t1::T, t2::UInt8) where {N, T<:Truth}
+    if !isa(t1, FiniteTruth) t1 = convert(FiniteTruth, t1)::FiniteTruth end
+    return o.truthtable[t1.index, t2]
+end
+@inline function (o::BinaryOperation{N})(t1::UInt8, t2::T) where {N, T<:Truth}
+    if !isa(t2, FiniteTruth) t2 = convert(FiniteTruth, t2)::FiniteTruth end
+    return o.truthtable[t1, t2.index]
+end
+@inline function (o::BinaryOperation{N})(t1::T1, t2::T2) where {N, T1<:Truth, T2<:Truth}
+    if !isa(t1, FiniteTruth) t1 = convert(FiniteTruth, t1)::FiniteTruth end
+    if !isa(t2, FiniteTruth) t2 = convert(FiniteTruth, t2)::FiniteTruth end
+    return o.truthtable[t1.index, t2.index]
 end

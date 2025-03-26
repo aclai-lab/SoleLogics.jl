@@ -33,6 +33,8 @@ test_suites = [
     ("Algebras: frames", ["frames/frames.jl",]),
     ("Algebras: relations", ["frames/relations.jl",]),
 
+    ("MultiModalLogic", ["multi-modal-logic.jl"]),
+
     ("Generation: formula", ["generation/formula.jl",]),
     ("Generation: models", ["generation/models.jl",]),
 
@@ -41,7 +43,7 @@ test_suites = [
 
     ("Pluto Demo", ["$(dirname(dirname(pathof(SoleLogics))))/pluto-demo.jl", ]),
 
-    ("ManyValuedLogics", ["many-valued-check.jl", "many-valued-logics.jl"]),
+    ("ManyValuedLogics", ["many-valued-logics.jl"]),
 
     ("Miscellaneous", ["misc.jl", "util.jl"]),
 ]

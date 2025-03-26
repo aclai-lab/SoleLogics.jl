@@ -1,30 +1,30 @@
-α = FiniteTruth("α")
-β = FiniteTruth("β")
-γ = FiniteTruth("γ")
-δ = FiniteTruth("δ")
+# Domain ⊤, ⊥, α, β, γ, δ
+t, b, α, β, γ = FiniteTruth.([1:6]...)
 
-d6 = Vector{FiniteTruth}([⊥, α, β, γ, δ, ⊤])
+# α ∨ β = max{α, β}
+jointruthtable = [
+#   ⊤  ⊥  α  β  γ  δ
+    t, t, t, t, t, t,   # ⊤
+    t, b, α, β, γ, δ,   # ⊥
+    t, α, α, δ, γ, δ,   # α
+    t, β, δ, β, t, δ,   # β
+    t, γ, γ, t, γ, t,   # γ
+    t, δ, δ, δ, t, δ    # δ
+]
 
-jointable = Dict{Tuple{FiniteTruth, FiniteTruth}, FiniteTruth}(
-    (⊥, ⊥) => ⊥, (⊥, α) => α, (⊥, β) => β, (⊥, γ) => γ, (⊥, δ) => δ, (⊥, ⊤) => ⊤,
-    (α, ⊥) => α, (α, α) => α, (α, β) => δ, (α, γ) => γ, (α, δ) => δ, (α, ⊤) => ⊤,
-    (β, ⊥) => β, (β, α) => δ, (β, β) => β, (β, γ) => ⊤, (β, δ) => δ, (β, ⊤) => ⊤,
-    (γ, ⊥) => γ, (γ, α) => γ, (γ, β) => ⊤, (γ, γ) => γ, (γ, δ) => ⊤, (γ, ⊤) => ⊤,
-    (δ, ⊥) => δ, (δ, α) => δ, (δ, β) => δ, (δ, γ) => ⊤, (δ, δ) => δ, (δ, ⊤) => ⊤,
-    (⊤, ⊥) => ⊤, (⊤, α) => ⊤, (⊤, β) => ⊤, (⊤, γ) => ⊤, (⊤, δ) => ⊤, (⊤, ⊤) => ⊤
-)
+# α ∧ β = min{α, β}
+meettruthtable = [
+#   ⊤  ⊥  α  β
+    t, b, α, β, γ, δ,   # ⊤
+    b, b, b, b, b, b,   # ⊥
+    α, b, α, b, α, α,   # α
+    β, b, b, β, b, β,   # β
+    γ, b, α, b, γ, α,   # γ  
+    δ, b, α, β, α, δ    # δ
+]
 
-meettable = Dict{Tuple{FiniteTruth, FiniteTruth}, FiniteTruth}(
-    (⊥, ⊥) => ⊥, (⊥, α) => ⊥, (⊥, β) => ⊥, (⊥, γ) => ⊥, (⊥, δ) => ⊥, (⊥, ⊤) => ⊥,
-    (α, ⊥) => ⊥, (α, α) => α, (α, β) => ⊥, (α, γ) => α, (α, δ) => α, (α, ⊤) => α,
-    (β, ⊥) => ⊥, (β, α) => ⊥, (β, β) => β, (β, γ) => ⊥, (β, δ) => β, (β, ⊤) => β,
-    (γ, ⊥) => ⊥, (γ, α) => α, (γ, β) => ⊥, (γ, γ) => γ, (γ, δ) => α, (γ, ⊤) => γ,
-    (δ, ⊥) => ⊥, (δ, α) => α, (δ, β) => β, (δ, γ) => α, (δ, δ) => δ, (δ, ⊤) => δ,
-    (⊤, ⊥) => ⊥, (⊤, α) => α, (⊤, β) => β, (⊤, γ) => γ, (⊤, δ) => δ, (⊤, ⊤) => ⊤
-)
+join = BinaryOperation{6}(jointruthtable)
+meet = BinaryOperation{6}(meettruthtable)
+# In H6, the t-norm ⋅ is ∧
 
-join = BinaryOperation(d6, jointable)
-
-meet = BinaryOperation(d6, meettable)
-
-H6 = FiniteFLewAlgebra(join, meet, meet, ⊥, ⊤)
+H6 = FiniteFLewAlgebra{6}(join, meet, meet, b, t)

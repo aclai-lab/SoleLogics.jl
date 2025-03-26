@@ -1,22 +1,24 @@
-α = FiniteTruth("α")
+# Domain ⊤, ⊥, α
+t, b, α = FiniteTruth.([1:3]...)
 
-d3 = Vector{FiniteTruth}([⊥, α, ⊤])
+# α ∨ β = max{α, β}
+jointruthtable = [
+#   ⊤  ⊥  α
+    t, t, t,    # ⊤
+    t, b, α,    # ⊥
+    t, α, α     # α
+]
 
-# a ∨ b = max{a, b}
-jointable = Dict{Tuple{FiniteTruth, FiniteTruth}, FiniteTruth}(
-    (⊥, ⊥) => ⊥, (⊥, α) => α, (⊥, ⊤) => ⊤,
-    (α, ⊥) => α, (α, α) => α, (α, ⊤) => ⊤,
-    (⊤, ⊥) => ⊤, (⊤, α) => ⊤, (⊤, ⊤) => ⊤
-)
+# α ∧ β = min{α, β}
+meettruthtable = [
+#   ⊤  ⊥  α
+    t, b, α,    # ⊤
+    b, b, b,    # ⊥
+    α, b, α     # α
+]
 
-# a ∧ b = min{a, b}
-meettable = Dict{Tuple{FiniteTruth, FiniteTruth}, FiniteTruth}(
-    (⊥, ⊥) => ⊥, (⊥, α) => ⊥, (⊥, ⊤) => ⊥,
-    (α, ⊥) => ⊥, (α, α) => α, (α, ⊤) => α,
-    (⊤, ⊥) => ⊥, (⊤, α) => α, (⊤, ⊤) => ⊤
-)
+join = BinaryOperation{3}(jointruthtable)
+meet = BinaryOperation{3}(meettruthtable)
+# In G3, the t-norm ⋅ is ∧
 
-join = BinaryOperation(d3, jointable)
-meet = BinaryOperation(d3, meettable)
-
-G3 = FiniteFLewAlgebra(join, meet, meet, ⊥, ⊤)
+G3 = FiniteFLewAlgebra{3}(join, meet, meet, b, t)
