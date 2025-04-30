@@ -33,4 +33,8 @@ export alphacheck
 
 include("check.jl")
 
+export generateflewchains
+
+include("generation/finite-flew-chains.jl")
+
 end
