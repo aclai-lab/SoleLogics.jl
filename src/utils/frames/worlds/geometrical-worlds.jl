@@ -221,6 +221,7 @@ end
 innerworld(w::RelativeGeometricalWorld) = w.w
 @forward RelativeGeometricalWorld.w (
     Base.length,
+    Base.size,
     inlinedisplay,
     goeswithdim,
     nparameters,
