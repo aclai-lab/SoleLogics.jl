@@ -22,8 +22,10 @@ using Test
 @test_nowarn SoleLogics.Interval2D(Interval(1,2),Interval(3,4))
 @test !SoleLogics.goeswithdim(Interval2D, 1)
 @test SoleLogics.goeswithdim(Interval2D, 2)
-@test Base.length(Interval2D((1,3), (3,10))) == 14
-@test Base.size(Interval2D((1,3), (3,10))) == (2,7)
+
+interval2d = Interval2D((1,3), (3,10))
+@test Base.length(interval2d) == 14
+@test Base.size(interval2d) == (2,7)
 
 fr1D = @test_nowarn SoleLogics.FullDimensionalFrame(5)
 fr2D = @test_nowarn SoleLogics.FullDimensionalFrame(1,2)
@@ -43,6 +45,10 @@ fr2D = @test_nowarn SoleLogics.FullDimensionalFrame(1,2)
   # TODO test several cases of accessibles
 #
 end
+
+relativeinterval = RelativeGeometricalWorld(interval2d)
+@test Base.length(relativeinterval) == Base.length(interval2d)
+@test Base.size(relativeinterval) == Base.size(interval2d)
 
 @test Base.isconcretetype(Base.return_types(accessibles, typeof.((SoleLogics.FullDimensionalFrame((5,),), [Interval(2,3),Interval(2,4)], SoleLogics.IA_L)))[1])
 @test_broken Base.isconcretetype(eltype(Base.return_types(accessibles, typeof.((SoleLogics.FullDimensionalFrame((5,),), [Interval(2,3),Interval(2,4)], SoleLogics.IA_L)))[1]))
