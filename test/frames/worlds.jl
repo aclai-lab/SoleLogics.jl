@@ -6,6 +6,7 @@ using Test
 @test_nowarn SoleLogics.Point(1,2,3)
 @test_nowarn SoleLogics.Point((1,2,3),)
 @test all([SoleLogics.goeswithdim.(SoleLogics.Point{N}, N) for N in 1:10])
+@test Base.length(Point(1,2,3,4)) == 1
 @test Base.size(Point(1,2,3,4)) == ()
 
 @test_nowarn SoleLogics.Interval(1,2)
@@ -14,6 +15,8 @@ using Test
 @test !SoleLogics.goeswithdim(Interval(1,2), 2)
 @test SoleLogics.goeswithdim(Interval, 1)
 @test !SoleLogics.goeswithdim(Interval, 2)
+@test Base.length(Interval(12,32)) == 20
+@test Base.size(Interval(12,32)) == (20,)
 
 @test_nowarn SoleLogics.Interval2D((1,2),(3,4))
 @test_nowarn SoleLogics.Interval2D(Interval(1,2),Interval(3,4))
