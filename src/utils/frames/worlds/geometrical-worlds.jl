@@ -194,7 +194,8 @@ struct Interval2D{T<:Real} <: GeometricalWorld
 end
 
 # Base.size(w::Interval2D) = (Base.length(w.x), Base.length(w.y))
-Base.length(w::Interval2D) = prod(Base.length(w.x), Base.length(w.y))
+Base.length(w::Interval2D) = Base.length(w.x) * Base.length(w.y)
+Base.size(w::Interval2D) = (Base.length(w.x), Base.length(w.y))
 
 inlinedisplay(w::Interval2D) = "($(w.x)×$(w.y))"
 

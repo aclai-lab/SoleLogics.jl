@@ -22,6 +22,8 @@ using Test
 @test_nowarn SoleLogics.Interval2D(Interval(1,2),Interval(3,4))
 @test !SoleLogics.goeswithdim(Interval2D, 1)
 @test SoleLogics.goeswithdim(Interval2D, 2)
+@test Base.length(Interval2D((1,3), (3,10))) == 14
+@test Base.size(Interval2D((1,3), (3,10))) == (2,7)
 
 fr1D = @test_nowarn SoleLogics.FullDimensionalFrame(5)
 fr2D = @test_nowarn SoleLogics.FullDimensionalFrame(1,2)
