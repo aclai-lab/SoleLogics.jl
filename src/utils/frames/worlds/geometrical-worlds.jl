@@ -193,7 +193,6 @@ struct Interval2D{T<:Real} <: GeometricalWorld
     Interval2D(x::Tuple{T,T}, y::Tuple{T,T}) where {T} = Interval2D{T}(x,y)
 end
 
-# Base.size(w::Interval2D) = (Base.length(w.x), Base.length(w.y))
 Base.length(w::Interval2D) = Base.length(w.x) * Base.length(w.y)
 Base.size(w::Interval2D) = (Base.length(w.x), Base.length(w.y))
 
