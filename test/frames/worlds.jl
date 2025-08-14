@@ -6,6 +6,7 @@ using Test
 @test_nowarn SoleLogics.Point(1,2,3)
 @test_nowarn SoleLogics.Point((1,2,3),)
 @test all([SoleLogics.goeswithdim.(SoleLogics.Point{N}, N) for N in 1:10])
+@test Base.size(Point(1,2,3,4)) == ()
 
 @test_nowarn SoleLogics.Interval(1,2)
 @test_nowarn SoleLogics.Interval((1,2),)
@@ -35,10 +36,9 @@ fr2D = @test_nowarn SoleLogics.FullDimensionalFrame(1,2)
   @test_broken (@test_nowarn accessibles(fr1D, rw3))
   @test_broken (@test_nowarn accessibles(fr1D, rw4))
   # TODO test several cases of accessibles
-# 
+#
 end
 
 @test Base.isconcretetype(Base.return_types(accessibles, typeof.((SoleLogics.FullDimensionalFrame((5,),), [Interval(2,3),Interval(2,4)], SoleLogics.IA_L)))[1])
 @test_broken Base.isconcretetype(eltype(Base.return_types(accessibles, typeof.((SoleLogics.FullDimensionalFrame((5,),), [Interval(2,3),Interval(2,4)], SoleLogics.IA_L)))[1]))
 @test_broken ((@inferred eltype(accessibles(SoleLogics.FullDimensionalFrame((5,),), [Interval(2,3),Interval(2,4)], SoleLogics.IA_L))) == Interval{Int})
-

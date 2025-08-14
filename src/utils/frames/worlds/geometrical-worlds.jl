@@ -44,6 +44,7 @@ end
 
 # Base.size(w::Point) = (1,) # TODO maybe not
 Base.length(w::Point) = 1
+Base.size(::Point) = ()
 
 inlinedisplay(w::Point) = "❮$(join(w.xyz, ","))❯"
 
