@@ -135,6 +135,7 @@ end
 
 # Base.size(w::Interval) = (Base.length(w),)
 Base.length(w::Interval) = (w.y - w.x)
+Base.size(w::Interval) = (Base.length(w),)
 
 inlinedisplay(w::Interval) = "($(w.x)−$(w.y))"
 
