@@ -103,6 +103,7 @@ export AbstractWorlds, Worlds
 export OneWorld
 export GeometricalWorld, Point, Point1D, Point2D, Point3D
 export Interval, Interval2D
+export RelativeGeometricalWorld
 
 export AbstractRelation
 
