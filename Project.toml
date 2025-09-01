@@ -21,7 +21,7 @@ ThreadSafeDicts = "4239201d-c60e-5e0a-9702-85d713665ba7"
 
 [compat]
 AbstractTrees = "0.4"
-DataStructures = "0.18"
+DataStructures = "0.18, 0.19"
 Dictionaries = "0.3, 0.4"
 FunctionWrappers = "1"
 Graphs = "1.8"
