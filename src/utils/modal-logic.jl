@@ -404,17 +404,17 @@ function check(
         end
     end
 
-    if !isnothing(memo_max_height)
-        for ψ in forget_list
-            delete!(memo_structure, ψ)
-        end
-    end
-
     ret = begin
         if isnothing(w) || w isa AnyWorld
             length(readformula(memo_structure, φ)) > 0
         else
             w in readformula(memo_structure, φ)
+        end
+    end
+
+    if !isnothing(memo_max_height)
+        for ψ in forget_list
+            delete!(memo_structure, ψ)
         end
     end
 
