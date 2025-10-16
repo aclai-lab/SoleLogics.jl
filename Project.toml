@@ -34,7 +34,7 @@ Revise = "3"
 SoleBase = "0.13"
 StaticArrays = "1.9"
 StatsBase = "0.30 - 0.34"
-ThreadSafeDicts = "0.1.0"
+ThreadSafeDicts = "0.1"
 julia = "1"
 
 [extras]
