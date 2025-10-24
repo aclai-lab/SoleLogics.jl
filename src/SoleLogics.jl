@@ -116,6 +116,8 @@ include("types/modal-logic.jl")
 
 include("utils/modal-logic.jl")
 
+export ExplicitCrispUniModalFrame
+
 include("utils/multi-modal-logic.jl")
 
 export WorldFilter
