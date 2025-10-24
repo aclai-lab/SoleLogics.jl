@@ -23,7 +23,7 @@ export Operator, SyntaxToken
 
 export tree, syntaxstring
 
-export arity, valuetype, tokentype, tokenstype,
+export arity, valuetype, value, tokentype, tokenstype,
         atomstype, operatorstype, truthtype,
         associativity, precedence
 
