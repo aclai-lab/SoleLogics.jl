@@ -48,6 +48,10 @@ function soletospartacus(φ::Union{Atom, BooleanTruth, SyntaxBranch})
             push!(r, '<', 'a', '>')
         elseif c == '□'
             push!(r, '[', 'a', ']')
+        elseif c isa DiamondRelationalConnective    # beware, this is not K modal logic...
+            push!(r, '<', syntaxstring(c)[4], '>')
+        elseif c isa BoxRelationalConnective
+            push!(r, '[', syntaxstring(c)[4], ']')
         elseif c == '⊤'
             push!(r, '1')
         elseif c == '⊥'
@@ -63,7 +67,7 @@ end
 WORKING_DIR = joinpath(@__DIR__, "test", "generation")
 
 _myrng = 42
-_alphabet = ExplicitAlphabet(Atom.('a':'f'))
+_alphabet = ExplicitAlphabet(Atom.('p':'z'))
 _operators = [CONJUNCTION, DISJUNCTION, NEGATION, DIAMOND, BOX]
 
 _earlystoppingthreshold = 0.2
