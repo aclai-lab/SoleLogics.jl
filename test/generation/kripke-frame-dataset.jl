@@ -64,7 +64,12 @@ function soletospartacus(φ::Union{Atom, BooleanTruth, SyntaxBranch})
 end
 
 
+# directory in which this script lives
 WORKING_DIR = joinpath(@__DIR__, "test", "generation")
+
+# directory where spartacus solver is installed
+SPARTACUS_DIR = joinpath(WORKING_DIR, "spartacus-installation", "spartacus")
+
 
 _myrng = 42
 _alphabet = ExplicitAlphabet(Atom.('p':'z'))
@@ -84,9 +89,18 @@ _formulas = [
     for _ in 1:_nformulas
 ]
 
-# we want a model that satisfies all the generated formulas;
-# we will leverage soletospartacus
-soletospartacus(CONJUNCTION(_formulas...))
+_conjunction = CONJUNCTION(_formulas...)
 
-# invoke executable
-run(joinpath(WORKING_DIR, "spartacus", "bin"))
+# we want a model that satisfies all the generated formulas;
+# we will leverage soletospartacus;
+# because of that, this is clearly a "spartan" formula
+_spartan_conjunction = soletospartacus(_conjunction)
+
+# invoke executable (beware of how te executable is called!)
+_command = `$(SPARTACUS_DIR)/spartacus --showModel --formula=$(_spartan_conjunction)`
+
+_buffer = IOBuffer()
+_raw_result = run(pipeline(cmd, stdout=_buffer))
+_result = String(take!(_buffer))
+
+# now, we need to parse the _result
