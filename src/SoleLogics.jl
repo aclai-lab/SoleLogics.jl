@@ -48,6 +48,7 @@ export interpret, check
 include("types/interpretation.jl")
 
 
+export AbstractAlphabet
 export AlphabetOfAny, ExplicitAlphabet, UnionAlphabet
 export alphabet, subalphabets
 export domain, top, bot, grammar, algebra, logic
