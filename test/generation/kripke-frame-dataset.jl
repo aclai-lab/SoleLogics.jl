@@ -111,7 +111,7 @@ By @perro2110 and @mauro_milella.
 """
 function spartacustomodel(
     spartacuslog::String;
-    atomsconvertion::Function=identity
+    atomsconvertion::Function=identity # TODO, use x -> String as default
 )::KripkeStructure
     if !isnothing(findfirst("unsatisfiable", spartacuslog))
         throw(ArgumentError("Error: the provided spartacus model is unsatisfiable."))
