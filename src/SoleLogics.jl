@@ -117,9 +117,9 @@ export globalrel, identityrel
 
 include("types/modal-logic.jl")
 
-include("utils/modal-logic.jl")
+include("utils/modal-logic/modal-logic.jl")
 
-include("utils/multi-modal-logic.jl")
+include("utils/modal-logic/multi-modal-logic.jl")
 
 export WorldFilter
 export FunctionalWorldFilter, FilteredRelation
