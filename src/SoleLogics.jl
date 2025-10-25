@@ -58,6 +58,7 @@ include("types/logic.jl")
 include("types/interpretation-sets.jl")
 
 export Atom, SyntaxBranch
+export name
 
 include("utils/syntactical.jl")
 
