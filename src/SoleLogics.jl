@@ -119,6 +119,8 @@ include("types/modal-logic.jl")
 
 include("utils/modal-logic/modal-logic.jl")
 
+include("utils/modal-logic/k-modal-logic-extended.jl")
+
 include("utils/modal-logic/multi-modal-logic.jl")
 
 export WorldFilter
