@@ -122,7 +122,7 @@ const □₂ = BOX2
 
 See [`GradedConnective`](@ref).
 """
-const BOX3 = GradedConnective{:◊}(>=, 3)
+const BOX3 = GradedConnective{:◊}(<=, 3)
 const □₃ = BOX3
 
 
