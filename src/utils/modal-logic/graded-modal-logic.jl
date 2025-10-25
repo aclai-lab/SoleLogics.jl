@@ -13,7 +13,7 @@ Two examples of built-in `GradedConnectives` are [`DIAMOND2`](@ref) and [`BOX2`]
 are at least 2 accessible worlds where a formula holds.
 
 [`BOX2`](@ref) is a special box operator (see [`BOX`](@ref)), stating that there are at
-most 2 accessible worlds where a formula does not holds (¬◊₂¬).
+most 2 accessible worlds where a formula does not hold (¬◊₂¬).
 
 See also [`AbstractFrame`](@ref) [`Connective`](@ref), [`DIAMOND`](@ref),
 [`NamedConnective`](@ref).
@@ -96,8 +96,7 @@ Semantically, you can use this to represent a generic [`GradedConnective`](@ref)
 the lozenge glyph.
 
 When defining the traits for a `GradedConnective{:◊}`, everything is forwarded from the
-traits of `NamedConnective{:◊}` (whose placeholder is just `const ◊`, or
-[`DIAMOND`](@ref)).
+traits of `NamedConnective{:◊}` (whose placeholder is just `const ◊`, or [`DIAMOND`](@ref)).
 
 See also [`ismodal`](@ref), [`isdiamond`](@ref), [`isbox`](@ref), [`arity`](@ref),
 [`precedence`](@ref), [`associativity`](@ref).
