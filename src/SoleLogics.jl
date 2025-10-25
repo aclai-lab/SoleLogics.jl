@@ -87,7 +87,11 @@ include("utils/propositional-logic.jl")
 
 
 export accessibles
-export ismodal, modallogic
+export ismodal, isbox, isdiamond
+export relationtype, relation
+export collateworlds
+
+export modallogic
 
 export DIAMOND, BOX, ◊, □
 export DiamondRelationalConnective, BoxRelationalConnective
