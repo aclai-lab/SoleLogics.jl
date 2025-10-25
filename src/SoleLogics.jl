@@ -110,13 +110,13 @@ export GeometricalWorld, Point, Point1D, Point2D, Point3D
 export Interval, Interval2D
 export RelativeGeometricalWorld
 
-export AbstractRelation
-
 export GlobalRel, IdentityRel
 export globalrel, identityrel
 
-
 include("types/modal-logic.jl")
+
+export AbstractWorld, AbstractFrame, AbstractUniModalFrame
+export AbstractRelation
 
 include("utils/modal-logic/modal-logic.jl")
 
