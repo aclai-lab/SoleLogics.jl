@@ -7,6 +7,14 @@ Connective enriched with a `grade`.
 When evaluating a graded connective on a world `w` of an [`AbstractFrame`](@ref),
 the neighbors of `w`, named `nw`, are considered only if `condition(nw, grade)` is true.
 
+Two examples of built-in `GradedConnectives` are [`DIAMOND2`](@ref) and [`BOX2`](@ref).
+
+[`DIAMOND2`](@ref) is a special diamond operator (see [`DIAMOND`](@ref)), stating that there
+are at least 2 accessible worlds where a formula holds.
+
+[`BOX2`](@ref) is a special box operator (see [`BOX`](@ref)), stating that there are at
+most 2 accessible worlds where a formula does not holds (¬◊₂¬).
+
 See also [`AbstractFrame`](@ref) [`Connective`](@ref), [`DIAMOND`](@ref),
 [`NamedConnective`](@ref).
 """
@@ -58,17 +66,21 @@ Base.show(io::IO, gc::GradedConnective) = print(io, "$(syntaxstring(gc))")
 
 """
     const DIAMOND2 = NamedConnective{:◊}(>=, 2)
+    const ◊₂ = DIAMOND2
 
 See [`GradedConnective`](@ref).
 """
 const DIAMOND2 = GradedConnective{:◊}(>=, 2)
+const ◊₂ = DIAMOND2
 
 """
     const DIAMOND3 = GradedConnective{:◊}(>=, 3)
+    const ◊₃ = DIAMOND3
 
 See [`GradedConnective`](@ref).
 """
 const DIAMOND3 = GradedConnective{:◊}(>=, 3)
+const ◊₃ = DIAMOND3
 
 """
     const ◊ₙ = DIAMOND2
@@ -84,20 +96,46 @@ traits of `NamedConnective{:◊}` (whose placeholder is just `const ◊`, or
 See also [`ismodal`](@ref), [`isdiamond`](@ref), [`isbox`](@ref), [`arity`](@ref),
 [`precedence`](@ref), [`associativity`](@ref).
 """
-const ◊ₙ = DIAMOND2
+const ◊ₙ = ◊₂
 
-ismodal(::Type{typeof(DIAMOND2)}) = ismodal(◊)
+ismodal(::Type{typeof(◊ₙ)}) = ismodal(◊)
+ismodal(::Type{typeof(◊ₙ)}) = ismodal(◊)
+isbox(::Type{typeof(◊ₙ)}) = isbox(◊)
+arity(::typeof(◊ₙ)) = arity(◊)
+precedence(::typeof(◊ₙ)) = precedence(◊)
+associativity(::typeof(◊ₙ)) = associativity(◊)
 
 
-# TODO - traits
-# ismodal(::GradedConnective{:◊}) = true
-# isbox(::Type{typeof(◊)}) = false
-# arity(::typeof(◊)) = 1
-# precedence(::typeof(◊)) = precedence(NEGATION)
-# associativity(::typeof(◊)) = associativity(NEGATION)
 
-# TODO - collateworlds
+"""
+    const BOX2 = NamedConnective{:□}(<=, 2)
+    const □₂ = BOX2
 
-export GradedConnective
-export name, condition, grade
-export DIAMOND2, DIAMOND3
+See [`GradedConnective`](@ref).
+"""
+const BOX2 = GradedConnective{:□}(<=, 2)
+const □₂ = BOX2
+
+"""
+    const BOX3 = GradedConnective{:◊}(>=, 3)
+    const □₃ = BOX3
+
+See [`GradedConnective`](@ref).
+"""
+const BOX3 = GradedConnective{:◊}(>=, 3)
+const □₃ = BOX3
+
+
+"""
+    const □ₙ = BOX2
+
+This has the same exact purpose of [`◊ₙ`](@ref).
+"""
+const □ₙ = BOX2
+
+ismodal(::Type{typeof(□ₙ)}) = ismodal(□)
+ismodal(::Type{typeof(□ₙ)}) = ismodal(□)
+isbox(::Type{typeof(□ₙ)}) = isbox(□)
+arity(::typeof(□ₙ)) = arity(□)
+precedence(::typeof(□ₙ)) = precedence(□)
+associativity(::typeof(□ₙ)) = associativity(□)

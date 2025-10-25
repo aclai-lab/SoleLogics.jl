@@ -123,6 +123,7 @@ include("utils/modal-logic/modal-logic.jl")
 export GradedConnective
 export name, condition, grade
 export DIAMOND2, DIAMOND3, ◊ₙ
+export BOX2, BOX3, □ₙ
 
 include("utils/modal-logic/graded-modal-logic.jl")
 
