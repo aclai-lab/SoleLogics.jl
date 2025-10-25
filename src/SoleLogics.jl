@@ -120,6 +120,9 @@ include("types/modal-logic.jl")
 
 include("utils/modal-logic/modal-logic.jl")
 
+export GradedConnective
+export name, condition, grade
+
 include("utils/modal-logic/graded-modal-logic.jl")
 
 include("utils/modal-logic/multi-modal-logic.jl")
