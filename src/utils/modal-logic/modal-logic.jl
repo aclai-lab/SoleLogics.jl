@@ -22,7 +22,7 @@ name(w::World) = w.name
 
 inlinedisplay(w::World) = string(name(w))
 
-include("frames/worlds.jl")
+include("../frames/worlds.jl")
 
 ############################################################################################
 ##################################### Uni-modal logic ######################################
