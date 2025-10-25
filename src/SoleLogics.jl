@@ -118,6 +118,8 @@ include("types/modal-logic.jl")
 export AbstractWorld, AbstractFrame, AbstractUniModalFrame
 export AbstractRelation
 
+export frame
+
 include("utils/modal-logic/modal-logic.jl")
 
 export GradedConnective
