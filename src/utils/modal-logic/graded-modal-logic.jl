@@ -52,8 +52,8 @@ Local argument of [`condition(gc::GradedConnective)`](@ref).
 """
 grade(gc::GradedConnective) = gc.grade
 
-Base.show(gc::GradedConnective; kwargs...) = print(io, "$(syntaxstring(gc))")
 syntaxstring(gc::GradedConnective; kwargs...) = (name(gc), grade(gc)) |> join
+Base.show(io::IO, gc::GradedConnective) = print(io, "$(syntaxstring(gc))")
 
 
 """
@@ -69,3 +69,35 @@ const DIAMOND2 = GradedConnective{:◊}(>=, 2)
 See [`GradedConnective`](@ref).
 """
 const DIAMOND3 = GradedConnective{:◊}(>=, 3)
+
+"""
+    const ◊ₙ = DIAMOND2
+
+This is just a placeholder for [`DIAMOND2`](@ref).
+Semantically, you can use this to represent a generic [`GradedConnective`](@ref) wrapping
+the lozenge glyph.
+
+When defining the traits for a `GradedConnective{:◊}`, everything is forwarded from the
+traits of `NamedConnective{:◊}` (whose placeholder is just `const ◊`, or
+[`DIAMOND`](@ref)).
+
+See also [`ismodal`](@ref), [`isdiamond`](@ref), [`isbox`](@ref), [`arity`](@ref),
+[`precedence`](@ref), [`associativity`](@ref).
+"""
+const ◊ₙ = DIAMOND2
+
+ismodal(::Type{typeof(DIAMOND2)}) = ismodal(◊)
+
+
+# TODO - traits
+# ismodal(::GradedConnective{:◊}) = true
+# isbox(::Type{typeof(◊)}) = false
+# arity(::typeof(◊)) = 1
+# precedence(::typeof(◊)) = precedence(NEGATION)
+# associativity(::typeof(◊)) = associativity(NEGATION)
+
+# TODO - collateworlds
+
+export GradedConnective
+export name, condition, grade
+export DIAMOND2, DIAMOND3
