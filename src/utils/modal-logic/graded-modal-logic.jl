@@ -38,20 +38,26 @@ See also [`Connective`](@ref).
 """
 name(::GradedConnective{S}) where {S} = S
 
-
 """
     condition(gc::GradedConnective) = gc.condition
 
-Return the conditionition within a [`GradedConnective`](@ref).
-The condition is a special function `f` intended to compare the set of neighbors of a
-specific world within an [`AbstractFrame`](@ref).
+Return a comparator wrapped within a [`GradedConnective`](@ref).
+It is a special function intended to compare the set of neighbors of a specific world within
+ an [`AbstractFrame`](@ref), with respect to a threshold called `grade`.
 
-The difference between ◊ (i.e., DIAMOND) and ◊₂ (i.e., DIAMOND2) is that the second one
-states that *at least two* neighbors of a world exists.
-
-See also [`Connective`](@ref), [`DIAMOND`](@ref), [`DIAMOND2`](@ref).
+See also [`Connective`](@ref), [`DIAMOND`](@ref), [`DIAMOND2`](@ref), [`grade`](@ref).
 """
 condition(gc::GradedConnective) = gc.condition
+
+"""
+    condition(gc::GradedConnective, val::Int)
+
+Shortcut for `condition(gc)(val, grade(gc))`.
+
+See also [`condition(gc::GradedConnective)`](@ref), [`GradedConnective`](@ref).
+"""
+condition(gc::GradedConnective, val::Int) = condition(gc)(val, grade(gc))
+
 
 """
     grade(gc::GradedConnective) = gc.grade
@@ -106,7 +112,6 @@ precedence(::typeof(◊ₙ)) = precedence(◊)
 associativity(::typeof(◊ₙ)) = associativity(◊)
 
 
-
 """
     const BOX2 = NamedConnective{:□}(<=, 2)
     const □₂ = BOX2
@@ -139,3 +144,40 @@ isbox(::Type{typeof(□ₙ)}) = isbox(□)
 arity(::typeof(□ₙ)) = arity(□)
 precedence(::typeof(□ₙ)) = precedence(□)
 associativity(::typeof(□ₙ)) = associativity(□)
+
+
+function _collateworlds(
+    fr::AbstractFrame{W},
+    op::GradedConnective,
+    (ws,)::NTuple{1,<:AbstractWorlds},
+    aggregator::Function
+) where {W<:AbstractWorld}
+    filter(
+        w1 -> begin
+            _accessibles = accessibles(fr, w1)
+
+            if !aggregator(_accessibles, ws)
+                return false
+            else
+                return condition(op, _accessibles |> length)
+            end
+        end,
+        fr |> allworlds |> collect
+    )
+end
+
+function collateworlds(
+    fr::AbstractFrame{W},
+    op::typeof(◊ₙ),
+    (ws,)::NTuple{1,<:AbstractWorlds},
+) where {W<:AbstractWorld}
+    return _collateworlds(fr, op, (ws,), intersects)
+end
+
+function collateworlds(
+    fr::AbstractFrame{W},
+    op::typeof(□ₙ),
+    (ws,)::NTuple{1,<:AbstractWorlds},
+) where {W<:AbstractWorld}
+    return _collateworlds(fr, op, (ws,), issubset)
+end

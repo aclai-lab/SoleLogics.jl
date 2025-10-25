@@ -116,7 +116,7 @@ export globalrel, identityrel
 include("types/modal-logic.jl")
 
 export AbstractWorld
-export World
+export World, allworlds
 
 export AbstractFrame, AbstractUniModalFrame
 export frame
