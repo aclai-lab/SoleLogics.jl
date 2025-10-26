@@ -18,15 +18,16 @@ most 2 accessible worlds where a formula does not hold (¬◊₂¬).
 See also [`AbstractFrame`](@ref) [`Connective`](@ref), [`DIAMOND`](@ref),
 [`NamedConnective`](@ref).
 """
-struct GradedConnective{S} <: Connective
+struct GradedConnective{S,N} <: Connective
     condition::Function
-    grade::Int
 
-    GradedConnective{S}(grade::Int) where {S} = new{S}(>=, grade)
+    GradedConnective{S,N}(condition::Function) where {S,N} = new{S,N}(condition)
+
     GradedConnective{S}(
         condition::Function,
         grade::Int
-    ) where {S} = new{S}(condition, grade)
+    ) where {S} = new{S,grade}(condition)
+
 end
 
 """
@@ -36,7 +37,7 @@ Return the symbol encapsulated by a [`GradedConnective`](@ref).
 
 See also [`Connective`](@ref).
 """
-name(::GradedConnective{S}) where {S} = S
+name(::GradedConnective{S,N}) where {S,N} = S
 
 """
     condition(gc::GradedConnective) = gc.condition
@@ -64,7 +65,7 @@ condition(gc::GradedConnective, val::Int) = condition(gc)(val, grade(gc))
 
 Local argument of [`condition(gc::GradedConnective)`](@ref).
 """
-grade(gc::GradedConnective) = gc.grade
+grade(::GradedConnective{S,N}) where {S,N} = N
 
 syntaxstring(gc::GradedConnective; kwargs...) = (name(gc), grade(gc)) |> join
 Base.show(io::IO, gc::GradedConnective) = print(io, "$(syntaxstring(gc))")
@@ -79,7 +80,7 @@ Special [`DIAMOND`](@ref) connective, stating that there are at least 2 accessib
 
 See [`Connective`](@ref), [`DIAMOND`](@ref), [`GradedConnective`](@ref).
 """
-const DIAMOND2 = GradedConnective{:◊}(>=, 2)
+const DIAMOND2 = GradedConnective{:◊,2}(>=)
 const ◊₂ = DIAMOND2
 
 """
@@ -88,7 +89,7 @@ const ◊₂ = DIAMOND2
 
 See [`DIAMOND2`](@ref), [`GradedConnective`](@ref).
 """
-const DIAMOND3 = GradedConnective{:◊}(>=, 3)
+const DIAMOND3 = GradedConnective{:◊,3}(>=)
 const ◊₃ = DIAMOND3
 
 """
@@ -106,11 +107,11 @@ See also [`ismodal`](@ref), [`isdiamond`](@ref), [`isbox`](@ref), [`arity`](@ref
 """
 const ◊ₙ = ◊₂
 
-ismodal(::Type{typeof(◊ₙ)}) = ismodal(◊)
-isbox(::Type{typeof(◊ₙ)}) = isbox(◊)
-arity(::typeof(◊ₙ)) = arity(◊)
-precedence(::typeof(◊ₙ)) = precedence(◊)
-associativity(::typeof(◊ₙ)) = associativity(◊)
+ismodal(::GradedConnective{:◊,N}) where {N} = true
+isbox(::GradedConnective{:◊,N}) where {N} = isbox(◊)
+arity(::GradedConnective{:◊,N}) where {N} = 1
+precedence(::GradedConnective{:◊,N}) where {N} = precedence(◊)
+associativity(::GradedConnective{:◊,N}) where {N} = associativity(◊)
 
 
 """
@@ -122,16 +123,16 @@ Special [`BOX`](@ref) connective, stating that there are at most 2 accessible wo
 
 See [`Connective`](@ref), [`BOX`](@ref), [`GradedConnective`](@ref).
 """
-const BOX2 = GradedConnective{:□}(<=, 2)
+const BOX2 = GradedConnective{:□,2}(<=)
 const □₂ = BOX2
 
 """
-    const BOX3 = GradedConnective{:◊}(>=, 3)
+    const BOX3 = GradedConnective{:◊,3}(>=)
     const □₃ = BOX3
 
 See [`BOX2`](@ref), [`GradedConnective`](@ref).
 """
-const BOX3 = GradedConnective{:□}(<=, 3)
+const BOX3 = GradedConnective{:□,3}(<=)
 const □₃ = BOX3
 
 
@@ -144,11 +145,19 @@ See also [`◊ₙ`](@ref).
 """
 const □ₙ = BOX2
 
-ismodal(::Type{typeof(□ₙ)}) = ismodal(□)
-isbox(::Type{typeof(□ₙ)}) = isbox(□)
-arity(::typeof(□ₙ)) = arity(□)
-precedence(::typeof(□ₙ)) = precedence(□)
-associativity(::typeof(□ₙ)) = associativity(□)
+ismodal(::GradedConnective{:□,N}) where {N} = ismodal(□)
+isbox(::GradedConnective{:□,N}) where {N} = isbox(□)
+arity(::GradedConnective{:□,N}) where {N} = arity(□)
+precedence(::GradedConnective{:□,N}) where {N} = precedence(□)
+associativity(::GradedConnective{:□,N}) where {N} = associativity(□)
+
+hasdual(::GradedConnective{:◊,N}) where {N} = true
+dual(::typeof(DIAMOND2)) = GradedConnective{:□,1}(>) # beware, as this has a different
+dual(::typeof(DIAMOND3)) = GradedConnective{:□,2}(>) # condition w.r.t. □₂
+
+hasdual(::typeof(□ₙ)) = true
+dual(::typeof(BOX2)) = GradedConnective{:◊,1}(<) # beware, as this has a different
+dual(::typeof(BOX3)) = GradedConnective{:◊,2}(<) # condition wrt ◊₂
 
 
 function _collateworlds(
@@ -159,13 +168,8 @@ function _collateworlds(
 ) where {W<:AbstractWorld}
     filter(
         w1 -> begin
-            _accessibles = accessibles(fr, w1)
-
-            if !aggregator(_accessibles, ws)
-                return false
-            else
-                return condition(op, _accessibles |> length)
-            end
+            _from_w1_op_is_true_on_these_worlds = aggregator(ws, accessibles(fr, w1))
+            condition(op, _from_w1_op_is_true_on_these_worlds |> length)
         end,
         fr |> allworlds |> collect
     )
@@ -173,16 +177,19 @@ end
 
 function collateworlds(
     fr::AbstractFrame{W},
-    op::typeof(◊ₙ),
+    op::GradedConnective{:◊,N},
     (ws,)::NTuple{1,<:AbstractWorlds},
-) where {W<:AbstractWorld}
-    return _collateworlds(fr, op, (ws,), intersects)
+) where {W<:AbstractWorld, N}
+    return _collateworlds(fr, op, (ws,), intersect)
 end
 
 function collateworlds(
     fr::AbstractFrame{W},
-    op::typeof(□ₙ),
+    op::GradedConnective{:□,N},
     (ws,)::NTuple{1,<:AbstractWorlds},
-) where {W<:AbstractWorld}
-    return _collateworlds(fr, op, (ws,), issubset)
+) where {W<:AbstractWorld, N}
+    collateworlds(fr, dual(op), (ws,))
+
+    # this is not efficient, since a subset is computed both in issubset and setdiff
+    # return _collateworlds(fr, op, (ws,), (a,b) -> issubset(a,b) ? b : setdiff(a,b))
 end
