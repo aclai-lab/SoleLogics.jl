@@ -74,7 +74,10 @@ Base.show(io::IO, gc::GradedConnective) = print(io, "$(syntaxstring(gc))")
     const DIAMOND2 = NamedConnective{:◊}(>=, 2)
     const ◊₂ = DIAMOND2
 
-See [`GradedConnective`](@ref).
+Special [`DIAMOND`](@ref) connective, stating that there are at least 2 accessible worlds
+(within an [`AbstractFrame`](@ref) where a formula holds.
+
+See [`Connective`](@ref), [`DIAMOND`](@ref), [`GradedConnective`](@ref).
 """
 const DIAMOND2 = GradedConnective{:◊}(>=, 2)
 const ◊₂ = DIAMOND2
@@ -83,7 +86,7 @@ const ◊₂ = DIAMOND2
     const DIAMOND3 = GradedConnective{:◊}(>=, 3)
     const ◊₃ = DIAMOND3
 
-See [`GradedConnective`](@ref).
+See [`DIAMOND2`](@ref), [`GradedConnective`](@ref).
 """
 const DIAMOND3 = GradedConnective{:◊}(>=, 3)
 const ◊₃ = DIAMOND3
@@ -99,7 +102,7 @@ When defining the traits for a `GradedConnective{:◊}`, everything is forwarded
 traits of `NamedConnective{:◊}` (whose placeholder is just `const ◊`, or [`DIAMOND`](@ref)).
 
 See also [`ismodal`](@ref), [`isdiamond`](@ref), [`isbox`](@ref), [`arity`](@ref),
-[`precedence`](@ref), [`associativity`](@ref).
+[`precedence`](@ref), [`associativity`](@ref), [`□ₙ`](@ref).
 """
 const ◊ₙ = ◊₂
 
@@ -114,7 +117,10 @@ associativity(::typeof(◊ₙ)) = associativity(◊)
     const BOX2 = NamedConnective{:□}(<=, 2)
     const □₂ = BOX2
 
-See [`GradedConnective`](@ref).
+Special [`BOX`](@ref) connective, stating that there are at most 2 accessible worlds
+(within an [`AbstractFrame`](@ref), where a formula does not hold (¬◊₂¬).
+
+See [`Connective`](@ref), [`BOX`](@ref), [`GradedConnective`](@ref).
 """
 const BOX2 = GradedConnective{:□}(<=, 2)
 const □₂ = BOX2
@@ -123,7 +129,7 @@ const □₂ = BOX2
     const BOX3 = GradedConnective{:◊}(>=, 3)
     const □₃ = BOX3
 
-See [`GradedConnective`](@ref).
+See [`BOX2`](@ref), [`GradedConnective`](@ref).
 """
 const BOX3 = GradedConnective{:□}(<=, 3)
 const □₃ = BOX3
@@ -132,7 +138,9 @@ const □₃ = BOX3
 """
     const □ₙ = BOX2
 
-This has the same exact purpose of [`◊ₙ`](@ref).
+Semantically expressive renaming of [`BOX2`](@ref).
+
+See also [`◊ₙ`](@ref).
 """
 const □ₙ = BOX2
 
