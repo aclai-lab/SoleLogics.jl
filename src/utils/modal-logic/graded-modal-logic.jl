@@ -104,7 +104,6 @@ See also [`ismodal`](@ref), [`isdiamond`](@ref), [`isbox`](@ref), [`arity`](@ref
 const ◊ₙ = ◊₂
 
 ismodal(::Type{typeof(◊ₙ)}) = ismodal(◊)
-ismodal(::Type{typeof(◊ₙ)}) = ismodal(◊)
 isbox(::Type{typeof(◊ₙ)}) = isbox(◊)
 arity(::typeof(◊ₙ)) = arity(◊)
 precedence(::typeof(◊ₙ)) = precedence(◊)
@@ -137,7 +136,6 @@ This has the same exact purpose of [`◊ₙ`](@ref).
 """
 const □ₙ = BOX2
 
-ismodal(::Type{typeof(□ₙ)}) = ismodal(□)
 ismodal(::Type{typeof(□ₙ)}) = ismodal(□)
 isbox(::Type{typeof(□ₙ)}) = isbox(□)
 arity(::typeof(□ₙ)) = arity(□)
