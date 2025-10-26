@@ -102,3 +102,43 @@ kstruct3 = KripkeStructure(kframe3, valuation3)
 @test check(DIAMOND3(p), kstruct3, worlds[1]) == true
 @test check(BOX2(p), kstruct3, worlds[1]) == false
 @test check(BOX3(p), kstruct3, worlds[1]) == true
+
+
+##### more tests for double check and code coverage ########################################
+
+@test_nowarn mygradedconnective = GradedConnective{:🌞, 2}(==)
+@test_nowarn GradedConnective{:🌞}(==, 2)
+
+@test SoleLogics.name(DIAMOND2) == :◊
+@test condition(DIAMOND2) == >=
+@test condition(DIAMOND2, 1) == false
+@test grade(DIAMOND2) == 2
+
+@test_nowarn syntaxstring(DIAMOND2);
+
+@test_nowarn DIAMOND2; # to trigger code coverage for Base.show
+
+@test ismodal(◊ₙ) == true
+
+@test ismodal(◊ₙ) == true
+@test isbox(◊ₙ) == isbox(◊)
+@test arity(◊ₙ) == 1
+@test precedence(◊ₙ) == precedence(◊)
+@test associativity(◊ₙ) == associativity(◊)
+
+@test ismodal(□ₙ) == ismodal(□)
+@test isbox(□ₙ) == isbox(□)
+@test arity(□ₙ) == arity(□)
+@test precedence(□ₙ) == precedence(□)
+@test associativity(□ₙ) == associativity(□)
+
+@test hasdual(DIAMOND2)
+@test hasdual(DIAMOND3)
+@test hasdual(BOX2)
+@test hasdual(BOX3)
+
+
+@test dual(DIAMOND2) == GradedConnective{:□,1}(>)
+@test dual(DIAMOND3) == GradedConnective{:□,2}(>)
+@test dual(BOX2) == GradedConnective{:◊,1}(<)
+@test dual(BOX3) == GradedConnective{:◊,2}(<)
