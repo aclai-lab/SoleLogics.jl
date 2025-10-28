@@ -3,10 +3,13 @@ module ManyValuedLogics
 using ..SoleLogics
 
 export FiniteTruth
+export ContinuousTruth
 
 include("finitetruth.jl")
+include("continuoustruth.jl")
 
 export BinaryOperation
+export ContinuousBinaryOperation
 
 include("operations.jl")
 

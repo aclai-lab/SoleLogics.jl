@@ -100,3 +100,38 @@ end
     if !isa(t2, FiniteTruth) t2 = convert(FiniteTruth, t2)::FiniteTruth end
     return o.truthtable[t1.index, t2.index]
 end
+
+# TODO: Write documentation
+struct ContinuousBinaryOperation{F<:Function} <: AbstractBinaryOperation 
+    func::F
+
+    function ContinuousBinaryOperation(func::F) where {F<:Function}
+        return new{F}(func)
+    end
+end
+
+arity(o::ContinuousBinaryOperation) = 2
+
+# Not sure if there's any need of having these definitions for generic Float64's
+
+@inline function (o::ContinuousBinaryOperation)(t1::Float64, t2::Float64)
+    return ContinuousTruth(o.func(t1, t2))
+end
+
+@inline function (o::ContinuousBinaryOperation)(t1::T, t2::Float64) where {T<:Truth}
+    if !isa(t1, ContinuousTruth) t1 = convert(ContinuousTruth, t1)::ContinuousTruth end
+    return ContinuousTruth(o.func(t1.value, t2))
+end
+
+@inline function (o::ContinuousBinaryOperation)(t1::Float64, t2::T) where {T<:Truth}
+    if !isa(t2, ContinuousTruth) t2 = convert(ContinuousTruth, t2)::ContinuousTruth end
+    return ContinuousTruth(o.func(t1, t2.value))
+end
+
+@inline function (o::ContinuousBinaryOperation)(t1::T, t2::T) where {T<:Truth}
+    if !isa(t1, ContinuousTruth) && !isa(t2, ContinuousTruth)
+        t1 = convert(ContinuousTruth, t1)::ContinuousTruth
+        t2 = convert(ContinuousTruth, t2)::ContinuousTruth
+    end
+    return ContinuousTruth(o.func(t1.value, t2.value))
+end
