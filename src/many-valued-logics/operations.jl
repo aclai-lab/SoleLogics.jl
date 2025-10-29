@@ -1,4 +1,6 @@
 using StaticArrays
+using FunctionWrappers
+import FunctionWrappers: FunctionWrapper
 import SoleLogics: arity
 
 """
@@ -102,13 +104,12 @@ end
 end
 
 # TODO: Write documentation
-struct ContinuousBinaryOperation{F<:Function} <: AbstractBinaryOperation 
-    func::F
-
-    function ContinuousBinaryOperation(func::F) where {F<:Function}
-        return new{F}(func)
-    end
+struct ContinuousBinaryOperation <: AbstractBinaryOperation 
+    func::FunctionWrapper{Float64, Tuple{Float64, Float64}}
 end
+
+# How should i print this?
+Base.show(io::IO, o::ContinuousBinaryOperation) = print(io, o.func.objT)
 
 arity(o::ContinuousBinaryOperation) = 2
 
