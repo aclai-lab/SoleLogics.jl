@@ -103,9 +103,20 @@ end
     return o.truthtable[t1.index, t2.index]
 end
 
-# TODO: Write documentation
+
+"""
+    struct ContinuousBinaryOperation <: AbstractBinaryOperation 
+        func::FunctionWrapper{Float64, Tuple{Float64, Float64}}
+    end
+
+A ContinuousBinaryOperation wraps a binary function on continuous truth values. 
+This type is intended for continuous-valued logics where truth values are represented as
+real numbers rather than discrete enumerations.
+
+See also [`Operation`](@ref), [`arity`](@ref).
+"""
 struct ContinuousBinaryOperation <: AbstractBinaryOperation 
-    func::FunctionWrapper{Float64, Tuple{Float64, Float64}}
+    func::FunctionWrapper{Float64, Tuple{Float64, Float64}} # Not sure if a FunctionWrapper is the most efficient way to do this
 end
 
 # How should i print this?

@@ -1,7 +1,14 @@
 import ..SoleLogics: syntaxstring, istop, isbot
+import Base: convert
 
-# TODO: Add documentation
+"""
+    struct ContinuousTruth <: Truth
+        value::Float64
+    end
 
+Structure for representing truth values defined over the continuous 
+interval [0, 1]. 
+"""
 struct ContinuousTruth <: Truth 
     value::Float64
 

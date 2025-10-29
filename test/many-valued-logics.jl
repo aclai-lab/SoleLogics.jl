@@ -25,6 +25,14 @@ join = BinaryOperation{2}(jointruthtable)
 
 @test arity(join) == 2
 
+l = ContinuousTruth(0.2)
+r = ContinuousTruth(0.7)
+godel_meet = ContinuousBinaryOperation(min)
+
+@test arity(godel_meet) == 2
+
+@test godel_meet(l, r) == min(l.value, r.value)
+
 ################################################################################
 #### Finite truth ##############################################################
 ################################################################################
