@@ -45,9 +45,9 @@ function soletospartacus(φ::Union{Atom, BooleanTruth, SyntaxBranch})
         elseif c == '□'
             push!(r, '[', 'a', ']')
         elseif c isa DiamondRelationalConnective    # beware, this is not K modal logic...
-            push!(r, '<', syntaxstring(c)[4], '>')
+            push!(r, '<', syntaxstring(SoleLogics.relation(c)), '>')
         elseif c isa BoxRelationalConnective
-            push!(r, '[', syntaxstring(c)[4], ']')
+            push!(r, '[', syntaxstring(SoleLogics.relation(c)), ']')
         elseif c == '⊤'
             push!(r, '1')
         elseif c == '⊥'
