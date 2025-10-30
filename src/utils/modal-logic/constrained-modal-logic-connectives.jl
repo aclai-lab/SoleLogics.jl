@@ -18,15 +18,15 @@ most 2 accessible worlds where a formula does not hold (¬◊₂¬).
 See also [`AbstractFrame`](@ref) [`Connective`](@ref), [`DIAMOND`](@ref),
 [`NamedConnective`](@ref).
 """
-struct ConstrainedConnective{S,N} <: Connective
-    condition::Function # TODO - change Function to F
+struct ConstrainedConnective{S,N,F} <: Connective
+    condition::F
 
-    ConstrainedConnective{S,N}(condition::Function) where {S,N} = new{S,N}(condition)
+    ConstrainedConnective{S,N}(condition::F) where {S,N,F<:Function} = new{S,N,F}(condition)
 
     ConstrainedConnective{S}(
         condition::Function,
         grade::Int
-    ) where {S} = new{S,grade}(condition)
+    ) where {S} = new{S,grade,typeof(condition)}(condition)
 
 end
 
