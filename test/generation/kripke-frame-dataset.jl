@@ -103,7 +103,7 @@ _result = String(take!(_buffer))
 """
     function spartacustomodel(
         spartacuslog::String;
-        atomsconvertion::Function=identity
+        atomsconversion::Function=identity
     )::KripkeStructure
 
 
@@ -111,7 +111,7 @@ By @perro2110 and @mauro_milella.
 """
 function spartacustomodel(
     spartacuslog::String;
-    atomsconvertion::Function=identity # TODO, use x -> String as default
+    atomsconversion::Function=identity # TODO, use x -> String as default
 )::KripkeStructure
     if !isnothing(findfirst("unsatisfiable", spartacuslog))
         throw(ArgumentError("Error: the provided spartacus model is unsatisfiable."))
@@ -154,7 +154,7 @@ function spartacustomodel(
         # "Node 1" becomes 1 (as integer)
         currentworld = parse(Int, split(spartacuslog[i+1], " ")[end])
 
-        # "propositions: r, u" becomes [r,u] (whose type is defined by atomsconvertion)
+        # "propositions: r, u" becomes [r,u] (whose type is defined by atomsconversion)
         atoms_on_currentworld = split(spartacuslog[i+2], " ")[2:end] .|> String
         atoms_on_currentworld = filter.(
             x -> x != ',', atoms_on_currentworld) .|> identity .|> Atom
