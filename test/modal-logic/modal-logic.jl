@@ -106,8 +106,8 @@ kstruct3 = KripkeStructure(kframe3, valuation3)
 
 ##### more tests for double check and code coverage ########################################
 
-@test_nowarn mygradedconnective = GradedConnective{:🌞, 2}(==)
-@test_nowarn GradedConnective{:🌞}(==, 2)
+@test_nowarn mygradedconnective = ConstrainedConnective{:🌞, 2}(==)
+@test_nowarn ConstrainedConnective{:🌞}(==, 2)
 
 @test SoleLogics.name(DIAMOND2) == :◊
 @test condition(DIAMOND2) == >=
@@ -138,7 +138,7 @@ kstruct3 = KripkeStructure(kframe3, valuation3)
 @test hasdual(BOX3)
 
 
-@test dual(DIAMOND2) == GradedConnective{:□,1}(>)
-@test dual(DIAMOND3) == GradedConnective{:□,2}(>)
-@test dual(BOX2) == GradedConnective{:◊,1}(<)
-@test dual(BOX3) == GradedConnective{:◊,2}(<)
+@test dual(DIAMOND2) == ConstrainedConnective{:□,1}(>)
+@test dual(DIAMOND3) == ConstrainedConnective{:□,2}(>)
+@test dual(BOX2) == ConstrainedConnective{:◊,1}(<)
+@test dual(BOX3) == ConstrainedConnective{:◊,2}(<)

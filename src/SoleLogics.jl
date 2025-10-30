@@ -125,7 +125,7 @@ export AbstractRelation
 
 include("utils/modal-logic/modal-logic.jl")
 
-export GradedConnective
+export ConstrainedConnective
 export name, condition, grade
 export DIAMOND2, DIAMOND3, ◊ₙ
 export BOX2, BOX3, □ₙ
