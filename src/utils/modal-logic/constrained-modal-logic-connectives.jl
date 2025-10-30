@@ -2,10 +2,10 @@
 """
     struct ConstrainedConnective{Symbol} <: Connective
 
-Connective enriched with a `grade`.
+Connective enriched with a `threshold`.
 
-When evaluating a graded connective on a world `w` of an [`AbstractFrame`](@ref),
-the neighbors of `w`, named `nw`, are considered only if `condition(nw, grade)` is true.
+When evaluating a constrained connective on a world `w` of an [`AbstractFrame`](@ref),
+the neighbors of `w`, named `nw`, are considered only if `condition(nw, threshold)` is true.
 
 Two examples of built-in `ConstrainedConnectives` are [`DIAMOND2`](@ref) and [`BOX2`](@ref).
 
@@ -25,8 +25,8 @@ struct ConstrainedConnective{S,N,F} <: Connective
 
     ConstrainedConnective{S}(
         condition::Function,
-        grade::Int
-    ) where {S} = new{S,grade,typeof(condition)}(condition)
+        threshold::Int
+    ) where {S} = new{S,threshold,typeof(condition)}(condition)
 
 end
 
@@ -44,30 +44,30 @@ name(::ConstrainedConnective{S,N}) where {S,N} = S
 
 Return a comparator wrapped within a [`ConstrainedConnective`](@ref).
 It is a special function intended to compare the set of neighbors of a specific world within
- an [`AbstractFrame`](@ref), with respect to a threshold called `grade`.
+ an [`AbstractFrame`](@ref), with respect to an integer `threshold`.
 
-See also [`Connective`](@ref), [`DIAMOND`](@ref), [`DIAMOND2`](@ref), [`grade`](@ref).
+See also [`Connective`](@ref), [`DIAMOND`](@ref), [`DIAMOND2`](@ref), [`threshold`](@ref).
 """
 condition(gc::ConstrainedConnective) = gc.condition
 
 """
     condition(gc::ConstrainedConnective, val::Int)
 
-Shortcut for `condition(gc)(val, grade(gc))`.
+Shortcut for `condition(gc)(val, threshold(gc))`.
 
 See also [`condition(gc::ConstrainedConnective)`](@ref), [`ConstrainedConnective`](@ref).
 """
-condition(gc::ConstrainedConnective, val::Int) = condition(gc)(val, grade(gc))
+condition(gc::ConstrainedConnective, val::Int) = condition(gc)(val, threshold(gc))
 
 
 """
-    grade(gc::ConstrainedConnective) = gc.grade
+    threshold(gc::ConstrainedConnective) = gc.threshold
 
 Local argument of [`condition(gc::ConstrainedConnective)`](@ref).
 """
-grade(::ConstrainedConnective{S,N}) where {S,N} = N # TODO - change to threshold
+threshold(::ConstrainedConnective{S,N}) where {S,N} = N
 
-syntaxstring(gc::ConstrainedConnective; kwargs...) = (name(gc), grade(gc)) |> join
+syntaxstring(gc::ConstrainedConnective; kwargs...) = (name(gc), threshold(gc)) |> join
 Base.show(io::IO, gc::ConstrainedConnective) = print(io, "$(syntaxstring(gc))")
 
 
