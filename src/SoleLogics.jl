@@ -111,8 +111,9 @@ export AbstractRelation
 export GlobalRel, IdentityRel
 export globalrel, identityrel
 
-
 include("types/modal-logic.jl")
+
+export relation
 
 include("utils/modal-logic.jl")
 
