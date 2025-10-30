@@ -188,9 +188,5 @@ function collateworlds(
     op::ConstrainedConnective{:□,N},
     (ws,)::NTuple{1,<:AbstractWorlds},
 ) where {W<:AbstractWorld, N}
-    # □p to ¬◊¬p
-    collateworlds(fr, op |> NEGATION |> dual(op) |> NEGATION, (ws,))
-
-    # this is not efficient, since a subset is computed both in issubset and setdiff
-    # return _collateworlds(fr, op, (ws,), (a,b) -> issubset(a,b) ? b : setdiff(a,b))
+    collateworlds(fr, dual(op), (ws,))
 end
