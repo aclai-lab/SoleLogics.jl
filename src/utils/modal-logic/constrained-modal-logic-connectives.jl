@@ -19,7 +19,7 @@ See also [`AbstractFrame`](@ref) [`Connective`](@ref), [`DIAMOND`](@ref),
 [`NamedConnective`](@ref).
 """
 struct ConstrainedConnective{S,N} <: Connective
-    condition::Function
+    condition::Function # TODO - change Function to F
 
     ConstrainedConnective{S,N}(condition::Function) where {S,N} = new{S,N}(condition)
 
@@ -65,7 +65,7 @@ condition(gc::ConstrainedConnective, val::Int) = condition(gc)(val, grade(gc))
 
 Local argument of [`condition(gc::ConstrainedConnective)`](@ref).
 """
-grade(::ConstrainedConnective{S,N}) where {S,N} = N
+grade(::ConstrainedConnective{S,N}) where {S,N} = N # TODO - change to threshold
 
 syntaxstring(gc::ConstrainedConnective; kwargs...) = (name(gc), grade(gc)) |> join
 Base.show(io::IO, gc::ConstrainedConnective) = print(io, "$(syntaxstring(gc))")

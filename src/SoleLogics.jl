@@ -130,7 +130,7 @@ export name, condition, grade
 export DIAMOND2, DIAMOND3, ◊ₙ
 export BOX2, BOX3, □ₙ
 
-include("utils/modal-logic/graded-modal-logic.jl")
+include("utils/modal-logic/constrained-modal-logic-connectives.jl")
 
 include("utils/modal-logic/multi-modal-logic.jl")
 
