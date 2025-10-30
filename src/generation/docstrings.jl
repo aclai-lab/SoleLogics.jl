@@ -40,6 +40,18 @@ respect to the sub-alphabets.
 Moreover, one can specify a `:weighted` `atompicking_mode`, together with a
 `subalphabets_weights` vector.
 
+# Arguments
+- `rng::Union{Integer,AbstractRNG}`: rng for riproducibility; actually you can omit this
+    and, in that case, this is defaulted to the global rng;
+- `a::UnionAlphabet`: multiple alphabets from which to pick [`Atom`](@ref)s;
+
+# Keyword Arguments
+- `atompicking_mode::Symbol=:uniform`: strategy for picking atoms from the alphabets;
+    accepted symbols are `:uniform`, `:uniform_subalphabets` and `:weighted`
+- `subalphabets_weights::Union{
+    Nothing,AbstractWeights,AbstractVector{<:Real}}=nothing`: specific weights for sampling
+    when `atompicking_mode` is set to `uniform_subalphabets`.
+
 # Examples
 ```julia-repl
 julia> alphabet1 = ExplicitAlphabet(Atom.(1:10));

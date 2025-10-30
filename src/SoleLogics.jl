@@ -23,7 +23,7 @@ export Operator, SyntaxToken
 
 export tree, syntaxstring
 
-export arity, valuetype, tokentype, tokenstype,
+export arity, valuetype, value, tokentype, tokenstype,
         atomstype, operatorstype, truthtype,
         associativity, precedence
 
@@ -48,6 +48,7 @@ export interpret, check
 include("types/interpretation.jl")
 
 
+export AbstractAlphabet
 export AlphabetOfAny, ExplicitAlphabet, UnionAlphabet
 export alphabet, subalphabets
 export domain, top, bot, grammar, algebra, logic
@@ -110,10 +111,13 @@ export AbstractRelation
 export GlobalRel, IdentityRel
 export globalrel, identityrel
 
-
 include("types/modal-logic.jl")
 
+export relation
+
 include("utils/modal-logic.jl")
+
+export ExplicitCrispUniModalFrame
 
 include("utils/multi-modal-logic.jl")
 
