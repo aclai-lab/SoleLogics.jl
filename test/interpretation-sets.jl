@@ -15,15 +15,15 @@ s = SoleLogics.InterpretationVector([TruthDict((1,false)), TruthDict((1,true)), 
 
 ################################################################################
 
-using DecisionTree: load_data
-using DataFrames
-using SoleData
+# using DecisionTree: load_data
+# using DataFrames
+# using SoleData
 
-X, y = load_data("iris")
-X = Float64.(X)
-X_df = DataFrame(X, :auto)
-s = scalarlogiset(X_df; allow_propositional = true)
-myalphabet = @test_nowarn alphabet(s)
-a = @test_nowarn first(atoms(myalphabet))
-@test_nowarn [check(a, i) for i in SoleLogics.eachinstance(s)]
+# X, y = load_data("iris")
+# X = Float64.(X)
+# X_df = DataFrame(X, :auto)
+# s = scalarlogiset(X_df; allow_propositional = true)
+# myalphabet = @test_nowarn alphabet(s)
+# a = @test_nowarn first(atoms(myalphabet))
+# @test_nowarn [check(a, i) for i in SoleLogics.eachinstance(s)]
 

@@ -30,10 +30,10 @@ struct FiniteTruth <: Truth
     end
 end
 
-_istop(t::UInt8) = t == UInt8(1)
-_isbot(t::UInt8) = t == UInt8(2)
-istop(t::FiniteTruth) = _istop(t.index)
-isbot(t::FiniteTruth) = _isbot(t.index)
+@inline _istop(t::UInt8) = t == UInt8(1)
+@inline _isbot(t::UInt8) = t == UInt8(2)
+@inline istop(t::FiniteTruth) = _istop(t.index)
+@inline isbot(t::FiniteTruth) = _isbot(t.index)
 
 function syntaxstring(t::FiniteTruth; kwargs...)
     if t.index < UInt8(3)

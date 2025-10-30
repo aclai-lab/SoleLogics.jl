@@ -15,7 +15,7 @@ define a partial order ≤ on L by setting a ≤ b if a = a ∧ b.
 
 See also [`precedes`](@ref), [`succeedes`](@ref), [`succeedeq`](@ref).
 """
-function precedeq(
+@inline function precedeq(
     l::L,
     t1::T1,
     t2::T2
@@ -53,7 +53,7 @@ define a partial order ≤ on L by setting a ≤ b if a = a ∧ b.
 
 See also [`precedeq`](@ref), [`succeedes`](@ref), [`succeedeq`](@ref).
 """
-function precedes(
+@inline function precedes(
     l::L,
     t1::T1,
     t2::T2
@@ -87,7 +87,7 @@ define a partial order ≤ on L by setting a ≤ b if a = a ∧ b.
 
 See also [`precedes`](@ref), [`precedeq`](@ref), [`succeedes`](@ref).
 """
-function succeedeq(
+@inline function succeedeq(
     l::L,
     t1::T1,
     t2::T2
@@ -121,7 +121,7 @@ define a partial order ≤ on L by setting a ≤ b if a = a ∧ b.
 
 See also [`precedes`](@ref), [`precedeq`](@ref), [`succeedeq`](@ref).
 """
-function succeedes(
+@inline function succeedes(
     l::L,
     t1::T1,
     t2::T2
@@ -152,7 +152,7 @@ Return all members of l below (or equal to) t.
 
 See also [`precedes`](@ref), [`precedeq`](@ref).
 """
-function lesservalues(
+@inline function lesservalues(
     l::L,
     t::T
 ) where {
@@ -178,7 +178,7 @@ Return all maximal members of l not above (or equal to) t.
 
 See also [`succeedes`](@ref), [`succeedeq`](@ref), [`minimalmembers`](@ref).
 """
-function maximalmembers(
+@inline function maximalmembers(
     l::L,
     t::T
 ) where {
@@ -209,7 +209,7 @@ Return all minimal members of l not below (or equal to) t.
 
 See also [`precedes`](@ref), [`precedeq`](@ref), [`maximalmembers`](@ref).
 """
-function minimalmembers(
+@inline function minimalmembers(
     l::L,
     t::T
 ) where {

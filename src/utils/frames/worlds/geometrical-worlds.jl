@@ -44,6 +44,7 @@ end
 
 # Base.size(w::Point) = (1,) # TODO maybe not
 Base.length(w::Point) = 1
+Base.size(::Point) = ()
 
 inlinedisplay(w::Point) = "❮$(join(w.xyz, ","))❯"
 
@@ -134,6 +135,7 @@ end
 
 # Base.size(w::Interval) = (Base.length(w),)
 Base.length(w::Interval) = (w.y - w.x)
+Base.size(w::Interval) = (Base.length(w),)
 
 inlinedisplay(w::Interval) = "($(w.x)−$(w.y))"
 
@@ -191,8 +193,8 @@ struct Interval2D{T<:Real} <: GeometricalWorld
     Interval2D(x::Tuple{T,T}, y::Tuple{T,T}) where {T} = Interval2D{T}(x,y)
 end
 
-# Base.size(w::Interval2D) = (Base.length(w.x), Base.length(w.y))
-Base.length(w::Interval2D) = prod(Base.length(w.x), Base.length(w.y))
+Base.length(w::Interval2D) = Base.length(w.x) * Base.length(w.y)
+Base.size(w::Interval2D) = (Base.length(w.x), Base.length(w.y))
 
 inlinedisplay(w::Interval2D) = "($(w.x)×$(w.y))"
 
@@ -219,6 +221,7 @@ end
 innerworld(w::RelativeGeometricalWorld) = w.w
 @forward RelativeGeometricalWorld.w (
     Base.length,
+    Base.size,
     inlinedisplay,
     goeswithdim,
     nparameters,
