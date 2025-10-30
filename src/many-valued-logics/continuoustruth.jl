@@ -13,7 +13,7 @@ struct ContinuousTruth <: Truth
     value::Float64
 
     function ContinuousTruth(value::Float64)
-        if value > 1 || value < 0 error("truth value has to be between 0 and 1") end
+        @boundscheck if value > 1 || value < 0 error("truth value has to be between 0 and 1") end
         return new(value)
     end
 
@@ -22,8 +22,8 @@ struct ContinuousTruth <: Truth
     end
 end
 
-@inline _istop(t::Float64) = t == Float64(1)
-@inline _isbot(t::Float64) = t == Float64(0)
+@inline _istop(t::Float64) = isone(t)
+@inline _isbot(t::Float64) = iszero(t)
 @inline istop(t::ContinuousTruth) = _istop(t.value)
 @inline isbot(t::ContinuousTruth) = _isbot(t.value)
 

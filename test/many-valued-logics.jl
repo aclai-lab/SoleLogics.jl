@@ -27,11 +27,14 @@ join = BinaryOperation{2}(jointruthtable)
 
 l = ContinuousTruth(0.2)
 r = ContinuousTruth(0.7)
+
+@test_throws ErrorException l = ContinuousBinaryOperation(string)
+
 godel_meet = ContinuousBinaryOperation(min)
 
 @test arity(godel_meet) == 2
 
-@test godel_meet(l, r) == min(l.value, r.value)
+@test isequal(godel_meet(l, r).value, min(l.value, r.value))
 
 ################################################################################
 #### Finite truth ##############################################################

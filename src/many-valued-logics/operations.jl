@@ -115,29 +115,36 @@ real numbers rather than discrete enumerations.
 
 See also [`Operation`](@ref), [`arity`](@ref).
 """
-struct ContinuousBinaryOperation <: AbstractBinaryOperation 
-    func::FunctionWrapper{Float64, Tuple{Float64, Float64}} # Not sure if a FunctionWrapper is the most efficient way to do this
+struct ContinuousBinaryOperation{F<:Function} <: AbstractBinaryOperation 
+    func::F
+    
+    function ContinuousBinaryOperation(f::F) where {F<:Function}
+        if !hasmethod(f, Tuple{Float64, Float64}) 
+            error("MethodError: no method matching $(f)(::Float64, ::Float64)") 
+        elseif !(Float64 in Base.return_types(f, Tuple{Float64, Float64}))
+            error("MethodError: a method matching $(f)(::Float64, ::Float64) exists but it has the wrong return type")
+        end
+        return new{F}(f)
+    end
 end
 
-# How should i print this?
-Base.show(io::IO, o::ContinuousBinaryOperation) = print(io, o.func.objT)
+Base.show(io::IO, o::ContinuousBinaryOperation) = print(io, o.func)
 
 arity(o::ContinuousBinaryOperation) = 2
 
-# Not sure if there's any need of having these definitions for generic Float64's
 
-@inline function (o::ContinuousBinaryOperation)(t1::Float64, t2::Float64)
-    return ContinuousTruth(o.func(t1, t2))
+@inline function (o::ContinuousBinaryOperation)(t1::ContinuousTruth, t2::ContinuousTruth)
+    return ContinuousTruth(o.func(t1.value, t2.value))
 end
 
-@inline function (o::ContinuousBinaryOperation)(t1::T, t2::Float64) where {T<:Truth}
+@inline function (o::ContinuousBinaryOperation)(t1::T, t2::ContinuousTruth) where {T<:Truth}
     if !isa(t1, ContinuousTruth) t1 = convert(ContinuousTruth, t1)::ContinuousTruth end
-    return ContinuousTruth(o.func(t1.value, t2))
+    return ContinuousTruth(o.func(t1.value, t2.value))
 end
 
-@inline function (o::ContinuousBinaryOperation)(t1::Float64, t2::T) where {T<:Truth}
+@inline function (o::ContinuousBinaryOperation)(t1::ContinuousTruth, t2::T) where {T<:Truth}
     if !isa(t2, ContinuousTruth) t2 = convert(ContinuousTruth, t2)::ContinuousTruth end
-    return ContinuousTruth(o.func(t1, t2.value))
+    return ContinuousTruth(o.func(t1.value, t2.value))
 end
 
 @inline function (o::ContinuousBinaryOperation)(t1::T, t2::T) where {T<:Truth}
