@@ -34,7 +34,7 @@ end
 Base.show(io::IO, t::ContinuousTruth) = print(io, syntaxstring(t))
 
 function Base.convert(::Type{ContinuousTruth}, t::BooleanTruth)
-    return istop(t) ? ContinuousTruth(1) : ContinuousTruth(1)
+    return istop(t) ? ContinuousTruth(1) : ContinuousTruth(0)
 end
 
 Base.convert(::Type{ContinuousTruth}, value::Float64) = ContinuousTruth(value)
