@@ -1,0 +1,40 @@
+import ..SoleLogics: syntaxstring, istop, isbot
+import Base: convert
+
+"""
+    struct ContinuousTruth <: Truth
+        value::Float64
+    end
+
+Structure for representing truth values defined over the continuous 
+interval [0, 1]. 
+"""
+struct ContinuousTruth <: Truth 
+    value::Float64
+
+    function ContinuousTruth(value::Float64)
+        @boundscheck if value > 1 || value < 0 error("truth value has to be between 0 and 1") end
+        return new(value)
+    end
+
+    function ContinuousTruth(value::T) where {T <: Real}
+        return ContinuousTruth(convert(Float64, value))
+    end
+end
+
+@inline _istop(t::Float64) = isone(t)
+@inline _isbot(t::Float64) = iszero(t)
+@inline istop(t::ContinuousTruth) = _istop(t.value)
+@inline isbot(t::ContinuousTruth) = _isbot(t.value)
+
+function syntaxstring(t::ContinuousTruth; kwargs...)
+    return t.value
+end
+
+Base.show(io::IO, t::ContinuousTruth) = print(io, syntaxstring(t))
+
+function Base.convert(::Type{ContinuousTruth}, t::BooleanTruth)
+    return istop(t) ? ContinuousTruth(1) : ContinuousTruth(0)
+end
+
+Base.convert(::Type{ContinuousTruth}, value::Float64) = ContinuousTruth(value)

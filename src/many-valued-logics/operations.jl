@@ -1,4 +1,6 @@
 using StaticArrays
+using FunctionWrappers
+import FunctionWrappers: FunctionWrapper
 import SoleLogics: arity
 
 """
@@ -99,4 +101,56 @@ end
     if !isa(t1, FiniteTruth) t1 = convert(FiniteTruth, t1)::FiniteTruth end
     if !isa(t2, FiniteTruth) t2 = convert(FiniteTruth, t2)::FiniteTruth end
     return o.truthtable[t1.index, t2.index]
+end
+
+
+"""
+    struct ContinuousBinaryOperation <: AbstractBinaryOperation 
+        func::FunctionWrapper{Float64, Tuple{Float64, Float64}}
+    end
+
+A ContinuousBinaryOperation wraps a binary function on continuous truth values. 
+This type is intended for continuous-valued logics where truth values are represented as
+real numbers rather than discrete enumerations.
+
+See also [`Operation`](@ref), [`arity`](@ref).
+"""
+struct ContinuousBinaryOperation{F<:Function} <: AbstractBinaryOperation 
+    func::F
+    
+    function ContinuousBinaryOperation(f::F) where {F<:Function}
+        if !hasmethod(f, Tuple{Float64, Float64}) 
+            error("MethodError: no method matching $(f)(::Float64, ::Float64)") 
+        elseif !(Float64 in Base.return_types(f, Tuple{Float64, Float64}))
+            error("MethodError: a method matching $(f)(::Float64, ::Float64) exists but it has the wrong return type")
+        end
+        return new{F}(f)
+    end
+end
+
+Base.show(io::IO, o::ContinuousBinaryOperation) = print(io, o.func)
+
+arity(o::ContinuousBinaryOperation) = 2
+
+
+@inline function (o::ContinuousBinaryOperation)(t1::ContinuousTruth, t2::ContinuousTruth)
+    return ContinuousTruth(o.func(t1.value, t2.value))
+end
+
+@inline function (o::ContinuousBinaryOperation)(t1::T, t2::ContinuousTruth) where {T<:Truth}
+    if !isa(t1, ContinuousTruth) t1 = convert(ContinuousTruth, t1)::ContinuousTruth end
+    return ContinuousTruth(o.func(t1.value, t2.value))
+end
+
+@inline function (o::ContinuousBinaryOperation)(t1::ContinuousTruth, t2::T) where {T<:Truth}
+    if !isa(t2, ContinuousTruth) t2 = convert(ContinuousTruth, t2)::ContinuousTruth end
+    return ContinuousTruth(o.func(t1.value, t2.value))
+end
+
+@inline function (o::ContinuousBinaryOperation)(t1::T, t2::T) where {T<:Truth}
+    if !isa(t1, ContinuousTruth) && !isa(t2, ContinuousTruth)
+        t1 = convert(ContinuousTruth, t1)::ContinuousTruth
+        t2 = convert(ContinuousTruth, t2)::ContinuousTruth
+    end
+    return ContinuousTruth(o.func(t1.value, t2.value))
 end
