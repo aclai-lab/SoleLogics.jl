@@ -25,7 +25,7 @@ include("docstrings.jl")
 """
     abstract type Syntactical end
 
-Master abstract type for all syntactical objects (e.g., formulas, connectives).
+Abstract type for all syntactical objects (e.g., formulas, connectives).
 
 # Interface
 - `syntaxstring(s::Syntactical; kwargs...)::String`
@@ -40,8 +40,7 @@ function syntaxstring(s::Syntactical; kwargs...)::String
 end
 
 function Base.show(io::IO, φ::Syntactical)
-    # print(io, "$(typeof(φ))\nsyntaxstring: $(syntaxstring(φ))")
-    print(io, "$(typeof(φ)) with syntaxstring: $(syntaxstring(φ))")
+    print(io, "$(typeof(φ))\nsyntaxstring: $(syntaxstring(φ))")
 end
 
 ############################################################################################
@@ -124,7 +123,7 @@ abstract type Connective <: Syntactical end
 arity(c::Connective)::Integer = error("Please, provide method arity(::$(typeof(c))).")
 
 # Helpers
-isnullary(c) = arity(c) == 0
+isnullary(c) = iszero(arity(c))
 isunary(c)   = arity(c) == 1
 isbinary(c)  = arity(c) == 2
 isternary(c) = arity(c) == 3
@@ -220,60 +219,36 @@ function height(φ::Formula)::Int
 end
 
 """$(doc_tokopprop)"""
-function tokens(φ::Formula) # ::AbstractVector{<:SyntaxToken}
-    return tokens(tree(φ))
-end
+tokens(φ::Formula)::Vector = tokens(tree(φ))
 """$(doc_tokopprop)"""
-function atoms(φ::Formula) # ::AbstractVector{<:AbstractAtom}
-    return atoms(tree(φ))
-end
+atoms(φ::Formula)::Vector = atoms(tree(φ))
 """$(doc_tokopprop)"""
-function truths(φ::Formula) # ::AbstractVector{<:Truth}
-    return truths(tree(φ))
-end
+truths(φ::Formula)::Vector = truths(tree(φ))
 """$(doc_tokopprop)"""
-function leaves(φ::Formula) # ::AbstractVector{<:SyntaxLeaf}
-    return leaves(tree(φ))
-end
+leaves(φ::Formula)::Vector = leaves(tree(φ))
 """$(doc_tokopprop)"""
-function connectives(φ::Formula) # ::AbstractVector{<:Connective}
-    return connectives(tree(φ))
-end
+connectives(φ::Formula)::Vector = connectives(tree(φ))
 """$(doc_tokopprop)"""
-function operators(φ::Formula) # ::AbstractVector{<:Operator}
-    return operators(tree(φ))
-end
+operators(φ::Formula)::Vector = operators(tree(φ))
 """$(doc_tokopprop)"""
-function ntokens(φ::Formula)::Int
-    return ntokens(tree(φ))
-end
+ntokens(φ::Formula)::Int = ntokens(tree(φ))
 """$(doc_tokopprop)"""
-function natoms(φ::Formula)::Int
-    return natoms(tree(φ))
-end
+natoms(φ::Formula)::Int = natoms(tree(φ))
 """$(doc_tokopprop)"""
-function ntruths(φ::Formula)::Int
-    return ntruths(tree(φ));
-end
+ntruths(φ::Formula)::Int = ntruths(tree(φ));
 """$(doc_tokopprop)"""
-function nleaves(φ::Formula)::Int
-    return nleaves(tree(φ));
-end
+nleaves(φ::Formula)::Int = nleaves(tree(φ));
 """$(doc_tokopprop)"""
-function nconnectives(φ::Formula)::Int
-    return nconnectives(tree(φ));
-end
+nconnectives(φ::Formula)::Int = nconnectives(tree(φ));
 """$(doc_tokopprop)"""
-function noperators(φ::Formula)::Int
-    return noperators(tree(φ));
-end
+noperators(φ::Formula)::Int = noperators(tree(φ));
 
 
-function Base.isequal(φ1::Formula, φ2::Formula)
+@inline function Base.isequal(φ1::Formula, φ2::Formula)
     Base.isequal(tree(φ1), tree(φ2))
 end
 
-Base.hash(φ::Formula) = Base.hash(tree(φ))
+@inline Base.hash(φ::Formula) = Base.hash(tree(φ))
 
 function syntaxstring(φ::Formula; kwargs...)
     syntaxstring(tree(φ); kwargs...)
@@ -360,7 +335,7 @@ See also [`SyntaxLeaf`](@ref), [`SyntaxBranch`](@ref),
 """
 abstract type SyntaxTree <: SyntaxStructure end
 
-tree(φ::SyntaxTree) = φ
+@inline tree(φ::SyntaxTree) = φ
 
 """$(doc_syntaxtree_children)"""
 function children(φ::SyntaxTree)
@@ -372,60 +347,64 @@ function token(φ::SyntaxTree)
     return error("Please, provide method token(::$(typeof(φ))).")
 end
 
-arity(φ::SyntaxTree) = length(children(φ))
+@inline arity(φ::SyntaxTree) = length(children(φ))
 
-function height(φ::SyntaxTree)::Int
-    return length(children(φ)) == 0 ? 0 : 1 + maximum(height(c) for c in children(φ))
+@inline function height(φ::SyntaxTree)::Int
+    ch = children(φ)
+    return isempty(ch) ? 0 : 1 + maximum(height, ch)
 end
-function tokens(φ::SyntaxTree) # ::AbstractVector{<:SyntaxToken}
+@inline function tokens(φ::SyntaxTree)::Vector
     return SyntaxToken[vcat(tokens.(children(φ))...)..., token(φ)]
 end
-function atoms(φ::SyntaxTree) # ::AbstractVector{<:AbstractAtom}
-    a = token(φ) isa AbstractAtom ? [token(φ)] : []
+@inline function atoms(φ::SyntaxTree)::Vector
+    a = token(φ) isa AbstractAtom ? (token(φ),) : ()
     return Atom[vcat(atoms.(children(φ))...)..., a...]
 end
-function truths(φ::SyntaxTree) # ::AbstractVector{<:Truth}
-    t = token(φ) isa Truth ? [token(φ)] : []
+@inline function truths(φ::SyntaxTree)::Vector
+    t = token(φ) isa Truth ? (token(φ),) : ()
     return Truth[vcat(truths.(children(φ))...)..., t...]
 end
-function leaves(φ::SyntaxTree) # ::AbstractVector{<:SyntaxLeaf}
-    l = token(φ) isa SyntaxLeaf ? [token(φ)] : []
+@inline function leaves(φ::SyntaxTree)::Vector
+    l = token(φ) isa SyntaxLeaf ? (token(φ),) : ()
     return SyntaxLeaf[vcat(leaves.(children(φ))...)..., l...]
 end
-function connectives(φ::SyntaxTree) # ::AbstractVector{<:Connective}
-    c = token(φ) isa Connective ? [token(φ)] : []
+@inline function connectives(φ::SyntaxTree)::Vector
+    c = token(φ) isa Connective ? (token(φ),) : ()
     return Connective[vcat(connectives.(children(φ))...)..., c...]
 end
-function operators(φ::SyntaxTree) # ::AbstractVector{<:Operator}
-    c = token(φ) isa Operator ? [token(φ)] : []
+@inline function operators(φ::SyntaxTree)::Vector
+    c = token(φ) isa Operator ? (token(φ),) : ()
     return Operator[vcat(operators.(children(φ))...)..., c...]
 end
-function ntokens(φ::SyntaxTree)::Int
-    return length(children(φ)) == 0 ? 1 : 1 + sum(ntokens(c) for c in children(φ))
+@inline function ntokens(φ::SyntaxTree)::Int
+    ch = children(φ)
+    return isempty(ch) ? 1 : 1 + sum(ntokens, ch)
 end
-function natoms(φ::SyntaxTree)::Int
-    a = token(φ) isa AbstractAtom ? 1 : 0
-    return length(children(φ)) == 0 ? a : a + sum(natoms(c) for c in children(φ))
+@inline function natoms(φ::SyntaxTree)::Int
+    ch = children(φ)
+    return isempty(ch) ? Int(token(φ) isa AbstractAtom) : sum(natoms, ch)
 end
-function ntruths(φ::SyntaxTree)::Int
-    t = token(φ) isa Truth ? 1 : 0
-    return length(children(φ)) == 0 ? t : t + sum(ntruths(c) for c in children(φ))
+@inline function ntruths(φ::SyntaxTree)::Int
+    ch = children(φ)
+    return isempty(ch) ? Int(token(φ) isa Truth) : sum(ntruths, ch)
 end
-function nleaves(φ::SyntaxTree)::Int
-    op = token(φ) isa SyntaxLeaf ? 1 : 0
-    return length(children(φ)) == 0 ? op : op + sum(nleaves(c) for c in children(φ))
+@inline function nleaves(φ::SyntaxTree)::Int
+    ch = children(φ)
+    return isempty(ch) ? Int(token(φ) isa SyntaxLeaf ? 1 : 0) : sum(nleaves, ch)
 end
-function nconnectives(φ::SyntaxTree)::Int
+@inline function nconnectives(φ::SyntaxTree)::Int
     c = token(φ) isa Connective ? 1 : 0
-    return length(children(φ)) == 0 ? c : c + sum(nconnectives(c) for c in children(φ))
+    ch = children(φ)
+    return isempty(ch) ? c : c + sum(nconnectives, ch)
 end
-function noperators(φ::SyntaxTree)::Int
+@inline function noperators(φ::SyntaxTree)::Int
     op = token(φ) isa Operator ? 1 : 0
-    return length(children(φ)) == 0 ? op : op + sum(noperators(c) for c in children(φ))
+    ch = children(φ)
+    return isempty(ch) ? op : op + sum(noperators, ch)
 end
 
-function Base.isequal(a::SyntaxTree, b::SyntaxTree)
-    if arity(a) == 0 && arity(b) == 0
+@inline function Base.isequal(a::SyntaxTree, b::SyntaxTree)
+    if iszero(arity(a)) && iszero(arity(b))
         return a == b
     else
         return (Base.isequal(token(a), token(b)) &&
@@ -433,7 +412,7 @@ function Base.isequal(a::SyntaxTree, b::SyntaxTree)
     end
 end
 
-Base.hash(φ::SyntaxTree) = Base.hash(token(φ), Base.hash(children(φ)))
+@inline Base.hash(φ::SyntaxTree) = Base.hash(token(φ), Base.hash(children(φ)))
 
 # Helpers
 tokentype(φ::SyntaxTree) = typeof(token(φ))
@@ -444,19 +423,13 @@ leavestype(φ::SyntaxTree) = typeintersect(SyntaxLeaf, tokenstype(φ))
 connectivestype(φ::SyntaxTree) = typeintersect(Connective, tokenstype(φ))
 operatorstype(φ::SyntaxTree) = typeintersect(Operator, tokenstype(φ))
 
-function composeformulas(c::Connective, φs::NTuple{N,SyntaxTree}) where {N}
+@inline function composeformulas(c::Connective, φs::NTuple{N,SyntaxTree}) where {N}
     return SyntaxBranch(c, φs)
 end
 
 
 function syntaxstring(φ::SyntaxTree; kwargs...)
     return error("Please, provide method syntaxstring(::$(typeof(φ)); kwargs...::$(typeof(kwargs))).")
-end
-
-function Base.show(io::IO, φ::SyntaxTree)
-    # print(io, "$(typeof(φ))($(syntaxstring(φ)))")
-    print(io, "$(typeof(φ)): $(syntaxstring(φ))")
-    # print(io, "$(syntaxstring(φ))")
 end
 
 # Syntax tree, the universal syntax structure representation,
@@ -503,8 +476,8 @@ See also [`SyntaxStructure`](@ref),  [`arity`](@ref), [`SyntaxBranch`](@ref).
 """
 abstract type SyntaxLeaf <: SyntaxTree end
 
-children(::SyntaxLeaf) = ()
-token(φ::SyntaxLeaf) = φ
+@inline children(::SyntaxLeaf) = ()
+@inline token(φ::SyntaxLeaf) = φ
 
 ############################################################################################
 #### SyntaxToken ###########################################################################
@@ -607,7 +580,7 @@ function syntaxstring(
         parenthesize = begin
             if !remove_redundant_parentheses
                 true
-            elseif arity(chtok) == 0
+            elseif iszero(arity(chtok))
                 false
             elseif arity(chtok) == 2 # My child is infix
                 tprec = precedence(ptok)
@@ -639,15 +612,6 @@ function syntaxstring(
                     # # 1st condition, before "||" -> "◊¬p ∧ ¬q" instead of "(◊¬p) ∧ (¬q)"
                     # # 2nd condition, after  "||" -> "(q → p) → ¬q" instead of "q → p → ¬q" <- Not sure: wrong?
                     # # 3nd condition
-                    # @show !(tprec <= chprec)
-                    # @show ((chprec-tprec) <= parenthesization_level)
-                    # @show tprec <= chprec
-                    # @show chprec-tprec
-                    # @show chprec-tprec <= parenthesization_level
-                    # @show iscommutative(ptok)
-                    # @show ptok, chtok, iscommutative(ptok), tprec, chprec
-                    # @show ((!iscommutative(ptok) || ptok != chtok) && (tprec > chprec))
-                    # @show (!iscommutative(ptok) && tprec <= chprec)
 
                     # if (
                     #     (tprec > chprec  && (!iscommutative(ptok) || ptok != chtok)) || # 1
@@ -669,7 +633,7 @@ function syntaxstring(
     tok = token(φ)
     tokstr = syntaxstring(tok; ch_kwargs...)
 
-    if arity(tok) == 0
+    if iszero(arity(tok))
         # Leaf nodes parenthesization is parent's respsonsability
         return tokstr
     elseif arity(tok) == 2 && !function_notation
@@ -683,18 +647,13 @@ function syntaxstring(
         # TODO this is very dirty...
         ch = token(children(φ)[1])
         charity = arity(ch)
-        # @show !function_notation
-        # @show arity(tok) == 1
-        # @show (charity == 1 || (ch isa AbstractAtom && !parenthesize_atoms))
-        # @show (charity == 1 || (ch isa AbstractAtom))
         if !function_notation && arity(tok) == 1 && (charity == 1 || (ch isa AbstractAtom))
             # When not in function notation, print "¬p" instead of "¬(p)";
             # note that "◊((p ∧ q) → s)" must not be simplified as "◊(p ∧ q) → s".
-            # @show "NO"
             lpar, rpar = "", ""
         end
 
-        if length(children(φ)) == 0
+        if isempty(children(φ))
             tokstr
         else
             tokstr * "$(lpar)" *
@@ -705,7 +664,6 @@ function syntaxstring(
                     else
                         _ch_kwargs = ch_kwargs
                     end
-                    # @show _ch_kwargs
                     syntaxstring(c; ch_kwargs...)
                 end for c in children(φ)], ", ") * "$(rpar)"
         end
@@ -713,15 +671,15 @@ function syntaxstring(
 end
 
 """$(doc_formula_basein)"""
-function Base.in(tok::SyntaxToken, φ::Formula)::Bool
+@inline function Base.in(tok::SyntaxToken, φ::Formula)::Bool
     return Base.in(tok, tree(φ))
 end
 
-function Base.in(tok::SyntaxToken, tree::AbstractSyntaxBranch)::Bool
+@inline function Base.in(tok::SyntaxToken, tree::AbstractSyntaxBranch)::Bool
     return tok == token(tree) || any([Base.in(tok, c) for c in children(tree)])
 end
 
-function Base.in(tok::SyntaxToken, φ::SyntaxLeaf)::Bool
+@inline function Base.in(tok::SyntaxToken, φ::SyntaxLeaf)::Bool
     return tok == φ
 end
 
@@ -906,7 +864,6 @@ function (op::Operator)(φs::Formula...)
     return op(φs)
 end
 
-# function (op::Operator)(φs::NTuple{N, F}) where {N,F<:Formula}
 function (op::Operator)(φs::NTuple{N,Formula}) where {N}
     if arity(op) == 2 && length(φs) > arity(op)
         if associativity(op) == :right
