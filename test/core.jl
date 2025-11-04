@@ -87,7 +87,6 @@ union_alphabet_int = @test_nowarn UnionAlphabet([alphabet_int, alphabet2_int])
 
 t1_int = p1
 t100_int = p100
-@test tokenstype(t1_int) == tokentype(t1_int)
 @test_throws MethodError SyntaxBranch(3, ())
 
 @test p1 in t1_int
@@ -100,10 +99,8 @@ t100_int = p100
 t1n_int = @test_nowarn SyntaxBranch(¬, (t1_int,))
 @test p1 in t1n_int
 @test (¬) in t1n_int
-@test tokenstype(t1n_int) == Union{typeof(¬),tokentype(t1_int)}
 @test_nowarn SyntaxBranch(∧, (t1_int, t1n_int))
 t2_int = @test_nowarn SyntaxBranch(∧, (t1_int, t1_int))
-@test tokenstype(SyntaxBranch(∧, (t2_int, t1n_int))) == Union{typeof(∧),tokenstype(t1n_int)}
 
 grammar_int = SoleLogics.CompleteFlatGrammar(alphabet_int, SoleLogics.BASE_CONNECTIVES)
 
@@ -140,9 +137,9 @@ t2_int = @test_nowarn ¬(t1_int)
 @test_nowarn p1 ∨ ⊤
 @test_nowarn ⊥ ∨ p1 ∨ ⊤
 
-@test atomstype(p1 ∨ p1_number) != Atom{Int}
-@test atomstype(p1 ∨ p1_number_float) == Union{Atom{Int}, Atom{Number}}
-@test atomstype(p1 ∨ p1_float) == Union{Atom{Int}, Atom{Float64}}
+@test !(all(isa(atoms(p1 ∨ p1_number), Atom{Int})))
+@test all(isa.(atoms(p1 ∨ p1_number_float), Union{Atom{Int}, Atom{Number}}))
+@test all(isa.(atoms(p1 ∨ p1_float), Union{Atom{Int}, Atom{Float64}}))
 @test atoms(p1 ∨ p100) == [p1, p100]
 
 @test_nowarn p1 ∨ t2_int

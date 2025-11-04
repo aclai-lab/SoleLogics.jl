@@ -341,12 +341,6 @@ and (should) implement `AbstractTrees` interface.
 - `nleaves(φ::SyntaxTree)::Int`
 - `nconnectives(φ::SyntaxTree)::Int`
 - `noperators(φ::SyntaxTree)::Int`
-- `tokenstype(φ::SyntaxTree)`
-- `atomstype(φ::SyntaxTree)`
-- `truthstype(φ::SyntaxTree)`
-- `leavestype(φ::SyntaxTree)`
-- `connectivestype(φ::SyntaxTree)`
-- `operatorstype(φ::SyntaxTree)`
 - `composeformulas(c::Connective, φs::NTuple{N,SyntaxTree})`
 
 See also [`SyntaxLeaf`](@ref), [`SyntaxBranch`](@ref),
@@ -432,19 +426,9 @@ end
 
 @inline Base.hash(φ::SyntaxTree) = Base.hash(token(φ), Base.hash(children(φ)))
 
-# Helpers
-tokentype(φ::SyntaxTree) = typeof(token(φ))
-tokenstype(φ::SyntaxTree) = Union{tokentype(φ), tokenstype.(children(φ))...}
-atomstype(φ::SyntaxTree) = typeintersect(AbstractAtom, tokenstype(φ))
-truthstype(φ::SyntaxTree) = typeintersect(Truth, tokenstype(φ))
-leavestype(φ::SyntaxTree) = typeintersect(SyntaxLeaf, tokenstype(φ))
-connectivestype(φ::SyntaxTree) = typeintersect(Connective, tokenstype(φ))
-operatorstype(φ::SyntaxTree) = typeintersect(Operator, tokenstype(φ))
-
 function composeformulas(c::Connective, φs::NTuple{N,SyntaxTree}) where {N}
     return SyntaxBranch(c, φs)
 end
-
 
 function syntaxstring(φ::SyntaxTree; kwargs...)
     return error("Please, provide method syntaxstring(::$(typeof(φ)); kwargs...::$(typeof(kwargs))).")
