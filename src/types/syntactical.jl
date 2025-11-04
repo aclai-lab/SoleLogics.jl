@@ -173,12 +173,12 @@ It can be parsed from its [`syntaxstring`](@ref) representation via [`parseformu
 - `Base.in(tok::SyntaxToken, φ::Formula)::Bool`
 
 - `height(φ::Formula)::Int`
-- `tokens(φ::Formula)::AbstractVector{<:SyntaxToken}`
-- `atoms(φ::Formula)::AbstractVector{<:AbstractAtom}`
-- `truths(φ::Formula)::AbstractVector{<:Truth}`
-- `leaves(φ::Formula)::AbstractVector{<:SyntaxLeaf}`
-- `connectives(φ::Formula)::AbstractVector{<:Connective}`
-- `operators(φ::Formula)::AbstractVector{<:Operator}`
+- `tokens(φ::Formula)::Vector{SyntaxToken}`
+- `atoms(φ::Formula)::Vector{Atom}`
+- `truths(φ::Formula)::Vector{Truth}`
+- `leaves(φ::Formula)::Vector{SyntaxLeaf}`
+- `connectives(φ::Formula)::Vector{Connective}`
+- `operators(φ::Formula)::Vector{Operator}`
 - `ntokens(φ::Formula)::Int`
 - `natoms(φ::Formula)::Int`
 - `ntruths(φ::Formula)::Int`
@@ -218,29 +218,47 @@ function height(φ::Formula)::Int
     return height(tree(φ))
 end
 
-"""$(doc_tokopprop)"""
+"""
+    tokens(φ::Formula)::Vector{SyntaxToken}
+    atoms(φ::Formula)::Vector{Atom}
+    truths(φ::Formula)::Vector{Truth}
+    leaves(φ::Formula)::Vector{SyntaxLeaf}
+    connectives(φ::Formula)::Vector{Connective}
+    operators(φ::Formula)::Vector{Operator}
+    ntokens(φ::Formula)::Integer
+    natoms(φ::Formula)::Integer
+    ntruths(φ::Formula)::Integer
+    nleaves(φ::Formula)::Integer
+    nconnectives(φ::Formula)::Integer
+    noperators(φ::Formula)::Integer
+
+Return the list/number of (non-unique) `SyntaxToken`s, `Atom`s, etc...
+appearing in a formula.
+
+See also [`Formula`](@ref), [`SyntaxToken`](@ref).
+"""
 tokens(φ::Formula)::Vector = tokens(tree(φ))
-"""$(doc_tokopprop)"""
+"See docstring for [`tokens`](@ref)."
 atoms(φ::Formula)::Vector = atoms(tree(φ))
-"""$(doc_tokopprop)"""
+"See docstring for [`tokens`](@ref)."
 truths(φ::Formula)::Vector = truths(tree(φ))
-"""$(doc_tokopprop)"""
+"See docstring for [`tokens`](@ref)."
 leaves(φ::Formula)::Vector = leaves(tree(φ))
-"""$(doc_tokopprop)"""
+"See docstring for [`tokens`](@ref)."
 connectives(φ::Formula)::Vector = connectives(tree(φ))
-"""$(doc_tokopprop)"""
+"See docstring for [`tokens`](@ref)."
 operators(φ::Formula)::Vector = operators(tree(φ))
-"""$(doc_tokopprop)"""
+"See docstring for [`tokens`](@ref)."
 ntokens(φ::Formula)::Int = ntokens(tree(φ))
-"""$(doc_tokopprop)"""
+"See docstring for [`tokens`](@ref)."
 natoms(φ::Formula)::Int = natoms(tree(φ))
-"""$(doc_tokopprop)"""
+"See docstring for [`tokens`](@ref)."
 ntruths(φ::Formula)::Int = ntruths(tree(φ));
-"""$(doc_tokopprop)"""
+"See docstring for [`tokens`](@ref)."
 nleaves(φ::Formula)::Int = nleaves(tree(φ));
-"""$(doc_tokopprop)"""
+"See docstring for [`tokens`](@ref)."
 nconnectives(φ::Formula)::Int = nconnectives(tree(φ));
-"""$(doc_tokopprop)"""
+"See docstring for [`tokens`](@ref)."
 noperators(φ::Formula)::Int = noperators(tree(φ));
 
 
@@ -285,7 +303,8 @@ end
 #### SyntaxTree ############################################################################
 ############################################################################################
 
-import AbstractTrees: children
+using AbstractTrees
+import AbstractTrees: children, printnode
 
 """
     abstract type SyntaxTree <: SyntaxStructure end
@@ -307,15 +326,15 @@ and (should) implement `AbstractTrees` interface.
 - `tokentype(φ::SyntaxTree)`
 - `arity(φ::SyntaxTree)::Int`
 
-# Other utility functions (requiring a walk of the tree)
+# Other utility functions requiring a tree walk
 - `Base.in(tok::SyntaxToken, φ::SyntaxTree)::Bool`
 - `height(φ::SyntaxTree)::Int`
-- `tokens(φ::SyntaxTree)::AbstractVector{<:SyntaxToken}`
-- `atoms(φ::SyntaxTree)::AbstractVector{<:AbstractAtom}`
-- `truths(φ::SyntaxTree)::AbstractVector{<:Truth}`
-- `leaves(φ::SyntaxTree)::AbstractVector{<:SyntaxLeaf}`
-- `connectives(φ::SyntaxTree)::AbstractVector{<:Connective}`
-- `operators(φ::SyntaxTree)::AbstractVector{<:Operator}`
+- `tokens(φ::SyntaxTree)::Vector{SyntaxToken}`
+- `atoms(φ::SyntaxTree)::Vector{Atom}`
+- `truths(φ::SyntaxTree)::Vector{Truth}`
+- `leaves(φ::SyntaxTree)::Vector{SyntaxLeaf}`
+- `connectives(φ::SyntaxTree)::Vector{Connective}`
+- `operators(φ::SyntaxTree)::Vector{Operator}`
 - `ntokens(φ::SyntaxTree)::Int`
 - `natoms(φ::SyntaxTree)::Int`
 - `ntruths(φ::SyntaxTree)::Int`
@@ -342,6 +361,9 @@ function children(φ::SyntaxTree)
     return error("Please, provide method children(::$(typeof(φ))).")
 end
 
+AbstractTrees.printnode(io, φ::SyntaxTree) = print(io, syntaxstring(φ))
+
+
 """$(doc_syntaxtree_token)"""
 function token(φ::SyntaxTree)
     return error("Please, provide method token(::$(typeof(φ))).")
@@ -355,17 +377,17 @@ function height(φ::SyntaxTree)::Int
 end
 
 function gather_tokens!(φ::SyntaxTree, out::Vector, pred::Function)::Vector
-    foreach(((x, y),) -> gather_tokens!(x, y, pred), zip(children(φ), Ref(out)))
+    foreach(x -> gather_tokens!(x, out, pred), children(φ))
     pred(token(φ)) && push!(out, token(φ))
     return out
 end
 
 function gather_tokens!(φ::SyntaxTree, out::Vector)::Vector
-    foreach(((x, y),) -> gather_tokens!(x, y), zip(children(φ), Ref(out)))
+    foreach(x -> gather_tokens!(x, out), children(φ))
     push!(out, token(φ))
     return out
 end
-tokens(φ::SyntaxTree)::Vector = gather_tokens!(φ, SyntaxToken[], token)
+tokens(φ::SyntaxTree)::Vector = gather_tokens!(φ, SyntaxToken[])
 atoms(φ::SyntaxTree)::Vector = gather_tokens!(φ, Atom[], x -> x isa AbstractAtom)
 truths(φ::SyntaxTree)::Vector = gather_tokens!(φ, Truth[], x -> x isa Truth)
 leaves(φ::SyntaxTree)::Vector = gather_tokens!(φ, SyntaxLeaf[], x -> x isa SyntaxLeaf)
@@ -412,7 +434,7 @@ end
 
 # Helpers
 tokentype(φ::SyntaxTree) = typeof(token(φ))
-tokenstype(φ::SyntaxTree) = Union{tokentype(φ),tokenstype.(children(φ))...}
+tokenstype(φ::SyntaxTree) = Union{tokentype(φ), tokenstype.(children(φ))...}
 atomstype(φ::SyntaxTree) = typeintersect(AbstractAtom, tokenstype(φ))
 truthstype(φ::SyntaxTree) = typeintersect(Truth, tokenstype(φ))
 leavestype(φ::SyntaxTree) = typeintersect(SyntaxLeaf, tokenstype(φ))
