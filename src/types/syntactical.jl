@@ -202,7 +202,6 @@ function composeformulas(c::Connective, φs::NTuple{N,F})::F where {N,F<:Formula
 end
 
 # Helper (?)
-# Note: don't type the output as F
 function composeformulas(c::Connective, φs::Vararg{Formula,N}) where {N}
     return composeformulas(c, φs)
 end
@@ -381,12 +380,19 @@ function gather_tokens!(φ::SyntaxTree, out::Vector)::Vector
     push!(out, token(φ))
     return out
 end
-tokens(φ::SyntaxTree)::Vector = gather_tokens!(φ, SyntaxToken[])
-atoms(φ::SyntaxTree)::Vector = gather_tokens!(φ, Atom[], x -> x isa AbstractAtom)
-truths(φ::SyntaxTree)::Vector = gather_tokens!(φ, Truth[], x -> x isa Truth)
-leaves(φ::SyntaxTree)::Vector = gather_tokens!(φ, SyntaxLeaf[], x -> x isa SyntaxLeaf)
-connectives(φ::SyntaxTree)::Vector = gather_tokens!(φ, Connective[], x -> x isa Connective)
-operators(φ::SyntaxTree)::Vector = gather_tokens!(φ, Operator[], x -> x isa Operator)
+tokens!(v, φ::SyntaxTree)::Vector = gather_tokens!(φ, v)
+atoms!(v, φ::SyntaxTree)::Vector = gather_tokens!(φ, v, x -> x isa AbstractAtom)
+truths!(v, φ::SyntaxTree)::Vector = gather_tokens!(φ, v, x -> x isa Truth)
+leaves!(v, φ::SyntaxTree)::Vector = gather_tokens!(φ, v, x -> x isa SyntaxLeaf)
+connectives!(v, φ::SyntaxTree)::Vector = gather_tokens!(φ, v, x -> x isa Connective)
+operators!(v, φ::SyntaxTree)::Vector = gather_tokens!(φ, v, x -> x isa Operator)
+
+tokens(φ::SyntaxTree)::Vector = tokens!(SyntaxToken[], φ)
+atoms(φ::SyntaxTree)::Vector = atoms!(Atom[], φ)
+truths(φ::SyntaxTree)::Vector = truths!(Truth[], φ)
+leaves(φ::SyntaxTree)::Vector = leaves!(SyntaxLeaf[], φ)
+connectives(φ::SyntaxTree)::Vector = connectives!(Connective[], φ)
+operators(φ::SyntaxTree)::Vector = operators!(Operator[], φ)
 
 function ntokens(φ::SyntaxTree)::Int
     ch = children(φ)

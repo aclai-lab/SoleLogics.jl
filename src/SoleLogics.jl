@@ -27,12 +27,15 @@ export arity, valuetype,
         atomstype, operatorstype, truthtype,
         associativity, precedence
 
+
 export token, children, formulas
 
-export tokens, ntokens, atoms, natoms, truths, ntruths, leaves, nleaves,
-        connectives, nconnectives, operators, noperators, height
+export height
+export tokens!, atoms!, truths!, leaves!, connectives!, operators!
+export tokens, atoms, truths, leaves, connectives, operators
+export ntokens, natoms, ntruths, nleaves, nconnectives, noperators
 
-        export composeformulas
+export composeformulas
 
 include("types/syntactical.jl")
 
