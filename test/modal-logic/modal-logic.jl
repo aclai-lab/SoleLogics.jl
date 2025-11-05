@@ -176,7 +176,7 @@ kstruct3 = KripkeStructure(kframe3, valuation3)
 ##### more tests for double check and code coverage ########################################
 
 @test_nowarn mygradedconnective = ConstrainedConnective{:🌞, 2}(==)
-@test_nowarn ConstrainedConnective{:🌞}(==, 2)
+@test_nowarn ConstrainedConnective{:🌞}(2, ==)
 
 @test SoleLogics.name(DIAMOND2) == :◊
 @test condition(DIAMOND2) == >=
