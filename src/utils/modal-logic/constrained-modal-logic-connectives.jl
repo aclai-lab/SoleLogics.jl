@@ -40,7 +40,7 @@ See also [`Connective`](@ref).
 name(::ConstrainedConnective{S,N}) where {S,N} = S
 
 """
-    condition(gc::ConstrainedConnective) = gc.condition
+    condition(cc::ConstrainedConnective) = cc.condition
 
 Return a comparator wrapped within a [`ConstrainedConnective`](@ref).
 It is a special function intended to compare the set of neighbors of a specific world within
@@ -48,27 +48,27 @@ It is a special function intended to compare the set of neighbors of a specific 
 
 See also [`Connective`](@ref), [`DIAMOND`](@ref), [`DIAMOND2`](@ref), [`threshold`](@ref).
 """
-condition(gc::ConstrainedConnective) = gc.condition
+condition(cc::ConstrainedConnective) = cc.condition
 
 """
-    condition(gc::ConstrainedConnective, val::Int)
+    condition(cc::ConstrainedConnective, val::Int)
 
-Shortcut for `condition(gc)(val, threshold(gc))`.
+Shortcut for `condition(cc)(val, threshold(cc))`.
 
-See also [`condition(gc::ConstrainedConnective)`](@ref), [`ConstrainedConnective`](@ref).
+See also [`condition(cc::ConstrainedConnective)`](@ref), [`ConstrainedConnective`](@ref).
 """
-condition(gc::ConstrainedConnective, val::Int) = condition(gc)(val, threshold(gc))
+condition(cc::ConstrainedConnective, val::Int) = condition(cc)(val, threshold(cc))
 
 
 """
-    threshold(gc::ConstrainedConnective) = gc.threshold
+    threshold(cc::ConstrainedConnective) = cc.threshold
 
-Local argument of [`condition(gc::ConstrainedConnective)`](@ref).
+Local argument of [`condition(cc::ConstrainedConnective)`](@ref).
 """
 threshold(::ConstrainedConnective{S,N}) where {S,N} = N
 
-syntaxstring(gc::ConstrainedConnective; kwargs...) = (name(gc), threshold(gc)) |> join
-Base.show(io::IO, gc::ConstrainedConnective) = print(io, "$(syntaxstring(gc))")
+syntaxstring(cc::ConstrainedConnective; kwargs...) = (name(cc), threshold(cc)) |> join
+Base.show(io::IO, cc::ConstrainedConnective) = print(io, "$(syntaxstring(cc))")
 
 
 """
