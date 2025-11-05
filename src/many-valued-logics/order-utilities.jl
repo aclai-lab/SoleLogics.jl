@@ -36,6 +36,20 @@ See also [`precedes`](@ref), [`succeedes`](@ref), [`succeedeq`](@ref).
     end
 end
 
+# TODO: write docs
+@inline function precedeq(
+    l::FuzzyLogic,
+    t1::T1,
+    t2::T2
+) where {
+    T1<:Truth,
+    T2<:Truth
+}
+    if !isa(t1, ContinuousTruth) t1 = convert(ContinuousTruth, t1)::ContinuousTruth end
+    if !isa(t2, ContinuousTruth) t2 = convert(ContinuousTruth, t2)::ContinuousTruth end
+    return t1 <= t2 ? true : false
+end
+
 """
     function precedes(
         l::L,
@@ -68,6 +82,20 @@ See also [`precedeq`](@ref), [`succeedes`](@ref), [`succeedeq`](@ref).
     !islattice(l) && error("Cannot convert object of type $(typeof(l)) to an object of " *
         "type FiniteLattice.")
     return t1 != t2 && precedeq(l, t1, t2)
+end
+
+# TODO: write docs
+@inline function precedes(
+    l::FuzzyLogic,
+    t1::T1,
+    t2::T2
+) where {
+    T1<:Truth,
+    T2<:Truth
+}
+    if !isa(t1, ContinuousTruth) t1 = convert(ContinuousTruth, t1)::ContinuousTruth end
+    if !isa(t2, ContinuousTruth) t2 = convert(ContinuousTruth, t2)::ContinuousTruth end
+    return t1 < t2 ? true : false
 end
 
 """
@@ -104,6 +132,20 @@ See also [`precedes`](@ref), [`precedeq`](@ref), [`succeedes`](@ref).
     return precedeq(l, t2, t1)
 end
 
+# TODO: write docs
+@inline function succeedeq(
+    l::FuzzyLogic,
+    t1::T1,
+    t2::T2
+) where {
+    T1<:Truth,
+    T2<:Truth
+}
+    if !isa(t1, ContinuousTruth) t1 = convert(ContinuousTruth, t1)::ContinuousTruth end
+    if !isa(t2, ContinuousTruth) t2 = convert(ContinuousTruth, t2)::ContinuousTruth end
+    return t1 >= t2 ? true : false
+end
+
 """
     function succeedes(
         l::L,
@@ -138,6 +180,20 @@ See also [`precedes`](@ref), [`precedeq`](@ref), [`succeedeq`](@ref).
     return precedes(l, t2, t1)
 end
 
+# TODO: write docs
+@inline function succeedes(
+    l::FuzzyLogic,
+    t1::T1,
+    t2::T2
+) where {
+    T1<:Truth,
+    T2<:Truth
+}
+    if !isa(t1, ContinuousTruth) t1 = convert(ContinuousTruth, t1)::ContinuousTruth end
+    if !isa(t2, ContinuousTruth) t2 = convert(ContinuousTruth, t2)::ContinuousTruth end
+    return t1 > t2 ? true : false
+end
+
 """
     function lesservalues(
         l::L,
@@ -163,6 +219,8 @@ See also [`precedes`](@ref), [`precedeq`](@ref).
     if !isa(t, FiniteTruth) t = convert(FiniteTruth, t)::FiniteTruth end
     return filter(ti->precedes(l, ti, t), getdomain(l))
 end
+
+# Should i define dispatches also for these last functions?
 
 """
     function maximalmembers(

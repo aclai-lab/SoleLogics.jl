@@ -1,6 +1,4 @@
 using StaticArrays
-using FunctionWrappers
-import FunctionWrappers: FunctionWrapper
 import SoleLogics: arity
 
 """
@@ -154,3 +152,10 @@ end
     end
     return ContinuousTruth(o.func(t1.value, t2.value))
 end
+
+# Standard t-norms
+const GodelTNorm = ContinuousBinaryOperation(min)
+
+const LukasiewiczTNorm = ContinuousBinaryOperation((a, b) -> max(0.0, a + b - 1.0))
+
+const ProductTNorm = ContinuousBinaryOperation(*)
