@@ -24,9 +24,9 @@ struct ConstrainedConnective{S,N,F} <: Connective
     ConstrainedConnective{S,N}(condition::F) where {S,N,F<:Function} = new{S,N,F}(condition)
 
     ConstrainedConnective{S}(
-        condition::Function,
-        threshold::Int
-    ) where {S} = new{S,threshold,typeof(condition)}(condition)
+        threshold::Int,
+        condition::F
+    ) where {S,F<:Function} = new{S,threshold,F}(condition)
 
 end
 
