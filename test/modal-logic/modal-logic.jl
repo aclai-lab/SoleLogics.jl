@@ -210,3 +210,68 @@ kstruct3 = KripkeStructure(kframe3, valuation3)
 @test dual(DIAMOND3) == BOX3
 @test dual(BOX2) == DIAMOND2
 @test dual(BOX3) == DIAMOND3
+
+
+##### Benchmarking check: ConstrainedConnectives vs NamedConnectives #######################
+###
+### using BenchmarkTools
+###
+### # little parameterization for random formulas generation
+### nformulas = 1000
+###
+### _rng = Xoshiro(3278)
+### _height = 5
+### _letters = 'a':1:'z' |> collect
+### _alphabet = ExplicitAlphabet(_letters)
+###
+### base_connectives = [NEGATION, CONJUNCTION, IMPLICATION]
+### named_connectives = [DIAMOND, BOX]
+### constrained_connectives = [DIAMOND2, DIAMOND3, BOX2, BOX3]
+###
+###
+### _generate_formulas = c -> begin
+### randformula(
+###     _rng,
+###     _height,
+###     _alphabet,
+###     vcat(base_connectives, c),
+###     mode=:exactheight)
+### end
+###
+### # random formulas
+### named_connective_formulas = [_generate_formulas(named_connectives) for _ in 1:nformulas]
+### constrained_connective_formulas = [
+###     _generate_formulas(constrained_connectives) for _ in 1:nformulas]
+###
+### # little parameterization for random models generation
+### nworlds = 10
+### nedges = 30
+###
+### kstruct = randmodel(_rng, nworlds, nedges, Atom.(_letters), BooleanAlgebra())
+###
+### @benchmark map(f -> check(f, kstruct, World(1)), named_connective_formulas)
+### # julia> @benchmark map(f -> check(f, kstruct, World(1)), named_connective_formulas)
+### # BenchmarkTools.Trial: 21 samples with 1 evaluation per sample.
+### #  Range (min … max):  207.603 ms … 336.039 ms  ┊ GC (min … max): 0.00% … 0.00%
+### #  Time  (median):     227.827 ms               ┊ GC (median):    0.00%
+### #  Time  (mean ± σ):   243.313 ms ±  44.320 ms  ┊ GC (mean ± σ):  2.94% ± 4.25%
+### #
+### #   █ ▁ ▁     ▄                                                 ▁
+### #   █▆█▁█▁▁▆▁▆█▆▁▁▁▁▁▁▁▁▆▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▆▁▁▁▆▁▁▁▁▁▁▁▁▁▁▁▁▆▁▁▁▁█ ▁
+### #   208 ms           Histogram: frequency by time          336 ms <
+### #
+### #  Memory estimate: 56.55 MiB, allocs estimate: 1688439.
+###
+### @benchmark map(f -> check(f, kstruct, World(1)), constrained_connective_formulas)
+### # julia> @benchmark map(f -> check(f, kstruct, World(1)), constrained_connective_formulas)
+### # BenchmarkTools.Trial: 21 samples with 1 evaluation per sample.
+### #  Range (min … max):  218.614 ms … 293.397 ms  ┊ GC (min … max): 0.00% … 14.14%
+### #  Time  (median):     233.706 ms               ┊ GC (median):    5.16%
+### #  Time  (mean ± σ):   239.592 ms ±  19.281 ms  ┊ GC (mean ± σ):  3.57% ±  3.82%
+### #
+### #   █         ▁                      ▁
+### #   █▁▁▁▁▆▆▁▆▁█▆▆▆▆▁▁▁▆▆▁▁▁▁▁▁▁▆▁▆▁▁▁█▁▁▁▁▁▁▁▆▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▆ ▁
+### #   219 ms           Histogram: frequency by time          293 ms <
+### #
+### #  Memory estimate: 76.64 MiB, allocs estimate: 1932369.
+###
