@@ -152,12 +152,12 @@ precedence(::ConstrainedConnective{:□,N}) where {N} = precedence(□)
 associativity(::ConstrainedConnective{:□,N}) where {N} = associativity(□)
 
 hasdual(::ConstrainedConnective{:◊,N}) where {N} = true
-dual(::typeof(DIAMOND2)) = ConstrainedConnective{:□,1}(>) # beware, as this has a different
-dual(::typeof(DIAMOND3)) = ConstrainedConnective{:□,2}(>) # condition w.r.t. □₂
+dual(::typeof(DIAMOND2)) = BOX2
+dual(::typeof(DIAMOND3)) = BOX3
 
-hasdual(::typeof(□ₙ)) = true
-dual(::typeof(BOX2)) = ConstrainedConnective{:◊,1}(<) # beware, as this has a different
-dual(::typeof(BOX3)) = ConstrainedConnective{:◊,2}(<) # condition wrt ◊₂
+hasdual(::ConstrainedConnective{:□,N}) where {N} = true
+dual(::typeof(BOX2)) = DIAMOND2
+dual(::typeof(BOX3)) = DIAMOND3
 
 
 function _collateworlds(
@@ -167,9 +167,12 @@ function _collateworlds(
     aggregator::Function
 ) where {W<:AbstractWorld}
     filter(
-        w1 -> begin
-            _from_w1_op_is_true_on_these_worlds = aggregator(ws, accessibles(fr, w1))
-            condition(op, _from_w1_op_is_true_on_these_worlds |> length)
+        wi -> begin
+            # for example, in the case of diamond, this variable encodes the collection of
+            # worlds such that "op" is true on them, coming from wi
+            _retrievedworlds = aggregator(fr, wi, ws)
+
+            condition(op, _retrievedworlds |> length)
         end,
         fr |> allworlds |> collect
     )
@@ -180,7 +183,8 @@ function collateworlds(
     op::ConstrainedConnective{:◊,N},
     (ws,)::NTuple{1,<:AbstractWorlds},
 ) where {W<:AbstractWorld, N}
-    return _collateworlds(fr, op, (ws,), intersect)
+    # given the neighbors of a world, we want to retrieve the worlds in ws
+    return _collateworlds(fr, op, (ws,), (fr, wi, ws) -> intersect(ws, accessibles(fr, wi)))
 end
 
 function collateworlds(
@@ -188,5 +192,7 @@ function collateworlds(
     op::ConstrainedConnective{:□,N},
     (ws,)::NTuple{1,<:AbstractWorlds},
 ) where {W<:AbstractWorld, N}
-    collateworlds(fr, dual(op), (ws,))
+    # given the neighbors N of a world, we want to keep all the worlds where a certain
+    # property is NOT true, so we pop off the elements of ws from N.
+    return _collateworlds(fr, op, (ws,), (fr, wi, ws) -> setdiff(accessibles(fr, wi), ws))
 end
