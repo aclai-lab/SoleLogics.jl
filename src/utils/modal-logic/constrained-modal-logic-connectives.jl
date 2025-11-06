@@ -102,6 +102,9 @@ the lozenge glyph.
 When defining the traits for a `ConstrainedConnective{:◊}`, everything is forwarded from the
 traits of `NamedConnective{:◊}` (whose placeholder is just `const ◊`, or [`DIAMOND`](@ref)).
 
+The [`dual`](@ref) connective of `DIAMOND2` is [`BOX2`](@ref), as (¬□₂¬φ) translates to
+"it is not true that there are fewer than 2 accessible worlds where φ holds".
+
 See also [`ismodal`](@ref), [`isdiamond`](@ref), [`isbox`](@ref), [`arity`](@ref),
 [`precedence`](@ref), [`associativity`](@ref), [`□ₙ`](@ref).
 """
@@ -118,12 +121,15 @@ associativity(::ConstrainedConnective{:◊,N}) where {N} = associativity(◊)
     const BOX2 = NamedConnective{:□}(<=, 2)
     const □₂ = BOX2
 
-Special [`BOX`](@ref) connective, stating that there are at most 2 accessible worlds
-(within an [`AbstractFrame`](@ref), where a formula does not hold (¬◊₂¬).
+Special [`BOX`](@ref) connective, stating that there are fewer than 2 worlds where a
+formula does not hold (within an [`AbstractFrame`](@ref)).
 
-See [`Connective`](@ref), [`BOX`](@ref), [`ConstrainedConnective`](@ref).
+The [`dual`](@ref) connective of `BOX2` is [`DIAMOND2`](@ref), as (¬◊₂¬φ) translates to
+"it is not true that there are at least 2 accessible worlds whee not φ holds".
+
+See [`Connective`](@ref), [`BOX`](@ref), [`ConstrainedConnective`](@ref), [`dual`](@ref).
 """
-const BOX2 = ConstrainedConnective{:□,2}(<=)
+const BOX2 = ConstrainedConnective{:□,2}(<)
 const □₂ = BOX2
 
 """
@@ -132,7 +138,7 @@ const □₂ = BOX2
 
 See [`BOX2`](@ref), [`ConstrainedConnective`](@ref).
 """
-const BOX3 = ConstrainedConnective{:□,3}(<=)
+const BOX3 = ConstrainedConnective{:□,3}(<)
 const □₃ = BOX3
 
 
