@@ -199,19 +199,16 @@ kstruct4 = KripkeStructure(kframe4, valuation4)
 
 @test check(BOX(p), kstruct4, worlds4[1]) == false
 @test check(BOX2(p), kstruct4, worlds4[1]) == false
-@test_broken check(BOX3(p), kstruct4, worlds4[1]) == true
-
-# maybe the dual of BOX2 is DIAMOND2 but with strict relation!
-
-@test check(¬(DIAMOND3(¬p)), kstruct4, worlds4[1]) == true
+@test check(BOX3(p), kstruct4, worlds4[1]) == false
 
 @test check(dual(BOX)(p), kstruct4, worlds4[1]) == true
 @test check(dual(BOX2)(p), kstruct4, worlds4[1]) == true
-@test check(dual(BOX3)(p), kstruct4, worlds4[1]) == false
+@test check(dual(BOX3)(p), kstruct4, worlds4[1]) == true
+@test check(¬(DIAMOND3(¬p)), kstruct4, worlds4[1]) == false
 
 @test check(dual(DIAMOND)(p), kstruct4, worlds4[1]) == false
 @test check(dual(DIAMOND2)(p),  kstruct4, worlds4[1]) == false
-@test_broken check(dual(DIAMOND3)(p),  kstruct4, worlds4[1]) == true
+@test check(dual(DIAMOND3)(p),  kstruct4, worlds4[1]) == false
 
 
 
