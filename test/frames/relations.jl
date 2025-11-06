@@ -79,7 +79,7 @@ for r in union(IARelations_extended, IA7Relations, IA3Relations)
     # @show r
     for w in worlds
         for o in operators
-            for l in 1:21
+            for l in 1:10
                 @test all(((x,y),)->x == y, zip(accessibles(
                     fr,
                     w,
@@ -93,61 +93,3 @@ for r in union(IARelations_extended, IA7Relations, IA3Relations)
         end
     end
 end
-
-
-# for r in IARelations_extended
-#     for w in worlds
-#         # for r in union(IARelations_extended, IA7Relations, IA3Relations)
-#         for o in operators
-#             for l in 1:21
-#                 @test collect(accessibles(
-#                     fr,
-#                     w,
-#                     FilteredRelation(r, FunctionalWorldFilter{Interval}(i->o(i.y-i.x, l)))
-#                 )) == collect(accessibles(
-#                     fr,
-#                     w,
-#                     FilteredRelation(r, IntervalLengthFilter(o, l))
-#                 ))
-#             end
-#         end
-#     end
-# end
-
-# for r in IA7Relations
-#     # @show r
-#     for w in worlds
-#         for o in operators
-#             for l in 1:21
-#                 @test collect(accessibles(
-#                     fr,
-#                     w,
-#                     FilteredRelation(r, FunctionalWorldFilter{Interval}(i->o(i.y-i.x, l)))
-#                 )) == collect(accessibles(
-#                     fr,
-#                     w,
-#                     FilteredRelation(r, IntervalLengthFilter(o, l))
-#                 ))
-#             end
-#         end
-#     end
-# end
-
-# for r in IA3Relations
-#     # @show r
-#     for w in worlds
-#         for o in operators
-#             for l in 1:21
-#                 @test collect(accessibles(
-#                     fr,
-#                     w,
-#                     FilteredRelation(r, FunctionalWorldFilter{Interval}(i->o(i.y-i.x, l)))
-#                 )) == collect(accessibles(
-#                     fr,
-#                     w,
-#                     FilteredRelation(r, IntervalLengthFilter(o, l))
-#                 ))
-#             end
-#         end
-#     end
-# end

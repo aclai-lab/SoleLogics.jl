@@ -3,7 +3,7 @@ p2 = @test_nowarn Atom(2)
 p1_float = @test_nowarn Atom{Float64}(1.0)
 p1_number = @test_nowarn Atom{Number}(1)
 
-@testset "Syntax tree construction"
+@testset "Syntax tree construction" begin
 
   t1 = @test_nowarn ¬p1 ∨ (¬p2 ∧ (¬p1 ∨ ¬p2))
   t2 = @test_nowarn ¬p1
@@ -42,7 +42,7 @@ p1_number = @test_nowarn Atom{Number}(1)
   @test_nowarn CONJUNCTION(p1, p1, p1)
 end
 
-@testset "Syntax tree construction"
+@testset "Syntax tree construction" begin
   t1 = @test_nowarn ¬p1 ∨ (¬p2 ∧ (¬p1 ∨ ¬p2))
   t2 = @test_nowarn ¬p1
 
@@ -74,7 +74,7 @@ end
 
 end
 
-@testset "SyntaxLeaf interface"
+@testset "SyntaxLeaf interface" begin
   p1 = Atom(1)
   
   @test syntaxstring(p1) == "1"
@@ -84,4 +84,16 @@ end
   @test syntaxstring(⊤) == ⊤
   @test dual(⊥) == ⊤
   @test !hasdual(⊥)
+  
+  @test !istop(⊥)
+  @test isbot(⊥)
+  @test ⊥ < ⊤
+  @test ⊥ <= ⊤
+  @test min(⊥, ⊤)
+  @test max(⊥, ⊤)
+  @test precedes(⊥, ⊤)
+  @test truthjoin(⊥, ⊤)
+
+  @test !istop(⊤ ∧ ⊤)
+
 end

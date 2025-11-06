@@ -38,6 +38,9 @@ export ntokens, natoms, ntruths, nleaves, nconnectives, noperators
 
 export composeformulas
 
+export precedeq, precedes, succeedeq, succeedes
+export truthjoin, truthmeet
+
 include("types/syntactical.jl")
 
 

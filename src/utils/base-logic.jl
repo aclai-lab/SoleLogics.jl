@@ -380,22 +380,22 @@ See also
 struct UnionAlphabet{C, A <: AbstractAlphabet} <: AbstractAlphabet{C}
     subalphabets::Vector{A}
 
-    function UnionAlphabet{C, A}(subalphabets::Vector{A}) where {A}
+    function UnionAlphabet{C, A}(subalphabets::Vector{A}) where {A, C}
         if any(at -> !(at <: C), atomstype.(subalphabets))
             throw(ArgumentError("Unexpected atomstype not matching $C: " *
-                join(", ", filter(at -> !(at <: C), atomstype.(subalphabets))
-                * ".")))
+                join(", ", repr.(filter(at -> !(at <: C), atomstype.(subalphabets))) * 
+                ".")))
         end
-        return new{C, A}
+        return new{C, A}(subalphabets)
     end
 
-    function UnionAlphabet{C}(subalphabets::Vector{A}) where {A}
+    function UnionAlphabet{C}(subalphabets::Vector{A}) where {A, C}
         return UnionAlphabet{C, A}(subalphabets)
     end
 
-    function UnionAlphabet(subalphabets::Vector{A}) where {A}
+    function UnionAlphabet(subalphabets::Vector)
         C = Union{atomstype.(subalphabets)...}
-        return UnionAlphabet{C, A}(subalphabets)
+        return UnionAlphabet{C}(subalphabets)
     end
 end
 
