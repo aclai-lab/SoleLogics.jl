@@ -48,9 +48,8 @@ f = DISJUNCTION(p, q) |> BOX |> NEGATION
 # no neighbors.
 @test collateworlds(kframe, BOX, ([World(4)],)) == World{Int64}.([2,4,5])
 
-# BOX2 holds, since every world has <=2 neighbors on which an imaginary property (which is
-# true on w4) is bot... of course! This is trivial since there are at most 2 neighbors.
-@test collateworlds(kframe, BOX2, ([World(4)],)) == World{Int64}.([1,2,3,4,5])
+# BOX2 holds on every world that has <2 neighbors that are not 4
+@test collateworlds(kframe, BOX2, ([World(4)],)) == World{Int64}.([2,3,4,5])
 @test collateworlds(kframe, BOX3, ([World(4)],)) == World{Int64}.([1,2,3,4,5])
 
 @test check(f, kstruct, worlds[1]) == false
