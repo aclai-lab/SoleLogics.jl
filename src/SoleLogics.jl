@@ -31,8 +31,8 @@ export arity, valuetype,
 export token, children, formulas
 
 export height
-export tokens!, atoms!, truths!, leaves!, connectives!, operators!
 export tokens, atoms, truths, leaves, connectives, operators
+export appendtokens!, appendatoms!, appendtruths!, appendleaves!, appendconnectives!, appendoperators!
 export ntokens, natoms, ntruths, nleaves, nconnectives, noperators
 
 export composeformulas
