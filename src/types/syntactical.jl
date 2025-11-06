@@ -380,19 +380,19 @@ function gather_tokens!(φ::SyntaxTree, out::Vector)::Vector
     push!(out, token(φ))
     return out
 end
-tokens!(v, φ::SyntaxTree)::Vector = gather_tokens!(φ, v)
-atoms!(v, φ::SyntaxTree)::Vector = gather_tokens!(φ, v, x -> x isa AbstractAtom)
-truths!(v, φ::SyntaxTree)::Vector = gather_tokens!(φ, v, x -> x isa Truth)
-leaves!(v, φ::SyntaxTree)::Vector = gather_tokens!(φ, v, x -> x isa SyntaxLeaf)
-connectives!(v, φ::SyntaxTree)::Vector = gather_tokens!(φ, v, x -> x isa Connective)
-operators!(v, φ::SyntaxTree)::Vector = gather_tokens!(φ, v, x -> x isa Operator)
+appendtokens!(v, φ::SyntaxTree)::Vector = gather_tokens!(φ, v)
+appendatoms!(v, φ::SyntaxTree)::Vector = gather_tokens!(φ, v, x -> x isa AbstractAtom)
+appendtruths!(v, φ::SyntaxTree)::Vector = gather_tokens!(φ, v, x -> x isa Truth)
+appendleaves!(v, φ::SyntaxTree)::Vector = gather_tokens!(φ, v, x -> x isa SyntaxLeaf)
+appendconnectives!(v, φ::SyntaxTree)::Vector = gather_tokens!(φ, v, x -> x isa Connective)
+appendoperators!(v, φ::SyntaxTree)::Vector = gather_tokens!(φ, v, x -> x isa Operator)
 
-tokens(φ::SyntaxTree)::Vector = tokens!(SyntaxToken[], φ)
-atoms(φ::SyntaxTree)::Vector = atoms!(Atom[], φ)
-truths(φ::SyntaxTree)::Vector = truths!(Truth[], φ)
-leaves(φ::SyntaxTree)::Vector = leaves!(SyntaxLeaf[], φ)
-connectives(φ::SyntaxTree)::Vector = connectives!(Connective[], φ)
-operators(φ::SyntaxTree)::Vector = operators!(Operator[], φ)
+tokens(φ::SyntaxTree)::Vector = appendtokens!(SyntaxToken[], φ)
+atoms(φ::SyntaxTree)::Vector = appendatoms!(Atom[], φ)
+truths(φ::SyntaxTree)::Vector = appendtruths!(Truth[], φ)
+leaves(φ::SyntaxTree)::Vector = appendleaves!(SyntaxLeaf[], φ)
+connectives(φ::SyntaxTree)::Vector = appendconnectives!(Connective[], φ)
+operators(φ::SyntaxTree)::Vector = appendoperators!(Operator[], φ)
 
 function ntokens(φ::SyntaxTree)::Int
     ch = children(φ)
@@ -641,10 +641,7 @@ function syntaxstring(
     tok = token(φ)
     tokstr = syntaxstring(tok; ch_kwargs...)
 
-    if iszero(arity(tok))
-        # Leaf nodes parenthesization is parent's respsonsability
-        return tokstr
-    elseif arity(tok) == 2 && !function_notation
+    if arity(tok) == 2 && !function_notation
         # Infix notation for binary operators
 
         "$(_binary_infix_syntaxstring(tok, children(φ)[1], :left)) " *
@@ -661,20 +658,16 @@ function syntaxstring(
             lpar, rpar = "", ""
         end
 
-        if isempty(children(φ))
-            tokstr
-        else
-            tokstr * "$(lpar)" *
-            join(
-                [begin
-                    if (c isa AbstractAtom && parenthesize_atoms)
-                        _ch_kwargs = merge(ch_kwargs, (; parenthesize_atoms = false))
-                    else
-                        _ch_kwargs = ch_kwargs
-                    end
-                    syntaxstring(c; ch_kwargs...)
-                end for c in children(φ)], ", ") * "$(rpar)"
-        end
+        tokstr * "$(lpar)" *
+        join(
+            [begin
+                if (c isa AbstractAtom && parenthesize_atoms)
+                    _ch_kwargs = merge(ch_kwargs, (; parenthesize_atoms = false))
+                else
+                    _ch_kwargs = ch_kwargs
+                end
+                syntaxstring(c; ch_kwargs...)
+            end for c in children(φ)], ", ") * "$(rpar)"
     end
 end
 

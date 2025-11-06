@@ -14,6 +14,7 @@ using SoleBase: initrng
 
 
 export iscrisp, isfinite, isnullary, isunary, isbinary
+export iscommutative
 
 export Syntactical, Connective,
     Formula, SyntaxStructure, SyntaxTree, SyntaxLeaf,

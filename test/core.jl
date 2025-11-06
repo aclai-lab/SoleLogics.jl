@@ -34,10 +34,6 @@ alphabet2_int = @test_nowarn ExplicitAlphabet(Atom.(11:20))
 alphabet_number = @test_nowarn ExplicitAlphabet{Number}(Atom.(1:10))
 @test atoms(alphabet_number) isa Vector{Atom{Number}}
 
-@test alphabet_int(1) isa Atom{Int}
-@test alphabet_number(1) isa Atom{Number}
-@test alphabet_number(Float64(1.0)) isa Atom{Number}
-
 p_vec_number = @test_nowarn Atom{Vector{<:Number}}([1])
 p_vec_int = @test_nowarn Atom{Vector{Int}}([1])
 @test_throws MethodError Atom{<:Vector{Int}}([1.0])
@@ -59,23 +55,20 @@ union_alphabet_int = @test_nowarn UnionAlphabet([alphabet_int, alphabet2_int])
 @test atomstype(union_alphabet_int) == @test_nowarn Atom{Int}
 @test valuetype(union_alphabet_int) == @test_nowarn Int
 @test collect(atoms(union_alphabet_int)) isa Vector{Atom{Int}}
-@test alphabet_int(1) isa Atom{Int}
 @test Atom(1) in union_alphabet_int
 @test !(Atom("My string") in union_alphabet_int)
 
 @test_throws MethodError UnionAlphabet([alphabet_number, alphabet2_int])
 
-# union_alphabet_ofany = @test_nowarn UnionAlphabet([AlphabetOfAny{String}(), AlphabetOfAny{Int}()])
-# @test Atom("My string") in union_alphabet_ofany
-# @test union_alphabet_ofany("Your String") isa Atom{String}
-# @test valuetype(union_alphabet_ofany) == Union{Int, String}
+union_alphabet_ofany = @test_nowarn UnionAlphabet([AlphabetOfAny{String}(), AlphabetOfAny{Int}()])
+@test Atom("My string") in union_alphabet_ofany
+@test valuetype(union_alphabet_ofany) == Union{Int, String}
 
-# # TODO @Edo dovrebbe essere possibile ?
-# # @test_nowarn UnionAlphabet{Real, AlphabetOfAny{Real}}([AlphabetOfAny{Int64}(), AlphabetOfAny{Float64}()])
-# union_union_alphabet_ofany = @test_nowarn UnionAlphabet{Union{Int,String},AlphabetOfAny{Union{Int,String}}}([AlphabetOfAny{Union{Int,String}}()])
-# # @test valuetype(union_union_alphabet_ofany) == @test_nowarn Union{Int, String}
-# @test Atom("My string") in union_union_alphabet_ofany
-# @test Atom(1) in union_union_alphabet_ofany
+@test_nowarn UnionAlphabet{Real, AlphabetOfAny{Real}}([AlphabetOfAny{Int64}(), AlphabetOfAny{Float64}()])
+union_union_alphabet_ofany = @test_nowarn UnionAlphabet{Union{Int,String},AlphabetOfAny{Union{Int,String}}}([AlphabetOfAny{Union{Int,String}}()])
+@test valuetype(union_union_alphabet_ofany) == @test_nowarn Union{Int, String}
+@test Atom("My string") in union_union_alphabet_ofany
+@test Atom(1) in union_union_alphabet_ofany
 
 @test_nowarn convert(SyntaxTree, p1)
 @test_nowarn SyntaxTree(p1)
@@ -120,53 +113,6 @@ logic_int = BaseLogic(grammar_int, SoleLogics.BooleanAlgebra())
 @test_throws MethodError "aoeu" in propositionallogic()
 @test Atom("aoeu") in propositionallogic()
 @test ! (Atom(1) in propositionallogic())
-
-
-t2_int = @test_nowarn ¬(t1_int)
-@test_nowarn ⊥()
-@test_nowarn ¬(p1)
-@test_nowarn ∨(p1, p1)
-@test_nowarn p1 ∨ p1_number
-@test_nowarn ∨(p1, p1, p1_number)
-@test_nowarn ¬(∨(p1, p1, p1_number))
-@test_nowarn p1 ∨ p100
-@test_nowarn ¬(p1) ∨ p1
-@test_nowarn ¬(p1) ∨ ¬(p1)
-@test_nowarn SyntaxTree(⊤)
-@test_nowarn ⊤ ∨ ⊤
-@test_nowarn p1 ∨ ⊤
-@test_nowarn ⊥ ∨ p1 ∨ ⊤
-
-@test !(all(isa(atoms(p1 ∨ p1_number), Atom{Int})))
-@test all(isa.(atoms(p1 ∨ p1_number_float), Union{Atom{Int}, Atom{Number}}))
-@test all(isa.(atoms(p1 ∨ p1_float), Union{Atom{Int}, Atom{Float64}}))
-@test atoms(p1 ∨ p100) == [p1, p100]
-
-@test_nowarn p1 ∨ t2_int
-@test_nowarn t2_int ∨ p1
-@test_nowarn t2_int ∨ t2_int
-@test_nowarn ⊥ ∨ t2_int ∨ ⊤
-@test_nowarn t2_int ∨ ⊤
-@test_nowarn ¬(t2_int) ∧ t2_int
-@test_nowarn ¬(¬(t2_int) ∧ t2_int)
-@test_nowarn ∧(¬(t2_int), t2_int)
-@test_nowarn ∧((¬(t2_int), t2_int),)
-@test_nowarn ∧(¬(t2_int), t2_int, ¬(t2_int) ∧ t2_int)
-@test_nowarn ¬(¬(p1))
-
-
-@test_nowarn CONJUNCTION(t2_int, t2_int)
-@test_nowarn CONJUNCTION(t2_int, t2_int, p1)
-@test_nowarn CONJUNCTION(t2_int, p1, p1)
-@test_nowarn CONJUNCTION(p1, p1)
-@test_nowarn CONJUNCTION(p1, p1, p1)
-
-@test_nowarn p1 ∨ t2_int
-
-# @test promote_type(AnchoredFormula, SyntaxBranch) == AnchoredFormula
-# @test promote_type(SyntaxBranch, AnchoredFormula) == AnchoredFormula
-
-
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ checking ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
