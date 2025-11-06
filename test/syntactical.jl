@@ -81,18 +81,19 @@ end
   @test !hasdual(p1)
 
   @test syntaxstring(⊥) == "⊥"
-  @test syntaxstring(⊤) == ⊤
+  @test syntaxstring(⊤) == "⊤"
+  @test hasdual(⊥)
   @test dual(⊥) == ⊤
-  @test !hasdual(⊥)
   
   @test !istop(⊥)
   @test isbot(⊥)
   @test ⊥ < ⊤
   @test ⊥ <= ⊤
-  @test min(⊥, ⊤)
-  @test max(⊥, ⊤)
+  @test min(⊥, ⊤) == ⊥
+  @test max(⊥, ⊤) == ⊤
   @test precedes(⊥, ⊤)
-  @test truthjoin(⊥, ⊤)
+  @test truthjoin(⊥, ⊤) == ⊤
+  @test truthmeet(⊥, ⊤) == ⊥
 
   @test !istop(⊤ ∧ ⊤)
 

@@ -381,10 +381,10 @@ struct UnionAlphabet{C, A <: AbstractAlphabet} <: AbstractAlphabet{C}
     subalphabets::Vector{A}
 
     function UnionAlphabet{C, A}(subalphabets::Vector{A}) where {A, C}
-        if any(at -> !(at <: C), atomstype.(subalphabets))
-            throw(ArgumentError("Unexpected atomstype not matching $C: " *
-                join(", ", repr.(filter(at -> !(at <: C), atomstype.(subalphabets))) * 
-                ".")))
+        if any(at -> !(at <: C), valuetype.(subalphabets))
+            throw(ArgumentError("Unexpected value type not matching $C: " *
+                join(repr.(filter(at -> !(at <: C), valuetype.(subalphabets))), ", ") * 
+                "."))
         end
         return new{C, A}(subalphabets)
     end
@@ -394,7 +394,7 @@ struct UnionAlphabet{C, A <: AbstractAlphabet} <: AbstractAlphabet{C}
     end
 
     function UnionAlphabet(subalphabets::Vector)
-        C = Union{atomstype.(subalphabets)...}
+        C = Union{valuetype.(subalphabets)...}
         return UnionAlphabet{C}(subalphabets)
     end
 end
@@ -627,7 +627,7 @@ function _baselogic(;
                     if length(setdiff(operators, default_operators)) > 0
                         @warn "Instantiating $(logictypename) with operators not in " *
                               "$(default_operators): " *
-                              join(", ", setdiff(operators, default_operators)) * "."
+                              join(setdiff(operators, default_operators), ", ") * "."
                     end
                     operators
                 end

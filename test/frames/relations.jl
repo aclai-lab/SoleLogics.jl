@@ -72,13 +72,13 @@ wf = FunctionalWorldFilter(f1, Interval{Int})
 
 fr = FullDimensionalFrame(20)
 worlds = allworlds(fr)
-operators = [≤, ≥, ==]
+ops = [≤, ≥, ==]
 
 
 for r in union(IARelations_extended, IA7Relations, IA3Relations)
     # @show r
     for w in worlds
-        for o in operators
+        for o in ops
             for l in 1:10
                 @test all(((x,y),)->x == y, zip(accessibles(
                     fr,

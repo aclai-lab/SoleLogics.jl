@@ -36,6 +36,8 @@ export tokens, atoms, truths, leaves, connectives, operators
 export appendtokens!, appendatoms!, appendtruths!, appendleaves!, appendconnectives!, appendoperators!
 export ntokens, natoms, ntruths, nleaves, nconnectives, noperators
 
+export hasdual, dual
+
 export composeformulas
 
 export precedeq, precedes, succeedeq, succeedes
