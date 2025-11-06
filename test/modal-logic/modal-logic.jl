@@ -76,9 +76,12 @@ for i in 1:5
     @test collateworlds(kframe, DIAMOND3, ([World(i)], )) == World.([])
 
     # boxes
-    @test collateworlds(kframe, BOX2, ([SoleLogics.World(i)],)) == World{Int64}.([
-        2,4,5
-    ])
+    if i != 2
+        # in this case, BOX2 has a different outcome
+        @test collateworlds(kframe, BOX2, ([SoleLogics.World(1)],)) == World{Int64}.([
+            2,4,5
+        ])
+    end
     @test collateworlds(kframe, BOX3, ([SoleLogics.World(i)],)) == World{Int64}.([
         1,2,3,4,5
     ])
@@ -96,6 +99,8 @@ for i in 1:5
         kframe, dual(BOX3), ([World(i)], ))
 end
 
+
+@test collateworlds(kframe, BOX2, ([SoleLogics.World(2)],)) == World{Int64}.([1,2,4,5])
 
 ##### model checking algorithm #############################################################
 
