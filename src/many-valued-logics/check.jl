@@ -11,6 +11,17 @@ end
 
 function SoleLogics.collatetruth(
     c::NamedConnective,
+    (x, y)::Tuple{ContinuousTruth, T},
+    a::FuzzyLogic
+) where {
+    T <: Truth
+}
+    if !isa(y, ContinuousTruth) y = convert(ContinuousTruth, y) end
+    return SoleLogics.collatetruth(c, (x, y), a)
+end
+
+function SoleLogics.collatetruth(
+    c::NamedConnective,
     (α, β)::Tuple{T,FiniteTruth},
     a::FiniteFLewAlgebra
 ) where {
@@ -18,6 +29,17 @@ function SoleLogics.collatetruth(
 }
     if !isa(α,FiniteTruth) α = convert(FiniteTruth, α) end
     return SoleLogics.collatetruth(c, (α, β), a)
+end
+
+function SoleLogics.collatetruth(
+    c::NamedConnective,
+    (x, y)::Tuple{T, ContinuousTruth},
+    a::FuzzyLogic
+) where {
+    T <: Truth
+}
+    if !isa(x, ContinuousTruth) x = convert(ContinuousTruth, x) end
+    return SoleLogics.collatetruth(c, (x, y), a)
 end
 
 function SoleLogics.collatetruth(
@@ -31,6 +53,16 @@ function SoleLogics.collatetruth(
 end
 
 function SoleLogics.collatetruth(
+    ::typeof(∧),
+    (x, y)::NTuple{N, T where T<:ContinuousTruth},
+    a::FuzzyLogic
+) where {
+    N
+}
+    a.tnorm(x.value, y.value)
+end
+
+function SoleLogics.collatetruth(
     ::typeof(∨),
     (α, β)::NTuple{N, T where T<:FiniteTruth},
     a::FiniteFLewAlgebra
@@ -39,6 +71,9 @@ function SoleLogics.collatetruth(
 }
     a.join(α, β)
 end
+
+# Should i just straight up use the order utilities to define the join and implication?
+# Also, i suppose there's also need to define a check function for continuous logic, or is it low-priority?
 
 function SoleLogics.collatetruth(
     ::typeof(→),

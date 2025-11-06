@@ -1,9 +1,21 @@
 import ..SoleLogics: AbstractAlgebra, top, bot, iscrisp
 using StaticArrays
 
-#TODO: Write docs
+"""
+    struct FuzzyLogic <: AbstractAlgebra{ContinuousTruth}
+        tnorm::ContinuousBinaryOperation
+    end
+A fuzzy logic is a type of many-valued logic in which the truth
+value of variables can be any real value in the range [0,1]. Its only field 
+is the t-norm the logic is based upon.
+"""
 struct FuzzyLogic <: AbstractAlgebra{ContinuousTruth}
     tnorm::ContinuousBinaryOperation
+end
+
+function Base.show(io::IO, a::FuzzyLogic)
+    println(string(typeof(a)))
+    println(string(tnorm))
 end
 
 iscrisp(::FuzzyLogic) = false
@@ -18,7 +30,12 @@ const LukasiewiczLogic = FuzzyLogic(LukasiewiczTNorm)
 
 const ProductLogic = FuzzyLogic(ProductTNorm)
 
-#TODO: Write docs
+"""
+    struct ManyExpertAlgebra{N, A <: SArray{N, FuzzyLogic}} <: AbstractAlgebra{ContinuousTruth}
+        fuzzylogics::A    
+    end
+TODO: write a proper doc
+"""
 struct ManyExpertAlgebra{N, A <: SArray{N, FuzzyLogic}} <: AbstractAlgebra{ContinuousTruth}
     fuzzylogics::A
 
