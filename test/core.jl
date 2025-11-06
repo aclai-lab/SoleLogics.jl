@@ -64,7 +64,7 @@ union_alphabet_ofany = @test_nowarn UnionAlphabet([AlphabetOfAny{String}(), Alph
 @test Atom("My string") in union_alphabet_ofany
 @test valuetype(union_alphabet_ofany) == Union{Int, String}
 
-@test_nowarn UnionAlphabet{Real, AlphabetOfAny{Real}}([AlphabetOfAny{Int64}(), AlphabetOfAny{Float64}()])
+@test_nowarn UnionAlphabet{Real, AlphabetOfAny}([AlphabetOfAny{Int64}(), AlphabetOfAny{Float64}()])
 union_union_alphabet_ofany = @test_nowarn UnionAlphabet{Union{Int,String},AlphabetOfAny{Union{Int,String}}}([AlphabetOfAny{Union{Int,String}}()])
 @test valuetype(union_union_alphabet_ofany) == @test_nowarn Union{Int, String}
 @test Atom("My string") in union_union_alphabet_ofany

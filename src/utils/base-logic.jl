@@ -405,7 +405,9 @@ nsubalphabets(a::UnionAlphabet) = length(subalphabets(a))
 function Base.show(io::IO, a::UnionAlphabet)
     println(io, "$(typeof(a)):")
     for sa in subalphabets(a)
+        Base.print("- ")
         Base.show(io, sa)
+        Base.println(io)
     end
 end
 

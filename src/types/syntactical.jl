@@ -185,6 +185,13 @@ It can be parsed from its [`syntaxstring`](@ref) representation via [`parseformu
 - `nconnectives(φ::Formula)::Int`
 - `noperators(φ::Formula)::Int`
 
+- `appendtokens!(v::Vector, φ::Formula)`
+- `appendatoms!(v::Vector, φ::Formula)`
+- `appendtruths!(v::Vector, φ::Formula)`
+- `appendleaves!(v::Vector, φ::Formula)`
+- `appendconnectives!(v::Vector, φ::Formula)`
+- `appendoperators!(v::Vector, φ::Formula)`
+
 See also [`tree`](@ref), [`SyntaxStructure`](@ref), [`SyntaxLeaf`](@ref).
 """
 abstract type Formula <: Syntactical end
@@ -234,15 +241,19 @@ end
     leaves(φ::Formula)::Vector{SyntaxLeaf}
     connectives(φ::Formula)::Vector{Connective}
     operators(φ::Formula)::Vector{Operator}
+    
     ntokens(φ::Formula)::Integer
     natoms(φ::Formula)::Integer
-    ntruths(φ::Formula)::Integer
-    nleaves(φ::Formula)::Integer
-    nconnectives(φ::Formula)::Integer
-    noperators(φ::Formula)::Integer
+    ...
+
+    appendtokens!(v::Vector, φ::Formula)::Vector
+    appendatoms!(v::Vector, φ::Formula)::Vector
+    ...
 
 Return the list/number of (non-unique) `SyntaxToken`s, `Atom`s, etc...
-appearing in a formula.
+appearing in a formula. Inplace versions of these methods
+append the tokens to an existing vector, and are faster, e.g., for collecting
+all tokens from many formulas at once.
 
 See also [`Formula`](@ref), [`SyntaxToken`](@ref).
 """
@@ -269,6 +280,13 @@ nleaves(φ::Formula)::Int = nleaves(tree(φ));
 nconnectives(φ::Formula)::Int = nconnectives(tree(φ));
 "See docstring for [`tokens`](@ref)."
 noperators(φ::Formula)::Int = noperators(tree(φ));
+
+appendtokens!(v::Vector, φ::Formula)::Vector = appendtokens!(v, tree(φ))
+appendatoms!(v::Vector, φ::Formula)::Vector = appendatoms!(v, tree(φ))
+appendtruths!(v::Vector, φ::Formula)::Vector = appendtruths!(v, tree(φ))
+appendleaves!(v::Vector, φ::Formula)::Vector = appendleaves!(v, tree(φ))
+appendconnectives!(v::Vector, φ::Formula)::Vector = appendconnectives!(v, tree(φ))
+appendoperators!(v::Vector, φ::Formula)::Vector = appendoperators!(v, tree(φ))
 
 
 @inline function Base.isequal(φ1::Formula, φ2::Formula)
@@ -332,11 +350,12 @@ and (should) implement `AbstractTrees` interface.
 - See also [`SyntaxStructure`](@ref)
 
 # Utility functions
-- `tokentype(φ::SyntaxTree)`
 - `arity(φ::SyntaxTree)::Int`
+- `composeformulas(c::Connective, φs::NTuple{N,SyntaxTree})`
 
 # Other utility functions requiring a tree walk
 - `Base.in(tok::SyntaxToken, φ::SyntaxTree)::Bool`
+
 - `height(φ::SyntaxTree)::Int`
 - `tokens(φ::SyntaxTree)::Vector{SyntaxToken}`
 - `atoms(φ::SyntaxTree)::Vector{Atom}`
@@ -350,7 +369,13 @@ and (should) implement `AbstractTrees` interface.
 - `nleaves(φ::SyntaxTree)::Int`
 - `nconnectives(φ::SyntaxTree)::Int`
 - `noperators(φ::SyntaxTree)::Int`
-- `composeformulas(c::Connective, φs::NTuple{N,SyntaxTree})`
+
+- `appendtokens!(v::Vector, φ::SyntaxTree)`
+- `appendatoms!(v::Vector, φ::SyntaxTree)`
+- `appendtruths!(v::Vector, φ::SyntaxTree)`
+- `appendleaves!(v::Vector, φ::SyntaxTree)`
+- `appendconnectives!(v::Vector, φ::SyntaxTree)`
+- `appendoperators!(v::Vector, φ::SyntaxTree)`
 
 See also [`SyntaxLeaf`](@ref), [`SyntaxBranch`](@ref),
 [`SyntaxStructure`](@ref), [`Formula`](@ref).
@@ -390,12 +415,12 @@ function gather_tokens!(φ::SyntaxTree, out::Vector)::Vector
     push!(out, token(φ))
     return out
 end
-appendtokens!(v, φ::SyntaxTree)::Vector = gather_tokens!(φ, v)
-appendatoms!(v, φ::SyntaxTree)::Vector = gather_tokens!(φ, v, x -> x isa AbstractAtom)
-appendtruths!(v, φ::SyntaxTree)::Vector = gather_tokens!(φ, v, x -> x isa Truth)
-appendleaves!(v, φ::SyntaxTree)::Vector = gather_tokens!(φ, v, x -> x isa SyntaxLeaf)
-appendconnectives!(v, φ::SyntaxTree)::Vector = gather_tokens!(φ, v, x -> x isa Connective)
-appendoperators!(v, φ::SyntaxTree)::Vector = gather_tokens!(φ, v, x -> x isa Operator)
+appendtokens!(v::Vector, φ::SyntaxTree)::Vector = gather_tokens!(φ, v)
+appendatoms!(v::Vector, φ::SyntaxTree)::Vector = gather_tokens!(φ, v, x -> x isa AbstractAtom)
+appendtruths!(v::Vector, φ::SyntaxTree)::Vector = gather_tokens!(φ, v, x -> x isa Truth)
+appendleaves!(v::Vector, φ::SyntaxTree)::Vector = gather_tokens!(φ, v, x -> x isa SyntaxLeaf)
+appendconnectives!(v::Vector, φ::SyntaxTree)::Vector = gather_tokens!(φ, v, x -> x isa Connective)
+appendoperators!(v::Vector, φ::SyntaxTree)::Vector = gather_tokens!(φ, v, x -> x isa Operator)
 
 tokens(φ::SyntaxTree)::Vector = appendtokens!(SyntaxToken[], φ)
 atoms(φ::SyntaxTree)::Vector = appendatoms!(Atom[], φ)
