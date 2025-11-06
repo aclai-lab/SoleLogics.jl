@@ -40,7 +40,7 @@ f = DISJUNCTION(p, q) |> BOX |> NEGATION
 @test collateworlds(kframe, DIAMOND3, ([World(2), World(3)],)) == World{Int64}[]
 
 @test collateworlds(kframe, BOX, ([World(1)],)) == World{Int64}.([4,5])
-@test collateworlds(kframe, BOX2, ([World(1)],)) == World{Int64}.([1,2,3,4,5])
+@test collateworlds(kframe, BOX2, ([World(1)],)) == World{Int64}.([2,4,5])
 @test collateworlds(kframe, BOX3, ([World(1)],)) == World{Int64}.([1,2,3,4,5])
 
 # for example, the result here is [2,4,5] because, given that something is true on 4,
