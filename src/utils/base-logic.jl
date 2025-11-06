@@ -377,8 +377,26 @@ See also
 [`ScalarMetaCondition`](@ref).
 """
 
-struct UnionAlphabet{C, A <: AbstractAlphabet{C}} <: AbstractAlphabet{C}
+struct UnionAlphabet{C, A <: AbstractAlphabet} <: AbstractAlphabet{C}
     subalphabets::Vector{A}
+
+    function UnionAlphabet{C, A}(subalphabets::Vector{A}) where {A}
+        if any(at -> !(at <: C), atomstype.(subalphabets))
+            throw(ArgumentError("Unexpected atomstype not matching $C: " *
+                join(", ", filter(at -> !(at <: C), atomstype.(subalphabets))
+                * ".")))
+        end
+        return new{C, A}
+    end
+
+    function UnionAlphabet{C}(subalphabets::Vector{A}) where {A}
+        return UnionAlphabet{C, A}(subalphabets)
+    end
+
+    function UnionAlphabet(subalphabets::Vector{A}) where {A}
+        C = Union{atomstype.(subalphabets)...}
+        return UnionAlphabet{C, A}(subalphabets)
+    end
 end
 
 subalphabets(a::UnionAlphabet) = a.subalphabets

@@ -3,7 +3,7 @@ p2 = @test_nowarn Atom(2)
 p1_float = @test_nowarn Atom{Float64}(1.0)
 p1_number = @test_nowarn Atom{Number}(1)
 
-@test "Syntax tree construction"
+@testset "Syntax tree construction"
 
   t1 = @test_nowarn ¬p1 ∨ (¬p2 ∧ (¬p1 ∨ ¬p2))
   t2 = @test_nowarn ¬p1
@@ -42,7 +42,7 @@ p1_number = @test_nowarn Atom{Number}(1)
   @test_nowarn CONJUNCTION(p1, p1, p1)
 end
 
-@test "Syntax tree construction"
+@testset "Syntax tree construction"
   t1 = @test_nowarn ¬p1 ∨ (¬p2 ∧ (¬p1 ∨ ¬p2))
   t2 = @test_nowarn ¬p1
 
@@ -72,4 +72,16 @@ end
   @test all(isa.(atoms(p1 ∨ p1_float), Union{Atom{Int}, Atom{Float64}}))
   @test atoms(p1 ∨ p2) == [p1, p2]
 
+end
+
+@testset "SyntaxLeaf interface"
+  p1 = Atom(1)
+  
+  @test syntaxstring(p1) == "1"
+  @test !hasdual(p1)
+
+  @test syntaxstring(⊥) == "⊥"
+  @test syntaxstring(⊤) == ⊤
+  @test dual(⊥) == ⊤
+  @test !hasdual(⊥)
 end

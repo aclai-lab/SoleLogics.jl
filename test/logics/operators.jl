@@ -13,8 +13,6 @@
     @test !isbinary(DIAMOND)
     @test !isbinary(BOX)
 
-    @test !isternary(BOX)
-
     @test iscommutative(NEGATION)
     @test !iscommutative(IMPLICATION)
     @test iscommutative(CONJUNCTION)

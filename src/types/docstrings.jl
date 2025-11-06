@@ -292,14 +292,6 @@ Return the token at the root of a syntax tree.
 See also [`SyntaxBranch`](@ref), [`SyntaxLeaf`](@ref).
 """
 
-doc_formula_basein = """
-    Base.in(tok::SyntaxToken, φ::Formula)::Bool
-
-Return whether a syntax token appears in a formula.
-
-See also [`Formula`](@ref), [`SyntaxToken`](@ref).
-"""
-
 doc_dual = """
     dual(tok::SyntaxToken)
 

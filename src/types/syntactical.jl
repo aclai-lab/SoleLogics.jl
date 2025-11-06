@@ -126,7 +126,6 @@ arity(c::Connective)::Integer = error("Please, provide method arity(::$(typeof(c
 isnullary(c) = iszero(arity(c))
 isunary(c)   = arity(c) == 1
 isbinary(c)  = arity(c) == 2
-isternary(c) = arity(c) == 3
 
 """$(doc_iscommutative)"""
 function iscommutative(c::Connective)
@@ -204,6 +203,17 @@ end
 # Helper (?)
 function composeformulas(c::Connective, φs::Vararg{Formula,N}) where {N}
     return composeformulas(c, φs)
+end
+
+"""
+    Base.in(tok::SyntaxToken, φ::Formula)::Bool
+
+Return whether a syntax token appears in a formula.
+
+See also [`Formula`](@ref), [`SyntaxToken`](@ref).
+"""
+function Base.in(tok, φ::Formula)::Bool
+    return Base.in(tok, tree(φ))
 end
 
 """
@@ -669,11 +679,6 @@ function syntaxstring(
                 syntaxstring(c; ch_kwargs...)
             end for c in children(φ)], ", ") * "$(rpar)"
     end
-end
-
-"""$(doc_formula_basein)"""
-function Base.in(tok::SyntaxToken, φ::Formula)::Bool
-    return Base.in(tok, tree(φ))
 end
 
 function Base.in(tok::SyntaxToken, tree::AbstractSyntaxBranch)::Bool
