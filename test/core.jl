@@ -58,7 +58,7 @@ union_alphabet_int = @test_nowarn UnionAlphabet([alphabet_int, alphabet2_int])
 @test Atom(1) in union_alphabet_int
 @test !(Atom("My string") in union_alphabet_int)
 
-@test_throws MethodError UnionAlphabet([alphabet_number, alphabet2_int])
+@test_nowarn UnionAlphabet([alphabet_number, alphabet2_int])
 
 union_alphabet_ofany = @test_nowarn UnionAlphabet([AlphabetOfAny{String}(), AlphabetOfAny{Int}()])
 @test Atom("My string") in union_alphabet_ofany
