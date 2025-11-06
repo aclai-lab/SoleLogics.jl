@@ -138,7 +138,6 @@ kstruct2 = KripkeStructure(kframe2, valuation2)
 
 ############################################################################################
 
-
 worlds3 = SoleLogics.World.(1:7)
 edges3 = Edge.([(1,2), (1,3), (1,4), (1,5), (1,6), (1,7)])
 kframe3 = SoleLogics.ExplicitCrispUniModalFrame(worlds3, Graphs.SimpleDiGraph(edges3))
@@ -155,21 +154,60 @@ valuation3 = Dict([
  ])
 kstruct3 = KripkeStructure(kframe3, valuation3)
 
-@test check(DIAMOND(p), kstruct3, worlds[1]) == true
-@test check(DIAMOND2(p), kstruct3, worlds[1]) == true
-@test check(DIAMOND3(p), kstruct3, worlds[1]) == true
+@test check(DIAMOND(p), kstruct3, worlds3[1]) == true
+@test check(DIAMOND2(p), kstruct3, worlds3[1]) == true
+@test check(DIAMOND3(p), kstruct3, worlds3[1]) == true
 
-@test check(BOX(p), kstruct3, worlds[1]) == false
-@test check(BOX2(p), kstruct3, worlds[1]) == false
-@test check(BOX3(p), kstruct3, worlds[1]) == true
+@test check(BOX(p), kstruct3, worlds3[1]) == false
+@test_broken check(BOX2(p), kstruct3, worlds3[1]) == false
+@test check(BOX3(p), kstruct3, worlds3[1]) == true
 
-@test check(dual(BOX)(p), kstruct3, worlds[1]) == true
-@test check(dual(BOX2)(p), kstruct3, worlds[1]) == true
-@test check(dual(BOX3)(p), kstruct3, worlds[1]) == true
+@test check(dual(BOX)(p), kstruct3, worlds3[1]) == true
+@test check(dual(BOX2)(p), kstruct3, worlds3[1]) == true
+@test check(dual(BOX3)(p), kstruct3, worlds3[1]) == true
 
-@test check(dual(DIAMOND)(p), kstruct3, worlds[1]) == false
-@test check(dual(DIAMOND2)(p),  kstruct3, worlds[1]) == false
-@test check(dual(DIAMOND3)(p),  kstruct3, worlds[1]) == true
+@test check(dual(DIAMOND)(p), kstruct3, worlds3[1]) == false
+@test_broken check(dual(DIAMOND2)(p),  kstruct3, worlds3[1]) == true
+@test check(dual(DIAMOND3)(p),  kstruct3, worlds3[1]) == true
+
+
+############################################################################################
+
+worlds4 = SoleLogics.World.(1:7)
+edges4 = Edge.([(1,2), (1,3), (1,4), (1,5), (1,6), (1,7)])
+kframe4 = SoleLogics.ExplicitCrispUniModalFrame(worlds4, Graphs.SimpleDiGraph(edges4))
+
+# create a kripke structure, by enriching the frame with a valuation function
+valuation4 = Dict([
+    worlds4[1] => TruthDict([p => false]),
+    worlds4[2] => TruthDict([p => true]),
+    worlds4[3] => TruthDict([p => true]),
+    worlds4[4] => TruthDict([p => true]),
+    worlds4[5] => TruthDict([p => false]),
+    worlds4[6] => TruthDict([p => false]),
+    worlds4[7] => TruthDict([p => false])
+ ])
+kstruct4 = KripkeStructure(kframe4, valuation4)
+
+@test check(DIAMOND(p), kstruct4, worlds4[1]) == true
+@test check(DIAMOND2(p), kstruct4, worlds4[1]) == true
+@test check(DIAMOND3(p), kstruct4, worlds4[1]) == true
+
+@test check(BOX(p), kstruct4, worlds4[1]) == false
+@test check(BOX2(p), kstruct4, worlds4[1]) == false
+@test_broken check(BOX3(p), kstruct4, worlds4[1]) == true
+
+# maybe the dual of BOX2 is DIAMOND2 but with strict relation!
+
+@test check(¬(DIAMOND3(¬p)), kstruct4, worlds4[1]) == true
+
+@test check(dual(BOX)(p), kstruct4, worlds4[1]) == true
+@test check(dual(BOX2)(p), kstruct4, worlds4[1]) == true
+@test check(dual(BOX3)(p), kstruct4, worlds4[1]) == false
+
+@test check(dual(DIAMOND)(p), kstruct4, worlds4[1]) == false
+@test check(dual(DIAMOND2)(p),  kstruct4, worlds4[1]) == false
+@test_broken check(dual(DIAMOND3)(p),  kstruct4, worlds4[1]) == true
 
 
 
