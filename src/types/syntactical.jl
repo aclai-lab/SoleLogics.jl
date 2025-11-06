@@ -280,12 +280,17 @@ nleaves(φ::Formula)::Int = nleaves(tree(φ));
 nconnectives(φ::Formula)::Int = nconnectives(tree(φ));
 "See docstring for [`tokens`](@ref)."
 noperators(φ::Formula)::Int = noperators(tree(φ));
-
+"See docstring for [`tokens`](@ref)."
 appendtokens!(v::Vector, φ::Formula)::Vector = appendtokens!(v, tree(φ))
+"See docstring for [`tokens`](@ref)."
 appendatoms!(v::Vector, φ::Formula)::Vector = appendatoms!(v, tree(φ))
+"See docstring for [`tokens`](@ref)."
 appendtruths!(v::Vector, φ::Formula)::Vector = appendtruths!(v, tree(φ))
+"See docstring for [`tokens`](@ref)."
 appendleaves!(v::Vector, φ::Formula)::Vector = appendleaves!(v, tree(φ))
+"See docstring for [`tokens`](@ref)."
 appendconnectives!(v::Vector, φ::Formula)::Vector = appendconnectives!(v, tree(φ))
+"See docstring for [`tokens`](@ref)."
 appendoperators!(v::Vector, φ::Formula)::Vector = appendoperators!(v, tree(φ))
 
 
