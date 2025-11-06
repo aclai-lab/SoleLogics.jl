@@ -163,7 +163,7 @@ kstruct3 = KripkeStructure(kframe3, valuation3)
 @test check(DIAMOND3(p), kstruct3, worlds3[1]) == true
 
 @test check(BOX(p), kstruct3, worlds3[1]) == false
-@test_broken check(BOX2(p), kstruct3, worlds3[1]) == false
+@test check(BOX2(p), kstruct3, worlds3[1]) == false
 @test check(BOX3(p), kstruct3, worlds3[1]) == true
 
 @test check(dual(BOX)(p), kstruct3, worlds3[1]) == true
@@ -171,7 +171,7 @@ kstruct3 = KripkeStructure(kframe3, valuation3)
 @test check(dual(BOX3)(p), kstruct3, worlds3[1]) == true
 
 @test check(dual(DIAMOND)(p), kstruct3, worlds3[1]) == false
-@test_broken check(dual(DIAMOND2)(p),  kstruct3, worlds3[1]) == true
+@test check(dual(DIAMOND2)(p),  kstruct3, worlds3[1]) == false
 @test check(dual(DIAMOND3)(p),  kstruct3, worlds3[1]) == true
 
 
