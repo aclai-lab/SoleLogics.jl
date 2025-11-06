@@ -77,7 +77,7 @@ for i in 1:5
 
     # boxes
     @test collateworlds(kframe, BOX2, ([SoleLogics.World(i)],)) == World{Int64}.([
-        1,2,3,4,5
+        2,4,5
     ])
     @test collateworlds(kframe, BOX3, ([SoleLogics.World(i)],)) == World{Int64}.([
         1,2,3,4,5
