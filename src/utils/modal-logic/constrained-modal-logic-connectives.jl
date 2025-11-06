@@ -118,7 +118,7 @@ associativity(::ConstrainedConnective{:◊,N}) where {N} = associativity(◊)
 
 
 """
-    const BOX2 = NamedConnective{:□}(<=, 2)
+    const BOX2 = NamedConnective{:□}(<, 2)
     const □₂ = BOX2
 
 Special [`BOX`](@ref) connective, stating that there are fewer than 2 worlds where a
@@ -133,7 +133,7 @@ const BOX2 = ConstrainedConnective{:□,2}(<)
 const □₂ = BOX2
 
 """
-    const BOX3 = ConstrainedConnective{:◊,3}(>=)
+    const BOX3 = ConstrainedConnective{:◊,3}(<)
     const □₃ = BOX3
 
 See [`BOX2`](@ref), [`ConstrainedConnective`](@ref).
