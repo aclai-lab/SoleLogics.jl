@@ -103,8 +103,8 @@ end
 
 
 """
-    struct ContinuousBinaryOperation <: AbstractBinaryOperation 
-        func::FunctionWrapper{Float64, Tuple{Float64, Float64}}
+    struct ContinuousBinaryOperation{F<:Function} <: AbstractBinaryOperation 
+        func::F
     end
 
 A ContinuousBinaryOperation wraps a binary function on continuous truth values. 

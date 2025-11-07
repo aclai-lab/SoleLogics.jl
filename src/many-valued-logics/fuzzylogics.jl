@@ -1,5 +1,4 @@
 import ..SoleLogics: AbstractAlgebra, top, bot, iscrisp
-using StaticArrays
 
 """
     struct FuzzyLogic <: AbstractAlgebra{ContinuousTruth}
@@ -15,7 +14,7 @@ end
 
 function Base.show(io::IO, a::FuzzyLogic)
     println(string(typeof(a)))
-    println(string(tnorm))
+    println(string(a.tnorm.func))
 end
 
 iscrisp(::FuzzyLogic) = false
@@ -23,29 +22,32 @@ iscrisp(::FuzzyLogic) = false
 top(::FuzzyLogic) = ContinuousTruth(1.0)
 bot(::FuzzyLogic) = ContinuousTruth(0.0)
 
-# Shortcuts for most used fuzzy logics
+"""
+    const GodelLogic
+
+Gödel fuzzy logic based on the minimum t-norm: `a ∧ b = min(a, b)`.
+
+See also [`FuzzyLogic`](@ref), [`GodelTNorm`](@ref), [`LukasiewiczLogic`](@ref).
+"""
 const GodelLogic = FuzzyLogic(GodelTNorm)
 
+"""
+    const LukasiewiczLogic
+
+Łukasiewicz fuzzy logic based on the Łukasiewicz t-norm: `a ∧ b = max(0, a + b - 1)`.
+
+See also [`FuzzyLogic`](@ref), [`LukasiewiczTNorm`](@ref), [`ProductLogic`](@ref).
+"""
 const LukasiewiczLogic = FuzzyLogic(LukasiewiczTNorm)
 
+"""
+    const ProductLogic
+
+Product fuzzy logic based on multiplication: `a ∧ b = a × b`.
+
+See also [`FuzzyLogic`](@ref), [`ProductTNorm`](@ref), [`GodelLogic`](@ref).
+"""
 const ProductLogic = FuzzyLogic(ProductTNorm)
 
-"""
-    struct ManyExpertAlgebra{N, A <: SArray{N, FuzzyLogic}} <: AbstractAlgebra{ContinuousTruth}
-        fuzzylogics::A    
-    end
-TODO: write a proper doc
-"""
-struct ManyExpertAlgebra{N, A <: SArray{N, FuzzyLogic}} <: AbstractAlgebra{ContinuousTruth}
-    fuzzylogics::A
 
-    function ManyExpertAlgebra{N}(fuzzylogics::A) where {N, A <: SArray{N, FuzzyLogic}}
-        return new{N, A}(fuzzylogics)
-    end
-end
-
-iscrisp(::ManyExpertAlgebra) = false
-
-top(::ManyExpertAlgebra) = ContinuousTruth(1.0)
-bot(::ManyExpertAlgebra) = ContinuousTruth(0.0)
 

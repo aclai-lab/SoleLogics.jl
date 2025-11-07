@@ -36,7 +36,20 @@ See also [`precedes`](@ref), [`succeedes`](@ref), [`succeedeq`](@ref).
     end
 end
 
-# TODO: write docs
+"""
+    function precedeq(
+        l::FuzzyLogic,
+        t1::T1,
+        t2::T2
+    ) where {
+        T1<:Truth,
+        T2<:Truth
+    }
+Return true if `t1` < `t2` in fuzzy logic `l`. For continuous truth values, 
+this is the standard strict less-than ordering on real numbers in [0,1].
+
+See also [`precedes`](@ref), [`succeedes`](@ref), [`succeedeq`](@ref).
+"""
 @inline function precedeq(
     l::FuzzyLogic,
     t1::T1,
@@ -84,7 +97,21 @@ See also [`precedeq`](@ref), [`succeedes`](@ref), [`succeedeq`](@ref).
     return t1 != t2 && precedeq(l, t1, t2)
 end
 
-# TODO: write docs
+"""
+    function precedes(
+        l::FuzzyLogic,
+        t1::T1,
+        t2::T2
+    ) where {
+        T1<:Truth,
+        T2<:Truth
+    }
+
+Return true if `t1` < `t2` in fuzzy logic `l`. For continuous truth values, 
+this is the standard strict less-than ordering on real numbers in [0,1].
+
+See also [`precedeq`](@ref), [`succeedes`](@ref), [`succeedeq`](@ref).
+"""
 @inline function precedes(
     l::FuzzyLogic,
     t1::T1,
@@ -132,7 +159,21 @@ See also [`precedes`](@ref), [`precedeq`](@ref), [`succeedes`](@ref).
     return precedeq(l, t2, t1)
 end
 
-# TODO: write docs
+"""
+    function succeedeq(
+        l::FuzzyLogic,
+        t1::T1,
+        t2::T2
+    ) where {
+        T1<:Truth,
+        T2<:Truth
+    }
+
+Return true if `t1` ≥ `t2` in fuzzy logic `l`. For continuous truth values, 
+this is the standard greater-than-or-equal ordering on real numbers in [0,1].
+
+See also [`precedes`](@ref), [`precedeq`](@ref), [`succeedes`](@ref).
+"""
 @inline function succeedeq(
     l::FuzzyLogic,
     t1::T1,
@@ -180,7 +221,21 @@ See also [`precedes`](@ref), [`precedeq`](@ref), [`succeedeq`](@ref).
     return precedes(l, t2, t1)
 end
 
-# TODO: write docs
+"""
+    function succeedes(
+        l::FuzzyLogic,
+        t1::T1,
+        t2::T2
+    ) where {
+        T1<:Truth,
+        T2<:Truth
+    }
+
+Return true if `t1` > `t2` in fuzzy logic `l`. For continuous truth values, 
+this is the standard strict greater-than ordering on real numbers in [0,1].
+
+See also [`precedes`](@ref), [`precedeq`](@ref), [`succeedeq`](@ref).
+"""
 @inline function succeedes(
     l::FuzzyLogic,
     t1::T1,
@@ -219,8 +274,6 @@ See also [`precedes`](@ref), [`precedeq`](@ref).
     if !isa(t, FiniteTruth) t = convert(FiniteTruth, t)::FiniteTruth end
     return filter(ti->precedes(l, ti, t), getdomain(l))
 end
-
-# Should i define dispatches also for these last functions?
 
 """
     function maximalmembers(

@@ -44,7 +44,7 @@ end
 
 function SoleLogics.collatetruth(
     ::typeof(∧),
-    (α, β)::NTuple{N, T where T<:FiniteTruth},
+    (α, β)::NTuple{N, FiniteTruth},
     a::FiniteFLewAlgebra
 ) where {
     N
@@ -54,17 +54,17 @@ end
 
 function SoleLogics.collatetruth(
     ::typeof(∧),
-    (x, y)::NTuple{N, T where T<:ContinuousTruth},
+    (x, y)::NTuple{N, ContinuousTruth},
     a::FuzzyLogic
 ) where {
     N
 }
-    a.tnorm(x.value, y.value)
+    a.tnorm(x, y)
 end
 
 function SoleLogics.collatetruth(
     ::typeof(∨),
-    (α, β)::NTuple{N, T where T<:FiniteTruth},
+    (α, β)::NTuple{N, FiniteTruth},
     a::FiniteFLewAlgebra
 ) where {
     N
@@ -72,12 +72,19 @@ function SoleLogics.collatetruth(
     a.join(α, β)
 end
 
-# Should i just straight up use the order utilities to define the join and implication?
-# Also, i suppose there's also need to define a check function for continuous logic, or is it low-priority?
+function SoleLogics.collatetruth(
+    ::typeof(∨),
+    (x, y)::NTuple{N, ContinuousTruth},
+    a::FuzzyLogic
+) where {
+    N
+}
+    ContinuousTruth(max(x.value, y.value))
+end
 
 function SoleLogics.collatetruth(
     ::typeof(→),
-    (α, β)::NTuple{N, T where T<:FiniteTruth},
+    (α, β)::NTuple{N, FiniteTruth},
     a::FiniteFLewAlgebra
 ) where {
     N

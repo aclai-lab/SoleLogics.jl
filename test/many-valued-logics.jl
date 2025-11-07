@@ -131,6 +131,35 @@ lnorm = BinaryOperation{3}(lnormtruthtable)
 Ł3 = FiniteFLewAlgebra{3}(join, meet, lnorm, b, t)
 
 ################################################################################
+#### Fuzzy Logics ##############################################################
+################################################################################
+
+@test FuzzyLogic(GodelTNorm)
+
+@test iszero(GodelLogic.tnorm(x, y).value)
+
+@test iszero(LukasiewiczLogic.tnorm(x, y).value)
+
+@test iszero(ProductLogic.tnorm(x, y).value)
+
+@test iscrisp(GodelLogic) == false
+
+@test top(GodelLogic) == ContinuousTruth(1.0)
+
+@test bot(GodelLogic) == ContinuousTruth(0.0)
+
+################################################################################
+#### Many-Expert Algebra #######################################################
+################################################################################
+
+MXA = ManyExpertAlgebra{3}([GodelLogic, ProductLogic, LukasiewiczLogic])
+
+@test iscrisp(MXA) == false
+
+@test top(MXA) == (1.0, 1.0, 1.0)
+@test bot(MXA) == (0.0, 0.0, 0.0)
+
+################################################################################
 #### Nine-valued algebra (Heyting case) ########################################
 ################################################################################
 
