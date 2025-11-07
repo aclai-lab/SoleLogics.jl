@@ -24,6 +24,11 @@ struct ManyExpertAlgebra{N, A <: SVector{N, FuzzyLogic}} <: AbstractAlgebra{Cont
     end
 end
 
+function Base.show(io::IO, a::ManyExpertAlgebra)
+    println(typeof(a))
+    for expert in a.experts print(expert) end
+end
+
 iscrisp(::ManyExpertAlgebra) = false
 
 top(::ManyExpertAlgebra{N}) where {N} = ntuple(_ -> ContinuousTruth(1.0), N)

@@ -134,7 +134,10 @@ lnorm = BinaryOperation{3}(lnormtruthtable)
 #### Fuzzy Logics ##############################################################
 ################################################################################
 
-@test FuzzyLogic(GodelTNorm)
+x = ContinuousTruth(1.0)
+y = ContinuousTruth(0.0)
+
+FuzzyLogic(GodelTNorm)
 
 @test iszero(GodelLogic.tnorm(x, y).value)
 
@@ -156,8 +159,9 @@ MXA = ManyExpertAlgebra{3}([GodelLogic, ProductLogic, LukasiewiczLogic])
 
 @test iscrisp(MXA) == false
 
-@test top(MXA) == (1.0, 1.0, 1.0)
-@test bot(MXA) == (0.0, 0.0, 0.0)
+@test top(MXA) == ntuple(i -> top(MXA.experts[i]), 3)
+@test bot(MXA) == ntuple(i -> bot(MXA.experts[i]), 3)
+
 
 ################################################################################
 #### Nine-valued algebra (Heyting case) ########################################

@@ -14,7 +14,7 @@ end
 
 function Base.show(io::IO, a::FuzzyLogic)
     println(string(typeof(a)))
-    println(string(a.tnorm.func))
+    println("t-norm: " * string(a.tnorm.func))
 end
 
 iscrisp(::FuzzyLogic) = false
