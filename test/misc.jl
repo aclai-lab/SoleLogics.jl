@@ -61,7 +61,7 @@ interp2             = TruthDict(1:4, BOT)
 @test typeof(∨)         <: NamedConnective
 @test typeof(→)         <: NamedConnective
 
-@test isnullary(p)      == true
+@test isnullary(p)
 @test syntaxstring(p)   == "p"
 
 @test pandq             |> syntaxstring == CONJUNCTION(p, q)        |> syntaxstring
@@ -117,11 +117,12 @@ interp2             = TruthDict(1:4, BOT)
 @test Set(atoms(pandq))             != Set(atoms(pandr))
 @test height(trees_implication)     == height(pandq) + height(qandp)
 
-@test isequal(p, p)                     == true
-@test isequal(p, q)                     == false
-@test isequal(pandq, porq)              == false
-@test isequal(porq, porq)               == true
-@test isequal(pandq, pandq_demorgan)    == false # This is not semantics, but syntax only.
+@test isequal(⊥, ⊥)
+@test isequal(p, p)
+@test !isequal(p, q)
+@test !isequal(pandq, porq)
+@test isequal(porq, porq)
+@test !isequal(pandq, pandq_demorgan)
 
 @test token(pandq)                      == CONJUNCTION
 @test token(norm)                       == DISJUNCTION
@@ -138,4 +139,4 @@ interp2             = TruthDict(1:4, BOT)
 @test_nowarn interp1[p] = BOT
 @test_nowarn interp1[p] = TOP
 
-@test check(pandq, interp1) == true
+@test check(pandq, interp1)

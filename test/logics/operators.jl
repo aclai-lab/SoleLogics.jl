@@ -1,24 +1,24 @@
 @testset "Operators" begin
-    @test isunary(NEGATION) == true
-    @test isunary(IMPLICATION) == false
-    @test isunary(CONJUNCTION) == false
-    @test isunary(DISJUNCTION) == false
-    @test isunary(DIAMOND) == true
-    @test isunary(BOX) == true
+    @test isunary(NEGATION)
+    @test !isunary(IMPLICATION)
+    @test !isunary(CONJUNCTION)
+    @test !isunary(DISJUNCTION)
+    @test isunary(DIAMOND)
+    @test isunary(BOX)
 
-    @test isbinary(NEGATION) == false
-    @test isbinary(IMPLICATION) == true
-    @test isbinary(CONJUNCTION) == true
-    @test isbinary(DISJUNCTION) == true
-    @test isbinary(DIAMOND) == false
-    @test isbinary(BOX) == false
+    @test !isbinary(NEGATION)
+    @test isbinary(IMPLICATION)
+    @test isbinary(CONJUNCTION)
+    @test isbinary(DISJUNCTION)
+    @test !isbinary(DIAMOND)
+    @test !isbinary(BOX)
 
-    @test SoleLogics.iscommutative(NEGATION) == true
-    @test SoleLogics.iscommutative(IMPLICATION) == false
-    @test SoleLogics.iscommutative(CONJUNCTION) == true
-    @test SoleLogics.iscommutative(DISJUNCTION) == true
-    @test SoleLogics.iscommutative(DIAMOND) == true
-    @test SoleLogics.iscommutative(BOX) == true
+    @test iscommutative(NEGATION)
+    @test !iscommutative(IMPLICATION)
+    @test iscommutative(CONJUNCTION)
+    @test iscommutative(DISJUNCTION)
+    @test iscommutative(DIAMOND)
+    @test iscommutative(BOX)
 
     # Associativity tests
 

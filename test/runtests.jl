@@ -14,6 +14,7 @@ println("Julia version: ", VERSION)
 
 test_suites = [
     ("Core", ["core.jl",]),
+    ("Syntactical", ["syntactical.jl",]),
     ("Parse", ["parse.jl",]),
     ("Normalize", ["normalize.jl",]),
     ("Syntax Utils", ["syntax-utils.jl",]),

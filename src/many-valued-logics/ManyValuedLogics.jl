@@ -20,6 +20,7 @@ export getdomain
 include("finite-algebras.jl")
 
 export precedeq, precedes, succeedeq, succeedes
+export truthjoin, truthmeet
 
 include("order-utilities.jl")
 

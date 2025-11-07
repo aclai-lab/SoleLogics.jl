@@ -12,7 +12,7 @@
     │   │   │   │       ├── BooleanTruth (⊤ and ⊥)
     │   │   │   │       └── ...
     │   │   │   └── AbstractSyntaxBranch
-    │   │   │   │   └── SyntaxBranch (e.g., p ∧ q)
+    │   │   │       └── SyntaxBranch (e.g., p ∧ q)
     │   │   ├── LinearForm
     │   │   │   └── LeftmostLinearForm (e.g., conjunctions, disjunctions, DNFs, CNFs)
     │   │   ├── Literal (e.g., p, ¬p)
@@ -243,7 +243,6 @@ struct SyntaxBranch <: AbstractSyntaxBranch
                 "$(token) of arity $(arity(token)) and $(N) children."
             )
         end
-        return nothing
     end
 
     function SyntaxBranch(
@@ -260,8 +259,8 @@ struct SyntaxBranch <: AbstractSyntaxBranch
     end
 end
 
-children(φ::SyntaxBranch) = φ.children
 token(φ::SyntaxBranch) = φ.token
+children(φ::SyntaxBranch) = φ.children
 
 ################################################################################
 ################################################################################
