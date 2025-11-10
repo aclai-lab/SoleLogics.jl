@@ -219,6 +219,15 @@ using SoleLogics.ManyValuedLogics: G3
 )
 
 ################################################################################
+#### Fuzzy-Logics check ########################################################
+################################################################################
+
+@atoms p q
+@test_nowarn check(parseformula("p∨q"), TruthDict([p=>ContinuousTruth(0), q=>ContinuousTruth(1)]), GodelLogic)
+@test_nowarn isbot(interpret(parseformula("(p∧q)∨p"), TruthDict([p=>ContinuousTruth(0), q=>ContinuousTruth(1)]), GodelLogic))
+
+
+################################################################################
 #### Finite FLew-chains generation #############################################
 ################################################################################
 
