@@ -60,7 +60,7 @@ See also [`precedes`](@ref), [`succeedes`](@ref), [`succeedeq`](@ref).
 }
     if !isa(t1, ContinuousTruth) t1 = convert(ContinuousTruth, t1)::ContinuousTruth end
     if !isa(t2, ContinuousTruth) t2 = convert(ContinuousTruth, t2)::ContinuousTruth end
-    return t1 <= t2 ? true : false
+    return t1.value <= t2.value ? true : false
 end
 
 """
@@ -122,7 +122,7 @@ See also [`precedeq`](@ref), [`succeedes`](@ref), [`succeedeq`](@ref).
 }
     if !isa(t1, ContinuousTruth) t1 = convert(ContinuousTruth, t1)::ContinuousTruth end
     if !isa(t2, ContinuousTruth) t2 = convert(ContinuousTruth, t2)::ContinuousTruth end
-    return t1 < t2 ? true : false
+    return t1.value < t2.value ? true : false
 end
 
 """
@@ -184,7 +184,7 @@ See also [`precedes`](@ref), [`precedeq`](@ref), [`succeedes`](@ref).
 }
     if !isa(t1, ContinuousTruth) t1 = convert(ContinuousTruth, t1)::ContinuousTruth end
     if !isa(t2, ContinuousTruth) t2 = convert(ContinuousTruth, t2)::ContinuousTruth end
-    return t1 >= t2 ? true : false
+    return t1.value >= t2.value ? true : false
 end
 
 """
@@ -246,7 +246,7 @@ See also [`precedes`](@ref), [`precedeq`](@ref), [`succeedeq`](@ref).
 }
     if !isa(t1, ContinuousTruth) t1 = convert(ContinuousTruth, t1)::ContinuousTruth end
     if !isa(t2, ContinuousTruth) t2 = convert(ContinuousTruth, t2)::ContinuousTruth end
-    return t1 > t2 ? true : false
+    return t1.value > t2.value ? true : false
 end
 
 """

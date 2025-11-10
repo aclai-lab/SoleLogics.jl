@@ -137,6 +137,12 @@ lnorm = BinaryOperation{3}(lnormtruthtable)
 x = ContinuousTruth(1.0)
 y = ContinuousTruth(0.0)
 
+@test precedeq(GodelLogic, ⊥, ⊤)
+@test precedes(GodelLogic, ⊥, ⊤)
+
+@test succeedeq(GodelLogic, ⊤, ⊥)
+@test succeedes(GodelLogic, ⊤, ⊥)
+
 FuzzyLogic(GodelTNorm)
 
 @test iszero(GodelLogic.tnorm(x, y).value)
@@ -223,8 +229,8 @@ using SoleLogics.ManyValuedLogics: G3
 ################################################################################
 
 @atoms p q
-@test_nowarn check(parseformula("p∨q"), TruthDict([p=>ContinuousTruth(0), q=>ContinuousTruth(1)]), GodelLogic)
-@test_nowarn isbot(interpret(parseformula("(p∧q)∨p"), TruthDict([p=>ContinuousTruth(0), q=>ContinuousTruth(1)]), GodelLogic))
+@test_nowarn check(parseformula("p∨q"), TruthDict([p=>⊥, q=>ContinuousTruth(1)]), GodelLogic)
+@test_nowarn isbot(interpret(parseformula("(p∧q)∨p"), TruthDict([p=>⊥, q=>ContinuousTruth(1)]), GodelLogic))
 
 
 ################################################################################
