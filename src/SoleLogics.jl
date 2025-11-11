@@ -162,10 +162,6 @@ include("utils/interpretation-sets.jl")
 include("utils/parse.jl")
 
 
-export AnchoredFormula
-include("utils/anchored-formula.jl")
-
-
 # these first files are included here to avoid repeated inclusions in those below;
 # "generation" could become a SoleLogics submodule.
 include("generation/docstrings.jl")

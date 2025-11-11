@@ -179,21 +179,12 @@ end
     args...;
     kwargs...
 )
-    # If a logic `l` is given, fallback to randformula, specifying a specific
-    # `AnchoredFormula` type.
+    # If a logic `l` is given, fallback to randformula
     _grammar = grammar(l)
 
     randformula(
         initrng(rng), maxheight, alphabet(_grammar), operators(_grammar), args...;
         atomweights=atomweights, opweights=opweights, kwargs...)
-
-    # TODO: handle AnchoredFormula of a specific type
-    # e.g., AnchoredFormula(typeof(propositionallogic()))
-    # The following signature must be honored:
-    # randformula(
-    #     initrng(rng), AnchoredFormula{typeof(l)}, maxheight,
-    #     alphabet(_grammar), operators(_grammar), args...;
-    #     atomweights=atomweights, opweights=opweights, kwargs...)
 end
 
 """$(sample_hgao_docstring)"""
@@ -206,8 +197,7 @@ end
     opweights::Union{Nothing,AbstractWeights}=nothing,
     kwargs...
 )
-    # If only a gammar `g` is given, fallback to randformula without specifying
-    # any kind of `AnchoredFormula`.
+    # If only a gammar `g` is given, fallback to randformula
     randformula(
         initrng(rng), maxheight, g, args...;
         atompicker=atomweights, opweights=opweights, kwargs...)
@@ -322,25 +312,4 @@ end
     kwargs...
 )
     randformula(rng, maxheight, alphabet(g), operators(g), args...; kwargs...)
-end
-
-@__rng_dispatch function randformula(
-    rng::Union{Integer,AbstractRNG},
-    T::Type{AnchoredFormula},
-    maxheight::Integer,
-    alphabet::Union{AbstractVector,AbstractAlphabet},
-    operators::AbstractVector{<:Operator},
-    args...;
-    kwargs...
-)
-    error("randformula supporting Type{AnchoredFormula} as second argument " *
-        "must still be implemented")
-
-    # TODO: unreachable code - how is T supposed to be handled?
-    alphabet = convert(AbstractAlphabet, alphabet)
-    baseformula(
-        randformula(maxheight, alphabet, operators, args...; kwargs...);
-        alphabet=alphabet,
-        additional_operators=operators,
-    )
 end

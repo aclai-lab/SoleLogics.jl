@@ -35,19 +35,6 @@ CNF{SS<:SyntaxStructure}
 DNF{SS<:SyntaxStructure}
 ```
 
-<!-- 
-  - [`AnchoredFormula`](@ref)
-
-```@docs
-AnchoredFormula
-logic(φ::AnchoredFormula)
-synstruct(φ::AnchoredFormula)
-
-baseformula(φ::Formula; infer_logic = true, additional_operators::Union{Nothing,Vector{<:Operator}} = nothing, kwargs...)
-
-parseformula(::Type{AnchoredFormula}, expr::AbstractString, additional_operators::Union{Nothing,Vector{<:Operator}} = nothing; operators::Union{Nothing,Vector{<:Operator}}, grammar::Union{Nothing,AbstractGrammar} = nothing, algebra::Union{Nothing,AbstractAlgebra} = nothing, kwargs...)
-``` -->
-
 ## Random sampling and generation
 
 ```@docs
