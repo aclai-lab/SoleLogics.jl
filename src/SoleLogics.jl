@@ -191,6 +191,7 @@ function intersects(u, v)
     false
 end
 
+export inittruthvalues
 function inittruthvalues(truthvalues::Union{Vector{<:Truth}, AbstractAlgebra})
     return (truthvalues isa AbstractAlgebra) ? domain(truthvalues) : truthvalues
 end
