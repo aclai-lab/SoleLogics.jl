@@ -7,7 +7,6 @@ using Graphs
 # we exploit SoleReasoners (the embedding branch, at the moment of reading)
 using SoleLogics
 
-
 """
 Install spartacus solver in a subfolder at the location of this file.
 
@@ -18,9 +17,12 @@ You need mlton; you can get it from https://sourceforge.net/projects/mlton/files
 also, you need to move `bin` and `lib` folders to, respectively, `usr/bin` and `usr/lib`.
 """
 function installspartacus()
-    if !isspartacusinstalled()
+    _installation_instructions = joinpath(
+        pkgdir(SoleLogics), "test", "generation", "spartacus-installation")
+
+    if !isfile( joinpath(_installation_instructions, "spartacus") )
         println("Installing Spartacus")
-        run(`sh $(joinpath(@__DIR__, "install_spartacus.sh")) $(@__DIR__)`)
+        run(`sh $(joinpath(_installation_instructions, "install_spartacus.sh")) $(_installation_instructions)`)
     end
 end
 
@@ -61,7 +63,7 @@ end
 
 
 # directory in which this script lives
-WORKING_DIR = joinpath(@__DIR__, "test", "generation")
+WORKING_DIR = joinpath(pkgdir(SoleLogics), "test", "generation")
 
 # directory where spartacus solver is installed
 SPARTACUS_DIR = joinpath(WORKING_DIR, "spartacus-installation", "spartacus")
@@ -165,11 +167,13 @@ function spartacustomodel(
         # later, by applying unique to this collection, we will isolate the entire alphabet
         push!(allatoms, atoms_on_currentworld...)
 
-        # "successors:   a:1, a:2" becomes
         successors = split(spartacuslog[i+3], "successors:")[2] .|> strip
-        for (_,targetworld) in split.(successors, ":")
-            # WARNING: beware, as the specific type of relations is currently ignored
-            push!(graph, currentworld, targetworld)
+        # when there are no successors, then we just want to skip
+        if !isempty(successors)
+            for (_,targetworld) in split.(successors, ":")
+                # WARNING: beware, as the specific type of relations is currently ignored
+                push!(graph, currentworld, targetworld)
+            end
         end
     end
 
@@ -196,3 +200,5 @@ function spartacustomodel(
 
     return KripkeStructure(_frame, valuation)
 end
+
+spartacustomodel(_result)
