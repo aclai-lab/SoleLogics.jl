@@ -165,6 +165,8 @@ include("generation/formula.jl")
 export randframe, randmodel
 include("generation/models.jl")
 
+export randlogiset
+include("generation/logiset.jl")
 
 
 

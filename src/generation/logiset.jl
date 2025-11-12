@@ -13,7 +13,7 @@ using Random
         kwargs...
     )
 
-
+TODO
 """
 @__rng_dispatch function randlogiset(
     rng::Union{Integer,AbstractRNG},
