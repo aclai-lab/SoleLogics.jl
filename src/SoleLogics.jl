@@ -99,7 +99,7 @@ export KripkeStructure
 export truthtype, worldtype
 
 export AbstractWorld
-export AbstractWorlds, Worlds
+export AbstractWorlds, World, Worlds
 
 export OneWorld
 export GeometricalWorld, Point, Point1D, Point2D, Point3D
