@@ -131,6 +131,45 @@ lnorm = BinaryOperation{3}(lnormtruthtable)
 Ł3 = FiniteFLewAlgebra{3}(join, meet, lnorm, b, t)
 
 ################################################################################
+#### Fuzzy Logics ##############################################################
+################################################################################
+
+x = ContinuousTruth(1.0)
+y = ContinuousTruth(0.0)
+
+@test precedeq(GodelLogic, ⊥, ⊤)
+@test precedes(GodelLogic, ⊥, ⊤)
+
+@test succeedeq(GodelLogic, ⊤, ⊥)
+@test succeedes(GodelLogic, ⊤, ⊥)
+
+FuzzyLogic(GodelTNorm)
+
+@test iszero(GodelLogic.tnorm(x, y).value)
+
+@test iszero(LukasiewiczLogic.tnorm(x, y).value)
+
+@test iszero(ProductLogic.tnorm(x, y).value)
+
+@test iscrisp(GodelLogic) == false
+
+@test top(GodelLogic) == ContinuousTruth(1.0)
+
+@test bot(GodelLogic) == ContinuousTruth(0.0)
+
+################################################################################
+#### Many-Expert Algebra #######################################################
+################################################################################
+
+MXA = ManyExpertAlgebra{3}([GodelLogic, LukasiewiczLogic, ProductLogic])
+
+@test iscrisp(MXA) == false
+
+@test top(MXA) == ntuple(i -> top(MXA.experts[i]), 3)
+@test bot(MXA) == ntuple(i -> bot(MXA.experts[i]), 3)
+
+
+################################################################################
 #### Nine-valued algebra (Heyting case) ########################################
 ################################################################################
 
@@ -184,6 +223,29 @@ using SoleLogics.ManyValuedLogics: G3
     TruthDict([p => convert(FiniteTruth, α), q => ⊥]),
     convert(FiniteFLewAlgebra, G3)
 )
+
+################################################################################
+#### Fuzzy-Logics interpret ####################################################
+################################################################################
+
+@atoms p q
+@test_nowarn check(parseformula("p∨q"), TruthDict([p => ⊥, q => ContinuousTruth(1)]), GodelLogic)
+@test_nowarn isbot(interpret(parseformula("(p∧q)∨p"), TruthDict([p => ⊥, q => ContinuousTruth(1)]), GodelLogic))
+@test_nowarn istop(interpret(parseformula("p→q"), TruthDict([p => ContinuousTruth(0.5), q => ContinuousTruth(0.5)]), LukasiewiczLogic))
+
+################################################################################
+#### Many-Expert interpret #####################################################
+################################################################################
+
+v = Atom("v")
+w = Atom("w")
+x = Atom("x")
+y = Atom("y")
+z = Atom("z")
+
+@test bot(MXA) == interpret(parseformula("(v∧w∧x)∨(y∧z)"), TruthDict([v => ⊥, w => ContinuousTruth(0.5), x => ContinuousTruth(0.0), y => ⊥, z => ContinuousTruth(0.4)]), MXA)
+@test top(MXA) == interpret(parseformula("v→w"), TruthDict([v => ⊥, w => ⊤]), MXA)
+
 
 ################################################################################
 #### Finite FLew-chains generation #############################################
