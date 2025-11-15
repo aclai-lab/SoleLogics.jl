@@ -22,6 +22,18 @@ end
 
 function SoleLogics.collatetruth(
     c::NamedConnective,
+    (x, y)::Tuple{ContinuousTruth, T},
+    a::ManyExpertAlgebra{M}
+) where {
+    T <: Truth,
+    M
+}
+    if !isa(y, ContinuousTruth) y = convert(ContinuousTruth, y) end 
+    return SoleLogics.collatetruth(c, (x, y), a)
+end
+
+function SoleLogics.collatetruth(
+    c::NamedConnective,
     (α, β)::Tuple{T,FiniteTruth},
     a::FiniteFLewAlgebra
 ) where {
@@ -39,6 +51,52 @@ function SoleLogics.collatetruth(
     T <: Truth
 }
     if !isa(x, ContinuousTruth) x = convert(ContinuousTruth, x) end
+    return SoleLogics.collatetruth(c, (x, y), a)
+end
+
+function SoleLogics.collatetruth(
+    c::NamedConnective,
+    (x, y)::Tuple{T, ContinuousTruth},
+    a::ManyExpertAlgebra{M}
+) where {
+    T <: Truth,
+    M
+}
+    if !isa(x, ContinuousTruth) x = convert(ContinuousTruth, x) end
+    return SoleLogics.collatetruth(c, (x, y), a)
+end
+
+function SoleLogics.collatetruth(
+    c::NamedConnective,
+    (x, y)::NTuple{N, ContinuousTruth},
+    a::ManyExpertAlgebra{M}
+) where {
+    N, M
+}
+    x = ntuple(_ -> ContinuousTruth(x.value), M)
+    y = ntuple(_ -> ContinuousTruth(y.value), M)
+    return SoleLogics.collatetruth(c, (x, y), a)
+end
+
+function SoleLogics.collatetruth(
+    c::NamedConnective, 
+    (x, y)::Tuple{ContinuousTruth, NTuple{M, ContinuousTruth}},
+    a::ManyExpertAlgebra{M}
+) where {
+    M
+}
+    x = ntuple(_ -> ContinuousTruth(x.value), M)
+    return SoleLogics.collatetruth(c, (x, y), a)
+end
+
+function SoleLogics.collatetruth(
+    c::NamedConnective, 
+    (x, y)::Tuple{NTuple{M, ContinuousTruth}, ContinuousTruth},
+    a::ManyExpertAlgebra{M}
+) where {
+    M
+}
+    y = ntuple(_ -> ContinuousTruth(y.value), M)
     return SoleLogics.collatetruth(c, (x, y), a)
 end
 
@@ -63,6 +121,16 @@ function SoleLogics.collatetruth(
 end
 
 function SoleLogics.collatetruth(
+    ::typeof(∧),
+    (x, y)::NTuple{N, NTuple{M, ContinuousTruth}},
+    a::ManyExpertAlgebra{M}
+) where {
+    N, M
+}
+    ntuple(i -> SoleLogics.collatetruth(∧,(x[i], y[i]), a.experts[i]), M)
+end
+
+function SoleLogics.collatetruth(
     ::typeof(∨),
     (α, β)::NTuple{N, FiniteTruth},
     a::FiniteFLewAlgebra
@@ -83,6 +151,16 @@ function SoleLogics.collatetruth(
 end
 
 function SoleLogics.collatetruth(
+    ::typeof(∨), 
+    (x, y)::NTuple{N, NTuple{M, ContinuousTruth}}, 
+    a::ManyExpertAlgebra{M}
+) where {
+    N, M
+}
+    ntuple(i -> SoleLogics.collatetruth(∨,(x[i], y[i]), a.experts[i]), M)
+end
+
+function SoleLogics.collatetruth(
     ::typeof(→),
     (α, β)::NTuple{N, FiniteTruth},
     a::FiniteFLewAlgebra
@@ -90,6 +168,34 @@ function SoleLogics.collatetruth(
     N
 }
     a.implication(α, β)
+end
+
+function SoleLogics.collatetruth(
+    ::typeof(→),
+    (x, y)::NTuple{N, ContinuousTruth}, 
+    a::FuzzyLogic
+) where {
+    N
+} 
+    if x.value <= y.value
+        return ContinuousTruth(1.0)
+    elseif a == GodelLogic
+        return y
+    elseif a == LukasiewiczLogic
+        return ContinuousTruth(1.0 - x.value + y.value)
+    elseif a == ProductLogic
+        return ContinuousTruth(y.value / x.value)
+    end
+end
+
+function SoleLogics.collatetruth(
+    ::typeof(→),
+    (x, y)::NTuple{N, NTuple{M, ContinuousTruth}}, 
+    a::ManyExpertAlgebra{M}
+) where {
+    N, M
+} 
+    ntuple(i -> SoleLogics.collatetruth(→, (x[i], y[i]), a.experts[i]), M)
 end
 
 """
@@ -148,6 +254,48 @@ function SoleLogics.simplify(::typeof(∧), φs::Tuple{BooleanTruth,FiniteTruth}
     SoleLogics.simplify(∧, (convert(FiniteTruth, φs[1]), φs[2]), args...; kwargs...)
 end
 
+# Simplify overrides for many-expert algebras
+
+function SoleLogics.simplify(::typeof(∧), (t1, t2)::Tuple{BooleanTruth, BooleanTruth}, a::ManyExpertAlgebra{M}, args...; kwargs...) where {M}
+    istop(t1) && istop(t2) ? top(a) : bot(a)
+end
+
+function SoleLogics.simplify(::typeof(∧), (t1, t2)::Tuple{BooleanTruth, Formula}, a::ManyExpertAlgebra{M}, args...; kwargs...) where {M}
+    istop(t1) ? t2 : bot(a)
+end
+
+function SoleLogics.simplify(::typeof(∧), (t1, t2)::Tuple{Formula, BooleanTruth}, a::ManyExpertAlgebra{M}, args...; kwargs...) where {M}
+    istop(t2) ? t1 : bot(a)
+end
+
+function SoleLogics.simplify(::typeof(∧), φs::Tuple{NTuple{M, ContinuousTruth}, BooleanTruth}, args...; kwargs...) where {M}
+    SoleLogics.simplify(∧, (φs[1], ntuple(_ -> convert(ContinuousTruth, φs[2]), M)), args...; kwargs...)    
+end
+
+function SoleLogics.simplify(::typeof(∧), φs::Tuple{BooleanTruth, NTuple{M, ContinuousTruth}}, args...; kwargs...) where {M}
+    SoleLogics.simplify(∧, (ntuple(_ -> convert(ContinuousTruth, φs[1]), M), φs[2]), args...; kwargs...)    
+end
+
+function SoleLogics.simplify(::typeof(∧), φs::Tuple{NTuple{M, ContinuousTruth}, ContinuousTruth}, args...; kwargs...) where {M}
+    SoleLogics.simplify(∧, (φs[1], ntuple(_ -> ContinuousTruth(φs[2].value), M)), args...; kwargs...)    
+end
+
+function SoleLogics.simplify(::typeof(∧), φs::Tuple{ContinuousTruth, NTuple{M, ContinuousTruth}}, args...; kwargs...) where {M}
+    SoleLogics.simplify(∧, (ntuple(_ -> ContinuousTruth(φs[1].value), M), φs[2]), args...; kwargs...)    
+end
+
+function SoleLogics.simplify(::typeof(∧), φs::Tuple{NTuple{M, ContinuousTruth}, NTuple{M, ContinuousTruth}}, args...; kwargs...) where {M}
+    SoleLogics.collatetruth(∧, (φs[1], φs[2]), args...; kwargs...) 
+end
+
+function SoleLogics.simplify(::typeof(∨), (t1, t2)::Tuple{BooleanTruth, Formula}, a::ManyExpertAlgebra{M}, args...; kwargs...) where {M}
+    isbot(t1) ? t2 : top(a)
+end
+
+function SoleLogics.simplify(::typeof(∨), (t1, t2)::Tuple{Formula, BooleanTruth}, a::ManyExpertAlgebra{M}, args...; kwargs...) where {M}
+    isbot(t2) ? t1 : top(a)
+end
+
 function SoleLogics.simplify(::typeof(∨), φs::Tuple{FiniteTruth,BooleanTruth}, args...; kwargs...)
     SoleLogics.simplify(∨, (φs[1], convert(FiniteTruth, φs[2])), args...; kwargs...)
 end
@@ -156,10 +304,58 @@ function SoleLogics.simplify(::typeof(∨), φs::Tuple{BooleanTruth,FiniteTruth}
     SoleLogics.simplify(∨, (convert(FiniteTruth, φs[1]), φs[2]), args...; kwargs...)
 end
 
+function SoleLogics.simplify(::typeof(∨), (t1, t2)::Tuple{BooleanTruth, BooleanTruth}, a::ManyExpertAlgebra{M}, args...; kwargs...) where {M}
+    isbot(t1) && isbot(t2) ? bot(a) : top(a)
+end
+
+function SoleLogics.simplify(::typeof(∨), φs::Tuple{NTuple{M, ContinuousTruth}, BooleanTruth}, args...; kwargs...) where {M}
+    SoleLogics.simplify(∨, (φs[1], ntuple(_ -> convert(ContinuousTruth, φs[2]), M)), args...; kwargs...)    
+end
+
+function SoleLogics.simplify(::typeof(∨), φs::Tuple{BooleanTruth, NTuple{M, ContinuousTruth}}, args...; kwargs...) where {M}
+    SoleLogics.simplify(∨, (ntuple(_ -> convert(ContinuousTruth, φs[1]), M), φs[2]), args...; kwargs...)    
+end
+
+function SoleLogics.simplify(::typeof(∨), φs::Tuple{NTuple{M, ContinuousTruth}, ContinuousTruth}, args...; kwargs...) where {M}
+    SoleLogics.simplify(∨, (φs[1], ntuple(_ -> ContinuousTruth(φs[2].value), M)), args...; kwargs...)    
+end
+
+function SoleLogics.simplify(::typeof(∨), φs::Tuple{ContinuousTruth, NTuple{M, ContinuousTruth}}, args...; kwargs...) where {M}
+    SoleLogics.simplify(∨, (ntuple(_ -> ContinuousTruth(φs[1].value), M), φs[2]), args...; kwargs...)    
+end
+
+function SoleLogics.simplify(::typeof(∨), φs::Tuple{NTuple{M, ContinuousTruth}, NTuple{M, ContinuousTruth}}, args...; kwargs...) where {M}
+    SoleLogics.collatetruth(∨, (φs[1], φs[2]), args...; kwargs...) 
+end
+
 function SoleLogics.simplify(::typeof(→), φs::Tuple{FiniteTruth,BooleanTruth}, args...; kwargs...)
     SoleLogics.simplify(→, (φs[1], convert(FiniteTruth, φs[2])), args...; kwargs...)
 end
 
 function SoleLogics.simplify(::typeof(→), φs::Tuple{BooleanTruth,FiniteTruth}, args...; kwargs...)
     SoleLogics.simplify(→, (convert(FiniteTruth, φs[1]), φs[2]), args...; kwargs...)
+end
+
+function SoleLogics.simplify(::typeof(→), (t1, t2)::Tuple{BooleanTruth, BooleanTruth}, a::ManyExpertAlgebra{M}, args...; kwargs...) where {M}
+    SoleLogics.simplify(→, (ntuple(_ -> convert(ContinuousTruth, t1), M), ntuple(_ -> convert(ContinuousTruth, t2), M)), a, args...; kwargs...)
+end
+
+function SoleLogics.simplify(::typeof(→), φs::Tuple{NTuple{M, ContinuousTruth}, BooleanTruth}, args...; kwargs...) where {M}
+    SoleLogics.simplify(→, (φs[1], ntuple(_ -> convert(ContinuousTruth, φs[2]), M)), args...; kwargs...)    
+end
+
+function SoleLogics.simplify(::typeof(→), φs::Tuple{BooleanTruth, NTuple{M, ContinuousTruth}}, args...; kwargs...) where {M}
+    SoleLogics.simplify(→, (ntuple(_ -> convert(ContinuousTruth, φs[1]), M), φs[2]), args...; kwargs...)    
+end
+
+function SoleLogics.simplify(::typeof(→), φs::Tuple{NTuple{M, ContinuousTruth}, ContinuousTruth}, args...; kwargs...) where {M}
+    SoleLogics.simplify(→, (φs[1], ntuple(_ -> ContinuousTruth(φs[2].value), M)), args...; kwargs...)    
+end
+
+function SoleLogics.simplify(::typeof(→), φs::Tuple{ContinuousTruth, NTuple{M, ContinuousTruth}}, args...; kwargs...) where {M}
+    SoleLogics.simplify(→, (ntuple(_ -> ContinuousTruth(φs[1].value), M), φs[2]), args...; kwargs...)    
+end
+
+function SoleLogics.simplify(::typeof(→), φs::Tuple{NTuple{M, ContinuousTruth}, NTuple{M, ContinuousTruth}}, args...; kwargs...) where {M}
+    SoleLogics.collatetruth(→, (φs[1], φs[2]), args...; kwargs...) 
 end

@@ -161,7 +161,7 @@ FuzzyLogic(GodelTNorm)
 #### Many-Expert Algebra #######################################################
 ################################################################################
 
-MXA = ManyExpertAlgebra{3}([GodelLogic, ProductLogic, LukasiewiczLogic])
+MXA = ManyExpertAlgebra{3}([GodelLogic, LukasiewiczLogic, ProductLogic])
 
 @test iscrisp(MXA) == false
 
@@ -225,12 +225,26 @@ using SoleLogics.ManyValuedLogics: G3
 )
 
 ################################################################################
-#### Fuzzy-Logics check ########################################################
+#### Fuzzy-Logics interpret ####################################################
 ################################################################################
 
 @atoms p q
-@test_nowarn check(parseformula("p∨q"), TruthDict([p=>⊥, q=>ContinuousTruth(1)]), GodelLogic)
-@test_nowarn isbot(interpret(parseformula("(p∧q)∨p"), TruthDict([p=>⊥, q=>ContinuousTruth(1)]), GodelLogic))
+@test_nowarn check(parseformula("p∨q"), TruthDict([p => ⊥, q => ContinuousTruth(1)]), GodelLogic)
+@test_nowarn isbot(interpret(parseformula("(p∧q)∨p"), TruthDict([p => ⊥, q => ContinuousTruth(1)]), GodelLogic))
+@test_nowarn istop(interpret(parseformula("p→q"), TruthDict([p => ContinuousTruth(0.5), q => ContinuousTruth(0.5)]), LukasiewiczLogic))
+
+################################################################################
+#### Many-Expert interpret #####################################################
+################################################################################
+
+v = Atom("v")
+w = Atom("w")
+x = Atom("x")
+y = Atom("y")
+z = Atom("z")
+
+@test bot(MXA) == interpret(parseformula("(v∧w∧x)∨(y∧z)"), TruthDict([v => ⊥, w => ContinuousTruth(0.5), x => ContinuousTruth(0.0), y => ⊥, z => ContinuousTruth(0.4)]), MXA)
+@test top(MXA) == interpret(parseformula("v→w"), TruthDict([v => ⊥, w => ⊤]), MXA)
 
 
 ################################################################################
