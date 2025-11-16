@@ -10,7 +10,7 @@ using BenchmarkTools
 
 f1(i::Interval{Int})::Bool = length(i) ≥ 3
 funcw = FunctionWrapper{Bool,Tuple{Interval{Int}}}(f1)
-fr = SoleLogics.FullDimensionalFrame(10)
+fr = FullDimensionalFrame(10)
 myworlds = SoleLogics.allworlds(fr)
 
 wf = FunctionalWorldFilter{Interval{Int},typeof(f1)}(funcw)
@@ -29,7 +29,7 @@ wf_lf = IntervalLengthFilter(≥, 3)
 @test length(collect(filterworlds(wf_lf, myworlds))) == 36
 @test_nowarn collect(filterworlds(wf_lf, [2])) # Warn abouth this behavior!!
 
-bigfr = SoleLogics.FullDimensionalFrame(40)
+bigfr = FullDimensionalFrame(40)
 collect(accessibles(bigfr, Interval(1, 2), IA_L))
 collect(accessibles(bigfr, Interval(1, 2), FilteredRelation(IA_L, wf)))
 collect(accessibles(bigfr, Interval(1, 2), FilteredRelation(IA_L, wf_lf)))

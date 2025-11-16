@@ -113,8 +113,6 @@ export RelativeGeometricalWorld
 export GlobalRel, IdentityRel
 export globalrel, identityrel
 
-include("types/modal-logic.jl")
-
 export AbstractWorld
 export World, allworlds
 
@@ -122,6 +120,10 @@ export AbstractFrame, AbstractUniModalFrame
 export frame
 
 export AbstractRelation
+include("types/modal-logic.jl")
+
+export SimpleModalFrame
+export FullDimensionalFrame
 
 include("utils/modal-logic/modal-logic.jl")
 

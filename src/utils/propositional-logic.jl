@@ -11,12 +11,15 @@ The keys represent the header of the table and the values the first row of the t
 function _hpretty_table(io::IO, keys::Any, values::Any)
     # Prepare columns names
     _keys = map(x -> x isa AbstractAtom ? value(x) : x, collect(keys))
-    header = (_keys, string.(nameof.(typeof.(_keys))))
+    column_labels = [
+        _keys,
+        string.(nameof.(typeof.(_keys)))
+    ]
 
     try
         # Try to draw a complete table
         data = hcat([x for x in values]...)
-        pretty_table(io, data; header=header)
+        pretty_table(io, data; column_labels=column_labels)
     catch e
         if e isa DimensionMismatch
             # If it is not possible to draw a complete table, throw a custom error.

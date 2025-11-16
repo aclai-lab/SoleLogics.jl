@@ -1,6 +1,8 @@
 # core.jl
 export atom, Proposition, NamedOperator
 
+const SimpleModalFrame = SimpleModalFrame
+
 const ToCenteredRel = ToCenterRel
 
 const NamedOperator = NamedConnective

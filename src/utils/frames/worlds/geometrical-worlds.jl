@@ -101,7 +101,7 @@ true
 julia> SoleLogics.goeswithdim(SoleLogics.Interval(1,2),2)
 false
 
-julia> collect(accessibles(SoleLogics.FullDimensionalFrame(5), Interval(1,2), SoleLogics.IA_L))
+julia> collect(accessibles(FullDimensionalFrame(5), Interval(1,2), SoleLogics.IA_L))
 6-element Vector{Interval{Int64}}:
  (3−4)
  (3−5)
@@ -165,7 +165,7 @@ false
 julia> SoleLogics.goeswithdim(SoleLogics.Interval2D((1,2),(3,4)),2)
 true
 
-julia> collect(accessibles(SoleLogics.FullDimensionalFrame(5,5), Interval2D((2,3),(2,4)), SoleLogics.IA_LL))
+julia> collect(accessibles(FullDimensionalFrame(5,5), Interval2D((2,3),(2,4)), SoleLogics.IA_LL))
 3-element Vector{Interval2D{Int64}}:
  ((4−5)×(5−6))
  ((4−6)×(5−6))
