@@ -22,7 +22,7 @@ name(w::World) = w.name
 
 inlinedisplay(w::World) = string(name(w))
 
-include("frames/worlds.jl")
+include("../frames/worlds.jl")
 
 ############################################################################################
 ##################################### Uni-modal logic ######################################
@@ -247,11 +247,11 @@ end
 # allworlds(fr::AdjMatMultiModalFrame) = fr.worlds
 # nworlds(fr::AdjMatMultiModalFrame) = length(fr)
 
-include("frames/world-filters.jl");
+include("../frames/world-filters.jl");
 
-include("frames/relations.jl")
+include("../frames/relations.jl")
 
-include("frames/frames.jl")
+include("../frames/frames.jl")
 
 # TODO explain: a constant representing any world (only to be used for checking grounded formulas).
 struct AnyWorld end
