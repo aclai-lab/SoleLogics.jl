@@ -33,7 +33,8 @@ test_suites = [
     ("Algebras: frames", ["frames/frames.jl",]),
     ("Algebras: relations", ["frames/relations.jl",]),
 
-    ("MultiModalLogic", ["multi-modal-logic.jl"]),
+    ("Modal logic: classic", ["modal-logic/modal-logic.jl"]),
+    ("Modal logic: multimodal", ["modal-logic/multi-modal-logic.jl"]),
 
     ("Generation: formula", ["generation/formula.jl",]),
     ("Generation: models", ["generation/models.jl",]),
