@@ -67,6 +67,7 @@ include("types/logic.jl")
 include("types/interpretation-sets.jl")
 
 export Atom, SyntaxBranch
+export name
 
 include("utils/syntactical.jl")
 
@@ -96,7 +97,11 @@ include("utils/propositional-logic.jl")
 
 
 export accessibles
-export ismodal, modallogic
+export ismodal, isbox, isdiamond, hasdual, dual
+export relationtype, relation
+export collateworlds
+
+export modallogic
 
 export DIAMOND, BOX, ◊, □
 export DiamondRelationalConnective, BoxRelationalConnective
@@ -114,17 +119,29 @@ export GeometricalWorld, Point, Point1D, Point2D, Point3D
 export Interval, Interval2D
 export RelativeGeometricalWorld
 
-export AbstractRelation
-
 export GlobalRel, IdentityRel
 export globalrel, identityrel
 
-
 include("types/modal-logic.jl")
 
-include("utils/modal-logic.jl")
+export AbstractWorld
+export World, allworlds
 
-include("utils/multi-modal-logic.jl")
+export AbstractFrame, AbstractUniModalFrame
+export frame
+
+export AbstractRelation
+
+include("utils/modal-logic/modal-logic.jl")
+
+export ConstrainedConnective
+export name, condition, threshold
+export DIAMOND2, DIAMOND3, ◊ₙ
+export BOX2, BOX3, □ₙ
+
+include("utils/modal-logic/constrained-modal-logic-connectives.jl")
+
+include("utils/modal-logic/multi-modal-logic.jl")
 
 export WorldFilter
 export FunctionalWorldFilter, FilteredRelation
@@ -152,10 +169,6 @@ include("utils/interpretation-sets.jl")
 
 
 include("utils/parse.jl")
-
-
-export AnchoredFormula
-include("utils/anchored-formula.jl")
 
 
 # these first files are included here to avoid repeated inclusions in those below;
