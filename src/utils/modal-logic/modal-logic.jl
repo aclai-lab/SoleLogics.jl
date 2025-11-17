@@ -21,6 +21,9 @@ name(w::World) = w.name
 
 inlinedisplay(w::World) = string(name(w))
 
+# TODO
+# A bit weird that we include from the parent directory.
+# Maybe we can move frames to utils/modal-logic as well
 include("../frames/worlds.jl")
 
 ############################################################################################
