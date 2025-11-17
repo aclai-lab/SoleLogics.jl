@@ -103,11 +103,11 @@ See also [`ismodal`](@ref), [`isdiamond`](@ref), [`isbox`](@ref), [`arity`](@ref
 const ◊ₙ(n::Int) = ConstrainedConnective{:◊,n}(>=)
 
 
-ismodal(::ConstrainedConnective{:◊,_}) = true
-isbox(::ConstrainedConnective{:◊,_}) = isbox(◊)
-arity(::ConstrainedConnective{:◊,_}) = 1
-precedence(::ConstrainedConnective{:◊,_}) = precedence(◊)
-associativity(::ConstrainedConnective{:◊,_}) = associativity(◊)
+ismodal(::ConstrainedConnective{:◊,N}) where {N} = true
+isbox(::ConstrainedConnective{:◊,N}) where {N} = isbox(◊)
+arity(::ConstrainedConnective{:◊,N}) where {N} = 1
+precedence(::ConstrainedConnective{:◊,N}) where {N} = precedence(◊)
+associativity(::ConstrainedConnective{:◊,N}) where {N} = associativity(◊)
 
 
 """
@@ -144,20 +144,17 @@ See also [`◊ₙ`](@ref).
 """
 const □ₙ(n::Int) = ConstrainedConnective{:□,n}(<)
 
-ismodal(::ConstrainedConnective{:□,_}) = ismodal(□)
-isbox(::ConstrainedConnective{:□,_}) = isbox(□)
-arity(::ConstrainedConnective{:□,_}) = arity(□)
-precedence(::ConstrainedConnective{:□,_}) = precedence(□)
-associativity(::ConstrainedConnective{:□,_}) = associativity(□)
+ismodal(::ConstrainedConnective{:□,N}) where {N} = ismodal(□)
+isbox(::ConstrainedConnective{:□,N}) where {N} = isbox(□)
+arity(::ConstrainedConnective{:□,N}) where {N} = arity(□)
+precedence(::ConstrainedConnective{:□,N}) where {N} = precedence(□)
+associativity(::ConstrainedConnective{:□,N}) where {N} = associativity(□)
 
 hasdual(::ConstrainedConnective{:◊,N}) where {N} = true
-dual(::typeof(DIAMOND2)) = BOX2
-dual(::typeof(DIAMOND3)) = BOX3
+dual(::ConstrainedConnective{:◊,N,typeof(>=)}) where {N} = ConstrainedConnective{:□,N}(<)
 
 hasdual(::ConstrainedConnective{:□,N}) where {N} = true
-dual(::typeof(BOX2)) = DIAMOND2
-dual(::typeof(BOX3)) = DIAMOND3
-
+dual(::ConstrainedConnective{:□,N,typeof(<)}) where {N} = ConstrainedConnective{:◊,N}(>=)
 
 function _collateworlds(
     fr::AbstractFrame{W},
