@@ -13,12 +13,12 @@ Two examples of built-in `ConstrainedConnectives` are [`DIAMOND2`](@ref) and [`B
 are at least 2 accessible worlds where a formula holds.
 
 [`BOX2`](@ref) is a special box operator (see [`BOX`](@ref)), stating that there are at
-most 2 accessible worlds where a formula does not hold (¬◊₂¬).
+most 1 accessible worlds where a formula does not hold (¬◊₂¬).
 
 See also [`AbstractFrame`](@ref) [`Connective`](@ref), [`DIAMOND`](@ref),
 [`NamedConnective`](@ref).
 """
-struct ConstrainedConnective{S,N,F} <: Connective
+struct ConstrainedConnective{S,N,F<:Function} <: Connective
     condition::F
 
     ConstrainedConnective{S,N}(condition::F) where {S,N,F<:Function} = new{S,N,F}(condition)
@@ -33,9 +33,9 @@ end
 """
     name(::ConstrainedConnective{S}) where {S} = S
 
-Return the symbol encapsulated by a [`ConstrainedConnective`](@ref).
+Return the symbol identifying a specific [`ConstrainedConnective`](@ref).
 
-See also [`Connective`](@ref).
+See also [`BOX2`](@ref), [`Connective`](@ref), [`DIAMOND2`](@ref).
 """
 name(::ConstrainedConnective{S,N}) where {S,N} = S
 
@@ -93,22 +93,15 @@ const DIAMOND3 = ConstrainedConnective{:◊,3}(>=)
 const ◊₃ = DIAMOND3
 
 """
-    const ◊ₙ = DIAMOND2
+    const ◊ₙ = ConstrainedConnective{:◊,n}(>=)
 
-This is just a placeholder for [`DIAMOND2`](@ref).
-Semantically, you can use this to represent a generic [`ConstrainedConnective`](@ref) wrapping
-the lozenge glyph.
-
-When defining the traits for a `ConstrainedConnective{:◊}`, everything is forwarded from the
-traits of `NamedConnective{:◊}` (whose placeholder is just `const ◊`, or [`DIAMOND`](@ref)).
-
-The [`dual`](@ref) connective of `DIAMOND2` is [`BOX2`](@ref), as (¬□₂¬φ) translates to
-"it is not true that there are fewer than 2 accessible worlds where φ holds".
+Generic [`ConstrainedConnective`](@ref) wrapping the lozenge glyph (◊).
 
 See also [`ismodal`](@ref), [`isdiamond`](@ref), [`isbox`](@ref), [`arity`](@ref),
 [`precedence`](@ref), [`associativity`](@ref), [`□ₙ`](@ref).
 """
-const ◊ₙ = ◊₂
+const ◊ₙ(n::Int) = ConstrainedConnective{:◊,n}(>=)
+
 
 ismodal(::ConstrainedConnective{:◊,N}) where {N} = true
 isbox(::ConstrainedConnective{:◊,N}) where {N} = isbox(◊)
@@ -143,13 +136,13 @@ const □₃ = BOX3
 
 
 """
-    const □ₙ = BOX2
+    const □ₙ = ConstrainedConnective{:□,n}(<)
 
-Semantically expressive renaming of [`BOX2`](@ref).
+Generic [`ConstrainedConnective`](@ref) wrapping the box glyph (□).
 
 See also [`◊ₙ`](@ref).
 """
-const □ₙ = BOX2
+const □ₙ(n::Int) = ConstrainedConnective{:□,n}(<)
 
 ismodal(::ConstrainedConnective{:□,N}) where {N} = ismodal(□)
 isbox(::ConstrainedConnective{:□,N}) where {N} = isbox(□)
@@ -158,13 +151,10 @@ precedence(::ConstrainedConnective{:□,N}) where {N} = precedence(□)
 associativity(::ConstrainedConnective{:□,N}) where {N} = associativity(□)
 
 hasdual(::ConstrainedConnective{:◊,N}) where {N} = true
-dual(::typeof(DIAMOND2)) = BOX2
-dual(::typeof(DIAMOND3)) = BOX3
+dual(::ConstrainedConnective{:◊,N,typeof(>=)}) where {N} = ConstrainedConnective{:□,N}(<)
 
 hasdual(::ConstrainedConnective{:□,N}) where {N} = true
-dual(::typeof(BOX2)) = DIAMOND2
-dual(::typeof(BOX3)) = DIAMOND3
-
+dual(::ConstrainedConnective{:□,N,typeof(<)}) where {N} = ConstrainedConnective{:◊,N}(>=)
 
 function _collateworlds(
     fr::AbstractFrame{W},
