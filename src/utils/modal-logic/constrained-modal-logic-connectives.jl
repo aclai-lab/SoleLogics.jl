@@ -93,7 +93,7 @@ const DIAMOND3 = ConstrainedConnective{:◊,3}(>=)
 const ◊₃ = DIAMOND3
 
 """
-    const ◊ₙ = DIAMOND2
+    const ◊ₙ = ConstrainedConnective{:◊,n}(>=)
 
 Generic [`ConstrainedConnective`](@ref) wrapping the lozenge glyph (◊).
 
@@ -136,13 +136,13 @@ const □₃ = BOX3
 
 
 """
-    const □ₙ = BOX2
+    const □ₙ = ConstrainedConnective{:□,n}(<)
 
-Semantically expressive renaming of [`BOX2`](@ref).
+Generic [`ConstrainedConnective`](@ref) wrapping the box glyph (□).
 
 See also [`◊ₙ`](@ref).
 """
-const □ₙ = BOX2
+const □ₙ(n::Int) = ConstrainedConnective{:□,n}(<)
 
 ismodal(::ConstrainedConnective{:□,N}) where {N} = ismodal(□)
 isbox(::ConstrainedConnective{:□,N}) where {N} = isbox(□)
