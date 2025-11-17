@@ -44,10 +44,9 @@ julia> randlogiset(_myrng, ((_conjunction,)), 5; silent=false)
 @__rng_dispatch function randlogiset(
     rng::Union{Integer,AbstractRNG},
     _formulas::Tuple{SyntaxBranch},
-    nkripkestructures::Int;
-    maxiterations::Int=100,
-    maxistances::Int=10,
-    nworlds::Int=10,
+    istancesperclass::Int;
+    maxiterations::Int=10000,
+    nworlds::Int=5,
     nedges::Int=15,
     truthvalues::Union{AbstractVector{<:Truth}}=SoleLogics.inittruthvalues(
         SoleLogics.BooleanAlgebra()),
@@ -62,26 +61,29 @@ julia> randlogiset(_myrng, ((_conjunction,)), 5; silent=false)
     _instances = [KripkeStructure[] for _ in 1:length(_formulas)]
 
     # these are the leftovers of _instances, that is, the models that are not pushed to it
-    _failed_instances = [[] for _ in 1:length(_formulas)]
+    _failed_instances = [KripkeStructure[] for _ in 1:length(_formulas)]
 
     for (i,formula) in enumerate(_formulas)
         # we cannot overcome `maxiterations` number of iterations
         _niterations = 0
 
-        # ideally, we want maxistances number of instances;
+        # ideally, we want `istancesperclass` number of instances;
         # this is the counter keeping track of the instances that are OK.
-        _okiterations = 0
+        _okinstances = 0
 
-        while (_niterations <= maxiterations) || (_okiterations <= maxistances)
+        while (_niterations <= maxiterations) && (_okinstances < istancesperclass)
             model = randmodel(rng, nworlds, nedges, _atoms, truthvalues; kwargs...)
 
             # if the random model satisfied the `formula`, we consider it in the final logiset;
             # otherwise, we keep the model for the future class formulas.
-            check(formula, model, World(1)) == TOP ?
+            if check(formula, model, World(1)) == true
                 # the generated model is ok, so we push it and update its related counter
-                begin push!(_instances[i], model); _okiterations = _okiterations + 1; end :
+                push!(_instances[i], model)
+                _okinstances = _okinstances + 1
+            else
                 # unfortunately, the model is not ok
                 push!(_failed_instances[i], model)
+            end
 
             _niterations = _niterations + 1
         end
@@ -92,5 +94,5 @@ julia> randlogiset(_myrng, ((_conjunction,)), 5; silent=false)
         end
     end
 
-    return _instances
+    return _instances, _failed_instances
 end
