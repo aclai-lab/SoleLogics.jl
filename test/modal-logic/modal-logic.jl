@@ -228,19 +228,20 @@ kstruct4 = KripkeStructure(kframe4, valuation4)
 
 @test_nowarn DIAMOND2; # to trigger code coverage for Base.show
 
-@test ismodal(◊ₙ) == true
+# ◊ₙ is just a constructor, you can't just ask "ismodal(◊ₙ)" (same for □ₙ)
+@test ismodal(◊ₙ(23)) == true
 
-@test ismodal(◊ₙ) == true
-@test isbox(◊ₙ) == isbox(◊)
-@test arity(◊ₙ) == 1
-@test precedence(◊ₙ) == precedence(◊)
-@test associativity(◊ₙ) == associativity(◊)
+@test ismodal(◊ₙ(23)) == true
+@test isbox(◊ₙ(23)) == isbox(◊)
+@test arity(◊ₙ(23)) == 1
+@test precedence(◊ₙ(23)) == precedence(◊)
+@test associativity(◊ₙ(23)) == associativity(◊)
 
-@test ismodal(□ₙ) == ismodal(□)
-@test isbox(□ₙ) == isbox(□)
-@test arity(□ₙ) == arity(□)
-@test precedence(□ₙ) == precedence(□)
-@test associativity(□ₙ) == associativity(□)
+@test ismodal(□ₙ(23)) == ismodal(□)
+@test isbox(□ₙ(23)) == isbox(□)
+@test arity(□ₙ(23)) == arity(□)
+@test precedence(□ₙ(23)) == precedence(□)
+@test associativity(□ₙ(23)) == associativity(□)
 
 @test hasdual(DIAMOND2)
 @test hasdual(DIAMOND3)
