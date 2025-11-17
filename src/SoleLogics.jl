@@ -44,6 +44,7 @@ include("types/parse.jl")
 
 
 export interpret, check
+export DefaultCheckAlgorithm
 
 include("types/interpretation.jl")
 

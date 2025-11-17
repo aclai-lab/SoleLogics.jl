@@ -358,12 +358,8 @@ when model checking.
 
 See also [`Formula`](@ref).
 """
-function check(
-    φ::Formula,
-    i::Union{AbstractDict,AbstractVector},
-    args...
-)
-    check(φ, convert(AbstractInterpretation, i), args...)
+function check(algo::CheckAlgorithm, φ::Formula, i::Union{AbstractDict,AbstractVector}, args...)
+    check(algo, φ, convert(AbstractInterpretation, i), args...)
 end
 
 #############################################################################################
@@ -435,7 +431,7 @@ false
 
 See also [`Atom`](@ref).
 """
-check(a::Atom, i::AbstractDict) = haskey(a,i) ? Base.getindex(i, value(a)) : nothing
+check(::CheckAlgorithm, a::Atom, i::AbstractDict) = haskey(a,i) ? Base.getindex(i, value(a)) : nothing
 
 #############################################################################################
 ##################################### AbstractVector ########################################
@@ -493,4 +489,4 @@ false
 
 See also [`Atom`](@ref).
 """
-check(a::Atom, i::AbstractVector) = (value(a) in i)
+check(::CheckAlgorithm, a::Atom, i::AbstractVector) = (value(a) in i)
