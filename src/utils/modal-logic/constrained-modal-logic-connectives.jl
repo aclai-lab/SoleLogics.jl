@@ -13,7 +13,7 @@ Two examples of built-in `ConstrainedConnectives` are [`DIAMOND2`](@ref) and [`B
 are at least 2 accessible worlds where a formula holds.
 
 [`BOX2`](@ref) is a special box operator (see [`BOX`](@ref)), stating that there are at
-most 2 accessible worlds where a formula does not hold (¬◊₂¬).
+most 1 accessible worlds where a formula does not hold (¬◊₂¬).
 
 See also [`AbstractFrame`](@ref) [`Connective`](@ref), [`DIAMOND`](@ref),
 [`NamedConnective`](@ref).
