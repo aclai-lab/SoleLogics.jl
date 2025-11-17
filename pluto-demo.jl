@@ -61,7 +61,7 @@ begin
 	# Produce string representations of the formula
 	println("Plain:\t\t\t\t\t" * syntaxstring(φ))
 	println("Function notation:\t\t" * syntaxstring(φ; function_notation = true))
-	println("With mare paretheses:\t" * syntaxstring(φ; remove_redundant_parentheses = false))
+	println("With more paretheses:\t" * syntaxstring(φ; remove_redundant_parentheses = false))
 end
 
 # ╔═╡ 2cf7d4ac-3267-4427-957b-d9ca4024e724
