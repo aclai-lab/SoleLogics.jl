@@ -95,20 +95,13 @@ const ◊₃ = DIAMOND3
 """
     const ◊ₙ = DIAMOND2
 
-This is just a placeholder for [`DIAMOND2`](@ref).
-Semantically, you can use this to represent a generic [`ConstrainedConnective`](@ref) wrapping
-the lozenge glyph.
-
-When defining the traits for a `ConstrainedConnective{:◊}`, everything is forwarded from the
-traits of `NamedConnective{:◊}` (whose placeholder is just `const ◊`, or [`DIAMOND`](@ref)).
-
-The [`dual`](@ref) connective of `DIAMOND2` is [`BOX2`](@ref), as (¬□₂¬φ) translates to
-"it is not true that there are fewer than 2 accessible worlds where φ holds".
+Generic [`ConstrainedConnective`](@ref) wrapping the lozenge glyph (◊).
 
 See also [`ismodal`](@ref), [`isdiamond`](@ref), [`isbox`](@ref), [`arity`](@ref),
 [`precedence`](@ref), [`associativity`](@ref), [`□ₙ`](@ref).
 """
-const ◊ₙ = ◊₂
+const ◊ₙ(n::Int) = ConstrainedConnective{:◊,n}(>=)
+
 
 ismodal(::ConstrainedConnective{:◊,N}) where {N} = true
 isbox(::ConstrainedConnective{:◊,N}) where {N} = isbox(◊)
