@@ -18,7 +18,7 @@ most 1 accessible worlds where a formula does not hold (¬◊₂¬).
 See also [`AbstractFrame`](@ref) [`Connective`](@ref), [`DIAMOND`](@ref),
 [`NamedConnective`](@ref).
 """
-struct ConstrainedConnective{S,N,F} <: Connective
+struct ConstrainedConnective{S,N,F<:Function} <: Connective
     condition::F
 
     ConstrainedConnective{S,N}(condition::F) where {S,N,F<:Function} = new{S,N,F}(condition)
