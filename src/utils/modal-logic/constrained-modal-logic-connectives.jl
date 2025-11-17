@@ -103,11 +103,11 @@ See also [`ismodal`](@ref), [`isdiamond`](@ref), [`isbox`](@ref), [`arity`](@ref
 const ◊ₙ(n::Int) = ConstrainedConnective{:◊,n}(>=)
 
 
-ismodal(::ConstrainedConnective{:◊,N}) where {N} = true
-isbox(::ConstrainedConnective{:◊,N}) where {N} = isbox(◊)
-arity(::ConstrainedConnective{:◊,N}) where {N} = 1
-precedence(::ConstrainedConnective{:◊,N}) where {N} = precedence(◊)
-associativity(::ConstrainedConnective{:◊,N}) where {N} = associativity(◊)
+ismodal(::ConstrainedConnective{:◊,_}) = true
+isbox(::ConstrainedConnective{:◊,_}) = isbox(◊)
+arity(::ConstrainedConnective{:◊,_}) = 1
+precedence(::ConstrainedConnective{:◊,_}) = precedence(◊)
+associativity(::ConstrainedConnective{:◊,_}) = associativity(◊)
 
 
 """
@@ -144,11 +144,11 @@ See also [`◊ₙ`](@ref).
 """
 const □ₙ(n::Int) = ConstrainedConnective{:□,n}(<)
 
-ismodal(::ConstrainedConnective{:□,N}) where {N} = ismodal(□)
-isbox(::ConstrainedConnective{:□,N}) where {N} = isbox(□)
-arity(::ConstrainedConnective{:□,N}) where {N} = arity(□)
-precedence(::ConstrainedConnective{:□,N}) where {N} = precedence(□)
-associativity(::ConstrainedConnective{:□,N}) where {N} = associativity(□)
+ismodal(::ConstrainedConnective{:□,_}) = ismodal(□)
+isbox(::ConstrainedConnective{:□,_}) = isbox(□)
+arity(::ConstrainedConnective{:□,_}) = arity(□)
+precedence(::ConstrainedConnective{:□,_}) = precedence(□)
+associativity(::ConstrainedConnective{:□,_}) = associativity(□)
 
 hasdual(::ConstrainedConnective{:◊,N}) where {N} = true
 dual(::typeof(DIAMOND2)) = BOX2
