@@ -33,9 +33,9 @@ end
 """
     name(::ConstrainedConnective{S}) where {S} = S
 
-Return the symbol encapsulated by a [`ConstrainedConnective`](@ref).
+Return the symbol identifying a specific [`ConstrainedConnective`](@ref).
 
-See also [`Connective`](@ref).
+See also [`BOX2`](@ref), [`Connective`](@ref), [`DIAMOND2`](@ref).
 """
 name(::ConstrainedConnective{S,N}) where {S,N} = S
 
