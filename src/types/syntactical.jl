@@ -617,10 +617,10 @@ function syntaxstring(
         ),)
 
     # Parenthesization rules for binary operators in infix notation
-    function _binary_infix_syntaxstring(
-            ptok::SyntaxToken,
-            ch::SyntaxTree,
-            childtype::Symbol,
+    function _infix_mode(
+        ptok::SyntaxToken,
+        ch::SyntaxTree,
+        childtype::Symbol,
     )
         chtok = token(ch)
         chtokstring = syntaxstring(ch; ch_kwargs...)
@@ -636,10 +636,11 @@ function syntaxstring(
                 if ptok == chtok
                     if !parenthesize_commutatives && iscommutative(ptok)
                         false
-                    elseif associativity(ptok) == :left && childtype == :left
-                        false # a ∧ b ∧ c = (a ∧ b) ∧ c
-                    elseif associativity(ptok) == :right && childtype == :right
-                        false # a → b → c = a → (b → c)
+                    elseif associativity(ptok) == childtype
+                        # `a → b → c = a → (b → c)`
+                        # or
+                        # `a ∧ b ∧ c = (a ∧ b) ∧ c`
+                        false
                     else
                         true
                     end
@@ -648,34 +649,23 @@ function syntaxstring(
                         false
                     elseif childtype == :right
                         true
+                    else
+                        error("Unexpected precedence: $(childtype).")
                     end
                 elseif tprec < chprec
-                    if chprec - tprec <= parenthesization_level
-                        true
-                    else
-                        false
-                    end
+                    (chprec - tprec <= parenthesization_level)
                 elseif tprec > chprec
-                    true
                     # # 1st condition, before "||" -> "◊¬p ∧ ¬q" instead of "(◊¬p) ∧ (¬q)"
                     # # 2nd condition, after  "||" -> "(q → p) → ¬q" instead of "q → p → ¬q" <- Not sure: wrong?
                     # # 3nd condition
-
-                    # if (
-                    #     (tprec > chprec  && (!iscommutative(ptok) || ptok != chtok)) || # 1
-                    #     (tprec <= chprec && (!iscommutative(ptok))) # 2
-                    # )
-                    #     true
-                    # else
-                    #     false
-                    # end
+                    true
                 end
             else
                 false
             end
         end
         lpar, rpar = parenthesize ? ["(", ")"] : ["", ""]
-        return "$(lpar)$(chtokstring)$(rpar)"
+        lpar * chtokstring * rpar
     end
 
     tok = token(φ)
@@ -683,31 +673,36 @@ function syntaxstring(
 
     if arity(tok) == 2 && !function_notation
         # Infix notation for binary operators
-
-        "$(_binary_infix_syntaxstring(tok, children(φ)[1], :left)) " *
-        "$tokstr $(_binary_infix_syntaxstring(tok, children(φ)[2], :right))"
+        _infix_mode(tok, children(φ)[1], :left) *
+        " " * tokstr * " " *
+        _infix_mode(tok, children(φ)[2], :right)
     else
         # Function notation
         lpar, rpar = "(", ")"
         # TODO this is very dirty...
-        ch = token(children(φ)[1])
-        charity = arity(ch)
-        if !function_notation && arity(tok) == 1 && (charity == 1 || (ch isa AbstractAtom))
+        ch = token(only(children(φ)))
+        parenthesize = true
+        if !function_notation && arity(tok) == 1 && (arity(ch) == 1 || (ch isa AbstractAtom))
             # When not in function notation, print "¬p" instead of "¬(p)";
             # note that "◊((p ∧ q) → s)" must not be simplified as "◊(p ∧ q) → s".
+            parenthesize = false
+        end
+        
+        if parenthesize
             lpar, rpar = "", ""
         end
 
-        tokstr * "$(lpar)" *
+        tokstr * lpar *
         join(
             [begin
-                if (c isa AbstractAtom && parenthesize_atoms)
-                    _ch_kwargs = merge(ch_kwargs, (; parenthesize_atoms = false))
-                else
-                    _ch_kwargs = ch_kwargs
-                end
+                _ch_kwargs =
+                    if (c isa AbstractAtom && parenthesize_atoms)
+                        merge(ch_kwargs, (; parenthesize_atoms = false))
+                    else
+                        ch_kwargs
+                    end
                 syntaxstring(c; ch_kwargs...)
-            end for c in children(φ)], ", ") * "$(rpar)"
+            end for c in children(φ)], ", ") * rpar
     end
 end
 
