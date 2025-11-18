@@ -276,26 +276,6 @@ See also [`Formula`](@ref), [`SyntaxTree`](@ref).
 # `composeformulas(∧, ⊤,⊤)` returns a
 # `SyntaxBranch` whose root value is ∧, instead of returning just ⊤.
 
-doc_tokopprop = """
-    tokens(φ::Formula)::AbstractVector{<:SyntaxToken}
-    atoms(φ::Formula)::AbstractVector{<:Atom}
-    truths(φ::Formula)::AbstractVector{<:Truth}
-    leaves(φ::Formula)::AbstractVector{<:SyntaxLeaf}
-    connectives(φ::Formula)::AbstractVector{<:Connective}
-    operators(φ::Formula)::AbstractVector{<:Operator}
-    ntokens(φ::Formula)::Integer
-    natoms(φ::Formula)::Integer
-    ntruths(φ::Formula)::Integer
-    nleaves(φ::Formula)::Integer
-    nconnectives(φ::Formula)::Integer
-    noperators(φ::Formula)::Integer
-
-Return the list/number of (non-unique) `SyntaxToken`s, `Atom`s, etc...
-appearing in a formula.
-
-See also [`Formula`](@ref), [`SyntaxToken`](@ref).
-"""
-
 doc_syntaxtree_children = """
     children(φ::SyntaxTree)
 
@@ -310,14 +290,6 @@ doc_syntaxtree_token = """
 Return the token at the root of a syntax tree.
 
 See also [`SyntaxBranch`](@ref), [`SyntaxLeaf`](@ref).
-"""
-
-doc_formula_basein = """
-    Base.in(tok::SyntaxToken, φ::Formula)::Bool
-
-Return whether a syntax token appears in a formula.
-
-See also [`Formula`](@ref), [`SyntaxToken`](@ref).
 """
 
 doc_dual = """
