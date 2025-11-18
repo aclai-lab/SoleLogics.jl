@@ -101,7 +101,7 @@ function interpret(
     args...;
     kwargs...,
 )
-    check(φ, getinstance(s, i_instance), args...; kwargs...)
+    interpret(φ, getinstance(s, i_instance), args...; kwargs...)
 end
 
 function interpret(
@@ -138,7 +138,7 @@ See also [`AbstractInterpretationSet`](@ref),
 """
 function check(
     algo::CheckAlgorithm, 
-    φ::Formula,
+    φ,
     s::AbstractInterpretationSet,
     i_instance::Integer,
     args...;
@@ -146,46 +146,6 @@ function check(
 )
     check(algo, φ, getinstance(s, i_instance), args...; kwargs...)
 end
-
-function check(
-    algo::CheckAlgorithm, 
-    φ::LeftmostConjunctiveForm,
-    s::AbstractInterpretationSet,
-    args...;
-    kwargs...
-)
-    # TODO normalize before checking, if it is faster: φ = SoleLogics.normalize()
-    map(i_instance->check(
-        algo,
-        φ,
-        getinstance(s, i_instance),
-        args...;
-        # use_memo = (isnothing(use_memo) ? nothing : use_memo[[i_instance]]),
-        kwargs...
-    ), 1:ninstances(s))
-end
-
-function check(
-    algo::CheckAlgorithm, 
-    φ::LeftmostConjunctiveForm,
-    s::AbstractInterpretationSet,
-    i_instance::Integer,
-    args...;
-    kwargs...
-)
-    return all(ch -> check(algo, ch, s, i_instance, args...; kwargs...), children(φ))
-end
-
-function check(
-    algo::CheckAlgorithm, 
-    φ::LeftmostConjunctiveForm,
-    i::LogicalInstance,
-    args...;
-    kwargs...
-)
-    return all(ch -> check(algo, ch, i, args...; kwargs...), children(φ))
-end
-
 
 """
     check(
@@ -203,7 +163,7 @@ See also [`AbstractInterpretationSet`](@ref),
 """
 function check(
     algo::CheckAlgorithm,
-    φ::Formula,
+    φ,
     s::AbstractInterpretationSet,
     args...;
     # use_memo::Union{Nothing,AbstractVector} = nothing,
