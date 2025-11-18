@@ -107,8 +107,18 @@ end
 
 interpret(t::Truth, i::AbstractInterpretation, args...; kwargs...) = t
 
+abstract type CheckAlgorithm end
+
+"""
+Default, general-purpose check algorithm.
+
+This algorithm is not optimized for special cases.
+"""
+struct DefaultCheckAlgorithm end
+
 """
     check(
+        [algo::CheckAlgorithm,]
         φ::Formula,
         i::AbstractInterpretation,
         args...;
@@ -144,23 +154,27 @@ false
 See also [`interpret`](@ref), [`Formula`](@ref), [`AbstractInterpretation`](@ref),
 [`TruthDict`](@ref).
 """
+function check(φ::Formula, args...; kwargs...)::Bool
+    check(DefaultCheckAlgorithm(), φ, args...; kwargs...)
+end
+
 function check(
+    ::DefaultCheckAlgorithm,
     φ::Formula,
-    i::AbstractInterpretation,
     args...;
     kwargs...
 )::Bool
-    istop(interpret(φ, i, args...; kwargs...))
+    istop(interpret(φ, args...; kwargs...))
 end
 
 ############################################################################################
 #### Utilities #############################################################################
 ############################################################################################
 
-# Formula interpretation via i[φ] -> φ
+# Formula interpretation via i[φ] -> ψ
 Base.getindex(i::AbstractInterpretation, φ::Formula, args...; kwargs...) =
     interpret(φ, i, args...; kwargs...)
 
-# Formula interpretation via φ(i) -> φ
+# Formula interpretation via φ(i) -> ψ
 (φ::Formula)(i::AbstractInterpretation, args...; kwargs...) =
     interpret(φ, i, args...; kwargs...)

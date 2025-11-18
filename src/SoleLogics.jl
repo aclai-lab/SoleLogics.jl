@@ -44,6 +44,7 @@ include("types/parse.jl")
 
 
 export interpret, check
+export DefaultCheckAlgorithm
 
 include("types/interpretation.jl")
 
@@ -98,6 +99,7 @@ export DIAMOND, BOX, ◊, □
 export DiamondRelationalConnective, BoxRelationalConnective
 export diamond, box
 export globaldiamond, globalbox
+export diamondsandboxes
 
 export KripkeStructure
 export truthtype, worldtype
