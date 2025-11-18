@@ -76,7 +76,7 @@ q = Atom("q") # "the audio is silence"
 # Worlds representing 3-second-pieces of the original audio
 worlds = [SoleLogics.World(1), SoleLogics.World(2), SoleLogics.World(3)]
 edges = Edge.([(1,2), (1,3), (2,3)])
-kripkeframe = SoleLogics.ExplicitCrispUniModalFrame(worlds, Graphs.SimpleDiGraph(edges))
+kripkeframe = SimpleModalFrame(worlds, Graphs.SimpleDiGraph(edges))
 
 valuation = Dict([worlds[1] => TruthDict([p => false, q => true]), worlds[2] => TruthDict([p => true, q => false]), worlds[3] => TruthDict([p => false, q => true])])
 

@@ -27,9 +27,9 @@ interval2d = Interval2D((1,3), (3,10))
 @test Base.length(interval2d) == 14
 @test Base.size(interval2d) == (2,7)
 
-fr1D = @test_nowarn SoleLogics.FullDimensionalFrame(5)
-fr2D = @test_nowarn SoleLogics.FullDimensionalFrame(1,2)
-@test_nowarn SoleLogics.FullDimensionalFrame((1,2),)
+fr1D = @test_nowarn FullDimensionalFrame(5)
+fr2D = @test_nowarn FullDimensionalFrame(1,2)
+@test_nowarn FullDimensionalFrame((1,2),)
 
 # Relative worlds
 @test_broken begin
@@ -50,6 +50,6 @@ relativeinterval = RelativeGeometricalWorld(interval2d)
 @test Base.length(relativeinterval) == Base.length(interval2d)
 @test Base.size(relativeinterval) == Base.size(interval2d)
 
-@test Base.isconcretetype(Base.return_types(accessibles, typeof.((SoleLogics.FullDimensionalFrame((5,),), [Interval(2,3),Interval(2,4)], SoleLogics.IA_L)))[1])
-@test_broken Base.isconcretetype(eltype(Base.return_types(accessibles, typeof.((SoleLogics.FullDimensionalFrame((5,),), [Interval(2,3),Interval(2,4)], SoleLogics.IA_L)))[1]))
-@test_broken ((@inferred eltype(accessibles(SoleLogics.FullDimensionalFrame((5,),), [Interval(2,3),Interval(2,4)], SoleLogics.IA_L))) == Interval{Int})
+@test Base.isconcretetype(Base.return_types(accessibles, typeof.((FullDimensionalFrame((5,),), [Interval(2,3),Interval(2,4)], SoleLogics.IA_L)))[1])
+@test_broken Base.isconcretetype(eltype(Base.return_types(accessibles, typeof.((FullDimensionalFrame((5,),), [Interval(2,3),Interval(2,4)], SoleLogics.IA_L)))[1]))
+@test_broken ((@inferred eltype(accessibles(FullDimensionalFrame((5,),), [Interval(2,3),Interval(2,4)], SoleLogics.IA_L))) == Interval{Int})
