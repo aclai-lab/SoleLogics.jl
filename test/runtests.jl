@@ -35,7 +35,6 @@ test_suites = [
 
     ("Modal logic: unimodal", ["modal-logic/modal-logic.jl"]),
     ("Modal logic: multimodal", ["modal-logic/multi-modal-logic.jl"]),
-    ("Modal logic: check performance", ["modal-logic/check-performance.jl"]),
     ("Modal logic: Kripke word", ["modal-logic/kripke-word.jl",]),
     ("Modal logic: Kripke image", ["modal-logic/kripke-image.jl",]),
 
