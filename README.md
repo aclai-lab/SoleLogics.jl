@@ -8,7 +8,6 @@
 [![codecov](https://codecov.io/gh/aclai-lab/SoleLogics.jl/branch/main/graph/badge.svg?token=LT9IYIYNFI)](https://codecov.io/gh/aclai-lab/SoleLogics.jl)
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/aclai-lab/SoleLogics.jl/HEAD?labpath=pluto-demo.jl)
 <!-- [![Code Style: Blue](https://img.shields.io/badge/code%20style-blue-4495d1.svg)](https://github.com/invenia/BlueStyle) -->
-<!-- [![Coverage](https://coveralls.io/repos/github/aclai-lab/SoleLogics.jl/badge.svg?branch=main)](https://coveralls.io/github/aclai-lab/SoleLogics.jl?branch=main) -->
 
 ## In a nutshell
 
@@ -30,21 +29,27 @@ using SoleLogics
 ### Parsing and manipulating Formulas
 
 ```julia
-julia> φ1 = parseformula("¬p∧q∧(¬s∧¬z)");
+julia> φ1 = parseformula("¬p∧q∨(s∨z)")
+SyntaxBranch: (¬p ∧ q) ∨ s ∨ z
 
-julia> φ1 isa SyntaxTree
-true
+julia> syntaxstring(φ1; parenthesize_commutatives = true)
+"(¬p ∧ q) ∨ (s ∨ z)"
 
-julia> syntaxstring(φ1)
-"¬p ∧ q ∧ ¬s ∧ ¬z"
+julia> filter(ψ -> height(ψ) == 1, subformulas(φ1))
+2-element Vector{SyntaxTree}:
+ SyntaxBranch: ¬p
+ SyntaxBranch: s ∨ z
 
-julia> φ2 = ⊥ ∨ Atom("t") → φ1;
+julia> filter(ψ -> natoms(ψ) == 1, subformulas(φ1))
+5-element Vector{SyntaxTree}:
+ Atom{String}: p
+ Atom{String}: q
+ Atom{String}: s
+ Atom{String}: z
+ SyntaxBranch: ¬p
 
-julia> φ2 isa SyntaxTree
-true
-
-julia> syntaxstring(φ2)
-"(⊥ ∨ t) → (¬p ∧ q ∧ ¬s ∧ ¬z)"
+julia> φ2 = ⊥ ∨ Atom("t") → φ1
+SyntaxBranch: ⊥ ∨ t → (¬p ∧ q) ∨ s ∨ z
 ```
 
 ### Generating random formulas
@@ -52,24 +57,27 @@ julia> syntaxstring(φ2)
 ```julia
 julia> using Random
 
-julia> height = 2
+julia> height = 2;
 
-julia> alphabet = Atom.(["p", "q"])
+julia> alphabet = @atoms p q
+2-element Vector{Atom{String}}:
+ Atom{String}: p
+ Atom{String}: q
 
-# Propositional case 
-julia> SoleLogics.BASE_PROPOSITIONAL_CONNECTIVES
-6-element Vector{SoleLogics.Connective}:
+julia> # A propositional formula
+       SoleLogics.BASE_PROPOSITIONAL_CONNECTIVES
+4-element Vector{NamedConnective}:
  ¬
  ∧
  ∨
  →
 
 julia> randformula(Random.MersenneTwister(507), height, alphabet, SoleLogics.BASE_PROPOSITIONAL_CONNECTIVES)
-SyntaxBranch: ¬(q → p)
+SyntaxBranch: p → q ∧ q
 
-# Modal case
-julia> SoleLogics.BASE_MODAL_CONNECTIVES
-8-element Vector{SoleLogics.Connective}:
+julia> # A modal formula
+       SoleLogics.BASE_MODAL_CONNECTIVES
+6-element Vector{NamedConnective}:
  ¬
  ∧
  ∨
@@ -77,8 +85,8 @@ julia> SoleLogics.BASE_MODAL_CONNECTIVES
  ◊
  □
 
-julia> randformula(Random.MersenneTwister(14), height, alphabet, SoleLogics.BASE_MODAL_CONNECTIVES)
-SyntaxBranch: ¬□p
+julia> randformula(Random.MersenneTwister(4267), height, alphabet, SoleLogics.BASE_MODAL_CONNECTIVES)
+SyntaxBranch: ◊□p
 ```
 
 ### Model checking
@@ -86,88 +94,97 @@ SyntaxBranch: ¬□p
 #### Propositional logic
 ```julia
 
-julia> phi = parseformula("¬(p ∧ q)")
+julia> φ1 = parseformula("¬(p ∧ q)")
 SyntaxBranch: ¬(p ∧ q)
 
 julia> I = TruthDict(["p" => true, "q" => false])
+TruthDict with values:
 ┌────────┬────────┐
 │      q │      p │
 │ String │ String │
 ├────────┼────────┤
-│  false │   true │
+│      ⊥ │      ⊤ │
 └────────┴────────┘
 
-julia> check(phi, I)
-true
+julia> check(φ1, I)
+⊤
+
+julia> φ2 = parseformula("¬(p ∧ q) ∧ (r ∨ q)")
+SyntaxBranch: ¬(p ∧ q)
+
+julia> interpret(φ2, I)
+Atom{String}: r
 
 ```
 
-#### Modal logic K (Saul Kripke, see an introduction [here](https://www.youtube.com/watch?v=k3Jjw8oJqBk))
+#### Modal logic K
+
+See an introduction to modal logic K [here](https://www.youtube.com/watch?v=k3Jjw8oJqBk).
+
 ```julia
 julia> using Graphs
 
-# Instantiate a Kripke frame with 5 worlds and 5 edges
-julia> worlds = SoleLogics.World.(1:5);
+julia> # Instantiate a Kripke frame with 5 worlds and 5 edges
+       worlds = World.(1:5);
 
 julia> edges = Edge.([(1,2), (1,3), (2,4), (3,4), (3,5)]);
 
-julia> fr = SoleLogics.ExplicitCrispUniModalFrame(worlds, Graphs.SimpleDiGraph(edges))
-SoleLogics.ExplicitCrispUniModalFrame{SoleLogics.World{Int64}, SimpleDiGraph{Int64}} with
-- worlds = ["1", "2", "3", "4", "5"]
-- accessibles = 
+julia> fr = SimpleModalFrame(worlds, Graphs.SimpleDiGraph(edges))
+SimpleModalFrame{World{Int64}, SimpleDiGraph{Int64}} with 5 worlds:
+- worlds: [1, 2, 3, 4, 5]
+- accessibles:
         1 -> [2, 3]
         2 -> [4]
         3 -> [4, 5]
         4 -> []
         5 -> []
 
-# Enumerate the world that are accessible from the first world
-julia> accessibles(fr, first(worlds))
-2-element Vector{SoleLogics.World{Int64}}:
- SoleLogics.World{Int64}(2)
- SoleLogics.World{Int64}(3)
+julia> # Enumerate the world that are accessible from the first world
+       accessibles(fr, first(worlds))
+2-element Vector{World{Int64}}:
+ World{Int64}(2)
+ World{Int64}(3)
 
-julia> p,q = Atom.(["p", "q"])
+julia> @atoms p q
 
- # Assign each world a propositional interpretation
-julia> valuation = Dict([
+julia> # Assign each world a propositional interpretation
+       valuation = Dict([
 	        worlds[1] => TruthDict([p => true, q => false]),
 	        worlds[2] => TruthDict([p => true, q => true]),
 	        worlds[3] => TruthDict([p => true, q => false]),
 	        worlds[4] => TruthDict([p => false, q => false]),
 	        worlds[5] => TruthDict([p => false, q => true]),
-	     ])
+	     ]);
 
-# Instantiate a Kripke structure by combining a Kripke frame and the propositional interpretations over each world
-julia> K = KripkeStructure(fr, valuation)
+julia> # Instantiate a Kripke structure by combining a Kripke frame and the propositional interpretations over each world
+       K = KripkeStructure(fr, valuation);
 
-# Generate a modal formula
-julia> modphi = parseformula("◊(p ∧ q)")
+julia> # Generate a modal formula
+       φ = parseformula("◊(p ∧ q)");
 
-# Check the just generated formula on each world of the Kripke structure
-julia> [w => check(modphi, K, w) for w in worlds]
-5-element Vector{Pair{SoleLogics.World{Int64}, Bool}}:
- SoleLogics.World{Int64}(1) => 1
- SoleLogics.World{Int64}(2) => 0
- SoleLogics.World{Int64}(3) => 0
- SoleLogics.World{Int64}(4) => 0
- SoleLogics.World{Int64}(5) => 0
+julia> # Check the just generated formula on each world of the Kripke structure
+       [w => check(φ, K, w) for w in worlds]
+5-element Vector{Pair{World{Int64}, Bool}}:
+ World{Int64}(1) => 1
+ World{Int64}(2) => 0
+ World{Int64}(3) => 0
+ World{Int64}(4) => 0
+ World{Int64}(5) => 0
 ```
-
 
 #### Temporal modal logics
 ```julia
-# A temporal frame of 10 (equidistant) points
-julia> fr = SoleLogics.FullDimensionalFrame((10,), SoleLogics.Point{1,Int});
+julia> # A frame consisting of 10 (evenly spaced) points
+       fr = FullDimensionalFrame((10,), Point{1, Int64});
 
-# Linear Temporal Logic (LTL) `successor` relation
-julia> accessibles(fr, SoleLogics.Point(3), SoleLogics.SuccessorRel) |> collect
-1-element Vector{SoleLogics.Point{1, Int64}}:
+julia> # Linear Temporal Logic (LTL) `successor` relation
+       accessibles(fr, Point(3), SoleLogics.SuccessorRel) |> collect
+1-element Vector{Point{1, Int64}}:
  ❮4❯
 
-# Linear Temporal Logic (LTL) `greater than` relation
-julia> accessibles(fr, SoleLogics.Point(3), SoleLogics.GreaterRel) |> collect
-7-element Vector{SoleLogics.Point{1, Int64}}:
+julia> # Linear Temporal Logic (LTL) `greater than` relation
+       accessibles(fr, Point(3), SoleLogics.GreaterRel) |> collect
+7-element Vector{Point{1, Int64}}:
  ❮4❯
  ❮5❯
  ❮6❯
@@ -179,11 +196,11 @@ julia> accessibles(fr, SoleLogics.Point(3), SoleLogics.GreaterRel) |> collect
 ```
 
 ```julia
-# An interval temporal frame on 10 (equidistant) points
-julia> fr = SoleLogics.FullDimensionalFrame(10, Interval{Int});
+julia> # An interval frame consisting of all intervals over 10 (evenly spaced) points
+       fr = FullDimensionalFrame((10, ), Interval{Int64});
 
-# Interval Algebra (IA) relation `L` (later, see [Halpern & Shoham, 1991](https://dl.acm.org/doi/abs/10.1145/115234.115351))
-julia> accessibles(fr, Interval(3,5), IA_L) |> collect
+julia> # Interval Algebra (IA) relation `L` (later, see [Halpern & Shoham, 1991](https://dl.acm.org/doi/abs/10.1145/115234.115351))
+       accessibles(fr, Interval(3, 5), IA_L) |> collect
 15-element Vector{Interval{Int64}}:
  Interval{Int64}(6, 7)
  Interval{Int64}(6, 8)
@@ -201,8 +218,8 @@ julia> accessibles(fr, Interval(3,5), IA_L) |> collect
  Interval{Int64}(9, 11)
  Interval{Int64}(10, 11)
 
-# Region Connection Calculus relation `DC` (disconnected, see [Cohn et al., 1997](https://link.springer.com/article/10.1023/A:1009712514511))
-julia> accessibles(fr, Interval(3,5), Topo_DC) |> collect
+julia> # Region Connection Calculus relation `DC` (disconnected, see [Cohn et al., 1997](https://link.springer.com/article/10.1023/A:1009712514511))
+       accessibles(fr, Interval(3, 5), Topo_DC) |> collect
  16-element Vector{Interval{Int64}}:
  Interval{Int64}(6, 7)
  Interval{Int64}(6, 8)
@@ -221,10 +238,6 @@ julia> accessibles(fr, Interval(3,5), Topo_DC) |> collect
  Interval{Int64}(10, 11)
  Interval{Int64}(1, 2)
 ```
-
-<!--
-### Interpretation sets
--->
 
 ## About
 

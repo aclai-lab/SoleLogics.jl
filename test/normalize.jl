@@ -34,7 +34,7 @@ alph_vector = [p,q,r]
 @test issubset(atoms(φ), alph_vector)
 
 worlds = SoleLogics.World.(1:10)
-fr = SoleLogics.ExplicitCrispUniModalFrame(worlds, SimpleDiGraph(length(worlds), 40))
+fr = SimpleModalFrame(worlds, SimpleDiGraph(length(worlds), 40))
 w0 = first(worlds)
 accessibles(fr, w0)
 

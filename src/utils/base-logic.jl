@@ -377,8 +377,26 @@ See also
 [`ScalarMetaCondition`](@ref).
 """
 
-struct UnionAlphabet{C, A <: AbstractAlphabet{C}} <: AbstractAlphabet{C}
+struct UnionAlphabet{C, A <: AbstractAlphabet} <: AbstractAlphabet{C}
     subalphabets::Vector{A}
+
+    function UnionAlphabet{C, A}(subalphabets::Vector{A}) where {A, C}
+        if any(at -> !(at <: C), valuetype.(subalphabets))
+            throw(ArgumentError("Unexpected value type not matching $C: " *
+                join(repr.(filter(at -> !(at <: C), valuetype.(subalphabets))), ", ") * 
+                "."))
+        end
+        return new{C, A}(subalphabets)
+    end
+
+    function UnionAlphabet{C}(subalphabets::Vector{A}) where {A, C}
+        return UnionAlphabet{C, A}(subalphabets)
+    end
+
+    function UnionAlphabet(subalphabets::Vector)
+        C = Union{valuetype.(subalphabets)...}
+        return UnionAlphabet{C}(subalphabets)
+    end
 end
 
 subalphabets(a::UnionAlphabet) = a.subalphabets
@@ -387,7 +405,9 @@ nsubalphabets(a::UnionAlphabet) = length(subalphabets(a))
 function Base.show(io::IO, a::UnionAlphabet)
     println(io, "$(typeof(a)):")
     for sa in subalphabets(a)
+        Base.print("- ")
         Base.show(io, sa)
+        Base.println(io)
     end
 end
 
@@ -609,7 +629,7 @@ function _baselogic(;
                     if length(setdiff(operators, default_operators)) > 0
                         @warn "Instantiating $(logictypename) with operators not in " *
                               "$(default_operators): " *
-                              join(", ", setdiff(operators, default_operators)) * "."
+                              join(setdiff(operators, default_operators), ", ") * "."
                     end
                     operators
                 end

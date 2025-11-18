@@ -259,7 +259,7 @@ randframe_docstring = """
     end
 
 Return a random Kripke Frame, which is a directed graph interpreted as a
-[`SoleLogics.ExplicitCrispUniModalFrame`](@ref).
+[`SimpleModalFrame`](@ref).
 The underlying graph is generated using [`Graphs.SimpleGraphs.SimpleDiGraph`](@ref).
 
 # Arguments
@@ -271,9 +271,9 @@ The underlying graph is generated using [`Graphs.SimpleGraphs.SimpleDiGraph`](@r
 # Examples
 ```julia-repl
 julia> randframe(Random.MersenneTwister(42),5,10)
-SoleLogics.ExplicitCrispUniModalFrame{SoleLogics.World{Int64}, Graphs.SimpleGraphs.SimpleDiGraph{Int64}} with
-- worlds = ["1", "2", "3", "4", "5"]
-- accessibles =
+SimpleModalFrame{SoleLogics.World{Int64}, Graphs.SimpleGraphs.SimpleDiGraph{Int64}} with
+- worlds: ["1", "2", "3", "4", "5"]
+- accessibles:
         1 -> [2, 3, 5]
         2 -> [1, 4, 5]
         3 -> []
@@ -281,7 +281,7 @@ SoleLogics.ExplicitCrispUniModalFrame{SoleLogics.World{Int64}, Graphs.SimpleGrap
         5 -> [1, 2]
 ```
 
-See also [`SoleLogics.ExplicitCrispUniModalFrame`](@ref), [`SyntaxLeaf`](@ref),
+See also [`SimpleModalFrame`](@ref), [`SyntaxLeaf`](@ref),
 [`Graphs.SimpleGraphs.SimpleDiGraph`](@ref).
 """
 
@@ -306,22 +306,22 @@ randmodel_docstring = """
 
 # Examples
 ```julia-repl
-julia> randmodel(Random.MersenneTwister(42),5,10, [Atom("s"), Atom("p")], BooleanAlgebra())
-KripkeStructure{SoleLogics.ExplicitCrispUniModalFrame{SoleLogics.World{Int64}, Graphs.SimpleGraphs.SimpleDiGraph{Int64}}, Dict{SoleLogics.World{Int64}, TruthDict{Dict{Atom{String}, BooleanTruth}}}} with
-- frame = SoleLogics.ExplicitCrispUniModalFrame{SoleLogics.World{Int64}, Graphs.SimpleGraphs.SimpleDiGraph{Int64}} with
-- worlds = ["1", "2", "3", "4", "5"]
-- accessibles =
-        1 -> [2, 3, 5]
+julia> randmodel(Random.MersenneTwister(42), 5, 10, [Atom("s"), Atom("p")], BooleanAlgebra())
+KripkeStructure{SimpleModalFrame{World{Int64}, SimpleDiGraph{Int64}}, Dict{World{Int64}, TruthDict{Dict{Atom{String}, BooleanTruth}}}} with
+- frame: SimpleModalFrame{World{Int64}, SimpleDiGraph{Int64}} with
+  - worlds: ["1", "2", "3", "4", "5"]
+  - accessibles:
+        1 -> [2, 3, 4, 5]
         2 -> [1, 4, 5]
         3 -> []
-        4 -> [1, 2]
-        5 -> [1, 2]
-- valuations =
+        4 -> [5]
+        5 -> [1, 4]
+- valuations:
         1 -> TruthDict([s => ⊥, p => ⊤])
         2 -> TruthDict([s => ⊥, p => ⊥])
-        3 -> TruthDict([s => ⊥, p => ⊥])
-        4 -> TruthDict([s => ⊤, p => ⊤])
-        5 -> TruthDict([s => ⊤, p => ⊤])
+        3 -> TruthDict([s => ⊥, p => ⊤])
+        4 -> TruthDict([s => ⊥, p => ⊤])
+        5 -> TruthDict([s => ⊤, p => ⊥])
 ```
 
 See also [`AbstractAlgebra`](@ref), [`SyntaxLeaf`](@ref), [`Truth`](@ref).

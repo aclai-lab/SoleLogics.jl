@@ -9,7 +9,7 @@ using Random
 )
     worlds = World.(1:nworlds)
     graph = Graphs.SimpleDiGraph(nworlds, nedges, rng=initrng(rng))
-    return SoleLogics.ExplicitCrispUniModalFrame(worlds, graph)
+    return SimpleModalFrame(worlds, graph)
 end
 
 """$(randmodel_docstring)"""

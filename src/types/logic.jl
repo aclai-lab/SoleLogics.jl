@@ -77,11 +77,6 @@ atomstype(a::AbstractAlphabet) = atomstype(typeof(a))
 valuetype(a::Type{<:AbstractAlphabet}) = valuetype(atomstype(a))
 valuetype(a::AbstractAlphabet) = valuetype(atomstype(a))
 
-"""
-An alphabet of `valuetype` `V` can be used for instantiating atoms of valuetype `V`.
-"""
-(::AbstractAlphabet{V})(a) where {V} = Atom{V}(a)
-
 # Default behavior
 """
     Base.isfinite(a::AbstractAlphabet)

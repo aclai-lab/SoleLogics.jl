@@ -28,7 +28,7 @@ begin
 
 	worlds = SoleLogics.World.(1:5)
 	edges = Edge.([(1,2), (1,3), (2,4), (3,4), (3,5)])
-	fr = SoleLogics.ExplicitCrispUniModalFrame(worlds, Graphs.SimpleDiGraph(edges))
+	fr = SoleLogics.SimpleModalFrame(worlds, Graphs.SimpleDiGraph(edges))
 end
 
 # ╔═╡ 617e413b-dcc2-4e43-a39c-54a90d20a074

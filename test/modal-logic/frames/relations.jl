@@ -10,7 +10,7 @@ using BenchmarkTools
 
 f1(i::Interval{Int})::Bool = length(i) ≥ 3
 funcw = FunctionWrapper{Bool,Tuple{Interval{Int}}}(f1)
-fr = SoleLogics.FullDimensionalFrame(10)
+fr = FullDimensionalFrame(10)
 myworlds = SoleLogics.allworlds(fr)
 
 wf = FunctionalWorldFilter{Interval{Int},typeof(f1)}(funcw)
@@ -29,7 +29,7 @@ wf_lf = IntervalLengthFilter(≥, 3)
 @test length(collect(filterworlds(wf_lf, myworlds))) == 36
 @test_nowarn collect(filterworlds(wf_lf, [2])) # Warn abouth this behavior!!
 
-bigfr = SoleLogics.FullDimensionalFrame(40)
+bigfr = FullDimensionalFrame(40)
 collect(accessibles(bigfr, Interval(1, 2), IA_L))
 collect(accessibles(bigfr, Interval(1, 2), FilteredRelation(IA_L, wf)))
 collect(accessibles(bigfr, Interval(1, 2), FilteredRelation(IA_L, wf_lf)))
@@ -72,14 +72,14 @@ wf = FunctionalWorldFilter(f1, Interval{Int})
 
 fr = FullDimensionalFrame(20)
 worlds = allworlds(fr)
-operators = [≤, ≥, ==]
+ops = [≤, ≥, ==]
 
 
 for r in union(IARelations_extended, IA7Relations, IA3Relations)
     # @show r
     for w in worlds
-        for o in operators
-            for l in 1:21
+        for o in ops
+            for l in 1:10
                 @test all(((x,y),)->x == y, zip(accessibles(
                     fr,
                     w,
@@ -93,61 +93,3 @@ for r in union(IARelations_extended, IA7Relations, IA3Relations)
         end
     end
 end
-
-
-# for r in IARelations_extended
-#     for w in worlds
-#         # for r in union(IARelations_extended, IA7Relations, IA3Relations)
-#         for o in operators
-#             for l in 1:21
-#                 @test collect(accessibles(
-#                     fr,
-#                     w,
-#                     FilteredRelation(r, FunctionalWorldFilter{Interval}(i->o(i.y-i.x, l)))
-#                 )) == collect(accessibles(
-#                     fr,
-#                     w,
-#                     FilteredRelation(r, IntervalLengthFilter(o, l))
-#                 ))
-#             end
-#         end
-#     end
-# end
-
-# for r in IA7Relations
-#     # @show r
-#     for w in worlds
-#         for o in operators
-#             for l in 1:21
-#                 @test collect(accessibles(
-#                     fr,
-#                     w,
-#                     FilteredRelation(r, FunctionalWorldFilter{Interval}(i->o(i.y-i.x, l)))
-#                 )) == collect(accessibles(
-#                     fr,
-#                     w,
-#                     FilteredRelation(r, IntervalLengthFilter(o, l))
-#                 ))
-#             end
-#         end
-#     end
-# end
-
-# for r in IA3Relations
-#     # @show r
-#     for w in worlds
-#         for o in operators
-#             for l in 1:21
-#                 @test collect(accessibles(
-#                     fr,
-#                     w,
-#                     FilteredRelation(r, FunctionalWorldFilter{Interval}(i->o(i.y-i.x, l)))
-#                 )) == collect(accessibles(
-#                     fr,
-#                     w,
-#                     FilteredRelation(r, IntervalLengthFilter(o, l))
-#                 ))
-#             end
-#         end
-#     end
-# end

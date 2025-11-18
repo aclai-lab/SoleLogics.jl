@@ -566,15 +566,7 @@ end
 ispos(l::Literal) = l.ispos
 atom(l::Literal) = l.atom
 
-atomstype(::Literal{T}) where {T} = T
-
 tree(l::Literal) = ispos(l) ? l.atom : ¬(l.atom)
 
 hasdual(l::Literal) = true
 dual(l::Literal) = Literal(!ispos(l), atom(l))
-
-function Base.show(io::IO, l::Literal)
-    println(io,
-        "Literal{$(atomstype(l))}: " * (ispos(l) ? "" : "¬") * syntaxstring(atom(l))
-    )
-end
