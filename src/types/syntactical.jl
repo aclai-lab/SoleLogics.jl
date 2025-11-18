@@ -680,7 +680,7 @@ function syntaxstring(
         # Function notation
         lpar, rpar = "(", ")"
         # TODO this is very dirty...
-        ch = token(only(children(φ)))
+        ch = token(first(children(φ)))
         parenthesize = true
         if !function_notation && arity(tok) == 1 && (arity(ch) == 1 || (ch isa AbstractAtom))
             # When not in function notation, print "¬p" instead of "¬(p)";
