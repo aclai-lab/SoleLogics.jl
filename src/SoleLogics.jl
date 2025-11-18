@@ -99,6 +99,7 @@ export DIAMOND, BOX, ◊, □
 export DiamondRelationalConnective, BoxRelationalConnective
 export diamond, box
 export globaldiamond, globalbox
+export diamondsandboxes
 
 export KripkeStructure
 export truthtype, worldtype

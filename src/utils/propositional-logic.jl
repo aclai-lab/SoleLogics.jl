@@ -362,6 +362,10 @@ function check(algo::CheckAlgorithm, φ::Formula, i::Union{AbstractDict,Abstract
     check(algo, φ, convert(AbstractInterpretation, i), args...)
 end
 
+function interpret(φ::Formula, i::Union{AbstractDict,AbstractVector}, args...)
+    interpret(φ, convert(AbstractInterpretation, i), args...)
+end
+
 #############################################################################################
 ###################################### AbstractDict #########################################
 #############################################################################################
