@@ -22,17 +22,17 @@ The current implementation can handle N ∈ {0,1,2}.
 
 # Examples
 ```julia-repl
-julia> SoleLogics.allworlds(SoleLogics.FullDimensionalFrame((),))
+julia> SoleLogics.allworlds(FullDimensionalFrame((),))
 1-element Vector{OneWorld}:
  −
 
-julia> nworlds(SoleLogics.FullDimensionalFrame((10,), Interval{Int}))
+julia> nworlds(FullDimensionalFrame((10,), Interval{Int}))
 55
 
-julia> nworlds(SoleLogics.FullDimensionalFrame((10,10),))
+julia> nworlds(FullDimensionalFrame((10,10),))
 3025
 
-julia> collect(accessibles(SoleLogics.FullDimensionalFrame(5,5), Interval2D((2,3),(2,4)), SoleLogics.IA_LL))
+julia> collect(accessibles(FullDimensionalFrame(5,5), Interval2D((2,3),(2,4)), SoleLogics.IA_LL))
 3-element Vector{Interval2D{Int64}}:
  ((4−5)×(5−6))
  ((4−6)×(5−6))

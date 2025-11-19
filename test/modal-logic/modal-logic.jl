@@ -14,7 +14,7 @@ using Test
 # create a kripke frame
 worlds = SoleLogics.World.(1:5)
 edges = Edge.([(1,2), (1,3), (2,4), (3,4), (3,5)])
-kframe = SoleLogics.ExplicitCrispUniModalFrame(worlds, Graphs.SimpleDiGraph(edges))
+kframe = SimpleModalFrame(worlds, Graphs.SimpleDiGraph(edges))
 
 # create a kripke structure, by enriching the frame with a valuation function
 valuation = Dict([
@@ -106,7 +106,7 @@ end
 
 worlds2 = SoleLogics.World.(1:5)
 edges2 = Edge.([(1,2), (1,3), (1,4), (5,5)])
-kframe2 = SoleLogics.ExplicitCrispUniModalFrame(worlds2, Graphs.SimpleDiGraph(edges2))
+kframe2 = SimpleModalFrame(worlds2, Graphs.SimpleDiGraph(edges2))
 
 # create a kripke structure, by enriching the frame with a valuation function
 valuation2 = Dict([
@@ -144,7 +144,7 @@ kstruct2 = KripkeStructure(kframe2, valuation2)
 
 worlds3 = SoleLogics.World.(1:7)
 edges3 = Edge.([(1,2), (1,3), (1,4), (1,5), (1,6), (1,7)])
-kframe3 = SoleLogics.ExplicitCrispUniModalFrame(worlds3, Graphs.SimpleDiGraph(edges3))
+kframe3 = SimpleModalFrame(worlds3, Graphs.SimpleDiGraph(edges3))
 
 # create a kripke structure, by enriching the frame with a valuation function
 valuation3 = Dict([
@@ -179,7 +179,7 @@ kstruct3 = KripkeStructure(kframe3, valuation3)
 
 worlds4 = SoleLogics.World.(1:7)
 edges4 = Edge.([(1,2), (1,3), (1,4), (1,5), (1,6), (1,7)])
-kframe4 = SoleLogics.ExplicitCrispUniModalFrame(worlds4, Graphs.SimpleDiGraph(edges4))
+kframe4 = SimpleModalFrame(worlds4, Graphs.SimpleDiGraph(edges4))
 
 # create a kripke structure, by enriching the frame with a valuation function
 valuation4 = Dict([

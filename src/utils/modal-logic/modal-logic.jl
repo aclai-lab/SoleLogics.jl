@@ -9,8 +9,7 @@ using ThreadSafeDicts
     end
 
 A world that is solely identified by its `name`.
-This can be useful when instantiating the underlying graph of a modal frame
-in an explicit way.
+This can be useful when instantiating a modal frame explicitly as a graph.
 
 See also [`OneWorld`](@ref), [`AbstractWorld`](@ref).
 """
@@ -45,24 +44,26 @@ include("../frames/worlds.jl")
 # TODO move truth value out of frame (frame is passive, perhaps it is relations that have a truth value)
 
 """
-A unimodal frame given by an `Graphs.SimpleGraphs.AbstractSimpleGraph` on worlds.
+A generic unimodal frame given by an `Graphs.SimpleGraphs.AbstractSimpleGraph` on worlds.
 """
-struct ExplicitCrispUniModalFrame{
+struct SimpleModalFrame{
     W<:AbstractWorld,
     G<:Graphs.SimpleGraphs.AbstractSimpleGraph,
 } <: AbstractUniModalFrame{W}
     worlds::Worlds{W}
     graph::G
 end
-accessibles(fr::ExplicitCrispUniModalFrame, w::AbstractWorld) = fr.worlds[neighbors(fr.graph, findfirst(==(w), fr.worlds))]
-allworlds(fr::ExplicitCrispUniModalFrame) = fr.worlds
-nworlds(fr::ExplicitCrispUniModalFrame) = length(fr.worlds)
+accessibles(fr::SimpleModalFrame, w::AbstractWorld) = fr.worlds[neighbors(fr.graph, findfirst(==(w), fr.worlds))]
+allworlds(fr::SimpleModalFrame) = fr.worlds
+nworlds(fr::SimpleModalFrame) = length(fr.worlds)
 
-function Base.show(io::IO, fr::ExplicitCrispUniModalFrame)
-    println(io, "$(typeof(fr)) with")
-    println(io, "- worlds = $(inlinedisplay.(fr.worlds))")
-    maxl = maximum(length.(inlinedisplay.(fr.worlds)))
-    println(io, "- accessibles = \n$(join(["\t$(rpad(inlinedisplay(w), maxl)) -> [$(join(inlinedisplay.(accessibles(fr, w)), ", "))]" for w in fr.worlds], "\n"))")
+function Base.show(io::IO, fr::SimpleModalFrame)
+    indent = get(io, :indent, 0)
+    println(io, "$(typeof(fr)) with $(nworlds(fr)) worlds and $(ne(fr.graph)) edges:")
+    w_strs = inlinedisplay.(fr.worlds)
+    println(io, "  " ^ indent * "- worlds: [$(join(w_strs, ", "))]")
+    maxl = maximum(length.(w_strs))
+    println(io, "  " ^ indent * "- accessibles: \n$(join(["  " ^ indent * "\t$(rpad(inlinedisplay(w), maxl)) -> [$(join(inlinedisplay.(accessibles(fr, w)), ", "))]" for w in fr.worlds], "\n"))")
 end
 
 ############################################################################################
@@ -312,7 +313,7 @@ julia> worlds = SoleLogics.World.(1:5) # 5 worlds are created, numerated from 1 
 
 julia> edges = Edge.([(1,2), (1,3), (2,4), (3,4), (3,5)])
 
-julia> kframe = SoleLogics.ExplicitCrispUniModalFrame(worlds, Graphs.SimpleDiGraph(edges))
+julia> kframe = SimpleModalFrame(worlds, Graphs.SimpleDiGraph(edges))
 
 # A valuation function establishes which fact are true on each world
 julia> valuation = Dict([
@@ -453,11 +454,13 @@ function interpret(a::Atom, i::KripkeStructure, w::W) where {W<:AbstractWorld}
 end
 
 function Base.show(io::IO, i::KripkeStructure)
+    indent = get(io, :indent, 0)
+    indented_io = IOContext(io, :indent => indent+2)
     println(io, "$(typeof(i)) with")
-    print(io, "- frame = ")
-    Base.show(io, frame(i))
+    print(io, "  " ^ indent * "- frame: ")
+    Base.show(indented_io, frame(i))
     maxl = maximum(length.(inlinedisplay.(allworlds(i))))
-    println(io, "- valuations = \n$(join(["\t$(rpad(inlinedisplay(w), maxl)) -> $(inlinedisplay(i.assignment[w]))" for w in allworlds(i)], "\n"))")
+    println(io, "  " ^ indent * "- valuations: \n$(join(["  " ^ indent * "\t$(rpad(inlinedisplay(w), maxl)) -> $(inlinedisplay(i.assignment[w]))" for w in allworlds(i)], "\n"))")
 end
 
 doc_DIAMOND = """
