@@ -14,6 +14,7 @@ using SoleBase: initrng
 
 
 export iscrisp, isfinite, isnullary, isunary, isbinary
+export iscommutative
 
 export Syntactical, Connective,
     Formula, SyntaxStructure, SyntaxTree, SyntaxLeaf,
@@ -23,16 +24,24 @@ export Operator, SyntaxToken
 
 export tree, syntaxstring
 
-export arity, valuetype, tokentype, tokenstype,
+export arity, valuetype,
         atomstype, operatorstype, truthtype,
         associativity, precedence
 
+
 export token, children, formulas
 
-export tokens, ntokens, atoms, natoms, truths, ntruths, leaves, nleaves,
-        connectives, nconnectives, operators, noperators, height
+export height
+export tokens, atoms, truths, leaves, connectives, operators
+export appendtokens!, appendatoms!, appendtruths!, appendleaves!, appendconnectives!, appendoperators!
+export ntokens, natoms, ntruths, nleaves, nconnectives, noperators
 
-        export composeformulas
+export hasdual, dual
+
+export composeformulas
+
+export precedeq, precedes, succeedeq, succeedes
+export truthjoin, truthmeet
 
 include("types/syntactical.jl")
 

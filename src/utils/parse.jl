@@ -461,7 +461,7 @@ function parseformula(
                     # The following conditions must hold
                     # stack[1] == OPENING PARENTHESIS
                     # stack[end] == CLOSING PARENTHESIS
-                    # stack[even indexes] <: AbstractSyntaxTree
+                    # stack[even indexes] <: SyntaxTree
                     # stack[odd indexes after 1 and before length(stack)] == SEP
                     # else an error has to be thrown
 
