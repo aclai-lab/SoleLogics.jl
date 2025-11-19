@@ -176,16 +176,42 @@ function SoleLogics.collatetruth(
     a::FuzzyLogic
 ) where {
     N
+}
+    
+    error("Implication not implemented for FuzzyLogic with t-norm $(a.tnorm). " *
+          "Please provide a specific implementation by defining a method for " *
+          "SoleLogics.collatetruth(::typeof(→), ::NTuple{N, ContinuousTruth}, ::$(typeof(a)))")
+end
+
+function SoleLogics.collatetruth(
+    ::typeof(→),
+    (x, y)::NTuple{N, ContinuousTruth}, 
+    ::typeof(GodelLogic)
+) where {
+    N
+}
+    x.value <= y.value ? ContinuousTruth(1.0) : y
+end
+
+function SoleLogics.collatetruth(
+    ::typeof(→),
+    (x, y)::NTuple{N, ContinuousTruth},
+    ::typeof(LukasiewiczLogic)
+) where {
+    N
 } 
-    if x.value <= y.value
-        return ContinuousTruth(1.0)
-    elseif a == GodelLogic
-        return y
-    elseif a == LukasiewiczLogic
-        return ContinuousTruth(1.0 - x.value + y.value)
-    elseif a == ProductLogic
-        return ContinuousTruth(y.value / x.value)
-    end
+    x.value <= y.value ? ContinuousTruth(1.0) : ContinuousTruth(1 - x.value + y.value)
+end
+
+
+function SoleLogics.collatetruth(
+    ::typeof(→),
+    (x, y)::NTuple{N, ContinuousTruth}, 
+    ::typeof(ProductLogic)
+) where {
+    N
+}
+    x.value <= y.value ? ContinuousTruth(1.0) : ContinuousTruth(y.value / x.value)
 end
 
 function SoleLogics.collatetruth(

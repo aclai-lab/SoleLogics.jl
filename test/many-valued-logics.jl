@@ -28,8 +28,8 @@ join = BinaryOperation{2}(jointruthtable)
 l = ContinuousTruth(1)
 @test istop(l)
 
-r = ContinuousTruth(0)
-@test isbot(r)
+x = ContinuousTruth(0)
+@test isbot(x)
 
 
 @test_throws ErrorException f = ContinuousBinaryOperation(string)
@@ -39,11 +39,11 @@ godel_meet = ContinuousBinaryOperation(min)
 
 @test arity(godel_meet) == 2
 
-@test iszero(godel_meet(l, r).value)
+@test iszero(godel_meet(l, x).value)
 
-@test iszero(godel_meet(r, ⊤).value)
+@test iszero(godel_meet(x, ⊤).value)
 
-@test iszero(godel_meet(⊤, r).value)
+@test iszero(godel_meet(⊤, x).value)
 
 @test iszero(godel_meet(⊤, ⊥).value)
 
@@ -228,24 +228,34 @@ using SoleLogics.ManyValuedLogics: G3
 #### Fuzzy-Logics interpret ####################################################
 ################################################################################
 
-@atoms p q
-@test_nowarn check(parseformula("p∨q"), TruthDict([p => ⊥, q => ContinuousTruth(1)]), GodelLogic)
-@test_nowarn isbot(interpret(parseformula("(p∧q)∨p"), TruthDict([p => ⊥, q => ContinuousTruth(1)]), GodelLogic))
-@test_nowarn istop(interpret(parseformula("p→q"), TruthDict([p => ContinuousTruth(0.5), q => ContinuousTruth(0.5)]), LukasiewiczLogic))
-
-################################################################################
-#### Many-Expert interpret #####################################################
-################################################################################
-
 v = Atom("v")
 w = Atom("w")
 x = Atom("x")
 y = Atom("y")
 z = Atom("z")
 
+@test check(parseformula("v∨w"), TruthDict([v => ⊥, w => ContinuousTruth(1)]), GodelLogic)
+@test isbot(interpret(parseformula("(v∧w)∨v"), TruthDict([v => ContinuousTruth(0), w => ⊤]), GodelLogic))
+@test istop(interpret(parseformula("v→w"), TruthDict([v => ContinuousTruth(0.5), w => ContinuousTruth(0.5)]), LukasiewiczLogic))
+@test interpret(parseformula("(v∧w)→x"), TruthDict([v => ContinuousTruth(0.8), w => ContinuousTruth(0.6), x => ContinuousTruth(0.5)]), GodelLogic) == ContinuousTruth(0.5)
+@test interpret(parseformula("(v∨w)∧x"), TruthDict([v => ContinuousTruth(0.3), w => ContinuousTruth(0.5), x => ContinuousTruth(0.4)]), LukasiewiczLogic) == ContinuousTruth(0.0)
+@test istop(interpret(parseformula("v→(w→v)"), TruthDict([v => ContinuousTruth(0.7), w => ContinuousTruth(0.3)]), GodelLogic))
+
+################################################################################
+#### Many-Expert interpret #####################################################
+################################################################################
+
+
+@test interpret(parseformula("v∧w"), TruthDict([v => ⊤, w => ⊤]), MXA) == top(MXA)
+@test interpret(parseformula("v∨w"), TruthDict([v => ⊥, w => ⊥]), MXA) == bot(MXA)
+@test interpret(parseformula("v∧w"), TruthDict([v => ⊥, w => ⊤]), MXA) == bot(MXA)
+@test interpret(parseformula("v∨w"), TruthDict([v => ⊤, w => ⊥]), MXA) == top(MXA)
+@test top(MXA) == interpret(parseformula("v∨w"), TruthDict([v => ContinuousTruth(0), w => ⊤]), MXA)
 @test bot(MXA) == interpret(parseformula("(v∧w∧x)∨(y∧z)"), TruthDict([v => ⊥, w => ContinuousTruth(0.5), x => ContinuousTruth(0.0), y => ⊥, z => ContinuousTruth(0.4)]), MXA)
 @test top(MXA) == interpret(parseformula("v→w"), TruthDict([v => ⊥, w => ⊤]), MXA)
-
+@test interpret(parseformula("(v→w)∧(w→v)"), TruthDict([v => ContinuousTruth(0.3), w => ContinuousTruth(0.6)]), MXA) == (ContinuousTruth(0.3), ContinuousTruth(0.7), ContinuousTruth(0.5))
+@test interpret(parseformula("((v→w)∨(w→x))∧(v∨x)"), TruthDict([v => ContinuousTruth(0.7), w => ContinuousTruth(0.2), x => ContinuousTruth(0.5)]), MXA) == (ContinuousTruth(0.7), ContinuousTruth(0.7), ContinuousTruth(0.7))
+@test interpret(parseformula("(v∧(w∨x))→(y∨z)"), TruthDict([v => ContinuousTruth(0.6), w => ContinuousTruth(0.4), x => ContinuousTruth(0.9), y => ContinuousTruth(0.3), z => ContinuousTruth(0.8)]), MXA) == (ContinuousTruth(1.0), ContinuousTruth(1.0), ContinuousTruth(1.0))
 
 ################################################################################
 #### Finite FLew-chains generation #############################################
