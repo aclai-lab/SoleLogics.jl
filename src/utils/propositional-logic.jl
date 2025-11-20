@@ -1,28 +1,28 @@
+using Dictionaries
+
 ############################################################################################
 ####################################### Utilities ##########################################
 ############################################################################################
 
 """
-    _hpretty_table(io::IO, keys::Any, values::Any)
+    show_assignment_pretty_table(io::IO, keys::Any, matrix::Matrix)
 
 Recreate horizontal pretty table formatting. 
 The keys represent the header of the table and the values the first row of the table.
 """
-function _hpretty_table(io::IO, keys::Any, values::Any)
+function show_assignment_pretty_table(io::IO, keys::Any, matrix::AbstractMatrix; kwargs...)
     # Prepare columns names
     _keys = map(x -> x isa AbstractAtom ? value(x) : x, collect(keys))
-
     # Try to draw a complete table
-    data = hcat([x for x in values]...)
     try
         column_labels = [
             _keys,
             string.(nameof.(typeof.(_keys)))
         ]
-        pretty_table(io, data; column_labels)
+        pretty_table(io, matrix; column_labels, kwargs...)
     catch e
         # TODO PrettyTables version < 3
-        pretty_table(io, data; header = (_keys, string.(nameof.(typeof.(_keys)))))
+        pretty_table(io, matrix; header = (_keys, string.(nameof.(typeof.(_keys)))), kwargs...)
     end
 end
 
@@ -189,18 +189,31 @@ function inlinedisplay(i::TruthDict)
     "TruthDict([$(join(["$(syntaxstring(a)) => $t" for (a,t) in i.truth], ", "))])"
 end
 
-function Base.show(
-    io::IO,
-    i::TruthDict,
-)
+function Base.show(io::IO, i::TruthDict)
     if isempty(i.truth)
         print(io, "Empty TruthDict")
     else
         println(io, "TruthDict with values:")
-        _hpretty_table(
+        values = [i.truth[k] for k in keys(i.truth)]
+        show_assignment_pretty_table(
             io,
-            i.truth |> keys,
-            i.truth |> values
+            keys(i.truth),
+            reshape(values, 1, length(values))
+        )
+    end
+end
+
+function Base.show(io::IO, is::Vector{<:TruthDict})
+    if isempty(is)
+        println(io, "$(eltype(is))[]")
+    else
+        println(io, "$(length(is))-element Vector of $(eltype(is)) with values:")
+        ks = unique(Iterators.flatten([keys(i.truth) for i in is]))
+        matrix = [i.truth[k] for i in is, k in ks]
+        show_assignment_pretty_table(
+            io,
+            ks,
+            matrix
         )
     end
 end
@@ -329,12 +342,9 @@ function inlinedisplay(i::DefaultedTruthDict)::String
     "DefaultedTruthDict([$(join(["$(syntaxstring(a)) => $t" for (a,t) in i.truth], ", "))], $(i.default_truth))"
 end
 
-function Base.show(
-    io::IO,
-    i::DefaultedTruthDict,
-)
+function Base.show(io::IO, i::DefaultedTruthDict)
     println(io, "DefaultedTruthDict with default truth `$(i.default_truth)` and values:")
-    _hpretty_table(io, i.truth |> keys, i.truth |> values)
+    show_assignment_pretty_table(io, keys(i.truth), [i.truth[k] for k in keys(i.truth)])
 end
 
 # Helpers
@@ -396,7 +406,6 @@ TruthDict with values:
 See also [`AbstractInterpretation`](@ref), [`TruthDict`](@ref).
 """
 convert(::Type{AbstractInterpretation}, i::AbstractDict) = TruthDict(i)
-#Base.getindex(i::AbstractDict, a::Atom) = i[value(a)]
 
 """
     Base.haskey(a::Atom, i::AbstractDict)::Bool
@@ -471,7 +480,6 @@ DefaultedTruthDict with default truth `⊥` and values:
 See also [`AbstractInterpretation`](@ref), [`DefaultedTruthDict`](@ref), [`TruthDict`](@ref).
 """
 convert(::Type{AbstractInterpretation}, i::AbstractVector) = DefaultedTruthDict(i, ⊥)
-#Base.getindex(i::AbstractVector, a::Atom) = (value(a) in i)
 #Base.in(a::Atom, i::AbstractVector) = true
 
 """

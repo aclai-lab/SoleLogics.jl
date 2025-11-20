@@ -162,7 +162,7 @@ export subformulas, normalize
 
 export CNF, DNF, cnf, dnf
 
-include("utils/syntactical-normal-forms.jl")
+include("utils/normal-forms/leftmost.jl")
 
 include("utils/tools.jl")
 

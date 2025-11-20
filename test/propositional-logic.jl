@@ -7,6 +7,6 @@ using SoleLogics
 io = IOBuffer();
 _keys = [1,2,3];
 _values = [⊤,⊤,⊥];
-SoleLogics._hpretty_table(io,_keys,_values);
+SoleLogics.show_assignment_pretty_table(io,_keys,_values);
 @test String(take!(io)) == "┌───────┬───────┬───────┐\n│     1 │     2 │     3 │\n│ Int64 │ Int64 │ Int64 │\n├───────┼───────┼───────┤\n│     ⊤ │     ⊤ │     ⊥ │\n└───────┴───────┴───────┘\n"
 
