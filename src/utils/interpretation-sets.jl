@@ -137,7 +137,7 @@ See also [`AbstractInterpretationSet`](@ref),
 [`Formula`](@ref).
 """
 function check(
-    algo::CheckAlgorithm, 
+    algo, 
     φ,
     s::AbstractInterpretationSet,
     i_instance::Integer,
@@ -162,7 +162,7 @@ See also [`AbstractInterpretationSet`](@ref),
 [`Formula`](@ref).
 """
 function check(
-    algo::CheckAlgorithm,
+    algo,
     φ,
     s::AbstractInterpretationSet,
     args...;

@@ -357,16 +357,7 @@ See also [`SyntaxStructure`](@ref), [`Connective`](@ref), [`LeftmostLinearForm`]
 const LeftmostConjunctiveForm{SS<:SyntaxStructure} = LeftmostLinearForm{typeof(∧),SS}
 
 function check(
-    algo::CheckAlgorithm,
-    φ::LeftmostConjunctiveForm,
-    args...;
-    kwargs...
-)
-    return all(ch -> check(algo, ch, args...; kwargs...), grandchildren(φ))
-end
-
-function check(
-    algo::CheckAlgorithm,
+    algo::DefaultCheckAlgorithm,
     φ::LeftmostConjunctiveForm,
     i::AbstractInterpretation,
     args...;
@@ -387,16 +378,7 @@ See also [`SyntaxStructure`](@ref), [`Connective`](@ref),
 const LeftmostDisjunctiveForm{SS<:SyntaxStructure} = LeftmostLinearForm{typeof(∨),SS}
 
 function check(
-    algo::CheckAlgorithm,
-    φ::LeftmostDisjunctiveForm,
-    args...;
-    kwargs...
-)
-    return any(ch -> check(algo, ch, args...; kwargs...), grandchildren(φ))
-end
-
-function check(
-    algo::CheckAlgorithm,
+    algo::DefaultCheckAlgorithm,
     φ::LeftmostDisjunctiveForm,
     i::AbstractInterpretation,
     args...;
@@ -416,16 +398,7 @@ See also [`SyntaxStructure`](@ref), [`LeftmostConjunctiveForm`](@ref),
 const CNF{SS<:SyntaxStructure} = LeftmostConjunctiveForm{LeftmostDisjunctiveForm{SS}}
 
 function check(
-    algo::CheckAlgorithm,
-    φ::CNF,
-    args...;
-    kwargs...
-)
-    return all(ch -> any(grandch -> check(algo, grandch, args...; kwargs...), grandchildren(ch)), grandchildren(φ))
-end
-
-function check(
-    algo::CheckAlgorithm,
+    algo::DefaultCheckAlgorithm,
     φ::CNF,
     i::AbstractInterpretation,
     args...;
@@ -445,16 +418,7 @@ See also [`SyntaxStructure`](@ref), [`LeftmostConjunctiveForm`](@ref),
 const DNF{SS<:SyntaxStructure} = LeftmostDisjunctiveForm{LeftmostConjunctiveForm{SS}}
 
 function check(
-    algo::CheckAlgorithm,
-    φ::DNF,
-    args...;
-    kwargs...
-)
-    return any(ch -> all(grandch -> check(algo, grandch, args...; kwargs...), grandchildren(ch)), grandchildren(φ))
-end
-
-function check(
-    algo::CheckAlgorithm,
+    algo::DefaultCheckAlgorithm,
     φ::DNF,
     i::AbstractInterpretation,
     args...;

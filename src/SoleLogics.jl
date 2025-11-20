@@ -167,6 +167,7 @@ include("utils/normal-forms/leftmost.jl")
 include("utils/tools.jl")
 
 
+export eachinstance
 
 include("utils/interpretation-sets.jl")
 

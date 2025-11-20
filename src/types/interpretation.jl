@@ -160,13 +160,8 @@ function check(φ::Formula, args...; kwargs...)::Bool
     check(DefaultCheckAlgorithm(), φ, args...; kwargs...)
 end
 
-function check(
-    ::DefaultCheckAlgorithm,
-    φ::Formula,
-    args...;
-    kwargs...
-)::Bool
-    istop(interpret(φ, args...; kwargs...))
+function check(::DefaultCheckAlgorithm, φ::Formula, i::AbstractInterpretation, args...; kwargs...)::Bool
+    istop(interpret(φ, i, args...; kwargs...))
 end
 
 ############################################################################################
