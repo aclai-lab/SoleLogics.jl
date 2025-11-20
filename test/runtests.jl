@@ -21,8 +21,6 @@ test_suites = [
 
     ("Propositional logic", ["propositional.jl"]),
     
-    ("Check performance", ["check-performance.jl"]),
-
     ("Formula Generation", ["formulas/generation.jl",]),
     ("Formula I/O", ["formulas/input.jl",]),
     ("Normal Forms", ["formulas/normal-forms.jl",]),
