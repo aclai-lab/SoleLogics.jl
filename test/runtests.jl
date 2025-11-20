@@ -19,7 +19,7 @@ test_suites = [
     ("Normalize", ["normalize.jl",]),
     ("Syntax Utils", ["syntax-utils.jl",]),
 
-    ("Propositional logic", ["check/propositional.jl"]),
+    ("Propositional logic", ["propositional.jl"]),
     
     ("Check performance", ["check-performance.jl"]),
 
