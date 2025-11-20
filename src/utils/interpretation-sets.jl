@@ -63,17 +63,6 @@ function check(
         "kwargs...{" * join(map(p->"$(p.first)::$(p.second)", kwargs), ", ") * "}).")
 end
 
-# TODO remove?
-function check(
-    algo::DefaultCheckAlgorithm, 
-    φ::SyntaxTree,
-    i::LogicalInstance,
-    args...;
-    kwargs...
-)
-    return istop(interpret(φ, i, args...; kwargs...))
-end
-
 # # General grounding
 # function check(
 #     φ::SyntaxTree,
