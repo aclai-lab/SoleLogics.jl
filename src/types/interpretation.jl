@@ -107,6 +107,9 @@ end
 
 interpret(t::Truth, i::AbstractInterpretation, args...; kwargs...) = t
 
+"""
+Algorithm used for checking a formula on an interpretation.
+"""
 abstract type CheckAlgorithm end
 
 """
@@ -114,7 +117,7 @@ Default, general-purpose check algorithm.
 
 This algorithm is not optimized for special cases.
 """
-struct DefaultCheckAlgorithm end
+struct DefaultCheckAlgorithm <: CheckAlgorithm end
 
 """
     check(
@@ -125,7 +128,7 @@ struct DefaultCheckAlgorithm end
         kwargs...
     )::Bool
 
-Check a formula on a logical interpretation (or model), returning `true` if the truth value
+Check a [`Formula`](@ref) on a logical interpretation (or model), returning `true` if the truth value
 for the formula `istop`.
 This process is referred to as (finite)
 [model checking](https://en.wikipedia.org/wiki/Model_checking), and there are many
@@ -151,8 +154,7 @@ julia> check(CONJUNCTION(p,q), td)
 false
 ```
 
-See also [`interpret`](@ref), [`Formula`](@ref), [`AbstractInterpretation`](@ref),
-[`TruthDict`](@ref).
+See also [`check`](@ref), [`interpret`](@ref), [`AbstractInterpretation`](@ref).
 """
 function check(φ::Formula, args...; kwargs...)::Bool
     check(DefaultCheckAlgorithm(), φ, args...; kwargs...)
