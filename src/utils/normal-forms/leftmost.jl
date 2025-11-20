@@ -4,11 +4,7 @@
 # using SoleBase
 
 doc_lmlf = """
-    struct LeftmostLinearForm{C<:Connective,SS<:SyntaxStructure} <: SyntaxStructure
-        grandchildren::Vector{<:SS}
-    end
-
-A syntax structure representing the [`foldl`](https://en.wikipedia.org/wiki/Fold_(higher-order_function))
+A [`SyntaxStructure`](@ref) representing the [`foldl`](https://en.wikipedia.org/wiki/Fold_(higher-order_function))
 of a set of other syntax structure of type `SS` by means of a connective `C`.
 This structure enables a structured instantiation of formulas in conjuctive/disjunctive forms, and
 conjuctive normal form (CNF) or disjunctive normal form (DNF), defined as:
@@ -58,7 +54,7 @@ SyntaxBranch: ¬(p ∧ q) ∧ ¬(p ∧ q)
 
 """$(doc_lmlf)
 
-See also [`SyntaxStructure`](@ref), [`SyntaxTree`](@ref),
+See also [`SyntaxTree`](@ref),
 [`LeftmostConjunctiveForm`](@ref), [`LeftmostDisjunctiveForm`](@ref),
 [`Literal`](@ref).
 """
@@ -361,16 +357,7 @@ See also [`SyntaxStructure`](@ref), [`Connective`](@ref), [`LeftmostLinearForm`]
 const LeftmostConjunctiveForm{SS<:SyntaxStructure} = LeftmostLinearForm{typeof(∧),SS}
 
 function check(
-    algo::CheckAlgorithm,
-    φ::LeftmostConjunctiveForm,
-    args...;
-    kwargs...
-)
-    return all(ch -> check(algo, ch, args...; kwargs...), grandchildren(φ))
-end
-
-function check(
-    algo::CheckAlgorithm,
+    algo::DefaultCheckAlgorithm,
     φ::LeftmostConjunctiveForm,
     i::AbstractInterpretation,
     args...;
@@ -391,16 +378,7 @@ See also [`SyntaxStructure`](@ref), [`Connective`](@ref),
 const LeftmostDisjunctiveForm{SS<:SyntaxStructure} = LeftmostLinearForm{typeof(∨),SS}
 
 function check(
-    algo::CheckAlgorithm,
-    φ::LeftmostDisjunctiveForm,
-    args...;
-    kwargs...
-)
-    return any(ch -> check(algo, ch, args...; kwargs...), grandchildren(φ))
-end
-
-function check(
-    algo::CheckAlgorithm,
+    algo::DefaultCheckAlgorithm,
     φ::LeftmostDisjunctiveForm,
     i::AbstractInterpretation,
     args...;
@@ -420,16 +398,7 @@ See also [`SyntaxStructure`](@ref), [`LeftmostConjunctiveForm`](@ref),
 const CNF{SS<:SyntaxStructure} = LeftmostConjunctiveForm{LeftmostDisjunctiveForm{SS}}
 
 function check(
-    algo::CheckAlgorithm,
-    φ::CNF,
-    args...;
-    kwargs...
-)
-    return all(ch -> any(grandch -> check(algo, grandch, args...; kwargs...), grandchildren(ch)), grandchildren(φ))
-end
-
-function check(
-    algo::CheckAlgorithm,
+    algo::DefaultCheckAlgorithm,
     φ::CNF,
     i::AbstractInterpretation,
     args...;
@@ -449,16 +418,7 @@ See also [`SyntaxStructure`](@ref), [`LeftmostConjunctiveForm`](@ref),
 const DNF{SS<:SyntaxStructure} = LeftmostDisjunctiveForm{LeftmostConjunctiveForm{SS}}
 
 function check(
-    algo::CheckAlgorithm,
-    φ::DNF,
-    args...;
-    kwargs...
-)
-    return any(ch -> all(grandch -> check(algo, grandch, args...; kwargs...), grandchildren(ch)), grandchildren(φ))
-end
-
-function check(
-    algo::CheckAlgorithm,
+    algo::DefaultCheckAlgorithm,
     φ::DNF,
     i::AbstractInterpretation,
     args...;
@@ -516,23 +476,13 @@ disjuncts(φ::LeftmostDisjunctiveForm) = grandchildren(φ)
 ndisjuncts(φ::LeftmostDisjunctiveForm) = ngrandchildren(φ)
 pushdisjunct(φ::LeftmostDisjunctiveForm, el) = Base.push!(grandchildren(φ), el)
 
-# conjuncts(φ::DNF) = map(d->conjuncts(d), disjuncts(φ))
-# nconjuncts(φ::DNF) = map(d->nconjuncts(d), disjuncts(φ))
-# disjuncts(φ::CNF) = map(d->disjuncts(d), conjuncts(φ))
-# ndisjuncts(φ::CNF) = map(d->ndisjuncts(d), conjuncts(φ))
-
 
 ############################################################################################
 
 """
-    struct Literal{T<:SyntaxLeaf} <: SyntaxStructure
-        ispos::Bool
-        atom::T
-    end
+A [`SyntaxStructure`](@ref) given by an atom, or its negation.
 
-An atom, or its negation.
-
-See also [`CNF`](@ref), [`DNF`](@ref), [`SyntaxStructure`](@ref).
+Commonly used in normal forms (see [`CNF`](@ref)/[`DNF`](@ref)).
 """
 struct Literal{T<:SyntaxLeaf} <: SyntaxStructure
     ispos::Bool

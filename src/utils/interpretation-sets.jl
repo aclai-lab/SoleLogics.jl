@@ -46,8 +46,8 @@ function interpret(
 )::Formula
     return error("Please, provide method " *
         "interpret(φ::Atom, i::$(typeof(i)), " *
-        "" * join(map(t->"::$(t)", typeof.(args)), ", ") * "; " *
-        "kwargs...{" * join(map(p->"$(p.first)::$(p.second)", kwargs), ", ") * "}).")
+        join(map(t->"::$(t)", typeof.(args)), ", ") * "; " *
+        join(map(p->"$(p.first)::$(p.second)", kwargs), ", ") * ").")
 end
 
 function check(
@@ -58,20 +58,9 @@ function check(
     kwargs...
 )
     return error("Please, provide method " *
-        "check(algo::$(typeof(algo)), φ::SyntaxTree, i::$(typeof(i)), " *
-        "" * join(map(t->"::$(t)", typeof.(args)), ", ") * "; " *
-        "kwargs...{" * join(map(p->"$(p.first)::$(p.second)", kwargs), ", ") * "}).")
-end
-
-# TODO remove?
-function check(
-    algo::DefaultCheckAlgorithm, 
-    φ::SyntaxTree,
-    i::LogicalInstance,
-    args...;
-    kwargs...
-)
-    return istop(interpret(φ, i, args...; kwargs...))
+        "check(algo::$(typeof(algo)), φ::Formula, i::$(typeof(i)), " *
+        join(map(t->"::$(t)", typeof.(args)), ", ") * "; " *
+        join(map(p->"$(p.first)::$(p.second)", kwargs), ", ") * ").")
 end
 
 # # General grounding
@@ -137,7 +126,7 @@ See also [`AbstractInterpretationSet`](@ref),
 [`Formula`](@ref).
 """
 function check(
-    algo::CheckAlgorithm, 
+    algo, 
     φ,
     s::AbstractInterpretationSet,
     i_instance::Integer,
@@ -162,7 +151,7 @@ See also [`AbstractInterpretationSet`](@ref),
 [`Formula`](@ref).
 """
 function check(
-    algo::CheckAlgorithm,
+    algo,
     φ,
     s::AbstractInterpretationSet,
     args...;

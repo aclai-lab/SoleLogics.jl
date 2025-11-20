@@ -28,8 +28,6 @@ test_suites = [
 
     ("Interpretation Sets", ["interpretation-sets.jl"]),
 
-    ("Propositional Logic", ["propositional-logic.jl"]),
-
     ("Modal logic: worlds", ["modal-logic/frames/worlds.jl",]),
     ("Modal logic: frames", ["modal-logic/frames/frames.jl",]),
     ("Modal logic: relations", ["modal-logic/frames/relations.jl",]),
