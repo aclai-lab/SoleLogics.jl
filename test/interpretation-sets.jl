@@ -15,8 +15,8 @@ s = SoleLogics.InterpretationVector([TruthDict((1,false)), TruthDict((1,true)), 
 
 conj = LeftmostConjunctiveForm([Atom(1), Atom(1)])
 disj = LeftmostDisjunctiveForm([Atom(1), Atom(1)])
-cnf = LeftmostConjunctiveForm([disj, disj])
-dnf = LeftmostDisjunctiveForm([conj, conj])
+conj_nf = LeftmostConjunctiveForm([disj, disj])
+disj_nf = LeftmostDisjunctiveForm([conj, conj])
 
 @test check(conj, s, 1) == false
 @test check(conj, s, 2) == true
@@ -28,12 +28,12 @@ dnf = LeftmostDisjunctiveForm([conj, conj])
 @test !all(check(disj, s, 1))
 @test [check(disj, i) for i in eachinstance(s)] == [false, true, true]
 
-@test check(cnf, s, 1) == false
-@test check(cnf, s, 2) == true
-@test !all(check(cnf, s, 1))
-@test [check(cnf, i) for i in eachinstance(s)] == [false, true, true]
+@test check(conj_nf, s, 1) == false
+@test check(conj_nf, s, 2) == true
+@test !all(check(conj_nf, s, 1))
+@test [check(conj_nf, i) for i in eachinstance(s)] == [false, true, true]
 
-@test check(dnf, s, 1) == false
-@test check(dnf, s, 2) == true
-@test !all(check(dnf, s, 1))
-@test [check(dnf, i) for i in eachinstance(s)] == [false, true, true]
+@test check(disj_nf, s, 1) == false
+@test check(disj_nf, s, 2) == true
+@test !all(check(disj_nf, s, 1))
+@test [check(disj_nf, i) for i in eachinstance(s)] == [false, true, true]
