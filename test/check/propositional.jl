@@ -24,6 +24,11 @@ end
 @testset "TruthDict" begin
     @test_nowarn TruthDict(1:4)
     @test_nowarn TruthDict(1:4, false)
+    @test_nowarn istop(TruthDict(["p", "q"])["p"])
+
+    io = IOBuffer();
+    print(io, TruthDict(["p", "q"]))
+    @test String(take!(io)) == "TruthDict with values:\n┌────────┬────────┐\n│      q │      p │\n│ String │ String │\n├────────┼────────┤\n│      ⊤ │      ⊤ │\n└────────┴────────┘\n"
 
     t0 = @test_nowarn TruthDict(["a" => true, "b" => false, "c" => true])
     @test haskey(t0, Atom("a"))
