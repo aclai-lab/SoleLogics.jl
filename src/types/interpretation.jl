@@ -87,8 +87,8 @@ function interpret(
 )::Formula
     return error("Please, provide method " *
                  "interpret(φ::$(typeof(φ)), i::$(typeof(i)), " *
-                 "" * join(map(t->"::$(t)", typeof.(args)), ", ") * "; " *
-                 "kwargs...{" * join(map(p->"$(p.first)::$(p.second)", kwargs), ", ") * "}).")
+                join(map(t->"::$(t)", typeof.(args)), ", ") * "; " *
+                join(map(p->"$(p.first)::$(p.second)", kwargs), ", ") * ").")
 end
 
 function interpret(
