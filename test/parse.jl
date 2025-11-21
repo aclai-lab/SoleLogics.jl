@@ -48,6 +48,62 @@ end
 
 @test syntaxstring(parseformula("(◊¬p) ∧ (¬q)")) == "◊¬p ∧ ¬q"
 @test_broken syntaxstring(parseformula("q → p → ¬q"), remove_redundant_parentheses=false) == "(q) → ((p) → (¬(q)))"
+
+
+# normalization: negations compression ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+@test syntaxstring(normalize(parseformula("¬¬ p"))) == "p"
+@test syntaxstring(normalize(parseformula("¬¬¬ p"))) == "¬p"
+@test syntaxstring(normalize(parseformula("¬¬¬¬ p"))) == "p"
+@test_nowarn syntaxstring(normalize(parseformula("¬¬¬ □□□ ◊◊◊ p ∧ ¬¬¬ q")); remove_redundant_parentheses = true) == "◊◊◊□□□¬p ∧ ¬q"
+@test_nowarn syntaxstring(normalize(parseformula("¬¬¬ □□□ ◊◊◊ p → ¬¬¬ q")); remove_redundant_parentheses = true) == "□□□◊◊◊p ∨ ¬q"
+
+# normalization: diamond and box compression ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+@test syntaxstring(normalize(parseformula("¬◊¬p"))) == "□p"
+@test syntaxstring(normalize(parseformula("¬□¬p"))) == "◊p"
+
+# normalization: rotate commutatives ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+_test_rot_comm1 = normalize(parseformula("((d ∧ c) ∧ ((e ∧ f) ∧ (g ∧ h))) ∧ (b ∧ a)"))
+for f in [
+    parseformula("(a∧b)∧(c∧d)∧(e∧f)∧(g∧h)")
+    parseformula("(c∧d)∧(b∧a)∧(f∧e)∧(g∧h)")
+    parseformula("(a∧b)∧(f∧e)∧(d∧c)∧(g∧h)")
+    parseformula("(b∧a)∧(h∧g)∧(d∧c)∧(f∧e)")
+    parseformula("(b∧a)∧(c∧d)∧(f∧e)∧(g∧h)")
+    parseformula("(a∧b)∧(d∧c)∧(f∧e)∧(g∧h)")
+    parseformula("(b∧a)∧(d∧c)∧(f∧e)∧(h∧g)")
+]
+    @test syntaxstring(f |> normalize) == syntaxstring(_test_rot_comm1)
+end
+
+_test_rot_comm2 = normalize(parseformula("(a∧b)∧(c∧d)∧(e∧f)∧(g∧h)"))
+for f in [
+    parseformula("(c∧d)∧(b∧a)∧(f∧e)∧(g∧h)"),
+    parseformula("(a∧b)∧(f∧e)∧(d∧c)∧(g∧h)"),
+    parseformula("(b∧a)∧(h∧g)∧(d∧c)∧(f∧e)")
+]
+    @test syntaxstring(f |> normalize) == syntaxstring(_test_rot_comm2)
+end
+
+_test_rot_comm3 = normalize(parseformula("b∧a∧d∧c∧e∧f∧h∧g"))
+for f in [
+    parseformula("a∧b∧c∧d∧e∧f∧g∧h"),
+    parseformula("g∧d∧a∧b∧c∧f∧e∧h")
+]
+    @test syntaxstring(f |> normalize) == syntaxstring(_test_rot_comm3)
+
+end
+
+_test_rot_comm4 = normalize(parseformula("g∧c∧f∧((p∧¬q)→r)∧h∧d∧a∧b"))
+for f in [
+    parseformula("a∧b∧c∧d∧((p∧¬q)→r)∧f∧g∧h"),
+    parseformula("g∧d∧a∧b∧c∧f∧((p∧¬q)→r)∧h")
+]
+    @test syntaxstring(f |> normalize) == syntaxstring(_test_rot_comm4)
+end
+
 # function notation ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 @test syntaxstring(parseformula("p∧q"); function_notation = true) == "∧(p, q)"

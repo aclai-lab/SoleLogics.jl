@@ -195,7 +195,8 @@ function collatetruth(
                      "connective $(typeof(c)) with arity $(arity(c))).")
     else
         return error("Please, provide method collatetruth(::$(typeof(c)), " *
-                     "::NTuple{$(arity(c)),$(eltype(ts))}).")
+                     "::NTuple{$(arity(c)),$(eltype(ts))}" *
+                join(map(t->"::$(t)", typeof.(args)), ", ") * ").")
     end
 end
 

@@ -1,7 +1,8 @@
 # core.jl
 export atom, Proposition, NamedOperator
+export ExplicitCrispUniModalFrame
 
-const SimpleModalFrame = SimpleModalFrame
+const ExplicitCrispUniModalFrame = SimpleModalFrame
 
 const ToCenteredRel = ToCenterRel
 

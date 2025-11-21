@@ -3,27 +3,37 @@ using SoleLogics
 
 s = SoleLogics.InterpretationVector([TruthDict((1,false)), TruthDict((1,true)), TruthDict((1,true)),])
 
-@test_nowarn check(Atom(1), s, 1)
 @test check(Atom(1), s, 1) == false
 @test check(Atom(1), s, 2) == true
-
-@test_nowarn check(Atom(1), s)
 @test !all(check(Atom(1), s, 1))
+@test [check(Atom(1), i) for i in eachinstance(s)] == [false, true, true]
 
-@test_nowarn [check(Atom(1), i) for i in SoleLogics.eachinstance(s)]
-@test [check(Atom(1), i) for i in SoleLogics.eachinstance(s)] == [false, true, true]
+@test check(Atom(1) ∧ Atom(1), s, 1) == false
+@test check(Atom(1) ∧ Atom(1), s, 2) == true
+@test !all(check(Atom(1) ∧ Atom(1), s, 1))
+@test [check(Atom(1) ∧ Atom(1), i) for i in eachinstance(s)] == [false, true, true]
 
-################################################################################
+conj = LeftmostConjunctiveForm([Atom(1), Atom(1)])
+disj = LeftmostDisjunctiveForm([Atom(1), Atom(1)])
+conj_nf = LeftmostConjunctiveForm([disj, disj])
+disj_nf = LeftmostDisjunctiveForm([conj, conj])
 
-# using DecisionTree: load_data
-# using DataFrames
-# using SoleData
+@test check(conj, s, 1) == false
+@test check(conj, s, 2) == true
+@test !all(check(conj, s, 1))
+@test [check(conj, i) for i in eachinstance(s)] == [false, true, true]
 
-# X, y = load_data("iris")
-# X = Float64.(X)
-# X_df = DataFrame(X, :auto)
-# s = scalarlogiset(X_df; allow_propositional = true)
-# myalphabet = @test_nowarn alphabet(s)
-# a = @test_nowarn first(atoms(myalphabet))
-# @test_nowarn [check(a, i) for i in SoleLogics.eachinstance(s)]
+@test check(disj, s, 1) == false
+@test check(disj, s, 2) == true
+@test !all(check(disj, s, 1))
+@test [check(disj, i) for i in eachinstance(s)] == [false, true, true]
 
+@test check(conj_nf, s, 1) == false
+@test check(conj_nf, s, 2) == true
+@test !all(check(conj_nf, s, 1))
+@test [check(conj_nf, i) for i in eachinstance(s)] == [false, true, true]
+
+@test check(disj_nf, s, 1) == false
+@test check(disj_nf, s, 2) == true
+@test !all(check(disj_nf, s, 1))
+@test [check(disj_nf, i) for i in eachinstance(s)] == [false, true, true]

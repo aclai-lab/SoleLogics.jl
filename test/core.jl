@@ -177,8 +177,6 @@ emptylogic = @test_nowarn propositionallogic(; operators = SoleLogics.Operator[]
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-include("check/propositional.jl")
-
 @test_nowarn SoleLogics.collatetruth(CONJUNCTION, (⊤, ⊤))
 @test_nowarn SoleLogics.collatetruth(TOP, ())
 @test_nowarn SoleLogics.collatetruth(TOP, ())

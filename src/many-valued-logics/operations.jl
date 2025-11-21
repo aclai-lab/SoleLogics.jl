@@ -57,7 +57,7 @@ struct BinaryOperation{N,M<:SMatrix{N,N,FiniteTruth}} <: AbstractBinaryOperation
     function BinaryOperation{N}(truthtable::AbstractVector{<:FiniteTruth}) where {N}
         operation =  BinaryOperation{N}(SMatrix{N,N,FiniteTruth}(truthtable))
         if !checkaxiom(Commutativity, operation)
-            @warn "Non commutative operation defined with `AbstractVector`` constructor!\n" *
+            @warn "Non commutative operation defined with `AbstractVector` constructor!\n" *
                   "Please, check that indices are in the intended order.\n" *
                   "If you don't know what you're doing, use the `SMatrix` constructor instead."
         end
