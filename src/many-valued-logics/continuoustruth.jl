@@ -28,7 +28,7 @@ end
 @inline isbot(t::ContinuousTruth) = _isbot(t.value)
 
 function syntaxstring(t::ContinuousTruth; kwargs...)
-    return t.value
+    return string(t.value)
 end
 
 Base.show(io::IO, t::ContinuousTruth) = print(io, syntaxstring(t))
