@@ -225,6 +225,33 @@ using SoleLogics.ManyValuedLogics: G3
 )
 
 ################################################################################
+#### Fuzzy simplify and collatetruth ###########################################
+################################################################################
+
+@test SoleLogics.collatetruth(→, (ContinuousTruth(0.5), ⊤), GodelLogic) == top(GodelLogic)
+@test SoleLogics.collatetruth(→, (ContinuousTruth(0.5), ⊤), MXA) == top(MXA)
+@test SoleLogics.collatetruth(→, (⊥, ContinuousTruth(0.5)), GodelLogic) == top(GodelLogic)
+@test SoleLogics.collatetruth(→, (⊥, ContinuousTruth(0.5)), MXA) == top(MXA)
+@test SoleLogics.collatetruth(→, (ContinuousTruth(0.5), top(MXA)), MXA) == top(MXA)
+@test SoleLogics.collatetruth(→, (bot(MXA), ContinuousTruth(1.0)), MXA) == top(MXA)
+@test_throws ErrorException SoleLogics.collatetruth(→, (ContinuousTruth(0.5), ContinuousTruth(1.0)), FuzzyLogic(ContinuousBinaryOperation(+)))
+
+@test SoleLogics.simplify(∧, (parseformula("p∧q"), ⊥), MXA) == bot(MXA)
+@test SoleLogics.simplify(∧, (bot(MXA), ⊥), MXA) == bot(MXA)
+@test SoleLogics.simplify(∧, (⊥, bot(MXA)), MXA) == bot(MXA)
+
+@test SoleLogics.simplify(∨, (⊤, parseformula("p∧q")), MXA) == top(MXA)
+@test SoleLogics.simplify(∨, (bot(MXA), ⊤), MXA) == top(MXA)
+@test SoleLogics.simplify(∨, (⊤, bot(MXA)), MXA) == top(MXA)
+@test SoleLogics.simplify(∨, (ContinuousTruth(1.0), bot(MXA)), MXA) == top(MXA)
+@test SoleLogics.simplify(∨, (bot(MXA), ContinuousTruth(1.0)), MXA) == top(MXA)
+
+@test SoleLogics.simplify(→, (bot(MXA), ⊤), MXA) == top(MXA)
+@test SoleLogics.simplify(→, (⊥, top(MXA)), MXA) == top(MXA)
+@test SoleLogics.simplify(→, (ContinuousTruth(0.0), top(MXA)), MXA) == top(MXA)
+@test SoleLogics.simplify(→, (bot(MXA), ContinuousTruth(1.0)), MXA) == top(MXA)
+
+################################################################################
 #### Fuzzy-Logics interpret ####################################################
 ################################################################################
 
@@ -244,7 +271,6 @@ z = Atom("z")
 ################################################################################
 #### Many-Expert interpret #####################################################
 ################################################################################
-
 
 @test interpret(parseformula("v∧w"), TruthDict([v => ⊤, w => ⊤]), MXA) == top(MXA)
 @test interpret(parseformula("v∨w"), TruthDict([v => ⊥, w => ⊥]), MXA) == bot(MXA)
