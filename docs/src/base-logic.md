@@ -33,11 +33,11 @@ Recalling the type hierarchy presented in [man-core](@ref), it is here enriched 
     - [`BooleanAlgebra`](@ref)
 - [`AbstractLogic`](@ref)
     - [`BaseLogic`](@ref)
-- [`AbstractInterpretation`](@ref)
+- [`Interpretation`](@ref)
     - [`AbstractAssignment`](@ref)
         - [`TruthDict`](@ref)
         - [`DefaultedTruthDict`](@ref)
-        - [`AbstractInterpretationSet`](@ref)
+        - [`InterpretationSet`](@ref)
         - [`InterpretationVector`](@ref)
     - [`LogicalInstance`](@ref) 
 - [`TruthTable`](@ref)
@@ -140,12 +140,12 @@ TruthTable{A,T<:Truth}
 ```
 
 ```
-AbstractInterpretationSet
+InterpretationSet
 
-LogicalInstance{S<:AbstractInterpretationSet}
+LogicalInstance{S<:InterpretationSet}
 
-check(φ::Formula, s::AbstractInterpretationSet, i_instance::Integer, args...; kwargs...)
-check(φ::Formula, s::AbstractInterpretationSet, args...; kwargs...)
+check(φ::Formula, s::InterpretationSet, i_instance::Integer, args...; kwargs...)
+check(φ::Formula, s::InterpretationSet, args...; kwargs...)
 
-InterpretationVector{M<:AbstractInterpretation}
+InterpretationVector{M<:Interpretation}
 ```

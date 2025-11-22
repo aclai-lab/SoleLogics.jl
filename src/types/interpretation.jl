@@ -1,10 +1,10 @@
 
 ############################################################################################
-#### AbstractInterpretation ################################################################
+#### Interpretation ################################################################
 ############################################################################################
 
 """
-    abstract type AbstractInterpretation end
+    abstract type Interpretation end
 
 Abstract type for representing a [logical
 interpretation](https://en.wikipedia.org/wiki/Interpretation_(logic)).
@@ -15,21 +15,21 @@ is essentially a map *atom → truth value*.
 Properties expressed via logical formulas can be `check`ed on logical interpretations.
 
 # Interface
-- `valuetype(i::AbstractInterpretation)`
-- `truthtype(i::AbstractInterpretation)`
-- `interpret(φ::Formula, i::AbstractInterpretation, args...; kwargs...)::Formula`
+- `valuetype(i::Interpretation)`
+- `truthtype(i::Interpretation)`
+- `interpret(φ::Formula, i::Interpretation, args...; kwargs...)::Formula`
 
 # Utility functions
-- `check(φ::Formula, i::AbstractInterpretation, args...; kwargs...)::Bool`
+- `check(φ::Formula, i::Interpretation, args...; kwargs...)::Bool`
 
 See also [`check`](@ref), [`AbstractAssignment`](@ref), [`AbstractKripkeStructure`](@ref).
 """
-abstract type AbstractInterpretation end
+abstract type Interpretation end
 
-function valuetype(i::AbstractInterpretation)
+function valuetype(i::Interpretation)
     return error("Please, provide method valuetype(::$(typeof(i))).")
 end
-function truthtype(i::AbstractInterpretation)
+function truthtype(i::Interpretation)
     return error("Please, provide method truthtype(::$(typeof(i))).")
 end
 
@@ -40,7 +40,7 @@ end
 """
     interpret(
         φ::Formula,
-        i::AbstractInterpretation,
+        i::Interpretation,
         args...;
         kwargs...
     )::Formula
@@ -67,12 +67,12 @@ julia> interpret(CONJUNCTION(p,q), td)
 ⊥
 ```
 
-See also [`check`](@ref), [`Formula`](@ref), [`AbstractInterpretation`](@ref),
+See also [`check`](@ref), [`Formula`](@ref), [`Interpretation`](@ref),
 [`AbstractAlgebra`](@ref).
 """
 function interpret(
     φ::Formula,
-    i::AbstractInterpretation,
+    i::Interpretation,
     args...;
     kwargs...
 )::Formula
@@ -81,7 +81,7 @@ end
 
 function interpret(
     φ::AbstractAtom,
-    i::AbstractInterpretation,
+    i::Interpretation,
     args...;
     kwargs...,
 )::Formula
@@ -93,7 +93,7 @@ end
 
 function interpret(
     φ::AbstractSyntaxBranch,
-    i::AbstractInterpretation,
+    i::Interpretation,
     args...;
     kwargs...,
 )
@@ -105,7 +105,7 @@ function interpret(
 end
 
 
-interpret(t::Truth, i::AbstractInterpretation, args...; kwargs...) = t
+interpret(t::Truth, i::Interpretation, args...; kwargs...) = t
 
 """
 Algorithm used for checking a formula on an interpretation.
@@ -123,7 +123,7 @@ struct DefaultCheckAlgorithm <: CheckAlgorithm end
     check(
         [algo::CheckAlgorithm,]
         φ::Formula,
-        i::AbstractInterpretation,
+        i::Interpretation,
         args...;
         kwargs...
     )::Bool
@@ -154,13 +154,13 @@ julia> check(CONJUNCTION(p,q), td)
 false
 ```
 
-See also [`check`](@ref), [`interpret`](@ref), [`AbstractInterpretation`](@ref).
+See also [`check`](@ref), [`interpret`](@ref), [`Interpretation`](@ref).
 """
 function check(φ::Formula, args...; kwargs...)::Bool
     check(DefaultCheckAlgorithm(), φ, args...; kwargs...)
 end
 
-function check(::DefaultCheckAlgorithm, φ::Formula, i::AbstractInterpretation, args...; kwargs...)::Bool
+function check(::DefaultCheckAlgorithm, φ::Formula, i::Interpretation, args...; kwargs...)::Bool
     istop(interpret(φ, i, args...; kwargs...))
 end
 
@@ -169,9 +169,9 @@ end
 ############################################################################################
 
 # Formula interpretation via i[φ] -> ψ
-Base.getindex(i::AbstractInterpretation, φ::Formula, args...; kwargs...) =
+Base.getindex(i::Interpretation, φ::Formula, args...; kwargs...) =
     interpret(φ, i, args...; kwargs...)
 
 # Formula interpretation via φ(i) -> ψ
-(φ::Formula)(i::AbstractInterpretation, args...; kwargs...) =
+(φ::Formula)(i::Interpretation, args...; kwargs...) =
     interpret(φ, i, args...; kwargs...)

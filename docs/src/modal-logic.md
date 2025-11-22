@@ -25,7 +25,7 @@ Recalling the type hierarchy presented in [man-core](@ref), it is here enriched 
     - [`AbstractMultiModalFrame`](@ref)
     - [`WrapperMultiModalFrame`](@ref)
 - [`AbstractRelation`](@ref)
-- [`AbstractInterpretation`](@ref)
+- [`Interpretation`](@ref)
     - [`AbstractKripkeStructure`](@ref)
         - [`KripkeStructure`](@ref)
 

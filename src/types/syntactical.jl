@@ -566,7 +566,7 @@ note that their atoms cannot be `Atom`s.
 - `dual(s::AbstractAtom)::AbstractAtom`
 - `hasdual(s::AbstractAtom)::Bool`
 
-See also [`AbstractInterpretation`](@ref), [`atoms`](@ref), [`check`](@ref),
+See also [`Interpretation`](@ref), [`atoms`](@ref), [`check`](@ref),
 [`SyntaxToken`](@ref).
 """
 abstract type AbstractAtom <: SyntaxLeaf end

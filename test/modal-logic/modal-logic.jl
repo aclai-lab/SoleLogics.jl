@@ -216,8 +216,8 @@ kstruct4 = KripkeStructure(kframe4, valuation4)
 
 @test_nowarn mygradedconnective = ConstrainedConnective{:🌞, 2}(==)
 @test_nowarn ConstrainedConnective{:🌞}(2, ==)
-@test_nowarn println(DIAMOND2)
-@test_nowarn @show(BOX2)
+@test_nowarn repr(BOX2) == "□2"
+@test_nowarn repr(DIAMOND2) == "◊2"
 
 @test SoleLogics.name(DIAMOND2) == :◊
 @test condition(DIAMOND2) == >=

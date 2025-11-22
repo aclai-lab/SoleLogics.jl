@@ -152,7 +152,6 @@ grandchildren(lf::LeftmostLinearForm) = lf.grandchildren
 ngrandchildren(lf::LeftmostLinearForm) = length(grandchildren(lf))
 connective(::LeftmostLinearForm{C}) where {C} = C() # TODO avoid using C alone, since it may not be a singleton.
 
-operatortype(::LeftmostLinearForm{C}) where {C} = C
 grandchildrentype(::LeftmostLinearForm{C,SS}) where {C,SS} = SS
 
 # AbstractTrees.children (from Formula interface)
@@ -359,7 +358,7 @@ const LeftmostConjunctiveForm{SS<:SyntaxStructure} = LeftmostLinearForm{typeof(�
 function check(
     algo::DefaultCheckAlgorithm,
     φ::LeftmostConjunctiveForm,
-    i::AbstractInterpretation,
+    i::Interpretation,
     args...;
     kwargs...
 )
@@ -380,7 +379,7 @@ const LeftmostDisjunctiveForm{SS<:SyntaxStructure} = LeftmostLinearForm{typeof(�
 function check(
     algo::DefaultCheckAlgorithm,
     φ::LeftmostDisjunctiveForm,
-    i::AbstractInterpretation,
+    i::Interpretation,
     args...;
     kwargs...
 )
@@ -400,7 +399,7 @@ const CNF{SS<:SyntaxStructure} = LeftmostConjunctiveForm{LeftmostDisjunctiveForm
 function check(
     algo::DefaultCheckAlgorithm,
     φ::CNF,
-    i::AbstractInterpretation,
+    i::Interpretation,
     args...;
     kwargs...
 )
@@ -420,7 +419,7 @@ const DNF{SS<:SyntaxStructure} = LeftmostDisjunctiveForm{LeftmostConjunctiveForm
 function check(
     algo::DefaultCheckAlgorithm,
     φ::DNF,
-    i::AbstractInterpretation,
+    i::Interpretation,
     args...;
     kwargs...
 )

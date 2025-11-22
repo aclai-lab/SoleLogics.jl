@@ -33,7 +33,7 @@ const BasePropositionalLogic = AbstractLogic{G,A} where {
 ############################################################################################
 
 """
-    abstract type AbstractAssignment <: AbstractInterpretation end
+    abstract type AbstractAssignment <: Interpretation end
 
 Abstract type for assigments, that is, interpretations of propositional logic,
 encoding mappings from [`AbstractAtom`](@ref)s to `Truth` values.
@@ -43,9 +43,9 @@ encoding mappings from [`AbstractAtom`](@ref)s to `Truth` values.
 - `inlinedisplay(i::AbstractAssignment)::String`
 - `interpret(a::AbstractAtom, i::AbstractAssignment, args...; kwargs...)::SyntaxLeaf`
 
-See also [`AbstractAssignment`](@ref), [`AbstractAtom`](@ref), [`AbstractInterpretation`](@ref).
+See also [`AbstractAssignment`](@ref), [`AbstractAtom`](@ref), [`Interpretation`](@ref).
 """
-abstract type AbstractAssignment <: AbstractInterpretation end
+abstract type AbstractAssignment <: Interpretation end
 
 """
     Base.haskey(i::AbstractAssignment, ::AbstractAtom)::Bool
@@ -63,7 +63,7 @@ julia> haskey(TruthDict(1:4, false), Atom(3))
 true
 ```
 
-See also [`AbstractAssignment`](@ref), [`AbstractInterpretation`](@ref), 
+See also [`AbstractAssignment`](@ref), [`Interpretation`](@ref), 
 [`AbstractAtom`](@ref), [`TruthDict`](@ref), [`Atom`](@ref).
 """
 function Base.haskey(i::AbstractAssignment, ::AbstractAtom)::Bool

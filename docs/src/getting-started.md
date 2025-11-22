@@ -22,7 +22,7 @@ Please, feel free to use the following tree structures to orient yourself in the
                     - [`Atom`](@ref)            (e.g., p, q)
                     - [`Truth`](@ref)           (e.g., ⊤, ⊥)
                 - [`SyntaxBranch`](@ref)        (e.g., p ∧ q)
-- [`AbstractInterpretation`](@ref) (e.g., p is ⊤, equivalent to p is true in boolean logic)
+- [`Interpretation`](@ref) (e.g., p is ⊤, equivalent to p is true in boolean logic)
 
 Also, two union types are defined:
 - [`Operator`](@ref), that is, `Union{Connective,Truth}`, 
@@ -120,7 +120,7 @@ SyntaxBranch
 
 ## [Semantics Basics](@id semantics-base-definitions)
 ```@docs
-AbstractInterpretation
-interpret(φ::Formula, i::AbstractInterpretation, args...; kwargs...)
-check(φ::Formula, i::AbstractInterpretation, args...; kwargs...)
+Interpretation
+interpret(φ::Formula, i::Interpretation, args...; kwargs...)
+check(φ::Formula, i::Interpretation, args...; kwargs...)
 ```

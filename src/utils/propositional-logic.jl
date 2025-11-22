@@ -126,7 +126,7 @@ true
     If the structure is initialized as empty, [`BooleanTruth`](@ref) values are assumed.
 
 See also [`AbstractAssignment`](@ref), 
-[`AbstractInterpretation`](@ref),
+[`Interpretation`](@ref),
 [`DefaultedTruthDict`](@ref),
 [`BooleanTruth`](@ref).
 """
@@ -275,7 +275,7 @@ false
 
 ```
 
-See also [`AbstractAssignment`](@ref), [`AbstractInterpretation`](@ref),
+See also [`AbstractAssignment`](@ref), [`Interpretation`](@ref),
 [`interpret`](@ref), [`Atom`](@ref),
 [`TruthDict`](@ref), [`DefaultedTruthDict`](@ref).
 """
@@ -368,11 +368,11 @@ when model checking.
 See also [`Formula`](@ref).
 """
 function check(algo::CheckAlgorithm, φ::Formula, i::Union{AbstractDict,AbstractVector}, args...)
-    check(algo, φ, convert(AbstractInterpretation, i), args...)
+    check(algo, φ, convert(Interpretation, i), args...)
 end
 
 function interpret(φ::Formula, i::Union{AbstractDict,AbstractVector}, args...)
-    interpret(φ, convert(AbstractInterpretation, i), args...)
+    interpret(φ, convert(Interpretation, i), args...)
 end
 
 #############################################################################################
@@ -380,7 +380,7 @@ end
 #############################################################################################
 
 """
-    convert(::Type{AbstractInterpretation}, i::AbstractDict)
+    convert(::Type{Interpretation}, i::AbstractDict)
 
 Convert a dictionary (with keys and values) in a [`TruthDict`](@ref).
 In this case, a dictionary is interpreted as the map from atoms to `Truth` values.
@@ -388,7 +388,7 @@ In this case, a dictionary is interpreted as the map from atoms to `Truth` value
 # Examples
 
 ```julia-repl
-julia> convert(AbstractInterpretation, Dict([1 => ⊤, 2 => ⊥]))
+julia> convert(Interpretation, Dict([1 => ⊤, 2 => ⊥]))
 TruthDict with values:
 ┌───────┬───────┐
 │     2 │     1 │
@@ -403,9 +403,9 @@ TruthDict with values:
     associated with the keys must be Boolean values. If this were not the 
     case, this method could not be used.
 
-See also [`AbstractInterpretation`](@ref), [`TruthDict`](@ref).
+See also [`Interpretation`](@ref), [`TruthDict`](@ref).
 """
-convert(::Type{AbstractInterpretation}, i::AbstractDict) = TruthDict(i)
+convert(::Type{Interpretation}, i::AbstractDict) = TruthDict(i)
 
 """
     Base.haskey(a::Atom, i::AbstractDict)::Bool
@@ -450,7 +450,7 @@ check(::CheckAlgorithm, a::Atom, i::AbstractDict) = haskey(a,i) ? Base.getindex(
 #############################################################################################
 
 """
-    convert(::Type{AbstractInterpretation}, i::AbstractVector)
+    convert(::Type{Interpretation}, i::AbstractVector)
 
 Converts any vector to a dictionary with all ⊤ and ⊥ default value.
 In this case, a vector is interpreted as the set of true atoms.
@@ -458,7 +458,7 @@ In this case, a vector is interpreted as the set of true atoms.
 # Examples
 
 ```julia-repl
-julia> convert(AbstractInterpretation, [1,2,3])
+julia> convert(Interpretation, [1,2,3])
 DefaultedTruthDict with default truth `⊥` and values:
 ┌───────┬───────┬───────┐
 │     2 │     3 │     1 │
@@ -467,7 +467,7 @@ DefaultedTruthDict with default truth `⊥` and values:
 │     ⊤ │     ⊤ │     ⊤ │
 └───────┴───────┴───────┘
 
-julia> convert(AbstractInterpretation, ["a","b"])
+julia> convert(Interpretation, ["a","b"])
 DefaultedTruthDict with default truth `⊥` and values:
 ┌────────┬────────┐
 │      b │      a │
@@ -477,9 +477,9 @@ DefaultedTruthDict with default truth `⊥` and values:
 └────────┴────────┘
 ```
 
-See also [`AbstractInterpretation`](@ref), [`DefaultedTruthDict`](@ref), [`TruthDict`](@ref).
+See also [`Interpretation`](@ref), [`DefaultedTruthDict`](@ref), [`TruthDict`](@ref).
 """
-convert(::Type{AbstractInterpretation}, i::AbstractVector) = DefaultedTruthDict(i, ⊥)
+convert(::Type{Interpretation}, i::AbstractVector) = DefaultedTruthDict(i, ⊥)
 #Base.in(a::Atom, i::AbstractVector) = true
 
 """
