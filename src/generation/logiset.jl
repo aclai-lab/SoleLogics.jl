@@ -6,15 +6,15 @@ using Random
 Return `nothing` if the given formula `f` is unsatisfiable.
 """
 function _check_sat_with_spartacus(f::SyntaxBranch)
-    _spartan_f = soletospartacus(f)
+    _spartan_f = SoleLogics.soletospartacus(f)
 
-    _command = `$(SPARTACUS_DIR)/spartacus --showModel --formula=$(_spartan_f)`
+    _command = `$(SoleLogics.SPARTACUS_DIR)/spartacus --showModel --formula=$(_spartan_f)`
 
     _buffer = IOBuffer()
     run(pipeline(_command, stdout=_buffer))
     _result = String(take!(_buffer))
 
-    return !isnothing(spartacustomodel(_result))
+    return !isnothing(SoleLogics.spartacustomodel(_result))
 end
 
 """
@@ -123,7 +123,7 @@ julia> randlogiset(_myrng, ((_conjunction,)), 5; silent=false)
     # the "previously seen" formulas;
     # the first conjunction, c1, is taken as-is;
     # the second one, c2, will be transformed into CONJUNCTION(NEGATION(c1), c2) and so on.
-    previous_formulas = SyntaxBranch[]
+    seen_formulas = SyntaxBranch[]
 
     for (i,formula) in enumerate(_formulas)
         # we cannot overcome `maxiterations` number of iterations
@@ -135,17 +135,22 @@ julia> randlogiset(_myrng, ((_conjunction,)), 5; silent=false)
 
         # this formula is the one we are reading in this cycle, and must be completely
         # disjoint from all the previously seen formulas
-        current_formula = CONJUNCTION(formula, NEGATION.(previous_formulas)...)
+        current_formula = formula
+        if i > 1
+            current_formula = CONJUNCTION(formula, NEGATION.(seen_formulas)...)
+        end
 
         # the current formula is saved for properly generate the next labels
-        push!(previous_formulas, formula)
+        push!(seen_formulas, formula)
 
         # for each instance generated in the previous cycles,
         # try to see if `current_formula` is satisfied by the instance.
-        for failed_instance in _failed_instances
-            if check(current_formula, failed_instance, World(1))
-                push!(_instances[i], failed_instance)
-                _okinstances = _okinstances + 1
+        if _failed_instances != [KripkeStructure[]]
+            for _failed_instance in _failed_instances
+                if check(current_formula, _failed_instance, World(1))
+                    push!(_instances[i], _failed_instance)
+                    _okinstances = _okinstances + 1
+                end
             end
         end
 
