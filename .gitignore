@@ -5,4 +5,4 @@
 /docs/build/
 .vscode
 
-/test/generation/spartacus-installation/
+/src/utils/spartacus-installation/
