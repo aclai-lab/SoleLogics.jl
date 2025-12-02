@@ -1,6 +1,26 @@
 using Random
 
-function __check()
+"""
+    _check_sat_with_spartacus(f::SyntaxBranch)
+
+Return `nothing` if the given formula `f` is unsatisfiable.
+"""
+function _check_sat_with_spartacus(f::SyntaxBranch)
+    _spartan_f = soletospartacus(f)
+
+    _command = `$(SPARTACUS_DIR)/spartacus --showModel --formula=$(_spartan_f)`
+
+    _buffer = IOBuffer()
+    run(pipeline(_command, stdout=_buffer))
+    _result = String(take!(_buffer))
+
+    return !isnothing(spartacustomodel(_result))
+end
+
+function _check_satisfiability(
+    _formulas::Tuple{SyntaxBranch},
+    satsolver::String,
+)
 
 end
 
@@ -56,11 +76,11 @@ julia> randlogiset(_myrng, ((_conjunction,)), 5; silent=false)
         SoleLogics.BooleanAlgebra()),
     silent::Bool=true,
     checksat::Bool=false,
-    solver::Union{Nothing,String}=nothing,
+    satsolver_callback::Union{Nothing,Base.Callable}=,
     kwargs...
 )
-    if checksat && !isnothing(solver)
-        _unsatisfiable_formulas_indexes = _check_satisfiability(_formulas)
+    if checksat && !isnothing(satsolver)
+        _unsatisfiable_formulas_indexes = _check_satisfiability(_formulas, satsolver)
         if !isnothing(_unsatisfiable_formulas)
             throw(ErrorException("Not all the given formulas are SAT. The indexes are " *
                 "$(_unsatisfiable_formulas_indexes)"))
