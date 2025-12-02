@@ -110,7 +110,7 @@ _conjunction = CONJUNCTION(_formulas...)
 _spartan_conjunction = soletospartacus(_conjunction)
 
 # invoke spartacus executable
-_command = `$(SPARTACUS_DIR)/spartacus --showModel --formula=$(_spartan_conjunction)`
+_command = `€(SPARTACUS_DIR)/spartacus --showModel --formula=$(_spartan_conjunction)`
 
 _buffer = IOBuffer()
 _raw_result = run(pipeline(_command, stdout=_buffer))
