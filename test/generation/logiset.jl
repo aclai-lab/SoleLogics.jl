@@ -1,7 +1,6 @@
 
 @testset "randlogiset" begin
 
-
 _myrng = 42
 _alphabet = ExplicitAlphabet(Atom.('p':'z'))
 _operators = [CONJUNCTION, DISJUNCTION, NEGATION, DIAMOND, BOX]
@@ -21,7 +20,6 @@ _formulas = [
 
 _conjunction = CONJUNCTION(_formulas...)
 
-
-randlogiset(_myrng, ((_conjunction,)), 5; silent=false)
+mylogiset = randlogiset(_myrng, ((_conjunction,)), 5; silent=false)
 
 end

@@ -1,5 +1,9 @@
 using Random
 
+function __check()
+
+end
+
 """
     @__rng_dispatch function randlogiset(
         rng::Union{Integer,AbstractRNG},
@@ -51,8 +55,18 @@ julia> randlogiset(_myrng, ((_conjunction,)), 5; silent=false)
     truthvalues::Union{AbstractVector{<:Truth}}=SoleLogics.inittruthvalues(
         SoleLogics.BooleanAlgebra()),
     silent::Bool=true,
+    checksat::Bool=false,
+    solver::Union{Nothing,String}=nothing,
     kwargs...
 )
+    if checksat && !isnothing(solver)
+        _unsatisfiable_formulas_indexes = _check_satisfiability(_formulas)
+        if !isnothing(_unsatisfiable_formulas)
+            throw(ErrorException("Not all the given formulas are SAT. The indexes are " *
+                "$(_unsatisfiable_formulas_indexes)"))
+        end
+    end
+
     # collect all the atoms appearing in every formula (this is the alpahbet of the logiset)
     _atoms = [atoms(formula) for formula in _formulas] |> Iterators.flatten |> unique
 
