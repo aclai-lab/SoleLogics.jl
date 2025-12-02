@@ -17,11 +17,25 @@ function _check_sat_with_spartacus(f::SyntaxBranch)
     return !isnothing(spartacustomodel(_result))
 end
 
-function _check_satisfiability(
+"""
+Return the indexes of `_formulas` that are not satisfiable considering the provided
+`satsolver`.
+"""
+function _get_unsat_indexes(
     _formulas::Tuple{SyntaxBranch},
-    satsolver::String,
+    satsolver::Base.Callable,
 )
+    ans = []
 
+    for (i,f) in enumerate(_formulas)
+        # the ith formula is not satisfiable;
+        # we want to notify the user
+        if isnothing(satsolver(f))
+            push!(ans, i)
+        end
+    end
+
+    return ans
 end
 
 """
@@ -90,8 +104,7 @@ julia> randlogiset(_myrng, ((_conjunction,)), 5; silent=false)
     kwargs...
 )
     if checksat && !isnothing(satsolver)
-        _unsatisfiable_formulas_indexes = _check_satisfiability(_formulas, satsolver)
-        if !isnothing(_unsatisfiable_formulas)
+        if !isempty(_get_unsat_indexes(_formulas, satsolver))
             throw(ErrorException("Not all the given formulas are SAT. The indexes are " *
                 "$(_unsatisfiable_formulas_indexes)"))
         end
