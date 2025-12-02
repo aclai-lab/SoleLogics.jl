@@ -168,7 +168,9 @@ include("generation/models.jl")
 export randlogiset
 include("generation/logiset.jl")
 
-
+# this utility allows the user for using the spartacus sat solver (if installed)
+# and enables some optimizations in generation/logiset
+include("utils/spartacus.jl")
 
 export @atoms, @synexpr
 
