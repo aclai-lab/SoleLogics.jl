@@ -34,8 +34,19 @@ end
         nedges::Int=15,
         truthvalues::Union{AbstractVector{<:Truth}}=SoleLogics.inittruthvalues(
             SoleLogics.BooleanAlgebra()),
+        checksat::Bool=false,
+        satsolver::Union{Nothing,Base.Callable}=_check_sat_with_spartacus
         kwargs...
     )
+
+# Arguments
+TODO
+
+# Keyword Arguments
+- `checksat::Bool=false`: set to `true` if you want a preliminary check over the
+    satisfiability of the `_formulas` provided;
+- `satsolver::Union{Nothing,Base.Callable}`: if `checksat` is `true`, this callback is
+    exploited to check whether each formula is satisfiable.
 
 # Examples
 ```julia
@@ -49,7 +60,7 @@ julia> _nformulas = 10
 
 julia> _earlystoppingthreshold = 0.2
 julia> _formulas = [
-    randformula(
+    randformula(Keyword Arguments
         _myrng,
         _alphabet,
         _operators;
@@ -62,7 +73,6 @@ julia> _conjunction = CONJUNCTION(_formulas...)
 
 
 julia> randlogiset(_myrng, ((_conjunction,)), 5; silent=false)
-
 ```
 """
 @__rng_dispatch function randlogiset(
@@ -76,7 +86,7 @@ julia> randlogiset(_myrng, ((_conjunction,)), 5; silent=false)
         SoleLogics.BooleanAlgebra()),
     silent::Bool=true,
     checksat::Bool=false,
-    satsolver_callback::Union{Nothing,Base.Callable}=,
+    satsolver::Union{Nothing,Base.Callable}=_check_sat_with_spartacus,
     kwargs...
 )
     if checksat && !isnothing(satsolver)
