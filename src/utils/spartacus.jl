@@ -133,6 +133,8 @@ function spartacustomodel(
         return nothing
     end
 
+    println(spartacuslog)
+
     # example after splitting:
     # -----------------------------------------------------
     # 3 nodes
@@ -183,9 +185,13 @@ function spartacustomodel(
         push!(allatoms, atoms_on_currentworld...)
 
         successors = split(spartacuslog[i+3], "successors:")[2] .|> strip
+
         # when there are no successors, then we just want to skip
         if !isempty(successors)
-            for (_,targetworld) in split.(successors, ":")
+            targetworlds = strip.(split(successors, ","))
+            targetworlds = [parse(Int, split(s, ":")[2]) for s in targetworlds]
+
+            for targetworld in targetworlds
                 # WARNING: beware, as the specific type of relations is currently ignored
                 push!(graph, currentworld, targetworld)
             end

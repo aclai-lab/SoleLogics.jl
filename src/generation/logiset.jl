@@ -25,12 +25,12 @@ function _get_unsat_indexes(
     _formulas::Tuple{SyntaxBranch},
     satsolver::Base.Callable,
 )
-    ans = []
+    ans = Int[]
 
     for (i,f) in enumerate(_formulas)
         # the ith formula is not satisfiable;
         # we want to notify the user
-        if isnothing(satsolver(f))
+        if !satsolver(f)
             push!(ans, i)
         end
     end
@@ -104,9 +104,10 @@ julia> randlogiset(_myrng, ((_conjunction,)), 5; silent=false)
     kwargs...
 )
     if checksat && !isnothing(satsolver)
-        if !isempty(_get_unsat_indexes(_formulas, satsolver))
+        _unsatisfiable_formulas_indexes = _get_unsat_indexes(_formulas, satsolver)
+        if !isempty(_unsatisfiable_formulas_indexes)
             throw(ErrorException("Not all the given formulas are SAT. The indexes are " *
-                "$(_unsatisfiable_formulas_indexes)"))
+                "$(_unsatisfiable_formulas_indexes)."))
         end
     end
 
