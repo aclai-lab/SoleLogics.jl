@@ -37,6 +37,7 @@ test_suites = [
 
     ("Generation: formula", ["generation/formula.jl",]),
     ("Generation: models", ["generation/models.jl",]),
+    ("Generation: logisets", ["generation/logiset.jl"]),
 
     ("Kripke word", ["kripke-word.jl",]),
     ("Kripke image", ["kripke-image.jl",]),
