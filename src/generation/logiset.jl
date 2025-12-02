@@ -120,6 +120,11 @@ julia> randlogiset(_myrng, ((_conjunction,)), 5; silent=false)
     # these are the leftovers of _instances, that is, the models that are not pushed to it
     _failed_instances = [KripkeStructure[] for _ in 1:length(_formulas)]
 
+    # the "previously seen" formulas;
+    # the first conjunction, c1, is taken as-is;
+    # the second one, c2, will be transformed into CONJUNCTION(NEGATION(c1), c2) and so on.
+    previous_formulas = SyntaxBranch[]
+
     for (i,formula) in enumerate(_formulas)
         # we cannot overcome `maxiterations` number of iterations
         _niterations = 0
@@ -128,12 +133,29 @@ julia> randlogiset(_myrng, ((_conjunction,)), 5; silent=false)
         # this is the counter keeping track of the instances that are OK.
         _okinstances = 0
 
+        # this formula is the one we are reading in this cycle, and must be completely
+        # disjoint from all the previously seen formulas
+        current_formula = CONJUNCTION(formula, NEGATION.(previous_formulas)...)
+
+        # the current formula is saved for properly generate the next labels
+        push!(previous_formulas, formula)
+
+        # for each instance generated in the previous cycles,
+        # try to see if `current_formula` is satisfied by the instance.
+        for failed_instance in _failed_instances
+            if check(current_formula, failed_instance, World(1))
+                push!(_instances[i], failed_instance)
+                _okinstances = _okinstances + 1
+            end
+        end
+
+        # this is the standard, core logic
         while (_niterations <= maxiterations) && (_okinstances < istancesperclass)
             model = randmodel(rng, nworlds, nedges, _atoms, truthvalues; kwargs...)
 
-            # if the random model satisfied the `formula`, we consider it in the final logiset;
+            # if the random model satisfied the `current_formula`, we consider it in the final logiset;
             # otherwise, we keep the model for the future class formulas.
-            if check(formula, model, World(1)) == true
+            if check(current_formula, model, World(1))
                 # the generated model is ok, so we push it and update its related counter
                 push!(_instances[i], model)
                 _okinstances = _okinstances + 1
