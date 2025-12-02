@@ -7,7 +7,7 @@ _operators = [CONJUNCTION, DISJUNCTION, NEGATION, DIAMOND, BOX]
 
 _nformulas = 10
 
-_earlystoppingthreshold = 0.2
+_earlystoppingthreshold = 0.1
 _formulas = [
     randformula(
         _myrng,
@@ -20,6 +20,6 @@ _formulas = [
 
 _conjunction = CONJUNCTION(_formulas...)
 
-mylogiset = randlogiset(_myrng, ((_conjunction,)), 5; silent=false)
+mylogiset = randlogiset(_myrng, ((_conjunction,)), 5; silent=false, checksat=true)
 
 end

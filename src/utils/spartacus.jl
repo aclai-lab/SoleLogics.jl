@@ -217,11 +217,16 @@ function spartacustomodel(
 end
 
 
+# directory where spartacus solver is installed
+SPARTACUS_DIR = joinpath(
+    joinpath(pkgdir(SoleLogics), "src", "utils"),
+    "spartacus-installation",
+    "spartacus"
+)
+
+
 # Example of usage
 #=
-WORKING_DIR = joinpath(pkgdir(SoleLogics), "src", "utils")
-# directory where spartacus solver is installed
-SPARTACUS_DIR = joinpath(WORKING_DIR, "spartacus-installation", "spartacus")
 _myrng = 42
 _alphabet = ExplicitAlphabet(Atom.('p':'z'))
 _operators = [CONJUNCTION, DISJUNCTION, NEGATION, DIAMOND, BOX]
