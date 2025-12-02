@@ -15,13 +15,13 @@ _formulas = [
         _alphabet,
         _operators;
         opweights=_operator_weights,
-        earlystoppingthreshold =_earlystoppingthreshold
+        earlystoppingthreshold=_earlystoppingthreshold
     )
     for _ in 1:_nformulas
 ]
 
 _conjunction = CONJUNCTION(_formulas...)
 
-mylogisets, _ = randlogiset(_myrng, ((_conjunction,)), 5; silent=false, checksat=true)
+mylogisets, _ = randlogiset(_myrng, ((_conjunction,)), 100; silent=false, checksat=true)
 
 end
