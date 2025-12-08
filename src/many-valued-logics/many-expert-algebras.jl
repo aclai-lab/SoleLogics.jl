@@ -12,15 +12,11 @@ multiple "experts" evaluate truth values independently, each using their own fuz
 The algebra operates on tuples of [`ContinuousTruth`](@ref) values, where each component
 corresponds to one expert's evaluation.
 """
-struct ManyExpertAlgebra{N, A <: SVector{N, FuzzyLogic}} <: AbstractAlgebra{ContinuousTruth}
-    experts::A
+struct ManyExpertAlgebra <: AbstractAlgebra{ContinuousTruth}
+    experts::Vector{FuzzyLogic}
 
-    function ManyExpertAlgebra{N}(experts::A) where {N, A <: SVector{N, FuzzyLogic}}
-        return new{N, A}(experts)
-    end
-
-    function ManyExpertAlgebra{N}(experts::AbstractVector{FuzzyLogic}) where {N}
-        return ManyExpertAlgebra{N}(SVector{N, FuzzyLogic}(experts))
+    function ManyExpertAlgebra(experts::FuzzyLogic...)
+        return new(FuzzyLogic[experts...])
     end
 end
 
@@ -29,7 +25,11 @@ function Base.show(io::IO, a::ManyExpertAlgebra)
     for expert in a.experts print(expert) end
 end
 
+function addexperts!(a::ManyExpertAlgebra, experts::FuzzyLogic...)
+    append!(a.experts, FuzzyLogic[experts...])
+end
+
 iscrisp(::ManyExpertAlgebra) = false
 
-top(::ManyExpertAlgebra{N}) where {N} = ntuple(_ -> ContinuousTruth(1.0), N)
-bot(::ManyExpertAlgebra{N}) where {N}= ntuple(_ -> ContinuousTruth(0.0), N)
+top(a::ManyExpertAlgebra) = ntuple(_ -> ContinuousTruth(1.0), length(a.experts))
+bot(a::ManyExpertAlgebra) = ntuple(_ -> ContinuousTruth(0.0), length(a.experts))

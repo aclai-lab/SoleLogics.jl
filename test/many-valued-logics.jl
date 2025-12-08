@@ -161,7 +161,8 @@ FuzzyLogic(GodelTNorm)
 #### Many-Expert Algebra #######################################################
 ################################################################################
 
-MXA = ManyExpertAlgebra{3}([GodelLogic, LukasiewiczLogic, ProductLogic])
+MXA = ManyExpertAlgebra(GodelLogic)
+addexperts!(MXA, LukasiewiczLogic, ProductLogic)
 
 @test iscrisp(MXA) == false
 
