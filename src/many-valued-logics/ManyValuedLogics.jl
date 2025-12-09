@@ -3,10 +3,13 @@ module ManyValuedLogics
 using ..SoleLogics
 
 export FiniteTruth
+export ContinuousTruth
 
 include("finitetruth.jl")
+include("continuoustruth.jl")
 
 export BinaryOperation
+export ContinuousBinaryOperation
 
 include("operations.jl")
 
@@ -18,6 +21,13 @@ export FiniteFLewAlgebra, FiniteHeytingAlgebra
 export getdomain
 
 include("finite-algebras.jl")
+
+export FuzzyLogic, ManyExpertAlgebra, addexperts!
+export GodelLogic, LukasiewiczLogic, ProductLogic
+export GodelTNorm, LukasiewiczTNorm, ProductTNorm
+
+include("fuzzylogics.jl")
+include("many-expert-algebras.jl")
 
 export precedeq, precedes, succeedeq, succeedes
 
