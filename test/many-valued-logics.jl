@@ -28,8 +28,8 @@ join = BinaryOperation{2}(jointruthtable)
 l = ContinuousTruth(1)
 @test istop(l)
 
-r = ContinuousTruth(0)
-@test isbot(r)
+x = ContinuousTruth(0)
+@test isbot(x)
 
 
 @test_throws ErrorException f = ContinuousBinaryOperation(string)
@@ -39,11 +39,11 @@ godel_meet = ContinuousBinaryOperation(min)
 
 @test arity(godel_meet) == 2
 
-@test iszero(godel_meet(l, r).value)
+@test iszero(godel_meet(l, x).value)
 
-@test iszero(godel_meet(r, ⊤).value)
+@test iszero(godel_meet(x, ⊤).value)
 
-@test iszero(godel_meet(⊤, r).value)
+@test iszero(godel_meet(⊤, x).value)
 
 @test iszero(godel_meet(⊤, ⊥).value)
 
@@ -131,6 +131,46 @@ lnorm = BinaryOperation{3}(lnormtruthtable)
 Ł3 = FiniteFLewAlgebra{3}(join, meet, lnorm, b, t)
 
 ################################################################################
+#### Fuzzy Logics ##############################################################
+################################################################################
+
+x = ContinuousTruth(1.0)
+y = ContinuousTruth(0.0)
+
+@test precedeq(GodelLogic, ⊥, ⊤)
+@test precedes(GodelLogic, ⊥, ⊤)
+
+@test succeedeq(GodelLogic, ⊤, ⊥)
+@test succeedes(GodelLogic, ⊤, ⊥)
+
+FuzzyLogic(GodelTNorm)
+
+@test iszero(GodelLogic.tnorm(x, y).value)
+
+@test iszero(LukasiewiczLogic.tnorm(x, y).value)
+
+@test iszero(ProductLogic.tnorm(x, y).value)
+
+@test iscrisp(GodelLogic) == false
+
+@test top(GodelLogic) == ContinuousTruth(1.0)
+
+@test bot(GodelLogic) == ContinuousTruth(0.0)
+
+################################################################################
+#### Many-Expert Algebra #######################################################
+################################################################################
+
+MXA = ManyExpertAlgebra(GodelLogic)
+addexperts!(MXA, LukasiewiczLogic, ProductLogic)
+
+@test iscrisp(MXA) == false
+
+@test top(MXA) == ntuple(i -> top(MXA.experts[i]), 3)
+@test bot(MXA) == ntuple(i -> bot(MXA.experts[i]), 3)
+
+
+################################################################################
 #### Nine-valued algebra (Heyting case) ########################################
 ################################################################################
 
@@ -184,6 +224,65 @@ using SoleLogics.ManyValuedLogics: G3
     TruthDict([p => convert(FiniteTruth, α), q => ⊥]),
     convert(FiniteFLewAlgebra, G3)
 )
+
+################################################################################
+#### Fuzzy simplify and collatetruth ###########################################
+################################################################################
+
+@test SoleLogics.collatetruth(→, (ContinuousTruth(0.5), ⊤), GodelLogic) == top(GodelLogic)
+@test SoleLogics.collatetruth(→, (ContinuousTruth(0.5), ⊤), MXA) == top(MXA)
+@test SoleLogics.collatetruth(→, (⊥, ContinuousTruth(0.5)), GodelLogic) == top(GodelLogic)
+@test SoleLogics.collatetruth(→, (⊥, ContinuousTruth(0.5)), MXA) == top(MXA)
+@test SoleLogics.collatetruth(→, (ContinuousTruth(0.5), top(MXA)), MXA) == top(MXA)
+@test SoleLogics.collatetruth(→, (bot(MXA), ContinuousTruth(1.0)), MXA) == top(MXA)
+@test_throws ErrorException SoleLogics.collatetruth(→, (ContinuousTruth(0.5), ContinuousTruth(1.0)), FuzzyLogic(ContinuousBinaryOperation(+)))
+
+@test SoleLogics.simplify(∧, (parseformula("p∧q"), ⊥), MXA) == bot(MXA)
+@test SoleLogics.simplify(∧, (bot(MXA), ⊥), MXA) == bot(MXA)
+@test SoleLogics.simplify(∧, (⊥, bot(MXA)), MXA) == bot(MXA)
+
+@test SoleLogics.simplify(∨, (⊤, parseformula("p∧q")), MXA) == top(MXA)
+@test SoleLogics.simplify(∨, (bot(MXA), ⊤), MXA) == top(MXA)
+@test SoleLogics.simplify(∨, (⊤, bot(MXA)), MXA) == top(MXA)
+@test SoleLogics.simplify(∨, (ContinuousTruth(1.0), bot(MXA)), MXA) == top(MXA)
+@test SoleLogics.simplify(∨, (bot(MXA), ContinuousTruth(1.0)), MXA) == top(MXA)
+
+@test SoleLogics.simplify(→, (bot(MXA), ⊤), MXA) == top(MXA)
+@test SoleLogics.simplify(→, (⊥, top(MXA)), MXA) == top(MXA)
+@test SoleLogics.simplify(→, (ContinuousTruth(0.0), top(MXA)), MXA) == top(MXA)
+@test SoleLogics.simplify(→, (bot(MXA), ContinuousTruth(1.0)), MXA) == top(MXA)
+
+################################################################################
+#### Fuzzy-Logics interpret ####################################################
+################################################################################
+
+v = Atom("v")
+w = Atom("w")
+x = Atom("x")
+y = Atom("y")
+z = Atom("z")
+
+@test check(parseformula("v∨w"), TruthDict([v => ⊥, w => ContinuousTruth(1)]), GodelLogic)
+@test isbot(interpret(parseformula("(v∧w)∨v"), TruthDict([v => ContinuousTruth(0), w => ⊤]), GodelLogic))
+@test istop(interpret(parseformula("v→w"), TruthDict([v => ContinuousTruth(0.5), w => ContinuousTruth(0.5)]), LukasiewiczLogic))
+@test interpret(parseformula("(v∧w)→x"), TruthDict([v => ContinuousTruth(0.8), w => ContinuousTruth(0.6), x => ContinuousTruth(0.5)]), GodelLogic) == ContinuousTruth(0.5)
+@test interpret(parseformula("(v∨w)∧x"), TruthDict([v => ContinuousTruth(0.3), w => ContinuousTruth(0.5), x => ContinuousTruth(0.4)]), LukasiewiczLogic) == ContinuousTruth(0.0)
+@test istop(interpret(parseformula("v→(w→v)"), TruthDict([v => ContinuousTruth(0.7), w => ContinuousTruth(0.3)]), GodelLogic))
+
+################################################################################
+#### Many-Expert interpret #####################################################
+################################################################################
+
+@test interpret(parseformula("v∧w"), TruthDict([v => ⊤, w => ⊤]), MXA) == top(MXA)
+@test interpret(parseformula("v∨w"), TruthDict([v => ⊥, w => ⊥]), MXA) == bot(MXA)
+@test interpret(parseformula("v∧w"), TruthDict([v => ⊥, w => ⊤]), MXA) == bot(MXA)
+@test interpret(parseformula("v∨w"), TruthDict([v => ⊤, w => ⊥]), MXA) == top(MXA)
+@test top(MXA) == interpret(parseformula("v∨w"), TruthDict([v => ContinuousTruth(0), w => ⊤]), MXA)
+@test bot(MXA) == interpret(parseformula("(v∧w∧x)∨(y∧z)"), TruthDict([v => ⊥, w => ContinuousTruth(0.5), x => ContinuousTruth(0.0), y => ⊥, z => ContinuousTruth(0.4)]), MXA)
+@test top(MXA) == interpret(parseformula("v→w"), TruthDict([v => ⊥, w => ⊤]), MXA)
+@test interpret(parseformula("(v→w)∧(w→v)"), TruthDict([v => ContinuousTruth(0.3), w => ContinuousTruth(0.6)]), MXA) == (ContinuousTruth(0.3), ContinuousTruth(0.7), ContinuousTruth(0.5))
+@test interpret(parseformula("((v→w)∨(w→x))∧(v∨x)"), TruthDict([v => ContinuousTruth(0.7), w => ContinuousTruth(0.2), x => ContinuousTruth(0.5)]), MXA) == (ContinuousTruth(0.7), ContinuousTruth(0.7), ContinuousTruth(0.7))
+@test interpret(parseformula("(v∧(w∨x))→(y∨z)"), TruthDict([v => ContinuousTruth(0.6), w => ContinuousTruth(0.4), x => ContinuousTruth(0.9), y => ContinuousTruth(0.3), z => ContinuousTruth(0.8)]), MXA) == (ContinuousTruth(1.0), ContinuousTruth(1.0), ContinuousTruth(1.0))
 
 ################################################################################
 #### Finite FLew-chains generation #############################################

@@ -22,6 +22,13 @@ export getdomain
 
 include("finite-algebras.jl")
 
+export FuzzyLogic, ManyExpertAlgebra, addexperts!
+export GodelLogic, LukasiewiczLogic, ProductLogic
+export GodelTNorm, LukasiewiczTNorm, ProductTNorm
+
+include("fuzzylogics.jl")
+include("many-expert-algebras.jl")
+
 export precedeq, precedes, succeedeq, succeedes
 
 include("order-utilities.jl")

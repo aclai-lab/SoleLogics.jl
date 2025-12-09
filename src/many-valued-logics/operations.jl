@@ -1,6 +1,4 @@
 using StaticArrays
-using FunctionWrappers
-import FunctionWrappers: FunctionWrapper
 import SoleLogics: arity
 
 """
@@ -105,8 +103,8 @@ end
 
 
 """
-    struct ContinuousBinaryOperation <: AbstractBinaryOperation 
-        func::FunctionWrapper{Float64, Tuple{Float64, Float64}}
+    struct ContinuousBinaryOperation{F<:Function} <: AbstractBinaryOperation 
+        func::F
     end
 
 A ContinuousBinaryOperation wraps a binary function on continuous truth values. 
@@ -147,10 +145,31 @@ end
     return ContinuousTruth(o.func(t1.value, t2.value))
 end
 
-@inline function (o::ContinuousBinaryOperation)(t1::T, t2::T) where {T<:Truth}
-    if !isa(t1, ContinuousTruth) && !isa(t2, ContinuousTruth)
-        t1 = convert(ContinuousTruth, t1)::ContinuousTruth
-        t2 = convert(ContinuousTruth, t2)::ContinuousTruth
-    end
+@inline function (o::ContinuousBinaryOperation)(t1::T1, t2::T2) where {T1<:Truth, T2<:Truth}
+    if !isa(t1, ContinuousTruth) t1 = convert(ContinuousTruth, t1)::ContinuousTruth end 
+    if !isa(t2, ContinuousTruth) t2 = convert(ContinuousTruth, t2)::ContinuousTruth end
     return ContinuousTruth(o.func(t1.value, t2.value))
 end
+
+# Standard t-norms
+
+"""
+    const GodelTNorm
+
+Gödel t-norm (minimum operation): min(a, b).
+"""
+const GodelTNorm = ContinuousBinaryOperation(min)
+
+"""
+    const LukasiewiczTNorm
+
+Łukasiewicz t-norm: max(0, a + b - 1).
+"""
+const LukasiewiczTNorm = ContinuousBinaryOperation((a, b) -> max(0.0, a + b - 1.0))
+
+"""
+    const ProductTNorm
+
+Product t-norm: a × b.
+"""
+const ProductTNorm = ContinuousBinaryOperation(*)
