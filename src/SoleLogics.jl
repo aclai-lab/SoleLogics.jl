@@ -40,7 +40,7 @@ export hasdual, dual
 
 export composeformulas
 
-export precedeq, precedes, succeedeq, succeedes
+export precedes
 export truthjoin, truthmeet
 
 include("types/syntactical.jl")
