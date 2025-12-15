@@ -30,6 +30,7 @@ include("fuzzylogics.jl")
 include("many-expert-algebras.jl")
 
 export precedeq, precedes, succeedeq, succeedes
+export truthjoin, truthmeet
 
 include("order-utilities.jl")
 

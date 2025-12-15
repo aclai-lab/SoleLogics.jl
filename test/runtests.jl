@@ -14,10 +14,13 @@ println("Julia version: ", VERSION)
 
 test_suites = [
     ("Core", ["core.jl",]),
+    ("Syntactical", ["syntactical.jl",]),
     ("Parse", ["parse.jl",]),
     ("Normalize", ["normalize.jl",]),
     ("Syntax Utils", ["syntax-utils.jl",]),
 
+    ("Propositional logic", ["propositional.jl"]),
+    
     ("Formula Generation", ["formulas/generation.jl",]),
     ("Formula I/O", ["formulas/input.jl",]),
     ("Normal Forms", ["formulas/normal-forms.jl",]),
@@ -27,20 +30,18 @@ test_suites = [
 
     ("Interpretation Sets", ["interpretation-sets.jl"]),
 
-    ("Propositional Logic", ["propositional-logic.jl"]),
+    ("Modal logic: worlds", ["modal-logic/frames/worlds.jl",]),
+    ("Modal logic: frames", ["modal-logic/frames/frames.jl",]),
+    ("Modal logic: relations", ["modal-logic/frames/relations.jl",]),
 
-    ("Algebras: worlds", ["frames/worlds.jl",]),
-    ("Algebras: frames", ["frames/frames.jl",]),
-    ("Algebras: relations", ["frames/relations.jl",]),
-
-    ("Modal logic: classic", ["modal-logic/modal-logic.jl"]),
+    ("Modal logic: unimodal", ["modal-logic/modal-logic.jl"]),
     ("Modal logic: multimodal", ["modal-logic/multi-modal-logic.jl"]),
+    ("Modal logic: Kripke word", ["modal-logic/kripke-word.jl",]),
+    ("Modal logic: Kripke image", ["modal-logic/kripke-image.jl",]),
+
 
     ("Generation: formula", ["generation/formula.jl",]),
     ("Generation: models", ["generation/models.jl",]),
-
-    ("Kripke word", ["kripke-word.jl",]),
-    ("Kripke image", ["kripke-image.jl",]),
 
     ("Pluto Demo", ["$(dirname(dirname(pathof(SoleLogics))))/pluto-demo.jl", ]),
 

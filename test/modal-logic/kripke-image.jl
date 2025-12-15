@@ -17,7 +17,7 @@ frame(i::BWImageKripkeStructure) = FullDimensionalFrame(size(i.image), Point{2, 
 
 using SoleLogics: Point2DRelations
 
-ops = [SoleLogics.diamond.(Point2DRelations)..., SoleLogics.box.(Point2DRelations)...]
+ops = [diamond.(Point2DRelations)..., SoleLogics.box.(Point2DRelations)...]
 φ = @test_nowarn parseformula("10 ∧ ⟨N⟩ 2 ∧ [NE] -1", ops; atom_parser = x->(Atom{Int}(parse(Int, x))))
 φ = @test_nowarn parseformula(SyntaxTree, "10 ∧ ⟨N⟩ 2 ∧ [NE] -1", ops; atom_parser = x->(Atom{Int}(parse(Int, x))))
 

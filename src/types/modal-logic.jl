@@ -16,9 +16,6 @@ See also [`AbstractKripkeStructure`](@ref), [`AbstractFrame`](@ref).
 """
 abstract type AbstractWorld end
 
-# Base.show(io::IO, w::AbstractWorld) = print(io, inlinedisplay(w))
-
-
 function nparameters(T::Type{<:AbstractWorld})
     return error("Please, provide method nparameters(T::$(T)).")
 end
@@ -371,7 +368,7 @@ include("frames/frames.jl")
 ############################################################################################
 
 """
-    abstract type AbstractKripkeStructure <: AbstractInterpretation end
+    abstract type AbstractKripkeStructure <: Interpretation end
 
 Abstract type for representing
 [Kripke structures](https://en.wikipedia.org/wiki/Kripke_structure_(model_checking))'s.
@@ -381,9 +378,9 @@ It comprehends a directed graph structure (Kripke frame), where nodes are referr
 `Atom`s to `Truth` values.
 
 See also [`frame`](@ref), [`worldtype`](@ref),
-[`accessibles`](@ref), [`AbstractInterpretation`](@ref).
+[`accessibles`](@ref), [`Interpretation`](@ref).
 """
-abstract type AbstractKripkeStructure <: AbstractInterpretation end
+abstract type AbstractKripkeStructure <: Interpretation end
 
 function interpret(
     φ::Truth,

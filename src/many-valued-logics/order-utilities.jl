@@ -1,3 +1,5 @@
+import SoleLogics: precedes
+
 """
     function precedeq(
         l::L,

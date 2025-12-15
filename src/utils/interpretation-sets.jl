@@ -1,7 +1,7 @@
 import SoleBase: ninstances
 
 """
-    struct LogicalInstance{S<:AbstractInterpretationSet}
+    struct LogicalInstance{S<:InterpretationSet}
         s::S
         i_instance::Int
     end
@@ -13,7 +13,7 @@ set; thus, this representation, holding the interpretation set + instance id (i_
 can come handy in defining `check` and `interpret` methods for newly defined interpretation
 set structures.
 """
-struct LogicalInstance{S<:AbstractInterpretationSet} <: AbstractInterpretation
+struct LogicalInstance{S<:InterpretationSet} <: Interpretation
 
     s::S
     i_instance::Int
@@ -21,12 +21,12 @@ struct LogicalInstance{S<:AbstractInterpretationSet} <: AbstractInterpretation
     function LogicalInstance{S}(
         s::S,
         i_instance::Integer
-    ) where {S<:AbstractInterpretationSet}
+    ) where {S<:InterpretationSet}
         new{S}(s, i_instance)
     end
 
     function LogicalInstance(
-        s::AbstractInterpretationSet,
+        s::InterpretationSet,
         i_instance::Integer
     )
         # LogicalInstance{interpretationtype(s),typeof(s)}(s, i_instance)
@@ -46,36 +46,27 @@ function interpret(
 )::Formula
     return error("Please, provide method " *
         "interpret(φ::Atom, i::$(typeof(i)), " *
-        "" * join(map(t->"::$(t)", typeof.(args)), ", ") * "; " *
-        "kwargs...{" * join(map(p->"$(p.first)::$(p.second)", kwargs), ", ") * "}).")
+        join(map(t->"::$(t)", typeof.(args)), ", ") * "; " *
+        join(map(p->"$(p.first)::$(p.second)", kwargs), ", ") * ").")
 end
 
 function check(
+    algo::CheckAlgorithm,
     φ::Formula,
     i::LogicalInstance,
     args...;
     kwargs...
 )
     return error("Please, provide method " *
-        "check(φ::SyntaxTree, i::$(typeof(i)), " *
-        "" * join(map(t->"::$(t)", typeof.(args)), ", ") * "; " *
-        "kwargs...{" * join(map(p->"$(p.first)::$(p.second)", kwargs), ", ") * "}).")
-end
-
-function check(
-    φ::SyntaxTree,
-    i::LogicalInstance,
-    args...;
-    kwargs...
-)
-    return istop(interpret(φ, i, args...; kwargs...))
-    # return check(tree(φ), i, args...; kwargs...)
+        "check(algo::$(typeof(algo)), φ::Formula, i::$(typeof(i)), " *
+        join(map(t->"::$(t)", typeof.(args)), ", ") * "; " *
+        join(map(p->"$(p.first)::$(p.second)", kwargs), ", ") * ").")
 end
 
 # # General grounding
 # function check(
 #     φ::SyntaxTree,
-#     i::LogicalInstance{AbstractInterpretationSet};
+#     i::LogicalInstance{InterpretationSet};
 #     kwargs...
 # )
 #     if token(φ) isa Union{DiamondRelationalConnective,BoxRelationalConnective}
@@ -94,17 +85,17 @@ end
 
 function interpret(
     φ::Formula,
-    s::AbstractInterpretationSet,
+    s::InterpretationSet,
     i_instance::Integer,
     args...;
     kwargs...,
 )
-    check(φ, getinstance(s, i_instance), args...; kwargs...)
+    interpret(φ, getinstance(s, i_instance), args...; kwargs...)
 end
 
 function interpret(
     φ::Formula,
-    s::AbstractInterpretationSet,
+    s::InterpretationSet,
     args...;
     # use_memo::Union{Nothing,AbstractVector} = nothing,
     kwargs...,
@@ -121,86 +112,55 @@ end
 
 """
     check(
+        [algo::CheckAlgorithm,]
         φ::Formula,
-        s::AbstractInterpretationSet,
+        s::InterpretationSet,
         i_instance::Integer,
         args...;
         kwargs...
     )::Bool
 
-Check a formula on the \$i\$-th instance of an [`AbstractInterpretationSet`](@ref).
+Check a formula on the \$i\$-th instance of an [`InterpretationSet`](@ref).
 
-See also [`AbstractInterpretationSet`](@ref),
+See also [`InterpretationSet`](@ref),
 [`Formula`](@ref).
 """
 function check(
-    φ::Formula,
-    s::AbstractInterpretationSet,
+    algo, 
+    φ,
+    s::InterpretationSet,
     i_instance::Integer,
     args...;
     kwargs...,
 )
-    check(φ, getinstance(s, i_instance), args...; kwargs...)
+    check(algo, φ, getinstance(s, i_instance), args...; kwargs...)
 end
-
-function check(
-    φ::LeftmostConjunctiveForm,
-    s::AbstractInterpretationSet,
-    args...;
-    kwargs...
-)
-    # TODO normalize before checking, if it is faster: φ = SoleLogics.normalize()
-    map(i_instance->check(
-        φ,
-        getinstance(s, i_instance),
-        args...;
-        # use_memo = (isnothing(use_memo) ? nothing : use_memo[[i_instance]]),
-        kwargs...
-    ), 1:ninstances(s))
-end
-
-function check(
-    φ::LeftmostConjunctiveForm,
-    s::AbstractInterpretationSet,
-    i_instance::Integer,
-    args...;
-    kwargs...
-)
-    return all(ch -> check(ch, s, i_instance, args...; kwargs...), children(φ))
-end
-
-function check(
-    φ::LeftmostConjunctiveForm,
-    i::LogicalInstance,
-    args...;
-    kwargs...
-)
-    return all(ch -> check(ch, i, args...; kwargs...), children(φ))
-end
-
 
 """
     check(
+        [algo::CheckAlgorithm,]
         φ::Formula,
-        s::AbstractInterpretationSet,
+        s::InterpretationSet,
         args...;
         kwargs...
     )::Vector{Bool}
 
-Check a formula on all instances of an [`AbstractInterpretationSet`](@ref).
+Check a formula on all instances of an [`InterpretationSet`](@ref).
 
-See also [`AbstractInterpretationSet`](@ref),
+See also [`InterpretationSet`](@ref),
 [`Formula`](@ref).
 """
 function check(
-    φ::Formula,
-    s::AbstractInterpretationSet,
+    algo,
+    φ,
+    s::InterpretationSet,
     args...;
     # use_memo::Union{Nothing,AbstractVector} = nothing,
     kwargs...,
 )
     # TODO normalize before checking, if it is faster: φ = SoleLogics.normalize()
     map(i_instance->check(
+        algo,
         φ,
         getinstance(s, i_instance),
         args...;
@@ -210,26 +170,26 @@ function check(
 end
 
 # Fallback
-function getinstance(s::AbstractInterpretationSet, i_instance::Integer)
+function getinstance(s::InterpretationSet, i_instance::Integer)
     return LogicalInstance(s, i_instance)
 end
 
 ############################################################################################
 
 """
-    struct InterpretationVector{M<:AbstractInterpretation} <: AbstractInterpretationSet
+    struct InterpretationVector{M<:Interpretation} <: InterpretationSet
         instances::Vector{M}
     end
 
 A dataset of interpretations, instantiated as a vector.
 
-See also [`AbstractInterpretationSet`](@ref).
+See also [`InterpretationSet`](@ref).
 """
-struct InterpretationVector{M<:AbstractInterpretation} <: AbstractInterpretationSet
+struct InterpretationVector{M<:Interpretation} <: InterpretationSet
     instances::Vector{M}
 end
 
-function interpretationtype(::Type{S}) where {M<:AbstractInterpretation,S<:InterpretationVector{M}}
+function interpretationtype(::Type{S}) where {M<:Interpretation,S<:InterpretationVector{M}}
     return error("Please, provide method interpretationtype(::$(typeof(S))).")
 end
 
