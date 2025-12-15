@@ -1,6 +1,6 @@
 name = "SoleLogics"
 uuid = "b002da8f-3cb3-4d91-bbe3-2953433912b5"
-version = "0.13.3"
+version = "0.13.4"
 authors = ["Mauro MILELLA", "Giovanni PAGLIARINI", "Alberto PAPARELLA", "Edoardo PONSANESI", "Eduard I. STAN"]
 
 [deps]
