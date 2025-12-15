@@ -1,7 +1,7 @@
 import SoleBase: ninstances
 
 """
-    struct LogicalInstance{S<:AbstractInterpretationSet}
+    struct LogicalInstance{S<:InterpretationSet}
         s::S
         i_instance::Int
     end
@@ -13,7 +13,7 @@ set; thus, this representation, holding the interpretation set + instance id (i_
 can come handy in defining `check` and `interpret` methods for newly defined interpretation
 set structures.
 """
-struct LogicalInstance{S<:AbstractInterpretationSet} <: AbstractInterpretation
+struct LogicalInstance{S<:InterpretationSet} <: Interpretation
 
     s::S
     i_instance::Int
@@ -21,12 +21,12 @@ struct LogicalInstance{S<:AbstractInterpretationSet} <: AbstractInterpretation
     function LogicalInstance{S}(
         s::S,
         i_instance::Integer
-    ) where {S<:AbstractInterpretationSet}
+    ) where {S<:InterpretationSet}
         new{S}(s, i_instance)
     end
 
     function LogicalInstance(
-        s::AbstractInterpretationSet,
+        s::InterpretationSet,
         i_instance::Integer
     )
         # LogicalInstance{interpretationtype(s),typeof(s)}(s, i_instance)
@@ -66,7 +66,7 @@ end
 # # General grounding
 # function check(
 #     φ::SyntaxTree,
-#     i::LogicalInstance{AbstractInterpretationSet};
+#     i::LogicalInstance{InterpretationSet};
 #     kwargs...
 # )
 #     if token(φ) isa Union{DiamondRelationalConnective,BoxRelationalConnective}
@@ -85,7 +85,7 @@ end
 
 function interpret(
     φ::Formula,
-    s::AbstractInterpretationSet,
+    s::InterpretationSet,
     i_instance::Integer,
     args...;
     kwargs...,
@@ -95,7 +95,7 @@ end
 
 function interpret(
     φ::Formula,
-    s::AbstractInterpretationSet,
+    s::InterpretationSet,
     args...;
     # use_memo::Union{Nothing,AbstractVector} = nothing,
     kwargs...,
@@ -114,21 +114,21 @@ end
     check(
         [algo::CheckAlgorithm,]
         φ::Formula,
-        s::AbstractInterpretationSet,
+        s::InterpretationSet,
         i_instance::Integer,
         args...;
         kwargs...
     )::Bool
 
-Check a formula on the \$i\$-th instance of an [`AbstractInterpretationSet`](@ref).
+Check a formula on the \$i\$-th instance of an [`InterpretationSet`](@ref).
 
-See also [`AbstractInterpretationSet`](@ref),
+See also [`InterpretationSet`](@ref),
 [`Formula`](@ref).
 """
 function check(
     algo, 
     φ,
-    s::AbstractInterpretationSet,
+    s::InterpretationSet,
     i_instance::Integer,
     args...;
     kwargs...,
@@ -140,20 +140,20 @@ end
     check(
         [algo::CheckAlgorithm,]
         φ::Formula,
-        s::AbstractInterpretationSet,
+        s::InterpretationSet,
         args...;
         kwargs...
     )::Vector{Bool}
 
-Check a formula on all instances of an [`AbstractInterpretationSet`](@ref).
+Check a formula on all instances of an [`InterpretationSet`](@ref).
 
-See also [`AbstractInterpretationSet`](@ref),
+See also [`InterpretationSet`](@ref),
 [`Formula`](@ref).
 """
 function check(
     algo,
     φ,
-    s::AbstractInterpretationSet,
+    s::InterpretationSet,
     args...;
     # use_memo::Union{Nothing,AbstractVector} = nothing,
     kwargs...,
@@ -170,26 +170,26 @@ function check(
 end
 
 # Fallback
-function getinstance(s::AbstractInterpretationSet, i_instance::Integer)
+function getinstance(s::InterpretationSet, i_instance::Integer)
     return LogicalInstance(s, i_instance)
 end
 
 ############################################################################################
 
 """
-    struct InterpretationVector{M<:AbstractInterpretation} <: AbstractInterpretationSet
+    struct InterpretationVector{M<:Interpretation} <: InterpretationSet
         instances::Vector{M}
     end
 
 A dataset of interpretations, instantiated as a vector.
 
-See also [`AbstractInterpretationSet`](@ref).
+See also [`InterpretationSet`](@ref).
 """
-struct InterpretationVector{M<:AbstractInterpretation} <: AbstractInterpretationSet
+struct InterpretationVector{M<:Interpretation} <: InterpretationSet
     instances::Vector{M}
 end
 
-function interpretationtype(::Type{S}) where {M<:AbstractInterpretation,S<:InterpretationVector{M}}
+function interpretationtype(::Type{S}) where {M<:Interpretation,S<:InterpretationVector{M}}
     return error("Please, provide method interpretationtype(::$(typeof(S))).")
 end
 

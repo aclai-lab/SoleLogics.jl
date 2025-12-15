@@ -54,7 +54,7 @@ end
     alphacheck(
         α::FiniteTruth,
         φ::Formula,
-        i::AbstractInterpretation,
+        i::Interpretation,
         a::FiniteAlgebra
         args...;
         kwargs...
@@ -84,12 +84,12 @@ false
 ```
 
 See also [`check`](@ref), [`FiniteTruth`](@ref), [`Formula`](@ref),
-[`AbstractInterpretation`](@ref), [`TruthDict`](@ref), [`FiniteAlgebra`](@ref).
+[`Interpretation`](@ref), [`TruthDict`](@ref), [`FiniteAlgebra`](@ref).
 """
 function alphacheck(
     α::Truth,
     φ::Formula,
-    i::SoleLogics.AbstractInterpretation,
+    i::Interpretation,
     a::FiniteAlgebra,
     args...;
     kwargs...

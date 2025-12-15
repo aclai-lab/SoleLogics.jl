@@ -52,6 +52,7 @@ include("types/parse.jl")
 
 
 
+export Interpretation
 export interpret, check
 export DefaultCheckAlgorithm
 
