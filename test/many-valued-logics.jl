@@ -164,6 +164,12 @@ FuzzyLogic(GodelTNorm)
 MXA = ManyExpertAlgebra(GodelLogic)
 addexperts!(MXA, LukasiewiczLogic, ProductLogic)
 
+@test occursin("Gödel", sprint(show, MXA))
+@test occursin("Łukasiewicz", sprint(show, MXA))
+@test occursin("Product", sprint(show, MXA))
+
+@test occursin("+", sprint(show, FuzzyLogic(ContinuousBinaryOperation(+))))
+
 @test iscrisp(MXA) == false
 
 @test top(MXA) == ntuple(i -> top(MXA.experts[i]), 3)
