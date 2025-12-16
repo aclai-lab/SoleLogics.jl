@@ -169,6 +169,11 @@ addexperts!(MXA, LukasiewiczLogic, ProductLogic)
 @test top(MXA) == ntuple(i -> top(MXA.experts[i]), 3)
 @test bot(MXA) == ntuple(i -> bot(MXA.experts[i]), 3)
 
+@test precedeq(MXA, (ContinuousTruth(0.0), ContinuousTruth(0.0), ContinuousTruth(0.5)), (ContinuousTruth(0.0), ContinuousTruth(0.0), ContinuousTruth(0.5)))
+@test precedes(MXA, (ContinuousTruth(0.0), ContinuousTruth(0.0), ContinuousTruth(0.5)), (ContinuousTruth(1.0), ContinuousTruth(1.0), ContinuousTruth(0.7)))
+@test succeedeq(MXA, (ContinuousTruth(0.0), ContinuousTruth(0.0), ContinuousTruth(0.5)), (ContinuousTruth(0.0), ContinuousTruth(0.0), ContinuousTruth(0.5)))
+@test succeedes(MXA, (ContinuousTruth(1.0), ContinuousTruth(1.0), ContinuousTruth(0.7)), (ContinuousTruth(0.0), ContinuousTruth(0.0), ContinuousTruth(0.5)))
+
 
 ################################################################################
 #### Nine-valued algebra (Heyting case) ########################################

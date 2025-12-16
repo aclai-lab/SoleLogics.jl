@@ -47,7 +47,8 @@ end
         T1<:Truth,
         T2<:Truth
     }
-Return true if `t1` < `t2` in fuzzy logic `l`. For continuous truth values, 
+
+Return true if `t1` ≤ `t2` in fuzzy logic `l`. For continuous truth values, 
 this is the standard strict less-than ordering on real numbers in [0,1].
 
 See also [`precedes`](@ref), [`succeedes`](@ref), [`succeedeq`](@ref).
@@ -63,6 +64,37 @@ See also [`precedes`](@ref), [`succeedes`](@ref), [`succeedeq`](@ref).
     if !isa(t1, ContinuousTruth) t1 = convert(ContinuousTruth, t1)::ContinuousTruth end
     if !isa(t2, ContinuousTruth) t2 = convert(ContinuousTruth, t2)::ContinuousTruth end
     return t1.value <= t2.value ? true : false
+end
+
+"""
+    function precedeq(
+        l::ManyExpertAlgebra,
+        t1::NTuple{N, T1},
+        t2::NTuple{N, T2}
+    ) where {
+        T1 <: Truth,
+        T2 <: Truth,
+        N
+    }
+
+Return true if each truth in the tuple `t1` ≤ `t2` in a many expert algebra. For continuous 
+truth values, this is the standard strict less-than ordering on real numbers in [0,1].
+
+See also [`precedes`](@ref), [`succeedes`](@ref), [`succeedeq`](@ref).
+"""
+function precedeq(
+    l::ManyExpertAlgebra,
+    t1::NTuple{N, T1},
+    t2::NTuple{N, T2}
+) where {
+    T1 <: Truth,
+    T2 <: Truth,
+    N
+}
+    for i in 1:N
+        if !precedeq(l.experts[i], t1[i], t2[i]) return false end
+    end
+    return true
 end
 
 """
@@ -128,6 +160,38 @@ See also [`precedeq`](@ref), [`succeedes`](@ref), [`succeedeq`](@ref).
 end
 
 """
+    function precedes(
+        l::ManyExpertAlgebra,
+        t1::NTuple{N, T1},
+        t2::NTuple{N, T2}
+    ) where {
+        T1 <: Truth,
+        T2 <: Truth,
+        N
+    }
+
+Return true if each truth in the tuple `t1` < `t2` in a many expert algebra. For continuous 
+truth values, this is the standard strict less-than ordering on real numbers in [0,1].
+
+See also [`precedes`](@ref), [`succeedes`](@ref), [`succeedeq`](@ref).
+"""
+
+function precedes(
+    l::ManyExpertAlgebra,
+    t1::NTuple{N, T1},
+    t2::NTuple{N, T2}
+) where {
+    T1 <: Truth,
+    T2 <: Truth,
+    N
+}
+    for i in 1:N
+        if !precedes(l.experts[i], t1[i], t2[i]) return false end
+    end
+    return true
+end
+
+"""
     function succeedeq(
         l::L,
         t1::T1,
@@ -190,6 +254,38 @@ See also [`precedes`](@ref), [`precedeq`](@ref), [`succeedes`](@ref).
 end
 
 """
+    function succedeq(
+        l::ManyExpertAlgebra,
+        t1::NTuple{N, T1},
+        t2::NTuple{N, T2}
+    ) where {
+        T1 <: Truth,
+        T2 <: Truth,
+        N
+    }
+
+Return true if each truth in the tuple `t1` ≥ `t2` in a many expert algebra. For continuous 
+truth values, this is the standard strict less-than ordering on real numbers in [0,1].
+
+See also [`precedes`](@ref), [`succeedes`](@ref), [`succeedeq`](@ref).
+"""
+
+function succeedeq(
+    l::ManyExpertAlgebra,
+    t1::NTuple{N, T1},
+    t2::NTuple{N, T2}
+) where {
+    T1 <: Truth,
+    T2 <: Truth,
+    N
+}
+    for i in 1:N
+        if !succeedeq(l.experts[i], t1[i], t2[i]) return false end
+    end
+    return true
+end
+
+"""
     function succeedes(
         l::L,
         t1::T1,
@@ -249,6 +345,38 @@ See also [`precedes`](@ref), [`precedeq`](@ref), [`succeedeq`](@ref).
     if !isa(t1, ContinuousTruth) t1 = convert(ContinuousTruth, t1)::ContinuousTruth end
     if !isa(t2, ContinuousTruth) t2 = convert(ContinuousTruth, t2)::ContinuousTruth end
     return t1.value > t2.value ? true : false
+end
+
+"""
+    function succedes(
+        l::ManyExpertAlgebra,
+        t1::NTuple{N, T1},
+        t2::NTuple{N, T2}
+    ) where {
+        T1 <: Truth,
+        T2 <: Truth,
+        N
+    }
+
+Return true if each truth in the tuple `t1` > `t2` in a many expert algebra. For continuous 
+truth values, this is the standard strict less-than ordering on real numbers in [0,1].
+
+See also [`precedes`](@ref), [`succeedes`](@ref), [`succeedeq`](@ref).
+"""
+
+function succeedes(
+    l::ManyExpertAlgebra,
+    t1::NTuple{N, T1},
+    t2::NTuple{N, T2}
+) where {
+    T1 <: Truth,
+    T2 <: Truth,
+    N
+}
+    for i in 1:N
+        if !succeedes(l.experts[i], t1[i], t2[i]) return false end
+    end
+    return true
 end
 
 """
