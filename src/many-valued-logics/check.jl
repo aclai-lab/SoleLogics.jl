@@ -222,6 +222,16 @@ function SoleLogics.collatetruth(
     ntuple(i -> SoleLogics.collatetruth(→, (x[i], y[i]), a.experts[i]), M)
 end
 
+function SoleLogics.check(
+    φ::SyntaxTree,
+    i::Interpretation,
+    a::ManyExpertAlgebra, 
+    args...; 
+    kwargs...)
+
+    interpret(φ, i, a, args...; kwargs...)
+end
+
 """
     alphacheck(
         α::FiniteTruth,

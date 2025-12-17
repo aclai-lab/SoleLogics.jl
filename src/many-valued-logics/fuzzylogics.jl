@@ -13,8 +13,16 @@ struct FuzzyLogic{T} <: AbstractAlgebra{ContinuousTruth}
 end
 
 function Base.show(io::IO, a::FuzzyLogic)
-    println(string(typeof(a)))
-    println("t-norm: " * string(a.tnorm.func))
+    tnorm_name = if a.tnorm === GodelTNorm
+        "Gödel (min)"
+    elseif a.tnorm === LukasiewiczTNorm
+        "Łukasiewicz"
+    elseif a.tnorm === ProductTNorm
+        "Product (*)"
+    else
+        string(a.tnorm.func)
+    end
+    print(io, "FuzzyLogic(t-norm: ", tnorm_name, ")")
 end
 
 iscrisp(::FuzzyLogic) = false

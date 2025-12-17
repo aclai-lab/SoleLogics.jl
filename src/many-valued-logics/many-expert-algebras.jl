@@ -2,7 +2,7 @@ import ..SoleLogics: AbstractAlgebra, top, bot, iscrisp
 using StaticArrays
 
 """
-    struct ManyExpertAlgebra{N, A <: SVector{N, FuzzyLogic}} <: AbstractAlgebra{ContinuousTruth}
+    struct ManyExpertAlgebra <: AbstractAlgebra{ContinuousTruth}
         experts::A    
     end
 A Many Expert Algebra is a combination of N continuous fuzzy logics, each potentially
@@ -21,8 +21,12 @@ struct ManyExpertAlgebra <: AbstractAlgebra{ContinuousTruth}
 end
 
 function Base.show(io::IO, a::ManyExpertAlgebra)
-    println(typeof(a))
-    for expert in a.experts print(expert) end
+    n = length(a.experts)
+    print(io, "ManyExpertAlgebra with ", n, " expert", n == 1 ? "" : "s", ":")
+    for (i, expert) in enumerate(a.experts)
+        print(io, "\n  [", i, "] ")
+        show(io, expert)
+    end
 end
 
 function addexperts!(a::ManyExpertAlgebra, experts::FuzzyLogic...)

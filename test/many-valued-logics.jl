@@ -164,10 +164,21 @@ FuzzyLogic(GodelTNorm)
 MXA = ManyExpertAlgebra(GodelLogic)
 addexperts!(MXA, LukasiewiczLogic, ProductLogic)
 
+@test occursin("Gödel", sprint(show, MXA))
+@test occursin("Łukasiewicz", sprint(show, MXA))
+@test occursin("Product", sprint(show, MXA))
+
+@test occursin("+", sprint(show, FuzzyLogic(ContinuousBinaryOperation(+))))
+
 @test iscrisp(MXA) == false
 
 @test top(MXA) == ntuple(i -> top(MXA.experts[i]), 3)
 @test bot(MXA) == ntuple(i -> bot(MXA.experts[i]), 3)
+
+@test precedeq(MXA, (ContinuousTruth(0.0), ContinuousTruth(0.0), ContinuousTruth(0.5)), (ContinuousTruth(0.0), ContinuousTruth(0.0), ContinuousTruth(0.5)))
+@test precedes(MXA, (ContinuousTruth(0.0), ContinuousTruth(0.0), ContinuousTruth(0.5)), (ContinuousTruth(1.0), ContinuousTruth(1.0), ContinuousTruth(0.7)))
+@test succeedeq(MXA, (ContinuousTruth(0.0), ContinuousTruth(0.0), ContinuousTruth(0.5)), (ContinuousTruth(0.0), ContinuousTruth(0.0), ContinuousTruth(0.5)))
+@test succeedes(MXA, (ContinuousTruth(1.0), ContinuousTruth(1.0), ContinuousTruth(0.7)), (ContinuousTruth(0.0), ContinuousTruth(0.0), ContinuousTruth(0.5)))
 
 
 ################################################################################
@@ -274,15 +285,15 @@ z = Atom("z")
 ################################################################################
 
 @test interpret(parseformula("v∧w"), TruthDict([v => ⊤, w => ⊤]), MXA) == top(MXA)
-@test interpret(parseformula("v∨w"), TruthDict([v => ⊥, w => ⊥]), MXA) == bot(MXA)
-@test interpret(parseformula("v∧w"), TruthDict([v => ⊥, w => ⊤]), MXA) == bot(MXA)
+@test check(parseformula("v∨w"), TruthDict([v => ⊥, w => ⊥]), MXA) == bot(MXA)
+@test check(parseformula("v∧w"), TruthDict([v => ⊥, w => ⊤]), MXA) == bot(MXA)
 @test interpret(parseformula("v∨w"), TruthDict([v => ⊤, w => ⊥]), MXA) == top(MXA)
 @test top(MXA) == interpret(parseformula("v∨w"), TruthDict([v => ContinuousTruth(0), w => ⊤]), MXA)
 @test bot(MXA) == interpret(parseformula("(v∧w∧x)∨(y∧z)"), TruthDict([v => ⊥, w => ContinuousTruth(0.5), x => ContinuousTruth(0.0), y => ⊥, z => ContinuousTruth(0.4)]), MXA)
 @test top(MXA) == interpret(parseformula("v→w"), TruthDict([v => ⊥, w => ⊤]), MXA)
-@test interpret(parseformula("(v→w)∧(w→v)"), TruthDict([v => ContinuousTruth(0.3), w => ContinuousTruth(0.6)]), MXA) == (ContinuousTruth(0.3), ContinuousTruth(0.7), ContinuousTruth(0.5))
+@test check(parseformula("(v→w)∧(w→v)"), TruthDict([v => ContinuousTruth(0.3), w => ContinuousTruth(0.6)]), MXA) == (ContinuousTruth(0.3), ContinuousTruth(0.7), ContinuousTruth(0.5))
 @test interpret(parseformula("((v→w)∨(w→x))∧(v∨x)"), TruthDict([v => ContinuousTruth(0.7), w => ContinuousTruth(0.2), x => ContinuousTruth(0.5)]), MXA) == (ContinuousTruth(0.7), ContinuousTruth(0.7), ContinuousTruth(0.7))
-@test interpret(parseformula("(v∧(w∨x))→(y∨z)"), TruthDict([v => ContinuousTruth(0.6), w => ContinuousTruth(0.4), x => ContinuousTruth(0.9), y => ContinuousTruth(0.3), z => ContinuousTruth(0.8)]), MXA) == (ContinuousTruth(1.0), ContinuousTruth(1.0), ContinuousTruth(1.0))
+@test check(parseformula("(v∧(w∨x))→(y∨z)"), TruthDict([v => ContinuousTruth(0.6), w => ContinuousTruth(0.4), x => ContinuousTruth(0.9), y => ContinuousTruth(0.3), z => ContinuousTruth(0.8)]), MXA) == (ContinuousTruth(1.0), ContinuousTruth(1.0), ContinuousTruth(1.0))
 
 ################################################################################
 #### Finite FLew-chains generation #############################################
