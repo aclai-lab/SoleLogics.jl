@@ -163,18 +163,15 @@ export subformulas, normalize
 
 export CNF, DNF, cnf, dnf
 
-include("utils/normal-forms/leftmost.jl")
-
-include("utils/tools.jl")
-
-
 export eachinstance
 
 include("utils/interpretation-sets.jl")
 
-
+include("utils/normal-forms/leftmost.jl")
 
 include("utils/parse.jl")
+
+include("utils/tools.jl")
 
 
 # these first files are included here to avoid repeated inclusions in those below;
