@@ -169,28 +169,6 @@ function check(
     ), 1:ninstances(s))
 end
 
-# check LeftmostConjunctiveForm formula types
-function check(
-    algo::DefaultCheckAlgorithm,
-    φ::LeftmostConjunctiveForm,
-    s::InterpretationSet,
-    i_instance::Integer,
-    args...;
-    kwargs...
-)
-    return all(ch -> check(algo, ch, s, i_instance, args...; kwargs...), children(φ))
-end
-
-function check(
-    algo::DefaultCheckAlgorithm,
-    φ::LeftmostConjunctiveForm,
-    i::LogicalInstance,
-    args...;
-    kwargs...
-)
-    return all(ch -> check(algo, ch, i, args...; kwargs...), children(φ))
-end
-
 # Fallback
 function getinstance(s::InterpretationSet, i_instance::Integer)
     return LogicalInstance(s, i_instance)
