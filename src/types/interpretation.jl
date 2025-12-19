@@ -160,7 +160,7 @@ function check(φ::Formula, args...; kwargs...)::Union{Bool, Vector{Bool}}
     check(DefaultCheckAlgorithm(), φ, args...; kwargs...)
 end
 
-function check(::DefaultCheckAlgorithm, φ::Formula, i::Interpretation, args...; kwargs...)::Bool
+function check(::CheckAlgorithm, φ::Formula, i::Interpretation, args...; kwargs...)::Bool
     istop(interpret(φ, i, args...; kwargs...))
 end
 
