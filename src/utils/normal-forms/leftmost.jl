@@ -356,7 +356,7 @@ See also [`SyntaxStructure`](@ref), [`Connective`](@ref), [`LeftmostLinearForm`]
 const LeftmostConjunctiveForm{SS<:SyntaxStructure} = LeftmostLinearForm{typeof(∧),SS}
 
 function check(
-    algo::CheckAlgorithm,
+    algo::DefaultCheckAlgorithm,
     φ::LeftmostConjunctiveForm,
     s::InterpretationSet,
     i_instance::Integer,
@@ -367,7 +367,7 @@ function check(
 end
 
 function check(
-    algo::CheckAlgorithm,
+    algo::DefaultCheckAlgorithm,
     φ::LeftmostConjunctiveForm,
     i::Interpretation,
     args...;
@@ -377,7 +377,7 @@ function check(
 end
 
 function check(
-    algo::CheckAlgorithm,
+    algo::DefaultCheckAlgorithm,
     φ::LeftmostConjunctiveForm,
     i::LogicalInstance,
     args...;
@@ -398,7 +398,7 @@ See also [`SyntaxStructure`](@ref), [`Connective`](@ref),
 const LeftmostDisjunctiveForm{SS<:SyntaxStructure} = LeftmostLinearForm{typeof(∨),SS}
 
 function check(
-    algo::CheckAlgorithm,
+    algo::DefaultCheckAlgorithm,
     φ::LeftmostDisjunctiveForm,
     s::InterpretationSet,
     i_instance::Integer,
@@ -409,7 +409,7 @@ function check(
 end
 
 function check(
-    algo::CheckAlgorithm,
+    algo::DefaultCheckAlgorithm,
     φ::LeftmostDisjunctiveForm,
     i::Interpretation,
     args...;
@@ -419,7 +419,7 @@ function check(
 end
 
 function check(
-    algo::CheckAlgorithm,
+    algo::DefaultCheckAlgorithm,
     φ::LeftmostDisjunctiveForm,
     i::LogicalInstance,
     args...;
@@ -439,7 +439,7 @@ See also [`SyntaxStructure`](@ref), [`LeftmostConjunctiveForm`](@ref),
 const CNF{SS<:SyntaxStructure} = LeftmostConjunctiveForm{LeftmostDisjunctiveForm{SS}}
 
 function check(
-    algo::CheckAlgorithm,
+    algo::DefaultCheckAlgorithm,
     φ::CNF,
     i::Interpretation,
     args...;
@@ -459,7 +459,7 @@ See also [`SyntaxStructure`](@ref), [`LeftmostConjunctiveForm`](@ref),
 const DNF{SS<:SyntaxStructure} = LeftmostDisjunctiveForm{LeftmostConjunctiveForm{SS}}
 
 function check(
-    algo::CheckAlgorithm,
+    algo::DefaultCheckAlgorithm,
     φ::DNF,
     i::Interpretation,
     args...;

@@ -159,17 +159,17 @@ include("many-valued-logics/ManyValuedLogics.jl")
 
 export LeftmostLinearForm, LeftmostConjunctiveForm, LeftmostDisjunctiveForm, Literal
 
-export subformulas, normalize
-
-export CNF, DNF, cnf, dnf
-
 export eachinstance
 
 include("utils/interpretation-sets.jl")
 
+export CNF, DNF
+
 include("utils/normal-forms/leftmost.jl")
 
 include("utils/parse.jl")
+
+export subformulas, normalize, cnf, dnf
 
 include("utils/tools.jl")
 
