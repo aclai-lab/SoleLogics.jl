@@ -32,8 +32,8 @@ x = ContinuousTruth(0)
 @test isbot(x)
 
 
-@test_throws ErrorException _f = ContinuousBinaryOperation(string)
-@test_throws ErrorException _f = ContinuousBinaryOperation(show)
+@test_throws ErrorException f = ContinuousBinaryOperation(string)
+@test_throws ErrorException f = ContinuousBinaryOperation(show)
 
 godel_meet = ContinuousBinaryOperation(min)
 

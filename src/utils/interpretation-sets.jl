@@ -126,8 +126,8 @@ See also [`InterpretationSet`](@ref),
 [`Formula`](@ref).
 """
 function check(
-    algo::CheckAlgorithm, 
-    φ::Formula,
+    algo, 
+    φ,
     s::InterpretationSet,
     i_instance::Integer,
     args...;
@@ -151,8 +151,8 @@ See also [`InterpretationSet`](@ref),
 [`Formula`](@ref).
 """
 function check(
-    algo::CheckAlgorithm,
-    φ::Formula,
+    algo,
+    φ,
     s::InterpretationSet,
     args...;
     # use_memo::Union{Nothing,AbstractVector} = nothing,
@@ -167,16 +167,6 @@ function check(
         # use_memo = (isnothing(use_memo) ? nothing : use_memo[[i_instance]]),
         kwargs...
     ), 1:ninstances(s))
-end
-
-function check(
-    algo::CheckAlgorithm,
-    φ::SyntaxBranch,
-    i::LogicalInstance,
-    args...;
-    kwargs...
-)
-    return istop(interpret(φ, i, args...; kwargs...))
 end
 
 # Fallback

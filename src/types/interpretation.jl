@@ -156,7 +156,7 @@ false
 
 See also [`check`](@ref), [`interpret`](@ref), [`Interpretation`](@ref).
 """
-function check(φ::Formula, args...; kwargs...)::Union{Bool, Vector{Bool}}
+function check(φ::Formula, args...; kwargs...)::Bool
     check(DefaultCheckAlgorithm(), φ, args...; kwargs...)
 end
 

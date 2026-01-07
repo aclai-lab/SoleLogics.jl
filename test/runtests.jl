@@ -1,7 +1,6 @@
 using SoleLogics
 using Test
 using Random
-using PlutoUI
 
 function run_tests(list)
     println("\n" * ("#"^50))

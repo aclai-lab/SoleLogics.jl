@@ -358,32 +358,11 @@ const LeftmostConjunctiveForm{SS<:SyntaxStructure} = LeftmostLinearForm{typeof(�
 function check(
     algo::DefaultCheckAlgorithm,
     φ::LeftmostConjunctiveForm,
-    s::InterpretationSet,
-    i_instance::Integer,
-    args...;
-    kwargs...
-)
-    return all(ch -> check(algo, ch, s, i_instance, args...; kwargs...), children(φ))
-end
-
-function check(
-    algo::DefaultCheckAlgorithm,
-    φ::LeftmostConjunctiveForm,
     i::Interpretation,
     args...;
     kwargs...
 )
     return all(ch -> check(algo, ch, i, args...; kwargs...), grandchildren(φ))
-end
-
-function check(
-    algo::DefaultCheckAlgorithm,
-    φ::LeftmostConjunctiveForm,
-    i::LogicalInstance,
-    args...;
-    kwargs...
-)
-    return all(ch -> check(algo, ch, i, args...; kwargs...), children(φ))
 end
 
 """
@@ -400,32 +379,11 @@ const LeftmostDisjunctiveForm{SS<:SyntaxStructure} = LeftmostLinearForm{typeof(�
 function check(
     algo::DefaultCheckAlgorithm,
     φ::LeftmostDisjunctiveForm,
-    s::InterpretationSet,
-    i_instance::Integer,
-    args...;
-    kwargs...
-)
-    return any(ch -> check(algo, ch, s, i_instance, args...; kwargs...), children(φ))
-end
-
-function check(
-    algo::DefaultCheckAlgorithm,
-    φ::LeftmostDisjunctiveForm,
     i::Interpretation,
     args...;
     kwargs...
 )
     return any(ch -> check(algo, ch, i, args...; kwargs...), grandchildren(φ))
-end
-
-function check(
-    algo::DefaultCheckAlgorithm,
-    φ::LeftmostDisjunctiveForm,
-    i::LogicalInstance,
-    args...;
-    kwargs...
-)
-    return any(ch -> check(algo, ch, i, args...; kwargs...), children(φ))
 end
 
 """
