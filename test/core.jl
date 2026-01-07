@@ -134,8 +134,8 @@ logic_int = BaseLogic(grammar_int, SoleLogics.BooleanAlgebra())
 
 for i in 1:10
     _tdict = TruthDict(Dict([p => rand([true, false]) for p in unique(atoms(φ_int))]))
-    check(φ_int, _tdict) && @test all(istop, collect(values(_tdict.truth)))
-    !check(φ_int, _tdict) && @test !all(istop, collect(values(_tdict.truth)))
+    check(φ_int, _tdict) && @test all(istop, collect(SoleLogics.values(_tdict.truth)))
+    !check(φ_int, _tdict) && @test !all(istop, collect(SoleLogics.values(_tdict.truth)))
 
     @test_nowarn _tdict[φ_int]
     @test_nowarn φ_int(_tdict)
