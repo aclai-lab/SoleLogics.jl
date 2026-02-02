@@ -171,7 +171,7 @@ end
 
 function check(
     algo::CheckAlgorithm,
-    φ::SyntaxBranch,
+    φ::SyntaxStructure,
     i::LogicalInstance,
     args...;
     kwargs...
