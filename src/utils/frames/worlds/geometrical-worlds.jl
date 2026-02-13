@@ -91,7 +91,7 @@ const Point3D = Point{3}
         y :: T
     end
 
-An interval in a 1-dimensional space, with coordinates of type `T`.
+An interval in a 1-dimensional space, with coordinates of type `T`, such that x<y.
 
 # Examples
 ```julia-repl
@@ -124,13 +124,14 @@ struct Interval{T<:Real} <: GeometricalWorld
     x :: T
     y :: T
 
-    # TODO needed?
-    Interval(w::Interval) = Interval(w.x,w.y)
-
-    Interval{T}(x::T,y::T) where {T} = new{T}(x,y)
+    function Interval{T}(x::T,y::T) where {T}
+        if x<-1 || x >= y
+            error("Cannot instantiate Interval(x={$x},y={$y})")
+        end
+        return new{T}(x,y)
+    end
     Interval(x::T,y::T) where {T} = Interval{T}(x,y)
-    # TODO: perhaps check x<y (and  x<=N, y<=N ?), but only in debug mode.
-    # Interval(x,y) = x>0 && y>0 && x < y ? new(x,y) : error("Cannot instantiate Interval(x={$x},y={$y})")
+    Interval(w::Interval) = Interval(w.x,w.y)
 end
 
 # Base.size(w::Interval) = (Base.length(w),)
