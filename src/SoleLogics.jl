@@ -95,6 +95,7 @@ export truth_table
 
 include("types/propositional-logic.jl")
 include("utils/propositional-logic.jl")
+include("utils/propositional-logic2.jl")
 
 
 
@@ -166,6 +167,8 @@ include("utils/interpretation-sets.jl")
 export CNF, DNF
 
 include("utils/normal-forms/leftmost.jl")
+include("utils/normal-forms/bitmatrices.jl")
+include("utils/normal-forms/bitmatrices2.jl")
 
 include("utils/parse.jl")
 
