@@ -4,12 +4,11 @@ using SoleLogics
 @atoms A B C D
 φ = ¬((A ∨ B) ∧ (C ∨ D))
 
-@test_nowarn normalize(φ; profile = :nnf)
-# Non deterministic
-# normalize(φ; profile = :nnf) == (
-# 	(¬C ∧ ¬D) ∨
-# 	(¬A ∧ ¬B)
-# )
+@test_nowarn cnf(φ)
+@test normalize(φ; profile = :nnf) == (
+	(¬C ∧ ¬D) ∨
+	(¬A ∧ ¬B)
+)
 
 @test normalize(tree(cnf(φ))) == normalize(
 	(¬C ∨ ¬A) ∧
@@ -17,6 +16,8 @@ using SoleLogics
 	(¬C ∨ ¬B) ∧
 	(¬D ∨ ¬B)
 )
+
+Literal(A)
 
 @test_nowarn dnf(φ)
 @test_nowarn dnf(φ ∧ φ)
