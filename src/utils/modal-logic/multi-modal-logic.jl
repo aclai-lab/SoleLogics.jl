@@ -61,6 +61,18 @@ const HS = [
 # Lutz and Wolter's Modal Logic of Topological Relations with rectangular
 # areas aligned with the axes (LRCC8_Rec)
 ################################################################################
+# const LRCC5_Rec_DR    = Topo_DR
+# const LRCC5_Rec_PO    = Topo_PO
+# const LRCC5_Rec_PP    = Topo_PP
+# const LRCC5_Rec_PPi   = Topo_PPi
+
+# const LRCC5_Rec = [
+#     LRCC5_Rec_DR,
+#     LRCC5_Rec_PO,
+#     LRCC5_Rec_PP,
+#     LRCC5_Rec_PPi
+# ]
+
 const LRCC8_Rec_DC    = Topo_DC
 const LRCC8_Rec_EC    = Topo_EC
 const LRCC8_Rec_PO    = Topo_PO

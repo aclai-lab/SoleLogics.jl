@@ -40,7 +40,7 @@ export hasdual, dual
 
 export composeformulas
 
-export precedeq, precedes, succeedeq, succeedes
+export precedes
 export truthjoin, truthmeet
 
 include("types/syntactical.jl")
@@ -52,7 +52,9 @@ include("types/parse.jl")
 
 
 
+export Interpretation
 export interpret, check
+export DefaultCheckAlgorithm
 
 include("types/interpretation.jl")
 
@@ -107,6 +109,7 @@ export DIAMOND, BOX, ◊, □
 export DiamondRelationalConnective, BoxRelationalConnective
 export diamond, box
 export globaldiamond, globalbox
+export diamondsandboxes
 
 export KripkeStructure
 export truthtype, worldtype
@@ -156,21 +159,19 @@ include("many-valued-logics/ManyValuedLogics.jl")
 
 export LeftmostLinearForm, LeftmostConjunctiveForm, LeftmostDisjunctiveForm, Literal
 
-export subformulas, normalize
-
-export CNF, DNF, cnf, dnf
-
-include("utils/syntactical-normal-forms.jl")
-
-include("utils/tools.jl")
-
-
+export eachinstance
 
 include("utils/interpretation-sets.jl")
 
+export CNF, DNF
 
+include("utils/normal-forms/leftmost.jl")
 
 include("utils/parse.jl")
+
+export subformulas, normalize, cnf, dnf
+
+include("utils/tools.jl")
 
 
 # these first files are included here to avoid repeated inclusions in those below;

@@ -1,7 +1,11 @@
 # core.jl
 export atom, Proposition, NamedOperator
+export ExplicitCrispUniModalFrame
 
-const SimpleModalFrame = SimpleModalFrame
+const ExplicitCrispUniModalFrame = SimpleModalFrame
+
+const AbstractInterpretation = Interpretation
+const AbstractInterpretationSet = InterpretationSet
 
 const ToCenteredRel = ToCenterRel
 
@@ -9,7 +13,7 @@ const NamedOperator = NamedConnective
 const AbstractSyntaxStructure = SyntaxStructure
 
 # Helper
-function Base.getindex(i::AbstractInterpretation, v, args...; kwargs...)
+function Base.getindex(i::Interpretation, v, args...; kwargs...)
     Base.getindex(i, Atom(v), args...; kwargs...)
 end
 
@@ -56,6 +60,3 @@ struct TruthTable{
 } <: Formula # TODO is this correct? Remove?
     truth::Dict{<:AbstractAssignment,Vector{Pair{SyntaxStructure,T}}}
 end
-
-# syntax-utils.jl
-op(::LeftmostLinearForm{C}) where {C} = C()

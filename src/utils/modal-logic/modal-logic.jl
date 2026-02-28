@@ -339,6 +339,7 @@ julia> [w => check(fmodal, kstruct, w) for w in worlds]
 See also [`SyntaxTree`](@ref), [`AbstractWorld`](@ref), [`KripkeStructure`](@ref).
 """
 function check(
+    ::DefaultCheckAlgorithm,
     φ::SyntaxTree,
     i::AbstractKripkeStructure,
     w::Union{Nothing,AnyWorld,<:AbstractWorld} = nothing;

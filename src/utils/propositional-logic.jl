@@ -1,28 +1,28 @@
+using Dictionaries
+
 ############################################################################################
 ####################################### Utilities ##########################################
 ############################################################################################
 
 """
-    _hpretty_table(io::IO, keys::Any, values::Any)
+    show_assignment_pretty_table(io::IO, keys::Any, matrix::Matrix)
 
 Recreate horizontal pretty table formatting. 
 The keys represent the header of the table and the values the first row of the table.
 """
-function _hpretty_table(io::IO, keys::Any, values::Any)
+function show_assignment_pretty_table(io::IO, keys::Any, matrix::AbstractMatrix; kwargs...)
     # Prepare columns names
     _keys = map(x -> x isa AbstractAtom ? value(x) : x, collect(keys))
-
     # Try to draw a complete table
-    data = hcat([x for x in values]...)
     try
         column_labels = [
             _keys,
             string.(nameof.(typeof.(_keys)))
         ]
-        pretty_table(io, data; column_labels)
+        pretty_table(io, matrix; column_labels, kwargs...)
     catch e
         # TODO PrettyTables version < 3
-        pretty_table(io, data; header = (_keys, string.(nameof.(typeof.(_keys)))))
+        pretty_table(io, matrix; header = (_keys, string.(nameof.(typeof.(_keys)))), kwargs...)
     end
 end
 
@@ -126,7 +126,7 @@ true
     If the structure is initialized as empty, [`BooleanTruth`](@ref) values are assumed.
 
 See also [`AbstractAssignment`](@ref), 
-[`AbstractInterpretation`](@ref),
+[`Interpretation`](@ref),
 [`DefaultedTruthDict`](@ref),
 [`BooleanTruth`](@ref).
 """
@@ -189,18 +189,31 @@ function inlinedisplay(i::TruthDict)
     "TruthDict([$(join(["$(syntaxstring(a)) => $t" for (a,t) in i.truth], ", "))])"
 end
 
-function Base.show(
-    io::IO,
-    i::TruthDict,
-)
+function Base.show(io::IO, i::TruthDict)
     if isempty(i.truth)
         print(io, "Empty TruthDict")
     else
         println(io, "TruthDict with values:")
-        _hpretty_table(
+        values = [i.truth[k] for k in keys(i.truth)]
+        show_assignment_pretty_table(
             io,
-            i.truth |> keys,
-            i.truth |> values
+            keys(i.truth),
+            reshape(values, 1, length(values))
+        )
+    end
+end
+
+function Base.show(io::IO, is::Vector{<:TruthDict})
+    if isempty(is)
+        println(io, "$(eltype(is))[]")
+    else
+        println(io, "$(length(is))-element Vector of $(eltype(is)) with values:")
+        ks = unique(Iterators.flatten([keys(i.truth) for i in is]))
+        matrix = [i.truth[k] for i in is, k in ks]
+        show_assignment_pretty_table(
+            io,
+            ks,
+            matrix
         )
     end
 end
@@ -262,7 +275,7 @@ false
 
 ```
 
-See also [`AbstractAssignment`](@ref), [`AbstractInterpretation`](@ref),
+See also [`AbstractAssignment`](@ref), [`Interpretation`](@ref),
 [`interpret`](@ref), [`Atom`](@ref),
 [`TruthDict`](@ref), [`DefaultedTruthDict`](@ref).
 """
@@ -329,12 +342,9 @@ function inlinedisplay(i::DefaultedTruthDict)::String
     "DefaultedTruthDict([$(join(["$(syntaxstring(a)) => $t" for (a,t) in i.truth], ", "))], $(i.default_truth))"
 end
 
-function Base.show(
-    io::IO,
-    i::DefaultedTruthDict,
-)
+function Base.show(io::IO, i::DefaultedTruthDict)
     println(io, "DefaultedTruthDict with default truth `$(i.default_truth)` and values:")
-    _hpretty_table(io, i.truth |> keys, i.truth |> values)
+    show_assignment_pretty_table(io, keys(i.truth), [i.truth[k] for k in keys(i.truth)])
 end
 
 # Helpers
@@ -357,12 +367,12 @@ when model checking.
 
 See also [`Formula`](@ref).
 """
-function check(
-    φ::Formula,
-    i::Union{AbstractDict,AbstractVector},
-    args...
-)
-    check(φ, convert(AbstractInterpretation, i), args...)
+function check(algo::CheckAlgorithm, φ::Formula, i::Union{AbstractDict,AbstractVector}, args...)
+    check(algo, φ, convert(Interpretation, i), args...)
+end
+
+function interpret(φ::Formula, i::Union{AbstractDict,AbstractVector}, args...)
+    interpret(φ, convert(Interpretation, i), args...)
 end
 
 #############################################################################################
@@ -370,7 +380,7 @@ end
 #############################################################################################
 
 """
-    convert(::Type{AbstractInterpretation}, i::AbstractDict)
+    convert(::Type{Interpretation}, i::AbstractDict)
 
 Convert a dictionary (with keys and values) in a [`TruthDict`](@ref).
 In this case, a dictionary is interpreted as the map from atoms to `Truth` values.
@@ -378,7 +388,7 @@ In this case, a dictionary is interpreted as the map from atoms to `Truth` value
 # Examples
 
 ```julia-repl
-julia> convert(AbstractInterpretation, Dict([1 => ⊤, 2 => ⊥]))
+julia> convert(Interpretation, Dict([1 => ⊤, 2 => ⊥]))
 TruthDict with values:
 ┌───────┬───────┐
 │     2 │     1 │
@@ -393,10 +403,9 @@ TruthDict with values:
     associated with the keys must be Boolean values. If this were not the 
     case, this method could not be used.
 
-See also [`AbstractInterpretation`](@ref), [`TruthDict`](@ref).
+See also [`Interpretation`](@ref), [`TruthDict`](@ref).
 """
-convert(::Type{AbstractInterpretation}, i::AbstractDict) = TruthDict(i)
-#Base.getindex(i::AbstractDict, a::Atom) = i[value(a)]
+convert(::Type{Interpretation}, i::AbstractDict) = TruthDict(i)
 
 """
     Base.haskey(a::Atom, i::AbstractDict)::Bool
@@ -434,14 +443,14 @@ false
 
 See also [`Atom`](@ref).
 """
-check(a::Atom, i::AbstractDict) = haskey(a,i) ? Base.getindex(i, value(a)) : nothing
+check(::CheckAlgorithm, a::Atom, i::AbstractDict) = haskey(a,i) ? Base.getindex(i, value(a)) : nothing
 
 #############################################################################################
 ##################################### AbstractVector ########################################
 #############################################################################################
 
 """
-    convert(::Type{AbstractInterpretation}, i::AbstractVector)
+    convert(::Type{Interpretation}, i::AbstractVector)
 
 Converts any vector to a dictionary with all ⊤ and ⊥ default value.
 In this case, a vector is interpreted as the set of true atoms.
@@ -449,7 +458,7 @@ In this case, a vector is interpreted as the set of true atoms.
 # Examples
 
 ```julia-repl
-julia> convert(AbstractInterpretation, [1,2,3])
+julia> convert(Interpretation, [1,2,3])
 DefaultedTruthDict with default truth `⊥` and values:
 ┌───────┬───────┬───────┐
 │     2 │     3 │     1 │
@@ -458,7 +467,7 @@ DefaultedTruthDict with default truth `⊥` and values:
 │     ⊤ │     ⊤ │     ⊤ │
 └───────┴───────┴───────┘
 
-julia> convert(AbstractInterpretation, ["a","b"])
+julia> convert(Interpretation, ["a","b"])
 DefaultedTruthDict with default truth `⊥` and values:
 ┌────────┬────────┐
 │      b │      a │
@@ -468,10 +477,9 @@ DefaultedTruthDict with default truth `⊥` and values:
 └────────┴────────┘
 ```
 
-See also [`AbstractInterpretation`](@ref), [`DefaultedTruthDict`](@ref), [`TruthDict`](@ref).
+See also [`Interpretation`](@ref), [`DefaultedTruthDict`](@ref), [`TruthDict`](@ref).
 """
-convert(::Type{AbstractInterpretation}, i::AbstractVector) = DefaultedTruthDict(i, ⊥)
-#Base.getindex(i::AbstractVector, a::Atom) = (value(a) in i)
+convert(::Type{Interpretation}, i::AbstractVector) = DefaultedTruthDict(i, ⊥)
 #Base.in(a::Atom, i::AbstractVector) = true
 
 """
@@ -492,4 +500,4 @@ false
 
 See also [`Atom`](@ref).
 """
-check(a::Atom, i::AbstractVector) = (value(a) in i)
+check(::CheckAlgorithm, a::Atom, i::AbstractVector) = (value(a) in i)
