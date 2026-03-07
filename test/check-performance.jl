@@ -47,10 +47,10 @@ function generatemodalmodels(n::Int, nw::Int, ne::Int; seed::Int=42, natoms = 5,
         [TruthDict(Dict([p => rand(Bool) for p in Σ])) for i in 1:n]
     elseif type == :propositional_t1y
         [TruthDict(dictionary([p => rand(Bool) for p in Σ])) for i in 1:n]
-    elseif type == :propositional_t2d
-        [TruthDict2(Dict([p => rand(Bool) for p in Σ])) for i in 1:n]
-    elseif type == :propositional_t2y
-        [TruthDict2(dictionary([p => rand(Bool) for p in Σ])) for i in 1:n]
+    # elseif type == :propositional_t2d
+    #     [TruthDict2(Dict([p => rand(Bool) for p in Σ])) for i in 1:n]
+    # elseif type == :propositional_t2y
+    #     [TruthDict2(dictionary([p => rand(Bool) for p in Σ])) for i in 1:n]
     elseif type == :modal
         e = Vector{KripkeStructure}()
         for _ in 1:n
@@ -90,10 +90,11 @@ algos = [
 ]
 for type in [
     :propositional_array,
+    :propositional_dict,
     :propositional_t1d,
     # :propositional_t1y,
-    :propositional_t2d,
-    :propositional_t2y,
+    # :propositional_t2d,
+    # :propositional_t2y,
     # :modal,
 ]
     println("type: $(type)")

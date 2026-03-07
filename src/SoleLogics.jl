@@ -95,8 +95,6 @@ export truth_table
 
 include("types/propositional-logic.jl")
 include("utils/propositional-logic.jl")
-include("utils/propositional-logic2.jl")
-
 
 
 export accessibles
