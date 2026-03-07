@@ -25,6 +25,7 @@ test_suites = [
     ("Formula Generation", ["formulas/generation.jl",]),
     ("Formula I/O", ["formulas/input.jl",]),
     ("Normal Forms", ["formulas/normal-forms.jl",]),
+    ("Normal Forms: Bit matrices", ["formulas/bitmatrices.jl",]),
 
     ("Operators", ["logics/operators.jl"]),
     # ("Logics", ["logics/logics.jl"]),
