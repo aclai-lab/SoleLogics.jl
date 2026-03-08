@@ -163,6 +163,8 @@ export eachinstance
 include("utils/interpretation-sets.jl")
 
 export CNF, DNF
+export BitMatrixNormalForm, BitMatrixCNF, BitMatrixDNF
+export ndisjuncts, nconjuncts
 
 include("utils/normal-forms/leftmost.jl")
 include("utils/normal-forms/bitmatrices.jl")
