@@ -84,12 +84,18 @@ end
     @test_throws MethodError interpret("r", TruthDict(["p", "q"])) isa AbstractAtom
     @test interpret(Atom("r"), TruthDict(["p", "q"])) isa AbstractAtom
 
+    t = parseformula("(1 ∨ ¬2) ∧ (¬1 ∨ ¬2) ∧ (1 ∨ ¬2)"; atom_parser = x -> Atom{Int64}(parse(Int64, x)))
+    @test check(t, DefaultedTruthDict([1]))
+    @test !check(t, TruthDict([1]))
+    @test check(t, TruthDict([1 => true, 2 => false]))
+
 end
 
 @testset "DefaultedTruthDict" begin
 
     @test_nowarn DefaultedTruthDict([(Atom(1.0), true), (Atom(2), true), (Atom(3), true)])
-    @test_nowarn DefaultedTruthDict([(Atom(1.0), true), (Atom(2), BOT), (Atom(3), true)])
+   @test check(t, TruthDict([1 => true, 2 => false]))
+ @test_nowarn DefaultedTruthDict([(Atom(1.0), true), (Atom(2), BOT), (Atom(3), true)])
     @test_nowarn DefaultedTruthDict([(1.0, true), (2, true), (3, true)])
     @test_nowarn DefaultedTruthDict([Atom(1.0) => true, Atom(2) => true, Atom(3) => true])
     @test_nowarn DefaultedTruthDict([(Atom(1.0), true), (Atom(2), true), (Atom(3), true)])
