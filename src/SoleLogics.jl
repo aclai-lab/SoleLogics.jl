@@ -166,7 +166,6 @@ export CNF, DNF
 
 include("utils/normal-forms/leftmost.jl")
 include("utils/normal-forms/bitmatrices.jl")
-include("utils/normal-forms/bitmatrices2.jl")
 
 include("utils/parse.jl")
 

@@ -17,7 +17,7 @@ using SoleLogics
 	(¬D ∨ ¬B)
 )
 
-Literal(A)
+@test_nowarn Literal(A)
 
 @test_nowarn dnf(φ)
 @test_nowarn dnf(φ ∧ φ)
