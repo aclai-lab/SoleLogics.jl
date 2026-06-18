@@ -20,11 +20,13 @@ end
     facts::Vector{<:SyntaxLeaf},
     truthvalues::Union{AbstractAlgebra,AbstractVector{<:Truth}}
 )
+    rng = initrng(rng) 
+
     truthvalues = inittruthvalues(truthvalues)
     fr = randframe(rng, nworlds, nedges)
 
     valuation = Dict(
-        [w => TruthDict([f => rand(truthvalues) for f in facts]) for w in fr.worlds]
+        [w => TruthDict([f => rand(rng, truthvalues) for f in facts]) for w in fr.worlds]
     )
 
     return KripkeStructure(fr, valuation)
