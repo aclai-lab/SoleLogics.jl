@@ -20,6 +20,8 @@ end
     facts::Vector{<:SyntaxLeaf},
     truthvalues::Union{AbstractAlgebra,AbstractVector{<:Truth}}
 )
+    rng = initrng(rng) 
+
     truthvalues = inittruthvalues(truthvalues)
     fr = randframe(rng, nworlds, nedges)
 
