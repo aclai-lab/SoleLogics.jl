@@ -97,7 +97,6 @@ include("types/propositional-logic.jl")
 include("utils/propositional-logic.jl")
 
 
-
 export accessibles
 export ismodal, isbox, isdiamond, hasdual, dual
 export relationtype, relation
@@ -164,8 +163,11 @@ export eachinstance
 include("utils/interpretation-sets.jl")
 
 export CNF, DNF
+export BitMatrixNormalForm, BitMatrixCNF, BitMatrixDNF
+export ndisjuncts, nconjuncts
 
 include("utils/normal-forms/leftmost.jl")
+include("utils/normal-forms/bitmatrices.jl")
 
 include("utils/parse.jl")
 
