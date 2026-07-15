@@ -7,13 +7,13 @@ over the representation of the model (e.g., [`KripkeStructure`](@ref)s).
 # Interfaces
 
 - worlds(logiset::AbstractLogiset{T}, instance::Int) where {T}
-- featval(logiset::AbstractLogiset{T}, instance::Int, world::W}
+- featval(logiset::AbstractLogiset{T}, instance::Int, world::W)
 - accessibles(logiset::AbstractLogiset{T}, instance::Int, world::W, relation::R}
 - frame(logiset::AbstractLogiset{T}) where {T}
 
-
 Each concrete type must offer the following fields:
 - collection(logiset::AbstractLogiset{T}) where {T}
+- relations(logiset::AbstractLogiset{T}) where {T}
 - alphabet(logiset::AbstractLogiset{T}) where {T}
 
 # Other Methods
@@ -23,6 +23,15 @@ Each concrete type must offer the following fields:
 
 """
 abstract type AbstractLogiset{T} end
+
+"""
+    iseuclidean(::AbstractLogiset{T}) where {T}
+
+Distinguish between euclidean [`AbstractLogiset`](@ref)s (i.e., the frame is 
+an array-like collection) and non-euclidean ones (i.e., the frame is a graph).
+"""
+iseuclidean(::AbstractLogiset{T}) where {T} = false
+iseuclidean(::AbstractLogiset{T}) where {T <: AbstractArray} = true
 
 function worlds(logiset::AbstractLogiset{T}, instance::Int) where {T}
     throw(MethodError(worlds, (logiset, instance)))
@@ -61,4 +70,3 @@ end
 function frame(logiset::AbstractLogiset{T}) where {T}
     throw(MethodError(frame, (logiset)))
 end
-
