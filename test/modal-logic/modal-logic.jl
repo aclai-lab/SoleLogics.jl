@@ -375,3 +375,13 @@ serialized = serialize_check(witness_formula, kstruct, worlds[1])
 @test serialized["engine_version"] == "0.13.7"
 @test serialized["result"] == true
 @test haskey(serialized["frame"], "accessibility")
+
+# Relational witnesses retain the relation label and enumerate global edges.
+global_formula = diamond(globalrel)(p)
+global_result, global_witness = check(global_formula, kstruct, worlds[1]; witness=true)
+@test global_result
+@test haskey(global_witness.accessibility, "G")
+@test Set(global_witness.accessibility["G"]) == Set((from, to) for from in worlds for to in worlds)
+global_serialized = serialize_check(global_formula, kstruct, worlds[1])
+@test haskey(global_serialized["frame"]["accessibility"], "G")
+@test length(global_serialized["frame"]["accessibility"]["G"]) == length(worlds)^2
