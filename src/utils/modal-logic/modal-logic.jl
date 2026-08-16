@@ -283,6 +283,148 @@ struct AnyWorld end
 #     end
 # end
 
+# Build relation-labelled edge lists through the same accessibility interface
+# used by collateworlds.  The default modal connectives use the unimodal
+# accessibility method; relational connectives use their relation.
+function _witness_accessibility(fr, formula::SyntaxTree, ::Type{W}) where {W}
+    requests = Tuple{String,Any}[]
+    for ψ in unique(subformulas(formula))
+        tok = token(ψ)
+        if tok isa AbstractRelationalConnective
+            label = syntaxstring(relation(tok))
+            any(first(x) == label for x in requests) || push!(requests, (label, relation(tok)))
+        elseif tok isa Connective && ismodal(tok)
+            any(first(x) == "default" for x in requests) || push!(requests, ("default", nothing))
+        end
+    end
+    edges = Dict{String,Vector{Tuple{W,W}}}()
+    worlds = collect(allworlds(fr))
+    for (label, rel) in requests
+        edges[label] = if isnothing(rel)
+            [(from, to) for from in worlds for to in accessibles(fr, from)]
+        elseif rel == globalrel
+            targets = collect(accessibles(fr, rel))
+            [(from, to) for from in worlds for to in targets]
+        else
+            [(from, to) for from in worlds for to in accessibles(fr, from, rel)]
+        end
+    end
+    edges
+end
+
+function _make_check_witness(
+    formula::SyntaxTree,
+    w,
+    result::Bool,
+    memo_structure,
+    i::AbstractKripkeStructure,
+)
+    fr = frame(i)
+    W = worldtype(i)
+    satisfying = Dict{SyntaxTree,Worlds{W}}()
+    for ψ in unique(subformulas(formula))
+        # Copy the sets so a witness remains stable if a caller later mutates a
+        # supplied memo dictionary.
+        satisfying[tree(ψ)] = Worlds{W}(collect(memo_structure[tree(ψ)]))
+    end
+    atoms = Dict{SyntaxTree,Dict{W,Bool}}()
+    worlds = collect(allworlds(fr))
+    for ψ in unique(subformulas(formula))
+        tok = token(ψ)
+        if tok isa AbstractAtom
+            atoms[tree(ψ)] = Dict{W,Bool}(world => istop(interpret(tok, i, world)) for world in worlds)
+        end
+    end
+    CheckWitness(
+        formula,
+        w,
+        result,
+        satisfying,
+        atoms,
+        _witness_accessibility(fr, formula, W),
+        worlds,
+    )
+end
+
+function _schema_formula(ψ::SyntaxTree)
+    tok = token(ψ)
+    Dict{String,Any}(
+        "token" => syntaxstring(tok),
+        "kind" => tok isa AbstractAtom ? "atom" : tok isa Connective ? "connective" : "truth",
+        "children" => [_schema_formula(child) for child in children(ψ)],
+    )
+end
+
+function _schema_witness(witness::CheckWitness)
+    worlds = unique(vcat(witness.worlds,
+                         [endpoint for edge_list in values(witness.accessibility) for edge in edge_list for endpoint in edge]...))
+    ids = Dict{Any,String}(world => "w$(n)" for (n, world) in enumerate(worlds))
+    sets = Dict{String,Any}(
+        syntaxstring(ψ) => [ids[world] for world in worldsψ]
+        for (ψ, worldsψ) in witness.satisfying_worlds
+    )
+    valuations = Dict{String,Any}(
+        syntaxstring(atom) => Dict{String,Any}(ids[world] => value for (world, value) in vals)
+        for (atom, vals) in witness.atom_valuations
+    )
+    Dict{String,Any}(
+        "formula" => _schema_formula(witness.formula),
+        "evaluated_world" => isnothing(witness.evaluated_world) || witness.evaluated_world isa AnyWorld ? nothing : ids[witness.evaluated_world],
+        "result" => witness.result,
+        "satisfying_worlds" => sets,
+        "atom_valuations" => valuations,
+        "accessibility" => Dict{String,Any}(
+            relation => [Dict{String,Any}("from" => ids[from], "to" => ids[to]) for (from, to) in edges]
+            for (relation, edges) in witness.accessibility
+        ),
+        "worlds" => [Dict{String,Any}("id" => ids[world], "label" => inlinedisplay(world)) for world in worlds],
+    )
+end
+
+"""
+    serialize_check(φ, i, w=nothing; kwargs...)
+
+Return a plain nested `Dict{String,Any}` containing a language-agnostic
+serialization of a finite Kripke frame, formula, result, and check witness.
+The dictionary has keys `schema_version`, `engine_version`, `frame`, and
+`witness`; world identifiers are stable within one result and are used by all
+frame and witness edge/valuation tables.  No JSON package is required.  For
+example, callers may write it with `JSON3.write(serialize_check(φ, i, w))`.
+"""
+function serialize_check(
+    φ::SyntaxTree,
+    i::AbstractKripkeStructure,
+    w::Union{Nothing,AnyWorld,<:AbstractWorld}=nothing;
+    use_memo=nothing,
+    perform_normalization::Bool=true,
+    memo_max_height::Union{Nothing,Int}=nothing,
+)
+    result, witness = check(
+        φ, i, w;
+        witness=true,
+        use_memo=use_memo,
+        perform_normalization=perform_normalization,
+        memo_max_height=memo_max_height,
+    )
+    schema_witness = _schema_witness(witness)
+    Dict{String,Any}(
+        "schema_version" => "solelogics.check.v1",
+        "engine_version" => string(Base.pkgversion(@__MODULE__)),
+        "frame" => Dict{String,Any}(
+            "worlds" => schema_witness["worlds"],
+            "accessibility" => schema_witness["accessibility"],
+        ),
+        "formula" => schema_witness["formula"],
+        "result" => result,
+        "witness" => Dict{String,Any}(
+            "evaluated_world" => schema_witness["evaluated_world"],
+            "result" => result,
+            "satisfying_worlds" => schema_witness["satisfying_worlds"],
+            "atom_valuations" => schema_witness["atom_valuations"],
+        ),
+    )
+end
+
 """
     function check(
         φ::SyntaxTree,
@@ -291,7 +433,11 @@ struct AnyWorld end
         use_memo::Union{Nothing,AbstractDict{<:Formula,<:Vector{<:AbstractWorld}}} = nothing,
         perform_normalization::Bool = true,
         memo_max_height::Union{Nothing,Int} = nothing,
-    )::Bool
+        witness::Bool = false,
+    )
+
+When `witness=false` (the default), return the historical `Bool`.  With
+`witness=true`, return `(result, witness)` where `witness isa CheckWitness`.
 
 Check a formula on a specific word in a [`KripkeStructure`](@ref).
 
@@ -345,8 +491,9 @@ function check(
     w::Union{Nothing,AnyWorld,<:AbstractWorld} = nothing;
     use_memo::Union{Nothing,AbstractDict{<:Formula,<:Vector{<:AbstractWorld}}} = nothing,
     perform_normalization::Bool = true,
-    memo_max_height::Union{Nothing,Int} = nothing
-)::Bool
+    memo_max_height::Union{Nothing,Int} = nothing,
+    witness::Bool = false
+)::Union{Bool,Tuple{Bool,CheckWitness}}
     W = worldtype(i)
 
     if isnothing(w)
@@ -383,7 +530,7 @@ function check(
     (_f, _c) = filter, collect
     # (_f, _c) = Iterators.filter, identity
 
-    if !hasformula(memo_structure, φ)
+    if witness || !hasformula(memo_structure, φ)
         for ψ in unique(subformulas(φ))
             if !isnothing(memo_max_height) && height(ψ) > memo_max_height
                 push!(forget_list, ψ)
@@ -417,13 +564,15 @@ function check(
         end
     end
 
+    witness_data = witness ? _make_check_witness(φ, w, ret, memo_structure, i) : nothing
+
     if !isnothing(memo_max_height)
         for ψ in forget_list
             delete!(memo_structure, ψ)
         end
     end
 
-    return ret
+    return witness ? (ret, witness_data) : ret
 end
 
 """

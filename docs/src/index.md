@@ -18,7 +18,34 @@ SoleLogics.jl allows manipulation of:
 - [Formulas](https://en.wikipedia.org/wiki/Well-formed_formula) (e.g., syntax trees, DNFs, CNFs): random generation, parsing, minimization;
 - [Interpretations](https://en.wikipedia.org/wiki/Interpretation_(logic)) (e.g., propositional assignments, [Kripke structures](https://en.wikipedia.org/wiki/Kripke_structure_(model_checking)));
 - Algorithms for evaluating the truth of a formula on an interpretation ([model checking](https://en.wikipedia.org/wiki/Model_checking));
-- Interfaces to Z3, for evaluating the validity/satisfiability of a propositional formula.
+- Opt-in, independently checkable witnesses and a process-boundary serialization schema for finite Kripke model checks.
+
+
+## Check witnesses and serialization
+
+`check(φ, model, world)` keeps its historical Boolean return value.  Pass
+`witness=true` to obtain `(result, witness)`, where [`CheckWitness`](@ref)
+contains the satisfying-world set for every subformula, atom valuations, and
+the accessibility edges used by modal operators.  The witness is suitable for
+independent bottom-up verification over the same finite frame.
+
+[`serialize_check`](@ref) returns a plain nested `Dict{String,Any}` with the
+formula, frame, result, witness, `schema_version`, and `engine_version`; it
+adds no JSON dependency.  For example, with any JSON package already chosen
+by the caller:
+
+```julia
+using JSON3
+JSON3.write(serialize_check(φ, model, world))
+```
+
+The schema uses `w1`, `w2`, ... as per-result world identifiers, stores frame
+edges as `{"from", "to"}` objects, and represents the formula as a
+recursive `{"token", "kind", "children"}` tree.
+
+The former documentation claim about a Z3 validity/satisfiability interface
+was stale: this source has no Z3 dependency or corresponding API, so it is not
+listed as a feature.
 
 ## Installation
 
