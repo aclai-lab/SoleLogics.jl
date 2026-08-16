@@ -317,3 +317,71 @@ kstruct4 = KripkeStructure(kframe4, valuation4)
 ### #
 ### #  Memory estimate: 76.64 MiB, allocs estimate: 1932369.
 ###
+
+
+##### checkable witness and serialization ###############################################
+
+# Re-evaluate the witness without using `check`, `collateworlds`, or the frame's
+# accessibility methods for the modal step.  This is intentionally a small,
+# independent evaluator for the finite frame used above.
+function independently_verify(witness, frame)
+    worlds = collect(allworlds(frame))
+    edges = witness.accessibility["default"]
+    sets = Dict{SyntaxTree,Set{eltype(worlds)}}()
+    for ψ in unique(subformulas(witness.formula))
+        tok = token(ψ)
+        values = if tok isa AbstractAtom
+            Set(world for world in worlds if witness.atom_valuations[tree(ψ)][world])
+        elseif tok === ¬
+            setdiff(Set(worlds), sets[tree(first(children(ψ)))])
+        elseif tok === ∧
+            intersect(sets[tree(children(ψ)[1])], sets[tree(children(ψ)[2])])
+        elseif tok === ∨
+            union(sets[tree(children(ψ)[1])], sets[tree(children(ψ)[2])])
+        elseif tok === □
+            childset = sets[tree(first(children(ψ)))]
+            Set(world for world in worlds if all(
+                to in childset for (from, to) in edges if from == world))
+        elseif tok === ◊
+            childset = sets[tree(first(children(ψ)))]
+            Set(world for world in worlds if any(
+                to in childset for (from, to) in edges if from == world))
+        else
+            error("unexpected token in independent verifier: $tok")
+        end
+        sets[tree(ψ)] = values
+        @test values == Set(witness.satisfying_worlds[tree(ψ)])
+    end
+    sets
+end
+
+witness_formula = BOX(p ∨ q)
+verified_result, verified_witness = check(witness_formula, kstruct, worlds[1]; witness=true)
+@test verified_result
+@test verified_witness.result == verified_result
+independent_sets = independently_verify(verified_witness, kframe)
+@test worlds[1] in independent_sets[tree(verified_witness.formula)]
+@test Set(verified_witness.accessibility["default"]) ==
+    Set((from, to) for from in worlds for to in accessibles(kframe, from))
+
+falsified_result, falsified_witness = check(BOX(¬p), kstruct, worlds[1]; witness=true)
+@test !falsified_result
+falsified_sets = independently_verify(falsified_witness, kframe)
+@test !(worlds[1] in falsified_sets[tree(falsified_witness.formula)])
+
+serialized = serialize_check(witness_formula, kstruct, worlds[1])
+@test serialized isa Dict{String,Any}
+@test serialized["schema_version"] == "solelogics.check.v1"
+@test serialized["engine_version"] == "0.13.7"
+@test serialized["result"] == true
+@test haskey(serialized["frame"], "accessibility")
+
+# Relational witnesses retain the relation label and enumerate global edges.
+global_formula = diamond(globalrel)(p)
+global_result, global_witness = check(global_formula, kstruct, worlds[1]; witness=true)
+@test global_result
+@test haskey(global_witness.accessibility, "G")
+@test Set(global_witness.accessibility["G"]) == Set((from, to) for from in worlds for to in worlds)
+global_serialized = serialize_check(global_formula, kstruct, worlds[1])
+@test haskey(global_serialized["frame"]["accessibility"], "G")
+@test length(global_serialized["frame"]["accessibility"]["G"]) == length(worlds)^2

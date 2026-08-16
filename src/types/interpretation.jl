@@ -120,6 +120,31 @@ This algorithm is not optimized for special cases.
 struct DefaultCheckAlgorithm <: CheckAlgorithm end
 
 """
+    CheckWitness
+
+A checkable, opt-in witness produced by `check(...; witness=true)`.  The
+`satisfying_worlds` dictionary contains the satisfying worlds for every
+(normalized) subformula.  `atom_valuations` contains the truth value of every
+atom in those subformulas on every frame world, and `accessibility` contains
+edge lists obtained from the frame's `accessibles` methods.  The `formula`
+field is the formula to which the witness applies (it is normalized when
+normalization is enabled).
+
+The witness is deliberately a data object: an independent evaluator can
+recompute each entry bottom-up from these fields and the formula's connective
+semantics without invoking SoleLogics' checker.
+"""
+struct CheckWitness
+    formula::SyntaxTree
+    evaluated_world::Any
+    result::Bool
+    satisfying_worlds::Dict
+    atom_valuations::Dict
+    accessibility::Dict
+    worlds::Vector
+end
+
+"""
     check(
         [algo::CheckAlgorithm,]
         φ::Formula,
@@ -156,7 +181,7 @@ false
 
 See also [`check`](@ref), [`interpret`](@ref), [`Interpretation`](@ref).
 """
-function check(φ::Formula, args...; kwargs...)::Union{Bool, Vector{Bool}}
+function check(φ::Formula, args...; kwargs...)::Union{Bool, Vector{Bool}, Tuple{Bool, CheckWitness}}
     check(DefaultCheckAlgorithm(), φ, args...; kwargs...)
 end
 

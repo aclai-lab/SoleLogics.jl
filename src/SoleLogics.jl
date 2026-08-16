@@ -53,7 +53,7 @@ include("types/parse.jl")
 
 
 export Interpretation
-export interpret, check
+export interpret, check, CheckWitness, serialize_check
 export DefaultCheckAlgorithm
 
 include("types/interpretation.jl")
