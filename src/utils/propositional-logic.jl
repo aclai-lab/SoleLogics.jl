@@ -226,6 +226,18 @@ end
     Base.keys, Base.values,
 )
 
+function Base.isequal(a::TruthDict, b::TruthDict)
+    return Base.isequal(a.truth, b.truth)
+end
+
+function Base.:(==)(a::TruthDict, b::TruthDict)
+    return Base.isequal(a, b)
+end
+
+function Base.hash(a::TruthDict, h::UInt)
+    return Base.hash(a.truth, Base.hash(TruthDict, h))
+end
+
 ############################################################################################
 ################################## DefaultedTruthDict ######################################
 ############################################################################################
@@ -354,6 +366,18 @@ end
     Base.keys,
     Base.values,
 )
+
+function Base.isequal(a::DefaultedTruthDict, b::DefaultedTruthDict)
+    return Base.isequal(a.truth, b.truth) && Base.isequal(a.default_truth, b.default_truth)
+end
+
+function Base.:(==)(a::DefaultedTruthDict, b::DefaultedTruthDict)
+    return Base.isequal(a, b)
+end
+
+function Base.hash(a::DefaultedTruthDict, h::UInt)
+    return Base.hash(a.default_truth, Base.hash(a.truth, Base.hash(DefaultedTruthDict, h)))
+end
 
 
 ############################################################################################

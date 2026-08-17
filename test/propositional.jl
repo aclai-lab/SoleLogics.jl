@@ -84,6 +84,20 @@ end
     @test_throws MethodError interpret("r", TruthDict(["p", "q"])) isa AbstractAtom
     @test interpret(Atom("r"), TruthDict(["p", "q"])) isa AbstractAtom
 
+    # Equality and hashing (#108)
+    td_a = TruthDict(["p" => true, "q" => false])
+    td_b = TruthDict(["p" => true, "q" => false])
+    td_c = TruthDict(["p" => true, "q" => true])
+    @test td_a == deepcopy(td_a)
+    @test isequal(td_a, deepcopy(td_a))
+    @test td_a == td_b
+    @test isequal(td_a, td_b)
+    @test td_a != td_c
+    @test !isequal(td_a, td_c)
+    @test hash(td_a) == hash(deepcopy(td_a))
+    @test hash(td_a) == hash(td_b)
+    @test length(Set([td_a, deepcopy(td_a), td_b])) == 1
+    @test Dict(td_a => 1)[deepcopy(td_a)] == 1
 end
 
 @testset "DefaultedTruthDict" begin
@@ -109,4 +123,26 @@ end
     @test_throws MethodError interpret("r", DefaultedTruthDict(["p", "q"])) |> isbot
     @test interpret(Atom("r"), DefaultedTruthDict(["p", "q"])) |> isbot
 
+    # Equality and hashing (#108)
+    dtd_a = DefaultedTruthDict(["p" => true, "q" => false], TOP)
+    dtd_b = DefaultedTruthDict(["p" => true, "q" => false], TOP)
+    dtd_c = DefaultedTruthDict(["p" => true, "q" => false], BOT)
+    dtd_d = DefaultedTruthDict(["p" => true, "q" => true], TOP)
+    @test dtd_a == deepcopy(dtd_a)
+    @test isequal(dtd_a, deepcopy(dtd_a))
+    @test dtd_a == dtd_b
+    @test isequal(dtd_a, dtd_b)
+    @test dtd_a != dtd_c
+    @test !isequal(dtd_a, dtd_c)
+    @test dtd_a != dtd_d
+    @test !isequal(dtd_a, dtd_d)
+    @test hash(dtd_a) == hash(deepcopy(dtd_a))
+    @test hash(dtd_a) == hash(dtd_b)
+    @test length(Set([dtd_a, deepcopy(dtd_a), dtd_b])) == 1
+    @test Dict(dtd_a => 1)[deepcopy(dtd_a)] == 1
+end
+
+@testset "Issue #108 reproduction" begin
+    my_model = randmodel(42, 5, 10, [Atom("p"), Atom("q")], BooleanAlgebra())
+    @test my_model.assignment == deepcopy(my_model.assignment)
 end
