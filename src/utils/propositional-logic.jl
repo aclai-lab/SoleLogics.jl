@@ -443,7 +443,7 @@ false
 
 See also [`Atom`](@ref).
 """
-check(::CheckAlgorithm, a::Atom, i::AbstractDict) = haskey(a,i) ? Base.getindex(i, value(a)) : nothing
+check(::CheckAlgorithm, a::Atom, i::AbstractDict) = haskey(a,i) ? istop(convert(Truth, Base.getindex(i, value(a)))) : false
 
 #############################################################################################
 ##################################### AbstractVector ########################################
