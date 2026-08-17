@@ -10,6 +10,9 @@ using Test
 @test Base.size(Point(1,2,3,4)) == ()
 
 @test_nowarn SoleLogics.Interval(1,2)
+@test_nowarn SoleLogics.Interval(0,3)
+@test_throws ErrorException SoleLogics.Interval(2,2)
+@test_throws ErrorException SoleLogics.Interval(3,2)
 @test_nowarn SoleLogics.Interval((1,2),)
 @test SoleLogics.goeswithdim(SoleLogics.Interval(1,2), 1)
 @test !SoleLogics.goeswithdim(SoleLogics.Interval(1,2), 2)

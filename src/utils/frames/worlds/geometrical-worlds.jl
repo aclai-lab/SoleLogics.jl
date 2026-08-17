@@ -127,10 +127,8 @@ struct Interval{T<:Real} <: GeometricalWorld
     # TODO needed?
     Interval(w::Interval) = Interval(w.x,w.y)
 
-    Interval{T}(x::T,y::T) where {T} = new{T}(x,y)
+    Interval{T}(x::T,y::T) where {T} = x < y ? new{T}(x,y) : error("Cannot instantiate Interval(x=$(x),y=$(y)): x must be less than y")
     Interval(x::T,y::T) where {T} = Interval{T}(x,y)
-    # TODO: perhaps check x<y (and  x<=N, y<=N ?), but only in debug mode.
-    # Interval(x,y) = x>0 && y>0 && x < y ? new(x,y) : error("Cannot instantiate Interval(x={$x},y={$y})")
 end
 
 # Base.size(w::Interval) = (Base.length(w),)
