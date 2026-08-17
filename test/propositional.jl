@@ -7,6 +7,11 @@
     @test !d0["b"]
     @test check(parseformula("a ∧ c"), d0)
 
+    d_issue = Dict([1 => ⊤, 2 => ⊥])
+    @test check(Atom(1), d_issue) === true
+    @test check(Atom(2), d_issue) === false
+    @test check(Atom(3), d_issue) === false
+
     v0 = ["a", "c"]
     @test "a" in v0
     @test !("b" in v0)
@@ -98,6 +103,11 @@ end
     @test_nowarn DefaultedTruthDict(Atom(1.0) => true)
 
     @test !check(parseformula("a ∧ b"), DefaultedTruthDict(["a"]))
+
+    td_def = DefaultedTruthDict([1 => ⊤, 2 => ⊥], ⊥)
+    @test check(Atom(1), td_def) === true
+    @test check(Atom(2), td_def) === false
+    @test check(Atom(3), td_def) === false
 
     @test DefaultedTruthDict(["p", "q"])["p"] |> istop
     @test DefaultedTruthDict(["p", "q"])[Atom("p")] |> istop
