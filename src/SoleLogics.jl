@@ -155,6 +155,7 @@ export IntervalLengthFilter
 
 include("many-valued-logics/ManyValuedLogics.jl")
 
+include("first-order-logic/FirstOrderLogic.jl")
 
 
 export LeftmostLinearForm, LeftmostConjunctiveForm, LeftmostDisjunctiveForm, Literal
