@@ -48,6 +48,8 @@ test_suites = [
 
     ("ManyValuedLogics", ["many-valued-logics.jl"]),
 
+    ("FirstOrderLogics", ["first-order-logics.jl"]),
+
     ("Miscellaneous", ["misc.jl", "util.jl"]),
 ]
 

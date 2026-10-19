@@ -28,7 +28,10 @@ end
 
     io = IOBuffer();
     print(io, TruthDict(["p", "q"]))
-    @test String(take!(io)) == "TruthDict with values:\n┌────────┬────────┐\n│      q │      p │\n│ String │ String │\n├────────┼────────┤\n│      ⊤ │      ⊤ │\n└────────┴────────┘\n"
+    @test String(take!(io)) in [
+        "TruthDict with values:\n┌────────┬────────┐\n│      q │      p │\n│ String │ String │\n├────────┼────────┤\n│      ⊤ │      ⊤ │\n└────────┴────────┘\n",
+        "TruthDict with values:\n┌────────┬────────┐\n│      p │      q │\n│ String │ String │\n├────────┼────────┤\n│      ⊤ │      ⊤ │\n└────────┴────────┘\n",
+    ]
 
     t0 = @test_nowarn TruthDict(["a" => true, "b" => false, "c" => true])
     @test haskey(t0, Atom("a"))
