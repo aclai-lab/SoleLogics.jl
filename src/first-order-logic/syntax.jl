@@ -44,7 +44,16 @@ Variable(name::AbstractString) = Variable(Symbol(name))
         name::Symbol
     end
 
-A first-order constant symbol; its denotation is fixed by a [`FOStructure`](@ref).
+A first-order constant symbol. 
+#
+# Examples
+```julia-repl
+julia> c = Constant(:c)
+Constant: c
+
+julia> syntaxstring(c)
+"c"
+```
 
 See also [`@constants`](@ref), [`Term`](@ref), [`FOStructure`](@ref).
 """
@@ -99,6 +108,14 @@ syntaxstring(f::FunctionSymbol; kwargs...) = string(name(f))
 The term obtained by applying a [`FunctionSymbol`](@ref) of arity `N` to `N` terms.
 It is usually built by calling the function symbol itself, e.g., `f(x, c)`.
 
+# Examples
+```julia-repl
+julia> succ = FunctionSymbol(:succ, 1); x = Variable(:x);
+
+julia> typeof(succ(succ(x)))
+FunctionTerm{1}
+```
+
 See also [`FunctionSymbol`](@ref), [`functionsymbol`](@ref), [`arguments`](@ref).
 """
 struct FunctionTerm{N} <: Term
@@ -120,6 +137,14 @@ FunctionTerm(f::FunctionSymbol, args::Term...) = FunctionTerm(f, args)
 """
     functionsymbol(t::FunctionTerm)::FunctionSymbol
 
+# Examples
+```julia-repl
+julia> succ = FunctionSymbol(:succ, 1); x = Variable(:x);
+
+julia> functionsymbol(succ(succ(succ(x))))
+FunctionSymbol(:succ, 1)
+```
+
 Return the function symbol at the root of a [`FunctionTerm`](@ref).
 """
 functionsymbol(t::FunctionTerm) = t.f
@@ -127,6 +152,14 @@ functionsymbol(t::FunctionTerm) = t.f
 """
     arguments(t::FunctionTerm)
     arguments(a::PredicateAtom)
+
+# Examples
+```julia-repl
+julia> succ = FunctionSymbol(:succ, 1); x = Variable(:x);
+
+julia> arguments(succ(x))
+(Variable: x,)
+```
 
 Return the tuple of argument terms of a function term or of an atomic formula.
 """
@@ -187,6 +220,17 @@ Since it is an `AbstractAtom`, it can be composed with every SoleLogics connecti
 utilities such as [`atoms`](@ref), [`height`](@ref) or [`subformulas`](@ref) work
 unchanged on first-order formulas.
 
+# Examples
+```julia-repl
+julia> Less = Predicate(:Less, 2); x, y = Variable(:x), Variable(:y);
+
+julia> PredicateAtom(Less, x, y)
+PredicateAtom{2}: Less(x, y)
+
+julia> CONJUNCTION(PredicateAtom(Less, x, y), PredicateAtom(Less, y, x))
+SyntaxBranch: Less(x, y) ∧ Less(y, x)
+```
+
 See also [`Predicate`](@ref), [`predicate`](@ref), [`arguments`](@ref), [`Term`](@ref).
 """
 struct PredicateAtom{N} <: AbstractAtom
@@ -207,6 +251,17 @@ PredicateAtom(p::Predicate, args::Term...) = PredicateAtom(p, args)
 
 """
     predicate(a::PredicateAtom)::Predicate
+
+# Examples
+```julia-repl
+julia> Less = Predicate(:Less, 2); x, y = Variable(:x), Variable(:y);
+
+julia> pred = PredicateAtom(Less, x, y)
+PredicateAtom{2}: Less(x, y)
+
+julia> predicate(pred)
+Predicate(:Less, 2)
+```
 
 Return the predicate symbol of a first-order atomic formula.
 """
@@ -270,10 +325,33 @@ abstract type AbstractQuantifier <: Connective end
 """
     variable(q::AbstractQuantifier)::Variable
 
+# Examples
+```julia-repl
+julia> x = Variable(:x)
+
+julia> variable(ForAll(x)) == x
+true
+```
+
 Return the variable bound by a quantifier.
 """
 variable(q::AbstractQuantifier) = q.var
 
+"""
+    rebind(q::AbstractQuantifier, v::Variable) = typeof(q)(v)
+
+Change the binded variable within a quantifier.
+
+# Examples
+```julia-repl
+julia> x = Variable(:x); y = Variable(:y);
+
+julia> fax = ForAll(x);
+
+julia> SoleLogics.FirstOrderLogics.rebind(fax, y)
+ForAll: ∀y 
+```
+"""
 rebind(q::AbstractQuantifier, v::Variable) = typeof(q)(v)
 
 arity(::AbstractQuantifier) = 1
@@ -282,6 +360,18 @@ associativity(::AbstractQuantifier) = associativity(NEGATION)
 
 """
     isquantifier(x)::Bool
+
+# Examples
+```julia-repl
+julia> isquantifier(CONUNCTION)
+false
+
+julia> ex = Exists(Variable(:x))
+Exists: ∃x 
+
+julia> isquantifier(fax)
+true
+```
 
 Return whether `x` is a first-order quantifier.
 """
@@ -335,6 +425,10 @@ Build the universally quantified formula `∀x ∀y ... φ`.
 ```julia-repl
 julia> @variables x y; P = Predicate(:P, 2);
 
+julia> forall(x, y, P(x, y))
+SyntaxBranch: ∀x ∀y P(x, y)
+
+# alternative notation (printed as a string)
 julia> syntaxstring(∀(x, y, P(x, y)))
 "∀x ∀y P(x, y)"
 ```
@@ -349,6 +443,14 @@ forall(x::Variable, y::Variable, rest...) = forall(x, forall(y, rest...))
     ∃(x, [y, ...,] φ)
 
 Build the existentially quantified formula `∃x ∃y ... φ`.
+
+# Examples
+```julia-repl
+julia> @variables x y; P = Predicate(:P, 2);
+
+julia> exists(x, y, P(x, y))
+SyntaxBranch: ∃x ∃y P(x, y)
+```
 
 See also [`forall`](@ref), [`Exists`](@ref).
 """
