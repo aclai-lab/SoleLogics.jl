@@ -278,6 +278,7 @@ function interpret(
 )
     tok = token(φ)
     if isquantifier(tok)
+        # _quantify hides an iteration across all the values in the domain
         return _quantify(tok, children(φ)[1], M, assignment, args...; kwargs...)
     else
         ts = map(ch -> interpret(ch, M, args...; assignment = assignment, kwargs...),
