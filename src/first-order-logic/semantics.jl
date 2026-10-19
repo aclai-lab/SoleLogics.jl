@@ -226,6 +226,26 @@ returning `⊤` or `⊥`.
 Quantifiers range over the domain of `M`, and short-circuit as soon as the result is known.
 Note that `check(φ, M; assignment)` returns the corresponding `Bool`.
 
+# Examples
+```julia-repl
+julia> @variables x y;
+julia> zero = Constant(:zero);
+julia> succ = FunctionSymbol(:succ, 1);
+julia> Less = Predicate(:Less, 2);
+
+julia> M = FOStructure(0:3;
+    constants  = [zero => 0],
+    functions  = [succ => (n -> min(n + 1, 3))],
+    predicates = [Less => <])
+
+# a constant evaluates to the element the structure assigns it
+julia> interpret(Less(zero, x), M; assignment = Dict(x => 1))                        
+⊤
+
+julia> interpret(Less(x, y), M; assignment = Dict(x => 1, y => 1))
+⊥
+```
+
 See also [`FOStructure`](@ref), [`evaluate`](@ref), [`issentence`](@ref).
 """
 function interpret(
