@@ -34,4 +34,8 @@ export @variables, @constants
 
 include("syntax.jl")
 
+export FOStructure, domain, evaluate
+
+include("semantics.jl")
+
 end
