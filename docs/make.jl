@@ -27,6 +27,7 @@ makedocs(;
         "Introduction to Logics and Propositional Logic" => "base-logic.md",
         "Modal Logic" => "modal-logic.md",
         "Many-valued logics" => "many-valued-logics.md",
+        "First-order logic" => "first-order-logics.md",
         "More on Formulas" => "more-on-formulas.md",
         "Hands On" => "hands-on.md"
     ],
