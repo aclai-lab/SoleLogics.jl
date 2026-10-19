@@ -1,3 +1,5 @@
+module TestFirstOrderLogics
+
 using Test
 using SoleLogics
 using SoleLogics.FirstOrderLogics
@@ -166,3 +168,5 @@ E = FOStructure(Int[]; predicates = [Even => iseven])
 # truth constants are interpreted as themselves
 @test check(∀(x, Even(x) ∨ ⊤), M)
 @test !check(∃(x, ⊥), M)
+
+end
